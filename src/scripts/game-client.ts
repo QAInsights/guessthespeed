@@ -41,6 +41,7 @@ let state: GameState = loadGame();
 let activePlayerId: string | null = null;
 let gaugeValue = 0;
 let gaugeTarget = 0;
+let gaugeReadoutValue: number | undefined;
 let animationFrame = 0;
 let runInProgress = false;
 let activeTheme: ThemeId = "light";
@@ -100,8 +101,9 @@ function applyTheme() {
   }
 }
 
-function setGauge(value: number) {
+function setGauge(value: number, readoutValue?: number) {
   gaugeTarget = Math.max(0, value);
+  gaugeReadoutValue = readoutValue;
   if (reduceMotion) {
     gaugeValue = gaugeTarget;
     renderGauge();
@@ -127,10 +129,7 @@ function renderGauge() {
   gauge.style.setProperty("--p", progress.toFixed(4));
   gauge.style.setProperty("--rotation", `${-120 + 240 * progress}deg`);
   const live = $<HTMLSpanElement>("[data-live]");
-  live.textContent =
-    gaugeValue >= 100
-      ? gaugeValue.toLocaleString(undefined, { maximumFractionDigits: 1 })
-      : gaugeValue.toFixed(1);
+  live.textContent = formatSpeed(gaugeReadoutValue ?? gaugeValue);
 }
 
 function gaugePosition(value: number): number {
@@ -206,7 +205,7 @@ function renderPlayerCard(player: Player, index: number) {
         <span>${roundResult?.miss === null || roundResult?.miss === undefined ? "No guess this round" : `${(roundResult.miss * 100).toFixed(1)}% average miss`}</span>
       </div>
       <div class="p-actions">
-        <span class="points-pill">${medal ? `${medal} ` : ""}+${roundResult?.total ?? 0} points</span>
+        <span class="points-pill">${medal ? `${medal} ` : ""}${formatPointAward(roundResult?.total ?? 0)}</span>
         ${roundResult?.bonus ? `<span class="bonus-pill">Spot on! +${roundResult.bonus}</span>` : ""}
       </div>`
     : locked
@@ -214,7 +213,7 @@ function renderPlayerCard(player: Player, index: number) {
       : `<div class="p-actions"><button type="button" class="guess-button" data-guess="${escapeHtml(player.id)}" ${state.phase === "testing" ? "disabled" : ""}>Guess</button></div>`;
   return `<article class="p-card ${winnerClass}" style="--card-index:${index}">
     <button class="p-rm" type="button" data-remove="${escapeHtml(player.id)}" aria-label="Remove ${escapeHtml(player.name)}" ${state.phase === "testing" ? "disabled" : ""}>×</button>
-    <div class="p-head">${roleFor(player)}<div class="p-score"><b>${player.score}</b><span>pts</span></div></div>
+    <div class="p-head">${roleFor(player)}<div class="p-score"><b>${player.score}</b><span>${player.score === 1 ? "pt" : "pts"}</span></div></div>
     ${guessAction}
   </article>`;
 }
@@ -240,7 +239,7 @@ function renderPlayerTable(player: Player, index: number) {
     <td>${revealed ? (player.guess.down === null ? "No guess" : `${player.guess.down.toLocaleString()} Mbps`) : "Hidden"}</td>
     <td>${revealed ? (player.guess.up === null ? "No guess" : `${player.guess.up.toLocaleString()} Mbps`) : "Hidden"}</td>
     <td>${roundStatus}</td>
-    <td class="p-score">${player.score}</td>
+    <td class="p-score">${formatScoreLabel(player.score)}</td>
     <td><button class="p-rm" type="button" data-remove="${escapeHtml(player.id)}" aria-label="Remove ${escapeHtml(player.name)}" ${state.phase === "testing" ? "disabled" : ""}>×</button></td>
   </tr>`;
 }
@@ -288,6 +287,14 @@ function joinNames(names: string[]) {
   return `${names.slice(0, -1).join(", ")} and ${names.at(-1)}`;
 }
 
+function formatPointAward(points: number) {
+  return `+${points} ${points === 1 ? "point" : "points"}`;
+}
+
+function formatScoreLabel(points: number) {
+  return `${points} ${points === 1 ? "pt" : "pts"}`;
+}
+
 function renderWinner() {
   const banner = $<HTMLDivElement>("[data-winner-banner]");
   if (state.phase !== "results" && state.phase !== "champion") {
@@ -297,25 +304,41 @@ function renderWinner() {
   const scores = state.history.at(-1)?.scores ?? [];
   const winners = scores
     .filter((score) => score.place === 1)
-    .map((score) => state.players.find((player) => player.id === score.id))
-    .filter((player): player is Player => !!player);
+    .flatMap((score) => {
+      const player = state.players.find(
+        (candidate) => candidate.id === score.id,
+      );
+      return player ? [{ player, score }] : [];
+    });
   if (!winners.length) {
     banner.innerHTML =
       '<span class="wb-emoji">🤔</span><span>No locked guesses this round. Everyone can try again next round.</span>';
   } else {
-    const names = winners.map((player) => escapeHtml(player.name));
+    const names = winners.map(({ player }) => escapeHtml(player.name));
     const message =
       names.length > 1
         ? `${joinNames(names)} tie for the win`
         : `${names[0]} wins the round`;
-    banner.innerHTML = `<span class="wb-emoji">${escapeHtml(winners[0].emoji)}</span><span><b>${message}</b>. Nice guessing!</span>`;
+    const totals = winners.map(({ score }) => score.total);
+    const awards =
+      winners.length === 1
+        ? ` and gets ${formatPointAward(totals[0])}`
+        : totals.every((total) => total === totals[0])
+          ? ` and each get ${formatPointAward(totals[0])}`
+          : `: ${winners
+              .map(
+                ({ player, score }) =>
+                  `${escapeHtml(player.name)} gets ${formatPointAward(score.total)}`,
+              )
+              .join("; ")}`;
+    banner.innerHTML = `<span class="wb-emoji">${escapeHtml(winners[0].player.emoji)}</span><span><b>${message}</b>${awards}. Nice guessing!</span>`;
   }
   banner.hidden = false;
 }
 
 function setResults() {
   const last = state.history.at(-1)?.actual;
-  setResultText("ping", latestPing);
+  setResultText("ping", last?.ping ?? latestPing);
   setResultText("down", last?.down);
   setResultText("up", last?.up);
 }
@@ -339,6 +362,7 @@ function syncControls() {
     !guessing ||
     !state.players.some((player) => player.locked) ||
     runInProgress;
+  startButton.hidden = state.phase === "results";
   $<HTMLSpanElement>("[data-start-label]").textContent =
     state.phase === "testing"
       ? "Testing..."
@@ -401,7 +425,7 @@ function renderChampion() {
     <div class="podium-step ${podiumPlace === 1 ? "is-champion" : ""}" data-place="${podiumPlace}">
       <span class="podium-medal">${medal}</span>
       <span class="podium-name">${escapeHtml(player.name)}</span>
-      <span class="podium-score">${player.score} pts</span>
+      <span class="podium-score">${formatScoreLabel(player.score)}</span>
     </div>`;
     })
     .join("");
@@ -524,7 +548,7 @@ async function startTest() {
     setResultText("down", actual.down);
     setResultText("up", actual.up);
     setResultText("ping", actual.ping);
-    setGauge(actual.down);
+    setGauge(actual.down, actual.down);
     const result = applyResult(state, actual);
     state = result.state;
     persist();
@@ -741,9 +765,10 @@ initializeGauge();
 applyTheme();
 if (state.history.length) {
   const lastRound = state.history.at(-1)!;
+  latestPing = lastRound.actual.ping;
   setResultText("down", lastRound.actual.down);
   setResultText("up", lastRound.actual.up);
-  setResultText("ping", latestPing);
-  setGauge(lastRound.actual.down);
+  setResultText("ping", lastRound.actual.ping);
+  setGauge(lastRound.actual.down, lastRound.actual.down);
 }
 render();

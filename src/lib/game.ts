@@ -39,9 +39,13 @@ export interface GameSettings {
   sound: boolean;
 }
 
+export interface RoundActual extends Actual {
+  ping?: number;
+}
+
 export interface RoundHistory {
   round: number;
-  actual: Actual;
+  actual: RoundActual;
   scores: PlayerRoundScore[];
 }
 
@@ -136,7 +140,7 @@ export function unlockGuess(state: GameState, id: string): GameState {
 
 export function applyResult(
   state: GameState,
-  actual: Actual,
+  actual: RoundActual,
 ): { state: GameState; scores: PlayerRoundScore[] } {
   const scores = scoreRound(
     state.players
@@ -146,6 +150,11 @@ export function applyResult(
     { ...DEFAULT_SCORING_SETTINGS, tieMode: state.settings.tieMode },
   );
   const scoreById = new Map(scores.map((score) => [score.id, score]));
+  const historyActual: RoundActual = {
+    down: actual.down,
+    up: actual.up,
+    ...(actual.ping === undefined ? {} : { ping: actual.ping }),
+  };
   return {
     scores,
     state: {
@@ -154,7 +163,10 @@ export function applyResult(
         ...player,
         score: player.score + (scoreById.get(player.id)?.total ?? 0),
       })),
-      history: [...state.history, { round: state.round, actual, scores }],
+      history: [
+        ...state.history,
+        { round: state.round, actual: historyActual, scores },
+      ],
       phase: "results",
     },
   };
@@ -290,6 +302,10 @@ function isGameState(value: unknown): value is GameState {
         typeof round.actual.up === "number" &&
         Number.isFinite(round.actual.up) &&
         round.actual.up > 0 &&
+        (round.actual.ping === undefined ||
+          (typeof round.actual.ping === "number" &&
+            Number.isFinite(round.actual.ping) &&
+            round.actual.ping >= 0)) &&
         Array.isArray(round.scores) &&
         round.scores.every(
           (score) =>

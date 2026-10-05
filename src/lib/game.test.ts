@@ -43,10 +43,14 @@ describe("game state", () => {
     let state = initialGameState();
     state = addPlayer(state, "Ada", "🧑", "Friend", "p1");
     state = lockGuess(state, "p1", { down: 100, up: 20 });
-    const result = applyResult(state, { down: 100, up: 20 });
+    const result = applyResult(state, { down: 100, up: 20, ping: 7.3 });
     expect(result.scores[0].total).toBe(5);
     expect(result.state.history).toHaveLength(1);
+    expect(result.state.history[0].actual.ping).toBe(7.3);
     expect(result.state.phase).toBe("results");
+    const storage = memoryStorage();
+    saveGame(result.state, storage);
+    expect(loadGame(storage).history[0].actual.ping).toBe(7.3);
   });
 
   it("starts a new round or moves to the champion phase", () => {

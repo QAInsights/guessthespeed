@@ -687,6 +687,10 @@ footer {
   color: var(--on-accent);
 }
 
+.p-card.is-winner .p-results {
+  color: var(--on-accent);
+}
+
 .p-head {
   display: flex;
   align-items: center;
@@ -1297,9 +1301,18 @@ dialog::backdrop {
 
 .champion-confetti {
   position: absolute;
+  z-index: 0;
   overflow: hidden;
   pointer-events: none;
   inset: 0;
+}
+
+.champion-title,
+.champion-intro,
+.podium,
+.champion-actions {
+  position: relative;
+  z-index: 1;
 }
 
 .champion-confetti span {
@@ -1434,6 +1447,7 @@ dialog::backdrop {
   }
 
   .logo {
+    width: 100%;
     gap: 7px;
   }
 
@@ -1447,6 +1461,7 @@ dialog::backdrop {
   }
 
   .ctrls {
+    width: 100%;
     gap: 6px;
   }
 
@@ -1455,17 +1470,15 @@ dialog::backdrop {
   }
 
   .theme-select {
-    max-width: 120px;
+    min-width: 0;
+    max-width: none;
+    flex: 1;
     padding: 0 6px;
     font-size: 13px;
   }
 
   .icon-btn {
     width: 39px;
-  }
-
-  .how-link {
-    display: none;
   }
 
   .stage {
