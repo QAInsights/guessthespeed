@@ -1,0 +1,24 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="Privacy | Guess the Speed" description="Learn what Guess the Speed stores on your device and how its real speed test works.">
+  <main class="wrap content-page">
+    <span class="round-banner">A small privacy note</span>
+    <h1>Your game stays on your device.</h1>
+    <p class="lede">There are no accounts to create. Your player list, settings, guesses, scores, and round history are saved in this browser’s local storage.</p>
+    <article class="content-card stk">
+      <h2>What stays in local storage?</h2>
+      <p>Guess the Speed saves the game on the device you are using so the family can pick up where you left off. This data is not sent to our servers. You can clear it through your browser’s site data settings.</p>
+
+      <h2>What happens during a speed test?</h2>
+      <p>The real test sends download, upload, and latency requests to Cloudflare’s speed test service. Cloudflare collects aggregated, anonymous test results to learn about internet connection quality. Your game scores and player names are not included in those measurement results.</p>
+
+      <h2>Does the site use analytics?</h2>
+      <p>When the site owner configures Cloudflare Web Analytics, it uses a cookieless beacon to measure site visits. It is only included when its public beacon token is configured. The game itself does not set analytics cookies.</p>
+
+      <h2>Can children use the game?</h2>
+      <p>The game asks only for a player name chosen by your family. Please use first names or nicknames rather than personal details. No account or contact information is requested.</p>
+    </article>
+  </main>
+</Base>

@@ -1,0 +1,9 @@
+# Guess the Speed
+
+> A family game-night app where everyone guesses download and upload speed before a real internet speed test.
+
+## Pages
+- [Play Guess the Speed](https://guessthespeed.com/)
+- [How to play](https://guessthespeed.com/how-to-play)
+- [Privacy](https://guessthespeed.com/privacy)
+- [Full game guide](https://guessthespeed.com/llms-full.txt)

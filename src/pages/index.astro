@@ -1,0 +1,189 @@
+---
+import { Icon } from 'astro-icon/components';
+import Base from '../layouts/Base.astro';
+import { ROLES } from '../lib/game';
+
+const roleChoices = ROLES;
+---
+
+<Base>
+  <main class="wrap game-main">
+    <section class="stage" aria-label="Speed test game">
+      <div class="intro">
+        <div class="round"><Icon name="ph:flag-checkered-fill" /><span data-round-label>Round 1 of 3</span></div>
+        <h1 class="display">Guess the Wi-Fi. <em>Beat the family.</em></h1>
+        <p>Guess the download and upload. Run a real speed test. Closest guesses score!</p>
+      </div>
+
+      <div class="gauge-card stk">
+        <div class="gauge" data-gauge>
+          <svg viewBox="0 0 400 320" role="img" aria-label="Live internet speed gauge">
+            <path class="track-o" data-arc data-cx="200" data-cy="185" data-r="150" data-start="-120" data-sweep="240"></path>
+            <path class="track" data-arc data-cx="200" data-cy="185" data-r="150" data-start="-120" data-sweep="240"></path>
+            <path class="gauge-fill" data-arc data-cx="200" data-cy="185" data-r="150" data-start="-120" data-sweep="240"></path>
+            <g data-ticks data-cx="200" data-cy="185" data-r="108" data-start="-120" data-sweep="240"></g>
+            <g class="gauge-needle">
+              <path class="needle" d="M194 185 L200 80 L206 185 Z"></path>
+              <circle class="hub" cx="200" cy="185" r="15"></circle>
+            </g>
+          </svg>
+          <div class="readout">
+            <span class="mode" data-mode>Download</span>
+            <span class="num" data-live>0</span>
+            <span class="unit" data-unit>Mbps</span>
+          </div>
+        </div>
+        <div class="phase" data-phase-label aria-live="polite">Ready when you are</div>
+        <button class="go" type="button" data-start-btn disabled>
+          <Icon name="ph:lightning-fill" />
+          <span data-start-label>Waiting for guesses</span>
+        </button>
+        <div class="winner" data-winner-banner hidden aria-live="polite"></div>
+        <p class="error-note" data-error-note hidden></p>
+      </div>
+
+      <div class="stats" aria-label="Latest speed test results">
+        <div class="stat stk"><span><Icon name="ph:timer-fill" />Ping</span><div><b data-result="ping">-</b><small>ms</small></div></div>
+        <div class="stat stk"><span><Icon name="ph:arrow-down-fill" />Download</span><div><b data-result="down">-</b><small>Mbps</small></div></div>
+        <div class="stat stk"><span><Icon name="ph:arrow-up-fill" />Upload</span><div><b data-result="up">-</b><small>Mbps</small></div></div>
+      </div>
+    </section>
+
+    <section aria-labelledby="players-heading">
+      <div class="sec-head">
+        <h2 id="players-heading" class="display">Who’s playing?</h2>
+        <div class="section-actions">
+          <button class="ghost" type="button" data-reset>Reset scores</button>
+          <div class="seg" data-view-toggle aria-label="Player view">
+            <button type="button" data-view="grid" aria-pressed="true"><Icon name="ph:squares-four-fill" />Cards</button>
+            <button type="button" data-view="table" aria-pressed="false"><Icon name="ph:list-bold" />Table</button>
+          </div>
+        </div>
+      </div>
+      <div data-players aria-live="polite">
+        <div class="p-empty"><span>🏁</span><p>Add the first player</p></div>
+      </div>
+
+      <form class="add stk" data-add-form>
+        <div>
+          <label class="lbl" for="player-name">Player name</label>
+          <input id="player-name" name="name" maxlength="16" autocomplete="off" placeholder="e.g. Grandpa Raj" required />
+        </div>
+        <fieldset class="role-fieldset">
+          <legend class="lbl">Pick a face</legend>
+          <div data-emoji-picker>
+            {roleChoices.map((choice, index) => (
+              <label title={choice.role}>
+                <input type="radio" name="emoji" value={index} checked={index === 0} />
+                <span>{choice.emoji}</span>
+                <small>{choice.role}</small>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+        <button class="go" type="submit"><Icon name="ph:plus-bold" />Add player</button>
+      </form>
+    </section>
+
+    <section class="how" aria-labelledby="how-round-heading">
+      <div>
+        <h2 id="how-round-heading" class="display">How a round works</h2>
+        <ol>
+          <li><b>1</b><span>Each player privately guesses download and upload speed in Mbps.</span></li>
+          <li><b>2</b><span>Press start. A real test runs against Cloudflare’s network.</span></li>
+          <li><b>3</b><span>The closest average guess earns the most points.</span></li>
+        </ol>
+      </div>
+      <p class="note stk"><strong>Why both numbers?</strong> Most home plans upload more slowly than they download. Guessing both makes the game extra interesting.</p>
+    </section>
+  </main>
+
+  <dialog class="sticker-dialog" data-settings-dialog aria-labelledby="settings-title">
+    <div class="dialog-inner">
+      <div class="dialog-head">
+        <h2 id="settings-title" class="display">Game settings</h2>
+        <button class="dialog-close" type="button" data-close-settings aria-label="Close settings"><Icon name="ph:x-bold" /></button>
+      </div>
+      <form class="dialog-form" data-settings-form>
+        <label class="dialog-field">Rounds
+          <select class="dialog-select" name="rounds">
+            <option value="1">1 round</option>
+            <option value="3">3 rounds</option>
+            <option value="5">5 rounds</option>
+            <option value="7">7 rounds</option>
+            <option value="10">10 rounds</option>
+            <option value="endless">Endless</option>
+          </select>
+        </label>
+        <label class="dialog-field">Ties
+          <select class="dialog-select" name="tieMode">
+            <option value="share">Share the points</option>
+            <option value="download">Closest download breaks the tie</option>
+          </select>
+        </label>
+        <label class="dialog-field">Theme
+          <select class="dialog-select" name="themeMode">
+            <option value="auto">Auto (by date)</option>
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+            <option value="halloween">Halloween</option>
+            <option value="diwali">Diwali</option>
+            <option value="thanksgiving">Thanksgiving</option>
+            <option value="winter">Winter</option>
+            <option value="christmas">Christmas</option>
+            <option value="newyear">New Year</option>
+            <option value="pongal">Pongal</option>
+            <option value="valentines">Valentine’s Day</option>
+            <option value="holi">Holi</option>
+            <option value="easter">Easter</option>
+          </select>
+        </label>
+        <label class="dialog-field sound-setting"><span>Sound</span><input type="checkbox" name="sound" /></label>
+        <div class="dialog-actions">
+          <button class="go" type="submit">Save settings</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <dialog class="sticker-dialog" data-guess-dialog aria-labelledby="guess-title">
+    <div class="dialog-inner">
+      <div class="dialog-head">
+        <h2 id="guess-title" class="display">Your speed guess</h2>
+        <button class="dialog-close" type="button" data-close-guess aria-label="Close guess"><Icon name="ph:x-bold" /></button>
+      </div>
+      <div class="guess-person"><span data-guess-emoji>🙂</span><b data-guess-player>Player</b></div>
+      <form class="dialog-form" data-guess-form>
+        <label class="dialog-field">Download
+          <input class="dialog-input" name="down" type="number" inputmode="decimal" min="0" step="any" placeholder="Your guess in Mbps" />
+          <small>How fast will a big download feel?</small>
+        </label>
+        <label class="dialog-field">Upload
+          <input class="dialog-input" name="up" type="number" inputmode="decimal" min="0" step="any" placeholder="Your guess in Mbps" />
+          <small>How fast will sharing a file feel?</small>
+        </label>
+        <p class="guess-hint">Your guesses stay hidden until the test is over.</p>
+        <div class="dialog-actions">
+          <button class="go" type="submit"><Icon name="ph:lock-key-fill" />Lock it in</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <dialog class="champion-dialog" data-champion-dialog aria-labelledby="champion-title">
+    <div class="dialog-inner">
+      <div class="champion-confetti" data-champion-confetti aria-hidden="true"></div>
+      <h2 id="champion-title" class="champion-title display">Game night champion!</h2>
+      <p class="champion-intro" data-champion-message></p>
+      <div class="podium" data-podium></div>
+      <div class="champion-actions">
+        <button class="go" type="button" data-play-again><Icon name="ph:arrow-counter-clockwise-bold" />Play again</button>
+        <button class="guess-button" type="button" data-close-champion>Close</button>
+      </div>
+    </div>
+  </dialog>
+
+  <script>
+    import '../scripts/game-client';
+  </script>
+</Base>
