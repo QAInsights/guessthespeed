@@ -53,7 +53,6 @@ export default {
 };
 
 async function handleStats(request: Request, env: Env): Promise<Response> {
-  const cache = (caches as CacheStorage & { default: Cache }).default;
   if (request.method === "POST") {
     const contentType = request.headers
       .get("content-type")
@@ -81,13 +80,11 @@ async function handleStats(request: Request, env: Env): Promise<Response> {
 
     const stub = env.STATS.get(env.STATS.idFromName("global"));
     try {
-      const response = await stub.fetch("https://stats.internal/add", {
+      await stub.fetch("https://stats.internal/add", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify(event),
       });
-      if (response.ok)
-        await cache.delete(new Request(new URL("/api/stats", request.url)));
     } catch {
       return new Response(null, { status: 204 });
     }
@@ -95,15 +92,23 @@ async function handleStats(request: Request, env: Env): Promise<Response> {
   }
 
   if (request.method === "GET") {
+    const cache = (caches as CacheStorage & { default: Cache }).default;
     const cacheKey = new Request(new URL("/api/stats", request.url));
     const cached = await cache.match(cacheKey);
     if (cached) return cached;
 
-    const stub = env.STATS.get(env.STATS.idFromName("global"));
-    const totals = await stub.fetch("https://stats.internal/totals");
-    if (!totals.ok)
+    let totals: unknown;
+    try {
+      const stub = env.STATS.get(env.STATS.idFromName("global"));
+      const response = await stub.fetch("https://stats.internal/totals");
+      if (!response.ok)
+        return jsonResponse({ error: "Could not load play totals." }, 503);
+      totals = await response.json();
+    } catch {
       return jsonResponse({ error: "Could not load play totals." }, 503);
-    const response = jsonResponse(await totals.json());
+    }
+
+    const response = jsonResponse(totals);
     response.headers.set(
       "cache-control",
       `public, max-age=${STATS_CACHE_SECONDS}`,
