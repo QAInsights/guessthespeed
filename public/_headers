@@ -5,3 +5,6 @@
 
 /_astro/*
   Cache-Control: public, max-age=31536000, immutable
+
+/e16f4b4551247f6ffe0e0fd8df6654b2.txt
+  Content-Type: text/plain; charset=utf-8

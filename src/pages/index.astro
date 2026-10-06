@@ -4,15 +4,50 @@ import Base from '../layouts/Base.astro';
 import { ROLES } from '../lib/game';
 
 const roleChoices = ROLES;
+const homeTitle = 'Guess the Speed | The Internet Speed Guessing Game for Families';
+const homeDescription =
+  "A free family game: everyone guesses the Wi-Fi download and upload speed, then a real speed test reveals who came closest. Play on one screen or on everyone's phone.";
+const homeSchema: Record<string, unknown>[] = [
+  {
+    '@type': 'WebApplication',
+    name: 'Guess the Speed',
+    url: 'https://guessthespeed.com/',
+    description: homeDescription,
+    applicationCategory: 'GameApplication',
+    genre: ['Family game', 'Party game'],
+    operatingSystem: 'Any',
+    browserRequirements: 'Requires JavaScript and a modern browser',
+    isAccessibleForFree: true,
+    inLanguage: 'en',
+    offers: { '@type': 'Offer', price: 0, priceCurrency: 'USD' },
+    author: { '@id': 'https://guessthespeed.com/#author' },
+    publisher: { '@id': 'https://guessthespeed.com/#author' },
+    screenshot: [
+      'https://guessthespeed.com/screenshots/home-wide.png',
+      'https://guessthespeed.com/screenshots/home-narrow.png',
+    ],
+    featureList: [
+      'Run a real speed test against Cloudflare’s network in the browser.',
+      'Play with one or more players on one screen, with room-code games supporting up to 12 players.',
+      'Use room codes to play on separate phones.',
+      'The room server hides guesses from other players until the test result.',
+      'Award 3, 2, and 1 place points plus a spot-on bonus for each speed guess within 5%.',
+      'Require an average miss of 50% or less to earn place points.',
+      'Choose light, dark, or seasonal themes.',
+      'Play with optional sound effects.',
+      'Play without accounts or cookies.',
+    ],
+  },
+];
 ---
 
-<Base>
+<Base title={homeTitle} description={homeDescription} schema={homeSchema}>
   <main class="wrap game-main">
     <section class="stage" aria-label="Speed test game">
       <div class="intro">
         <div class="round" data-round-banner><Icon name="ph:flag-checkered-fill" /><span data-round-label>Round 1 of 3</span></div>
         <h1 class="display" data-game-title>Guess the Wi-Fi. <em>Beat the family.</em></h1>
-        <h1 class="display dev-title" data-dev-title hidden>Dev mode</h1>
+        <h2 class="display dev-title" data-dev-title hidden>Dev mode</h2>
         <p data-game-lede>Guess the download and upload. Run a real speed test. Closest guesses score!</p>
         <p class="dev-lede" data-dev-lede hidden>Raw Cloudflare speed test data. No game, no scores.</p>
       </div>

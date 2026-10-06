@@ -9,11 +9,15 @@ import { themes, type ThemeId } from '../lib/themes';
 interface Props {
   title?: string;
   description?: string;
+  breadcrumb?: string;
+  schema?: Record<string, unknown>[];
 }
 
 const {
-  title = 'Guess the Speed | A real speed test family game',
-  description = 'Make your download and upload guesses, run a real internet speed test, and see who came closest.',
+  title = 'Guess the Speed | The Internet Speed Guessing Game for Families',
+  description = "A free family game: everyone guesses the Wi-Fi download and upload speed, then a real speed test reveals who came closest. Play on one screen or on everyone's phone.",
+  breadcrumb,
+  schema = [],
 } = Astro.props;
 const canonical = new URL(Astro.url.pathname, 'https://guessthespeed.com').toString();
 const beaconToken = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
@@ -36,17 +40,51 @@ const themeChoices = (Object.keys(themeHints) as ThemeId[]).map((id) => ({
   label: themes[id].label,
   ...themeHints[id],
 }));
-const appSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'WebApplication',
-  name: 'Guess the Speed',
-  url: 'https://guessthespeed.com/',
-  description,
-  applicationCategory: 'GameApplication',
-  operatingSystem: 'Any',
-  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
-  author: { '@type': 'Person', name: 'NaveenKumar Namachivayam', url: 'https://qainsights.com' },
-};
+const websiteId = 'https://guessthespeed.com/#website';
+const authorId = 'https://guessthespeed.com/#author';
+const graph: Record<string, unknown>[] = [
+  {
+    '@type': 'WebSite',
+    '@id': websiteId,
+    name: 'Guess the Speed',
+    url: 'https://guessthespeed.com/',
+    inLanguage: 'en',
+    publisher: { '@id': authorId },
+  },
+  {
+    '@type': 'Person',
+    '@id': authorId,
+    name: 'NaveenKumar Namachivayam',
+    url: 'https://qainsights.com',
+    sameAs: [
+      'https://qainsights.com',
+      'https://github.com/QAInsights',
+      'https://dosa.dev',
+      'https://iamspeed.dev',
+    ],
+  },
+];
+if (breadcrumb && Astro.url.pathname !== '/') {
+  graph.push({
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Home',
+        item: 'https://guessthespeed.com/',
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: breadcrumb,
+        item: canonical,
+      },
+    ],
+  });
+}
+graph.push(...schema);
+const graphSchema = { '@context': 'https://schema.org', '@graph': graph };
 ---
 
 <!doctype html>
@@ -117,7 +155,7 @@ const appSchema = {
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content="https://guessthespeed.com/og.png" />
     <title>{title}</title>
-    <script type="application/ld+json" set:html={JSON.stringify(appSchema)}></script>
+    <script type="application/ld+json" set:html={JSON.stringify(graphSchema)}></script>
     {beaconToken && (
       <script
         defer

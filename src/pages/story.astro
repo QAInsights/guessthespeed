@@ -9,6 +9,7 @@ const articleSchema = {
     'It started on a lazy evening with a TV, a speed test app and two kids who would not stop guessing. This is how that little ritual turned into guessthespeed.com.',
   author: {
     '@type': 'Person',
+    '@id': 'https://guessthespeed.com/#author',
     name: 'NaveenKumar Namachivayam',
     url: 'https://qainsights.com',
   },
@@ -25,6 +26,7 @@ const articleSchema = {
 <Base
   title="The story behind Guess the Speed"
   description="How a living-room speed test on the TV, two kids who always guess right and a dad who loses on purpose became guessthespeed.com."
+  breadcrumb="Our story"
 >
   <Fragment slot="head">
     <script type="application/ld+json" set:html={JSON.stringify(articleSchema)}></script>

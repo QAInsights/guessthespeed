@@ -2,6 +2,14 @@
 
 > A family game-night app where everyone guesses download and upload speed before a real internet speed test.
 
+## Key facts
+- The game is free and does not require accounts or use cookies.
+- It runs a real speed test in your browser against Cloudflare's network.
+- Play with one or more players on one screen; room-code games support up to 12 players.
+- Play together on one screen or use room codes on separate phones. The room server hides guesses from other players until the result is ready.
+- Place scoring awards 3 points for first, 2 for second, and 1 for third. Each download or upload guess within 5% earns one spot-on bonus point, while place points require an average miss of 50% or less.
+- Single-device game data stays in that browser. Multiplayer rooms are deleted after six hours without activity.
+
 ## Pages
 - [Play Guess the Speed](https://guessthespeed.com/)
 - [Our story](https://guessthespeed.com/story/)
