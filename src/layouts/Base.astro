@@ -4,6 +4,7 @@ import '@fontsource-variable/figtree';
 import { Icon } from 'astro-icon/components';
 import '../styles/global.css';
 import Footer from '../components/Footer.astro';
+import { themes, type ThemeId } from '../lib/themes';
 
 interface Props {
   title?: string;
@@ -16,6 +17,25 @@ const {
 } = Astro.props;
 const canonical = new URL(Astro.url.pathname, 'https://guessthespeed.com').toString();
 const beaconToken = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
+const themeHints: Record<ThemeId, { emoji: string; hint: string }> = {
+  light: { emoji: '☀️', hint: 'Bright and bold' },
+  dark: { emoji: '🌙', hint: 'Night mode' },
+  halloween: { emoji: '🎃', hint: 'Oct 15 to 31' },
+  diwali: { emoji: '🪔', hint: 'Around Diwali' },
+  thanksgiving: { emoji: '🥧', hint: 'Late November' },
+  winter: { emoji: '❄️', hint: 'January' },
+  christmas: { emoji: '🎄', hint: 'Dec 1 to 26' },
+  newyear: { emoji: '🎉', hint: 'Dec 27 to Jan 2' },
+  pongal: { emoji: '🌾', hint: 'Jan 13 to 17' },
+  valentines: { emoji: '💌', hint: 'Feb 7 to 14' },
+  holi: { emoji: '🎨', hint: 'Around Holi' },
+  easter: { emoji: '🐣', hint: 'Easter week' },
+};
+const themeChoices = (Object.keys(themeHints) as ThemeId[]).map((id) => ({
+  id,
+  label: themes[id].label,
+  ...themeHints[id],
+}));
 const appSchema = {
   '@context': 'https://schema.org',
   '@type': 'WebApplication',
@@ -94,22 +114,28 @@ const appSchema = {
         <b>guess the speed</b>
       </a>
       <div class="ctrls">
-        <label class="sr" for="theme-select">Theme</label>
-        <select id="theme-select" class="ctrl theme-select" data-theme-select aria-label="Choose a theme">
-          <option value="auto">Auto (by date)</option>
-          <option value="light">Light</option>
-          <option value="dark">Dark</option>
-          <option value="halloween">Halloween</option>
-          <option value="diwali">Diwali</option>
-          <option value="thanksgiving">Thanksgiving</option>
-          <option value="winter">Winter</option>
-          <option value="christmas">Christmas</option>
-          <option value="newyear">New Year</option>
-          <option value="pongal">Pongal</option>
-          <option value="valentines">Valentine’s Day</option>
-          <option value="holi">Holi</option>
-          <option value="easter">Easter</option>
-        </select>
+        <div class="theme-picker" data-theme-picker>
+          <button class="ctrl theme-trigger" type="button" data-theme-trigger aria-haspopup="listbox" aria-expanded="false" aria-controls="theme-menu" aria-label="Choose a theme">
+            <span class="theme-dot" aria-hidden="true"></span>
+            <span class="theme-trigger-label" data-theme-label>Auto (by date)</span>
+            <Icon name="ph:caret-down-bold" class="theme-caret" aria-hidden="true" />
+          </button>
+          <div class="theme-menu" id="theme-menu" data-theme-menu hidden>
+            <p class="theme-menu-title" id="theme-menu-title">Pick a theme</p>
+            <div class="theme-grid" role="listbox" aria-labelledby="theme-menu-title" data-theme-list>
+              <button class="theme-option" type="button" role="option" aria-selected="false" tabindex="-1" data-theme-option="auto" data-theme="light">
+                <span class="theme-swatch" aria-hidden="true">📅</span>
+                <span class="theme-option-text"><b>Auto (by date)</b><small data-theme-auto-hint>Follows the calendar</small></span>
+              </button>
+              {themeChoices.map(({ id, label, emoji, hint }) => (
+                <button class="theme-option" type="button" role="option" aria-selected="false" tabindex="-1" data-theme-option={id} data-theme={id}>
+                  <span class="theme-swatch" aria-hidden="true">{emoji}</span>
+                  <span class="theme-option-text"><b>{label}</b><small>{hint}</small></span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
         <button class="ctrl icon-btn" type="button" data-sound-toggle aria-label="Toggle sound" aria-pressed="true">
           <span data-sound-on><Icon name="ph:speaker-high-fill" /></span>
           <span data-sound-off hidden><Icon name="ph:speaker-slash-fill" /></span>
