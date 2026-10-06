@@ -32,6 +32,15 @@ export interface Player {
   locked: boolean;
 }
 
+export const DEFAULT_PLAYERS: ReadonlyArray<
+  Pick<Player, "id" | "name" | "emoji" | "role">
+> = [
+  { id: "p-mom", name: "Mom", emoji: "👩", role: "Mom" },
+  { id: "p-dad", name: "Dad", emoji: "👨", role: "Dad" },
+  { id: "p-big-sis", name: "Big Sis", emoji: "👧", role: "Sister" },
+  { id: "p-little-sis", name: "Little Sis", emoji: "👧", role: "Sister" },
+];
+
 export interface GameSettings {
   rounds: number | "endless";
   tieMode: TieMode;
@@ -62,7 +71,12 @@ export const STORAGE_KEY = "gts:v1";
 
 export function initialGameState(): GameState {
   return {
-    players: [],
+    players: DEFAULT_PLAYERS.map((player) => ({
+      ...player,
+      score: 0,
+      guess: { down: null, up: null },
+      locked: false,
+    })),
     settings: { rounds: 3, tieMode: "share", themeMode: "auto", sound: true },
     round: 1,
     history: [],
@@ -95,6 +109,23 @@ export function addPlayer(
         locked: false,
       },
     ],
+  };
+}
+
+export function updatePlayer(
+  state: GameState,
+  id: string,
+  details: Pick<Player, "name" | "emoji" | "role">,
+): GameState {
+  const name = details.name.trim().slice(0, 16);
+  if (!name || !state.players.some((player) => player.id === id)) return state;
+  return {
+    ...state,
+    players: state.players.map((player) =>
+      player.id === id
+        ? { ...player, name, emoji: details.emoji, role: details.role }
+        : player,
+    ),
   };
 }
 
