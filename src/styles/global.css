@@ -809,6 +809,7 @@ footer {
 }
 
 .p-table-wrap {
+  position: relative;
   grid-column: 1 / -1;
   overflow-x: auto;
   border: 2.5px solid var(--ink);
