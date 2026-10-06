@@ -1,0 +1,68 @@
+---
+import Base from '../layouts/Base.astro';
+
+const articleSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  headline: 'How a living-room speed test became a family game',
+  description:
+    'It started on a lazy evening with a TV, a speed test app and two kids who would not stop guessing. This is how that little ritual turned into guessthespeed.com.',
+  author: {
+    '@type': 'Person',
+    name: 'NaveenKumar Namachivayam',
+    url: 'https://qainsights.com',
+  },
+  publisher: {
+    '@type': 'Organization',
+    name: 'Guess the Speed',
+    url: 'https://guessthespeed.com',
+  },
+  datePublished: '2026-10-06',
+  mainEntityOfPage: 'https://guessthespeed.com/story/',
+};
+---
+
+<Base
+  title="The story behind Guess the Speed"
+  description="How a living-room speed test on the TV, two kids who always guess right and a dad who loses on purpose became guessthespeed.com."
+>
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(articleSchema)}></script>
+  </Fragment>
+  <main class="wrap content-page">
+    <span class="round-banner">Our story</span>
+    <h1>How a living-room speed test became a family game</h1>
+    <p class="lede">It started on a lazy evening with a TV, a speed test app and two kids who would not stop guessing. This is how that little ritual turned into guessthespeed.com.</p>
+    <article class="content-card stk">
+      <h2>It started on the TV</h2>
+      <p>I have spent most of my career in performance testing. Throughput, latency, percentiles, the works. So naturally, at home, the Speedtest app runs on our TV more often than it should. Is the Wi-Fi slow, or is it just the streaming app? Let me run a quick test.</p>
+      <p>One evening my kids were watching the needle swing, and one of them asked, "Appa, how fast will it go this time?" I said, "Make a guess." They did. Then the other one guessed. Then they looked at me and said, "Your turn."</p>
+      <p>That was the first round. We did not know it yet, but a game had just been born.</p>
+
+      <h2>The kids get it right. Every. Single. Time.</h2>
+      <p>Here is the thing. My kids are scary good at this. They watch the needle like hawks, they remember the last few runs, and they somehow know when the router is in a good mood. Their guesses land close almost every time.</p>
+      <p>Mine? Mine are a disaster. If the connection does 500 Mbps, I confidently say 80. If it does 120, I say 900. I miss by a mile, round after round.</p>
+      <p>Okay, I will let you in on a secret. I lose on purpose. :) Watching their faces when the needle stops near their number, and then the victory dance when Appa is dead last again, is the best part of the evening. Nobody has figured it out yet. Please do not tell them.</p>
+
+      <h2>Why a website?</h2>
+      <p>After a few months of this, the game had rules. Everyone says their number before the test starts, nobody can change it once the needle moves, and the closest guess wins. We kept score on paper, then on a phone note, then we argued about who said what first.</p>
+      <p>I wanted a version where guesses stay hidden until the test finishes, the scores add up across rounds, and the screen celebrates the winner properly. Something that works on the TV, a laptop or a phone, with no app to install and no account to create. So I built guessthespeed.com.</p>
+      <p>It runs a real speed test against Cloudflare's network, the same kind of test you would run anywhere else, and wraps a family game around it. Themes for Diwali, Halloween, Christmas and more, silly sound effects you can switch off, and a scoreboard that remembers who is winning.</p>
+
+      <h2>Built by a performance tester, played by kids</h2>
+      <p>Under the hood, it is the same thinking I use at work. Ramp up the file sizes so fast connections get measured properly. Take the 90th percentile so one bad sample does not ruin the result. Show ping and jitter, because latency matters as much as bandwidth. If you are curious, the{' '}
+        <a href="/how-it-works/">How it works page</a> walks through all of it.</p>
+      <p>But on game night, nobody cares about percentiles. They care about who guessed closest, and whether Dad lost again.</p>
+
+      <h2>Your turn</h2>
+      <p>If you have kids, nieces, nephews or a competitive group of friends, give it a try tonight. Put it on the big screen, let everyone lock in a guess, and press Start. And if you want to lose on purpose, your secret is safe with me.</p>
+      <div class="story-cta">
+        <a class="go" href="/">Start a game</a>
+        <a class="guess-button" href="/how-to-play/">How to play</a>
+      </div>
+      <p class="story-byline">Naveen (NaveenKumar Namachivayam), creator of Guess the Speed,{' '}
+        <a href="https://qainsights.com">QAInsights</a>
+      </p>
+    </article>
+  </main>
+</Base>
