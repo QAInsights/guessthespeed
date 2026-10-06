@@ -576,6 +576,10 @@ if (isRoom) {
   $<HTMLButtonElement>("[data-close-room-qr]")?.addEventListener("click", () =>
     $<HTMLDialogElement>("[data-room-qr-dialog]")?.close(),
   );
+  $<HTMLButtonElement>("[data-close-room-ended]")?.addEventListener(
+    "click",
+    () => $<HTMLDialogElement>("[data-room-ended-dialog]")?.close(),
+  );
   $<HTMLButtonElement>("[data-copy-room-link]")?.addEventListener(
     "click",
     () => void copyRoomLink(),
