@@ -1111,7 +1111,7 @@ html[data-dev="1"] .intro .play-stat {
 .gauge-fill {
   fill: none;
   stroke: var(--accent);
-  stroke-dasharray: 100;
+  stroke-dasharray: 100 101;
   stroke-dashoffset: calc(100 - 100 * var(--p, 0));
   stroke-linecap: round;
   stroke-width: 30;
@@ -3376,6 +3376,8 @@ html[data-dev="1"] .dev-console {
     height: 100%;
     overflow-x: hidden;
     overflow-y: auto;
+    padding-block-start: 12px;
+    padding-inline-end: 14px;
     overscroll-behavior: contain;
     scrollbar-gutter: stable;
   }
