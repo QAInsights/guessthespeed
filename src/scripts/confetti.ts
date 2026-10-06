@@ -1,8 +1,6 @@
 import { confettiPieces } from "../lib/confetti";
 import { isThemeId, themes } from "../lib/themes";
 
-const themeColorProperties = ["--accent", "--on-accent", "--soft", "--muted"];
-
 export function burstConfetti(container: HTMLElement): void {
   const themeId = document.documentElement.dataset.theme;
   const activeTheme =
@@ -10,11 +8,16 @@ export function burstConfetti(container: HTMLElement): void {
   const computedStyle = getComputedStyle(document.documentElement);
   const colors = [
     ...new Set(
-      themeColorProperties
-        .map((property) => computedStyle.getPropertyValue(property).trim())
-        .filter(Boolean),
+      [
+        computedStyle.getPropertyValue("--accent").trim(),
+        "#FFD23F",
+        "#2EC4B6",
+        "#FF5D8F",
+        "#3A86FF",
+        "#8AC926",
+      ].filter(Boolean),
     ),
-  ].slice(0, 4);
+  ].slice(0, 6);
   const emoji = themes[activeTheme].fx ?? [];
   const pieces = confettiPieces(
     window.innerWidth < 600 ? 36 : 70,
