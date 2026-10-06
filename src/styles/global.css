@@ -1070,6 +1070,18 @@ html[data-dev="1"] .intro .play-stat {
   transform: rotate(-1deg);
 }
 
+.intro .play-stat a,
+.story-stat a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.intro .play-stat a:hover,
+.story-stat a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .round {
   display: inline-flex;
   align-items: center;
