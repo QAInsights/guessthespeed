@@ -68,6 +68,16 @@ const roleChoices = ROLES;
         <strong data-room-code></strong>
       </div>
       <div class="room-bar-actions">
+        <div class="room-tester-picker" data-room-tester-control hidden>
+          <button class="guess-button room-tester-trigger" type="button" data-room-tester-trigger aria-label="Who runs the test?" aria-haspopup="listbox" aria-expanded="false" aria-controls="room-tester-menu">
+            <span>Who runs the test?</span>
+            <strong data-room-tester-value>This screen</strong>
+            <Icon name="ph:caret-down-bold" aria-hidden="true" />
+          </button>
+          <div class="room-tester-menu" id="room-tester-menu" data-room-tester-menu role="listbox" aria-label="Who runs the test?" hidden></div>
+        </div>
+        <span class="room-tester-chip" data-room-tester-chip hidden></span>
+        <button class="guess-button room-stop-test" type="button" data-room-stop-test hidden>Stop test</button>
         <button class="guess-button" type="button" data-show-room-qr>Show QR</button>
         <button class="guess-button" type="button" data-copy-room-link>Copy link</button>
         <span class="room-connection" data-room-connection aria-live="polite">Connecting...</span>

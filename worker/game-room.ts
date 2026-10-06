@@ -1,6 +1,7 @@
 import { DurableObject } from "cloudflare:workers";
 import {
   applyAction,
+  canRunTest,
   createRoom,
   ROOM_TTL_MS,
   viewFor,
@@ -84,7 +85,7 @@ export class GameRoom extends DurableObject<Env> {
       return;
     }
     if (parsed.type === "progress") {
-      this.relayProgress(socket, attachment, parsed);
+      await this.relayProgress(socket, attachment, parsed);
       return;
     }
 
@@ -215,13 +216,18 @@ export class GameRoom extends DurableObject<Env> {
     this.sendState(socket, room, attachment);
   }
 
-  private relayProgress(
+  private async relayProgress(
     sender: WebSocket,
     attachment: SocketAttachment,
     message: Record<string, unknown>,
-  ): void {
-    if (!attachment.isHost) {
-      sendError(sender, "Only the host can share test progress.");
+  ): Promise<void> {
+    const room = await this.loadRoom();
+    if (!room) {
+      sendError(sender, "This room has ended.");
+      return;
+    }
+    if (!canRunTest(room, attachment.clientId, attachment.isHost)) {
+      sendError(sender, "Only the assigned tester can share test progress.");
       return;
     }
     const now = Date.now();

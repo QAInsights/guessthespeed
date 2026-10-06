@@ -76,6 +76,10 @@ export function isRoomHost(): boolean {
   return latestView?.isHost ?? false;
 }
 
+export function canRunRoomTest(): boolean {
+  return latestView?.canRunTest ?? false;
+}
+
 export function sendRoomAction(action: ClientAction): boolean {
   if (!socket || socket.readyState !== WebSocket.OPEN) {
     showRoomError("You are reconnecting. Try again in a moment.");
@@ -86,7 +90,11 @@ export function sendRoomAction(action: ClientAction): boolean {
 }
 
 export function sendRoomProgress(progress: Omit<RoomProgress, "type">): void {
-  if (!latestView?.isHost || !socket || socket.readyState !== WebSocket.OPEN)
+  if (
+    !latestView?.canRunTest ||
+    !socket ||
+    socket.readyState !== WebSocket.OPEN
+  )
     return;
   socket.send(JSON.stringify({ type: "progress", ...progress }));
 }
@@ -120,6 +128,108 @@ function showRoomError(message: string): void {
 function setConnectionStatus(status: string): void {
   const target = $<HTMLElement>("[data-room-connection]");
   if (target) target.textContent = status;
+}
+
+function roomTesterOptions(): HTMLButtonElement[] {
+  return Array.from(
+    document.querySelectorAll<HTMLButtonElement>(
+      "[data-room-tester-menu] [role='option']",
+    ),
+  );
+}
+
+function closeRoomTesterMenu(returnFocus = false): void {
+  const trigger = $<HTMLButtonElement>("[data-room-tester-trigger]");
+  const menu = $<HTMLDivElement>("[data-room-tester-menu]");
+  if (!trigger || !menu || menu.hidden) return;
+  menu.hidden = true;
+  trigger.setAttribute("aria-expanded", "false");
+  if (returnFocus && !trigger.disabled) trigger.focus();
+}
+
+function focusRoomTesterOption(index: number): void {
+  const options = roomTesterOptions();
+  if (!options.length) return;
+  const option = options[(index + options.length) % options.length];
+  options.forEach((item) => {
+    item.tabIndex = item === option ? 0 : -1;
+  });
+  option.focus();
+}
+
+function updateRoomTesterControls(view: RoomView): void {
+  const picker = $<HTMLDivElement>("[data-room-tester-control]");
+  const trigger = $<HTMLButtonElement>("[data-room-tester-trigger]");
+  const value = $<HTMLElement>("[data-room-tester-value]");
+  const menu = $<HTMLDivElement>("[data-room-tester-menu]");
+  const chip = $<HTMLElement>("[data-room-tester-chip]");
+  const stopButton = $<HTMLButtonElement>("[data-room-stop-test]");
+  if (!picker || !trigger || !value || !menu || !chip || !stopButton) return;
+
+  picker.hidden = !view.isHost;
+  chip.hidden = view.isHost;
+  stopButton.hidden =
+    !view.isHost || view.canRunTest || view.phase !== "testing";
+  if (view.phase === "testing") closeRoomTesterMenu();
+  trigger.disabled = view.phase === "testing";
+
+  const tester =
+    view.testerId === null
+      ? undefined
+      : view.players.find((player) => player.id === view.testerId);
+  const selectedLabel = tester
+    ? `${tester.emoji} ${tester.name}`
+    : "This screen";
+  value.textContent = selectedLabel;
+
+  if (view.isHost) {
+    const options = [
+      { id: null, emoji: "🖥️", name: "This screen" },
+      ...view.players
+        .filter((player) => !player.mine)
+        .map((player) => ({
+          id: player.id,
+          emoji: player.emoji,
+          name: player.name,
+        })),
+    ];
+    menu.replaceChildren(
+      ...options.map((option) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "room-tester-option";
+        button.setAttribute("role", "option");
+        button.dataset.testerId = option.id ?? "";
+        const selected = (view.testerId ?? "") === (option.id ?? "");
+        button.setAttribute("aria-selected", String(selected));
+        button.tabIndex = selected ? 0 : -1;
+        const face = document.createElement("span");
+        face.className = "room-tester-option-face";
+        face.setAttribute("aria-hidden", "true");
+        face.textContent = option.emoji;
+        const name = document.createElement("span");
+        name.className = "room-tester-option-name";
+        name.textContent = option.name;
+        button.append(face, name);
+        button.addEventListener("click", () => {
+          if (
+            sendRoomAction({
+              type: "setTester",
+              id: option.id,
+            })
+          )
+            closeRoomTesterMenu(true);
+        });
+        return button;
+      }),
+    );
+  } else if (view.canRunTest) {
+    chip.textContent = "Your phone runs the test";
+  } else if (!tester) {
+    chip.textContent = "Test runs on: This screen (host)";
+  } else {
+    chip.textContent = `Test runs on: ${tester.emoji} ${tester.name}`;
+  }
 }
 
 function showEndedRoom(): void {
@@ -189,6 +299,7 @@ function connect(): void {
     if (message.type === "state" && isRoomView(message.view)) {
       reconnectAttempt = 0;
       latestView = message.view;
+      updateRoomTesterControls(latestView);
       setConnectionStatus("Connected");
       if (
         !latestView.isHost &&
@@ -343,6 +454,8 @@ function isRoomView(value: unknown): value is RoomView {
     isRecord(value) &&
     typeof value.code === "string" &&
     typeof value.isHost === "boolean" &&
+    (value.testerId === null || typeof value.testerId === "string") &&
+    typeof value.canRunTest === "boolean" &&
     Array.isArray(value.players) &&
     value.players.every(
       (player) =>
@@ -375,6 +488,84 @@ if (isRoom) {
   const code = $<HTMLElement>("[data-room-code]");
   if (bar) bar.hidden = false;
   if (code) code.textContent = roomCode?.split("").join(" ") ?? rawCode;
+  const testerTrigger = $<HTMLButtonElement>("[data-room-tester-trigger]");
+  const testerMenu = $<HTMLDivElement>("[data-room-tester-menu]");
+  testerTrigger?.addEventListener("click", () => {
+    if (!testerMenu || testerTrigger.disabled) return;
+    if (!testerMenu.hidden) {
+      closeRoomTesterMenu();
+      return;
+    }
+    const options = roomTesterOptions();
+    const selectedIndex = options.findIndex(
+      (option) =>
+        (option.dataset.testerId ?? "") === (latestView?.testerId ?? ""),
+    );
+    testerMenu.hidden = false;
+    testerTrigger.setAttribute("aria-expanded", "true");
+    focusRoomTesterOption(Math.max(0, selectedIndex));
+  });
+  testerTrigger?.addEventListener("keydown", (event) => {
+    if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) return;
+    event.preventDefault();
+    if (!testerMenu || testerTrigger.disabled) return;
+    const options = roomTesterOptions();
+    if (!options.length) return;
+    testerMenu.hidden = false;
+    testerTrigger.setAttribute("aria-expanded", "true");
+    if (event.key === "Home") focusRoomTesterOption(0);
+    else if (event.key === "End") focusRoomTesterOption(options.length - 1);
+    else {
+      const selectedIndex = options.findIndex(
+        (option) =>
+          (option.dataset.testerId ?? "") === (latestView?.testerId ?? ""),
+      );
+      focusRoomTesterOption(Math.max(0, selectedIndex));
+    }
+  });
+  testerMenu?.addEventListener("keydown", (event) => {
+    const options = roomTesterOptions();
+    const activeIndex = options.indexOf(
+      document.activeElement as HTMLButtonElement,
+    );
+    if (event.key === "Escape") {
+      event.preventDefault();
+      closeRoomTesterMenu(true);
+    } else if (event.key === "Tab") {
+      closeRoomTesterMenu();
+    } else if (event.key === "ArrowDown") {
+      event.preventDefault();
+      focusRoomTesterOption(activeIndex + 1);
+    } else if (event.key === "ArrowUp") {
+      event.preventDefault();
+      focusRoomTesterOption(activeIndex - 1);
+    } else if (event.key === "Home") {
+      event.preventDefault();
+      focusRoomTesterOption(0);
+    } else if (event.key === "End") {
+      event.preventDefault();
+      focusRoomTesterOption(options.length - 1);
+    } else if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      options[activeIndex]?.click();
+    }
+  });
+  document.addEventListener("pointerdown", (event) => {
+    const picker = $<HTMLElement>("[data-room-tester-control]");
+    if (
+      testerMenu &&
+      !testerMenu.hidden &&
+      picker &&
+      !picker.contains(event.target as Node)
+    )
+      closeRoomTesterMenu();
+  });
+  $<HTMLButtonElement>("[data-room-stop-test]")?.addEventListener(
+    "click",
+    () => {
+      sendRoomAction({ type: "abort" });
+    },
+  );
   $<HTMLButtonElement>("[data-show-room-qr]")?.addEventListener("click", () => {
     renderQrCode();
     $<HTMLDialogElement>("[data-room-qr-dialog]")?.showModal();

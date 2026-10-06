@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { applyResult, initialGameState, type GameState } from "./game";
 import {
   applyAction,
+  canRunTest,
   createRoom,
   generateRoomCode,
   MAX_PLAYERS,
@@ -96,6 +97,7 @@ describe("room codes", () => {
     expect(room).toMatchObject({
       code: "BCDFGH",
       hostToken: "secret-host-token",
+      testerId: null,
       updatedAt: 42,
       game: {
         players: [],
@@ -246,6 +248,139 @@ describe("room actions and views", () => {
       id: playerByOwner(room, firstId).id,
     });
     expect(hostRemoved.game.players).toHaveLength(room.game.players.length - 1);
+  });
+
+  it("assigns and clears a tester only when the host can change room settings", () => {
+    let room = joinedRoom();
+    const tester = playerByOwner(room, firstId);
+    expect(
+      applyAction(
+        room,
+        firstId,
+        false,
+        { type: "setTester", id: tester.id },
+        600,
+      ),
+    ).toEqual({ error: "Only the host can choose the tester." });
+    expect(
+      applyAction(
+        room,
+        hostId,
+        true,
+        { type: "setTester", id: "missing-player" },
+        600,
+      ),
+    ).toEqual({ error: "The selected tester is not in this room." });
+
+    room = act(room, hostId, true, { type: "setTester", id: tester.id });
+    expect(room.testerId).toBe(tester.id);
+    room = act(room, hostId, true, { type: "setTester", id: null });
+    expect(room.testerId).toBeNull();
+
+    room = withGuess(room, firstId, 40, 12);
+    room = act(room, hostId, true, { type: "setTester", id: tester.id });
+    room = act(room, firstId, false, { type: "start" });
+    expect(
+      applyAction(room, hostId, true, { type: "setTester", id: null }, 700),
+    ).toEqual({ error: "The tester cannot change during a test." });
+  });
+
+  it("lets only the assigned player run a test while keeping a host abort safety net", () => {
+    let room = joinedRoom();
+    const tester = playerByOwner(room, firstId);
+    room = withGuess(room, firstId, 100, 20);
+    room = act(room, hostId, true, { type: "setTester", id: tester.id });
+
+    expect(applyAction(room, hostId, true, { type: "start" }, 700)).toEqual({
+      error: "Only the assigned tester can start the test.",
+    });
+    expect(
+      applyAction(room, secondId, false, { type: "start" }, 700),
+    ).toHaveProperty("error");
+
+    room = act(room, firstId, false, { type: "start" });
+    expect(room.game.phase).toBe("testing");
+    expect(
+      applyAction(
+        room,
+        secondId,
+        false,
+        { type: "result", down: 100, up: 20 },
+        800,
+      ),
+    ).toHaveProperty("error");
+    expect(
+      applyAction(room, secondId, false, { type: "abort" }, 800),
+    ).toHaveProperty("error");
+
+    const hostAbort = applyAction(room, hostId, true, { type: "abort" }, 800);
+    expect("room" in hostAbort && hostAbort.room.game.phase).toBe("guessing");
+    expect(
+      applyAction(
+        room,
+        hostId,
+        true,
+        { type: "result", down: 100, up: 20 },
+        800,
+      ),
+    ).toHaveProperty("error");
+
+    room = act(room, firstId, false, { type: "abort" });
+    expect(room.game.phase).toBe("guessing");
+    room = act(room, firstId, false, { type: "start" });
+    room = act(room, firstId, false, {
+      type: "result",
+      down: 100,
+      up: 20,
+    });
+    expect(room.game.phase).toBe("results");
+  });
+
+  it("reports tester permissions to each room view and treats missing stored values as host testing", () => {
+    let room = joinedRoom();
+    const tester = playerByOwner(room, firstId);
+
+    expect(canRunTest(room, hostId, true)).toBe(true);
+    expect(canRunTest(room, firstId, false)).toBe(false);
+    expect(viewFor(room, hostId, true)).toMatchObject({
+      testerId: null,
+      canRunTest: true,
+    });
+
+    room = act(room, hostId, true, { type: "setTester", id: tester.id });
+    expect(canRunTest(room, hostId, true)).toBe(false);
+    expect(canRunTest(room, firstId, false)).toBe(true);
+    expect(canRunTest(room, secondId, false)).toBe(false);
+    expect(viewFor(room, hostId, true)).toMatchObject({
+      testerId: tester.id,
+      canRunTest: false,
+    });
+    expect(viewFor(room, firstId, false)).toMatchObject({
+      testerId: tester.id,
+      canRunTest: true,
+    });
+    expect(viewFor(room, secondId, false)).toMatchObject({
+      testerId: tester.id,
+      canRunTest: false,
+    });
+
+    const { testerId: _testerId, ...storedLegacyRoom } = room;
+    const legacyRoom = storedLegacyRoom as Room;
+    expect(canRunTest(legacyRoom, hostId, true)).toBe(true);
+    expect(canRunTest(legacyRoom, firstId, false)).toBe(false);
+    expect(viewFor(legacyRoom, hostId, true)).toMatchObject({
+      testerId: null,
+      canRunTest: true,
+    });
+  });
+
+  it("resets tester assignment when the tester's player is removed", () => {
+    let room = joinedRoom();
+    const tester = playerByOwner(room, firstId);
+    room = act(room, hostId, true, { type: "setTester", id: tester.id });
+    room = act(room, firstId, false, { type: "remove", id: tester.id });
+    expect(room.testerId).toBeNull();
+    expect(canRunTest(room, hostId, true)).toBe(true);
   });
 
   it("limits non-hosts to one player and all rooms to twelve players", () => {

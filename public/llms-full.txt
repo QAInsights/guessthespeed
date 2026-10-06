@@ -50,7 +50,7 @@ Developer mode turns the home page into a raw Cloudflare speed test diagnostics 
 
 ## Play on separate phones
 
-Create a room on the home page and share its six-letter room code or QR code. Each player joins on a separate phone, enters a private guess, and follows the host-run speed test and shared scores. Guesses remain hidden from other players until the result is ready.
+Create a room on the home page and share its six-letter room code or QR code. Each player joins on a separate phone, enters a private guess, and follows the shared live gauge and scores. Guesses remain hidden from other players until the result is ready. The host can assign the test to a player’s phone, so everyone else can watch that phone’s live gauge. The host can stop a test at any time.
 
 Room game data, including player names, face choices, guesses, and scores, is stored on Cloudflare and deleted after six hours without activity. Rooms require no accounts and use no cookies.
 

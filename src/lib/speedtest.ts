@@ -42,6 +42,7 @@ export interface SpeedDetails {
 
 export interface SpeedTestOptions {
   onDetails?: (details: SpeedDetails) => void;
+  signal?: AbortSignal;
 }
 
 export const SPEED_TEST_MEASUREMENTS = [
@@ -75,7 +76,45 @@ const measurements = SPEED_TEST_MEASUREMENTS.map((measurement) => ({
   ...measurement,
 }));
 
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+export class SpeedTestCancelledError extends Error {
+  constructor() {
+    super("The speed test was cancelled.");
+    this.name = "SpeedTestCancelledError";
+  }
+}
+
+const delay = (ms: number, signal?: AbortSignal) =>
+  new Promise<void>((resolve, reject) => {
+    if (signal?.aborted) {
+      reject(new SpeedTestCancelledError());
+      return;
+    }
+    let timer: ReturnType<typeof setTimeout>;
+    const onAbort = () => {
+      clearTimeout(timer);
+      signal?.removeEventListener("abort", onAbort);
+      reject(new SpeedTestCancelledError());
+    };
+    timer = setTimeout(() => {
+      signal?.removeEventListener("abort", onAbort);
+      resolve();
+    }, ms);
+    signal?.addEventListener("abort", onAbort, { once: true });
+  });
+
+const waitForAbort = (signal?: AbortSignal) =>
+  new Promise<never>((_resolve, reject) => {
+    if (!signal) return;
+    if (signal.aborted) {
+      reject(new SpeedTestCancelledError());
+      return;
+    }
+    signal.addEventListener(
+      "abort",
+      () => reject(new SpeedTestCancelledError()),
+      { once: true },
+    );
+  });
 
 export class StalledError extends Error {
   constructor() {
@@ -105,6 +144,7 @@ async function runMock(
   onUpdate: (update: LiveUpdate) => void,
   mode: "1" | "slow" | "stall",
   onDetails: SpeedTestOptions["onDetails"],
+  signal: AbortSignal | undefined,
   startedAt: number,
 ): Promise<SpeedResult> {
   const ping = 9 + Math.random() * 27;
@@ -215,7 +255,7 @@ async function runMock(
     pingMs: ping,
   });
   emitDetails();
-  await delay(650);
+  await delay(650, signal);
   let lastDownloadStep = -1;
   for (let i = 1; i <= 27; i += 1) {
     const stepIndex = Math.min(
@@ -232,8 +272,8 @@ async function runMock(
       });
       lastDownloadStep = stepIndex;
     }
-    if (mode === "slow" && i === 14) await delay(10000);
-    await delay(100);
+    if (mode === "slow" && i === 14) await delay(10000, signal);
+    await delay(100, signal);
     onUpdate({
       phase: "down",
       step: current.step,
@@ -242,7 +282,7 @@ async function runMock(
       mbps: down * (1 - Math.pow(1 - i / 27, 2)),
     });
     addPoint("down", current.bytes, down * (1 - Math.pow(1 - i / 27, 2)), i);
-    if (mode === "stall" && i === 4) await new Promise<SpeedResult>(() => {});
+    if (mode === "stall" && i === 4) await waitForAbort(signal);
   }
   let lastUploadStep = -1;
   for (let i = 1; i <= 27; i += 1) {
@@ -260,7 +300,7 @@ async function runMock(
       });
       lastUploadStep = stepIndex;
     }
-    await delay(100);
+    await delay(100, signal);
     onUpdate({
       phase: "up",
       step: current.step,
@@ -290,7 +330,16 @@ export function runSpeedTest(
       if (settled) return;
       settled = true;
       clearWatchdog();
+      options.signal?.removeEventListener("abort", abort);
       callback();
+    };
+    const abort = () => {
+      settle(() => {
+        try {
+          test?.pause();
+        } catch {}
+        reject(new SpeedTestCancelledError());
+      });
     };
     const touch = () => {
       if (!settled) lastActivity = Date.now();
@@ -303,21 +352,31 @@ export function runSpeedTest(
 
     watchdog = setInterval(() => {
       if (settled || Date.now() - lastActivity < STALL_TIMEOUT_MS) return;
-      settled = true;
-      clearWatchdog();
-      try {
-        test?.pause();
-      } finally {
+      settle(() => {
+        try {
+          test?.pause();
+        } catch {}
         reject(new StalledError());
-      }
+      });
     }, 1000);
+    options.signal?.addEventListener("abort", abort, { once: true });
+    if (options.signal?.aborted) {
+      abort();
+      return;
+    }
 
     const mockMode =
       typeof window === "undefined"
         ? null
         : new URLSearchParams(window.location.search).get("mock");
     if (mockMode === "1" || mockMode === "slow" || mockMode === "stall") {
-      void runMock(emit, mockMode, options.onDetails, startedAt).then(
+      void runMock(
+        emit,
+        mockMode,
+        options.onDetails,
+        options.signal,
+        startedAt,
+      ).then(
         (result) => settle(() => resolve(result)),
         (error: unknown) =>
           settle(() =>
