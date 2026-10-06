@@ -3,6 +3,7 @@ import { readRoomLocalSettings, saveRoomLocalSettings } from "./room-settings";
 import { isThemeId, themes, themeForDate, type ThemeId } from "../lib/themes";
 import { playCue } from "../lib/sound";
 import type { RoomView } from "../lib/room";
+import { loadSession } from "../lib/classroom";
 
 const $ = <T extends Element>(selector: string): T =>
   document.querySelector(selector) as T;
@@ -37,6 +38,7 @@ const reduceMotion = window.matchMedia(
 ).matches;
 
 const roomMode = document.documentElement.dataset.room === "1";
+const classroomMode = loadSession() !== null;
 const initialGame = roomMode ? null : loadGame();
 let roomHost = false;
 let settings: GameSettings = roomMode
@@ -47,7 +49,8 @@ let settings: GameSettings = roomMode
     }
   : initialGame!.settings;
 let testing = initialGame?.phase === "testing";
-let devMode = !roomMode && document.documentElement.dataset.dev === "1";
+let devMode =
+  !roomMode && !classroomMode && document.documentElement.dataset.dev === "1";
 let tvMode = document.documentElement.dataset.tv === "1";
 let activeTheme: ThemeId = "light";
 devBadge.hidden = !devMode;
@@ -70,7 +73,7 @@ const coarsePointer = window.matchMedia("(pointer: coarse)").matches;
 
 function syncModeSwitch() {
   if (!modeSwitch) return;
-  modeSwitch.hidden = roomMode || tvMode;
+  modeSwitch.hidden = roomMode || classroomMode || tvMode;
   const selectedMode = devMode ? "dev" : "game";
   modeOptions.forEach((option) => {
     const selected = option.dataset.modeOption === selectedMode;
@@ -80,7 +83,7 @@ function syncModeSwitch() {
 }
 
 function setDevMode(enabled: boolean) {
-  if (roomMode) return;
+  if (roomMode || classroomMode) return;
   devMode = enabled;
   if (enabled) document.documentElement.dataset.dev = "1";
   else delete document.documentElement.dataset.dev;
