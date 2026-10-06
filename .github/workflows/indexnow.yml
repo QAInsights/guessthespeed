@@ -1,0 +1,38 @@
+name: IndexNow
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  submit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for Cloudflare deployment
+        run: sleep 180
+      - name: Submit sitemap URLs to IndexNow
+        shell: bash
+        env:
+          INDEXNOW_KEY: e16f4b4551247f6ffe0e0fd8df6654b2
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error \
+            https://guessthespeed.com/sitemap-0.xml \
+            --output /tmp/sitemap-0.xml
+          url_list="$(python -c 'import json, sys, xml.etree.ElementTree as ET; root = ET.parse(sys.stdin).getroot(); print(json.dumps([node.text.strip() for node in root.iter() if node.tag.endswith("loc") and node.text]))' < /tmp/sitemap-0.xml)"
+          payload="$(jq -n \
+            --arg host "guessthespeed.com" \
+            --arg key "$INDEXNOW_KEY" \
+            --arg keyLocation "https://guessthespeed.com/${INDEXNOW_KEY}.txt" \
+            --argjson urlList "$url_list" \
+            '{host: $host, key: $key, keyLocation: $keyLocation, urlList: $urlList}')"
+          status="$(curl --silent --show-error --output /dev/null \
+            --write-out '%{http_code}' \
+            --request POST https://api.indexnow.org/indexnow \
+            --header 'Content-Type: application/json; charset=utf-8' \
+            --data "$payload" || true)"
+          echo "IndexNow HTTP status: ${status:-curl failed}"
