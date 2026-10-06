@@ -8,7 +8,7 @@ const questions = [
   },
   {
     question: 'How are points scored?',
-    answer: 'The round awards 3 points for first place, 2 for second, and 1 for third. Players can also earn one bonus point for each speed guess within 5 percent of the actual result.',
+    answer: 'The round awards 3 points for first place, 2 for second, and 1 for third, but only to guesses with an average miss of 50 percent or less. Players can also earn one bonus point for each speed guess within 5 percent of the actual result.',
   },
   {
     question: 'How are ties handled?',
@@ -55,7 +55,7 @@ const faqSchema = {
       <h2>How is the score calculated?</h2>
       <p>Each speed miss is the absolute difference from the real result divided by that result. The download and upload misses are averaged. A missing one of the two guesses counts as a full miss for that speed.</p>
       <p><strong>Example:</strong> The test measures 100 Mbps download and 20 Mbps upload. A guess of 90 and 18 is 10% off on download and 10% off on upload, for a 10% average miss. A more accurate average ranks higher.</p>
-      <p>The round gives 3 points to first place, 2 to second, and 1 to third. A guess within 5% earns one spot-on bonus point for that speed, so a player can earn up to two bonus points.</p>
+      <p>The round gives 3 points to first place, 2 to second, and 1 to third. Place points only go to guesses that are 50% off or closer on average. If a guess misses by more, that player sits out the places for the round and the next closest player moves up, so playing solo still needs a decent guess to score. A guess within 5% earns one spot-on bonus point for that speed, so a player can earn up to two bonus points.</p>
 
       <h2>What happens when guesses tie?</h2>
       <p>The default setting shares the points. Two players tied for first both get 3 points, and the next player is third. You can switch to “Closest download breaks the tie” in settings. If their download misses also match, upload miss is the next tiebreak, then points are shared if they are still even.</p>

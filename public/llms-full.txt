@@ -15,7 +15,7 @@ For each metric, miss is the absolute difference between the guess and actual re
 
 For example, if the actual test is 100 Mbps download and 20 Mbps upload, a guess of 90 Mbps download and 18 Mbps upload misses each metric by 10 percent. The average miss is 10 percent.
 
-First place earns 3 points, second place earns 2, and third place earns 1. Places beyond third earn no place points. A guess within 5 percent of the actual result earns one spot-on bonus point for that metric. Players can earn two bonus points in a round.
+First place earns 3 points, second place earns 2, and third place earns 1. Only guesses with an average miss of 50 percent or less earn place points; players further off are skipped and the next closest player takes the place. Spot-on bonuses still apply. Places beyond third earn no place points. A guess within 5 percent of the actual result earns one spot-on bonus point for that metric. Players can earn two bonus points in a round.
 
 ## Ties and rounds
 

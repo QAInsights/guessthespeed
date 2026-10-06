@@ -5,6 +5,7 @@ const defaults: ScoringSettings = {
   tieMode: "share",
   placePoints: [3, 2, 1],
   spotOnPct: 0.05,
+  maxMissPct: 0.5,
 };
 const actual = { down: 100, up: 20 };
 const player = (id: string, down: number | null, up: number | null) => ({
@@ -25,6 +26,74 @@ describe("scoreRound", () => {
       [1, 3],
       [2, 2],
       [3, 1],
+    ]);
+  });
+
+  it("withholds place points from a solo guess over 50% average miss", () => {
+    const [score] = scoreRound(
+      [player("solo", 50, 50)],
+      { down: 557.7, up: 186.7 },
+      defaults,
+    );
+    expect(score).toMatchObject({
+      place: null,
+      placePoints: 0,
+      total: 0,
+    });
+  });
+
+  it("skips too-far guesses when assigning places", () => {
+    const scores = scoreRound(
+      [player("a", 100, 20), player("b", 30, 5), player("c", 60, 12)],
+      actual,
+      defaults,
+    );
+    expect(
+      scores.map(({ id, place, placePoints }) => [id, place, placePoints]),
+    ).toEqual([
+      ["a", 1, 3],
+      ["b", null, 0],
+      ["c", 2, 2],
+    ]);
+  });
+
+  it("keeps an exactly 50% average miss eligible", () => {
+    const [score] = scoreRound([player("half", 50, 10)], actual, defaults);
+    expect(score).toMatchObject({
+      place: 1,
+      placePoints: 3,
+      total: 3,
+    });
+  });
+
+  it("keeps spot-on bonuses for a too-far guess", () => {
+    const [score] = scoreRound([player("bonus", 100, 80)], actual, defaults);
+    expect(score).toMatchObject({
+      place: null,
+      placePoints: 0,
+      bonus: 1,
+      total: 1,
+    });
+  });
+
+  it("shares eligible ties without assigning places to too-far guesses", () => {
+    const scores = scoreRound(
+      [
+        player("one", 100, 20),
+        player("two", 100, 20),
+        player("three", 80, 16),
+        player("far", 0, 0),
+      ],
+      actual,
+      defaults,
+    );
+    expect(
+      scores.map(({ id, place, placePoints }) => [id, place, placePoints]),
+    ).toEqual([
+      ["one", 1, 3],
+      ["two", 1, 3],
+      ["three", 3, 1],
+      ["far", null, 0],
     ]);
   });
 
