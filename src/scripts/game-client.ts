@@ -1,11 +1,13 @@
 import {
   addPlayer,
   applyResult,
+  initialGameState,
   loadGame,
   lockGuess,
   newGame,
   nextRound,
   removePlayer,
+  unlockGuess,
   saveGame,
   updatePlayer,
   ROLES,
@@ -17,7 +19,31 @@ import { runSpeedTest, StalledError, type Phase } from "../lib/speedtest";
 import { phaseText, SLOW_HINT_MS } from "../lib/progress";
 import { themes, themeForDate, type ThemeId } from "../lib/themes";
 import { playCue } from "../lib/sound";
+import { isRoomMode, sendRoomAction, sendRoomProgress } from "./room-client";
+import { readRoomLocalSettings } from "./room-settings";
+import type { ClientAction, RoomView } from "../lib/room";
 
+type ClientPlayer = Player & { mine?: boolean };
+type ClientGameState = Omit<GameState, "players"> & {
+  players: ClientPlayer[];
+  isRoomHost?: boolean;
+};
+
+interface GameStore {
+  persist(state: ClientGameState): void;
+  send(action: ClientAction): boolean;
+}
+
+const roomMode = isRoomMode();
+const localStore: GameStore = {
+  persist: (current) => saveGame(current),
+  send: () => false,
+};
+const roomStore: GameStore = {
+  persist: () => {},
+  send: (action) => sendRoomAction(action),
+};
+const store = roomMode ? roomStore : localStore;
 const $ = <T extends Element>(
   selector: string,
   root: ParentNode = document,
@@ -38,7 +64,15 @@ const escapeHtml = (value: string) =>
         "'": "&#39;",
       })[char]!,
   );
-let state: GameState = loadGame();
+const emptyRoomGame = initialGameState();
+let state: ClientGameState = roomMode
+  ? {
+      ...emptyRoomGame,
+      players: [],
+      settings: { ...emptyRoomGame.settings, ...readRoomLocalSettings() },
+      isRoomHost: false,
+    }
+  : loadGame();
 let activePlayerId: string | null = null;
 let editingPlayerId: string | null = null;
 let gaugeValue = 0;
@@ -46,11 +80,18 @@ let gaugeTarget = 0;
 let gaugeReadoutValue: number | undefined;
 let animationFrame = 0;
 let runInProgress = false;
+let interruptedRoomTestRecoveryRequested = false;
 let activeTheme: ThemeId = "light";
 let lastSpeedPhase: Phase | null = null;
+let lastRoomProgressPhase: Phase | null = null;
 let latestPing: number | undefined;
-const isDevMode = () => document.documentElement.dataset.dev === "1";
+let roomElapsedTimer = 0;
+let roomStartedAt = 0;
+const isDevMode = () =>
+  !roomMode && document.documentElement.dataset.dev === "1";
 const isTesting = () => state.phase === "testing" || runInProgress;
+const isMine = (player: ClientPlayer) => !roomMode || player.mine === true;
+const isRoomHost = () => !roomMode || state.isRoomHost === true;
 const reduceMotion = window.matchMedia(
   "(prefers-reduced-motion: reduce)",
 ).matches;
@@ -66,13 +107,13 @@ const liveDot = $<HTMLSpanElement>("[data-live-dot]");
 const elapsedLabel = $<HTMLSpanElement>("[data-elapsed]");
 const slowHint = $<HTMLSpanElement>("[data-slow-hint]");
 
-if (state.phase === "testing") {
+if (!roomMode && state.phase === "testing") {
   state = { ...state, phase: "guessing" };
   saveGame(state);
 }
 
 function persist() {
-  saveGame(state);
+  store.persist(state);
 }
 
 function getResolvedTheme(): ThemeId {
@@ -166,7 +207,7 @@ function roleFor(player: Player) {
   return `<span class="p-emoji" aria-hidden="true">${escapeHtml(player.emoji)}</span><div><h3 class="p-name">${escapeHtml(player.name)}</h3><span class="p-role">${escapeHtml(player.role)}</span></div>`;
 }
 
-function renderPlayerCard(player: Player, index: number) {
+function renderPlayerCard(player: ClientPlayer, index: number) {
   const roundResult = state.history
     .at(-1)
     ?.scores.find((score) => score.id === player.id);
@@ -184,6 +225,9 @@ function renderPlayerCard(player: Player, index: number) {
           : "";
   const winnerClass = roundResult?.place === 1 && revealed ? "is-winner" : "";
   const locked = player.locked && !revealed;
+  const mine = isMine(player);
+  const canRemove = !roomMode || isRoomHost() || mine;
+  const concealed = roomMode && !mine && !revealed;
   const guessAction = revealed
     ? `<div class="p-results">
         <span>Download guess: ${player.guess.down === null ? "No guess" : `${player.guess.down.toLocaleString()} Mbps`}</span>
@@ -194,18 +238,20 @@ function renderPlayerCard(player: Player, index: number) {
         <span class="points-pill">${medal ? `${medal} ` : ""}${formatPointAward(roundResult?.total ?? 0)}</span>
         ${roundResult?.bonus ? `<span class="bonus-pill">Spot on! +${roundResult.bonus}</span>` : ""}
       </div>`
-    : locked
-      ? `<div class="p-actions"><button type="button" class="locked-pill" data-guess="${escapeHtml(player.id)}" ${isTesting() ? "disabled" : ""}><span aria-hidden="true">🔒</span>Locked in <small>Change</small></button></div>`
-      : `<div class="p-actions"><button type="button" class="guess-button" data-guess="${escapeHtml(player.id)}" ${isTesting() ? "disabled" : ""}>Guess</button></div>`;
+    : concealed
+      ? `<div class="p-actions"><span class="room-status-pill">${locked ? "🔒 Locked in" : "Thinking"}</span></div>`
+      : locked
+        ? `<div class="p-actions"><button type="button" class="locked-pill" data-guess="${escapeHtml(player.id)}" ${isTesting() ? "disabled" : ""}><span aria-hidden="true">🔒</span>Locked in <small>Change</small></button>${roomMode ? `<button class="room-unlock" type="button" data-unlock="${escapeHtml(player.id)}" ${isTesting() ? "disabled" : ""}>Unlock</button>` : ""}</div>`
+        : `<div class="p-actions"><button type="button" class="guess-button" data-guess="${escapeHtml(player.id)}" ${isTesting() ? "disabled" : ""}>Guess</button></div>`;
   return `<article class="p-card ${winnerClass}" style="--card-index:${index}">
-    <button class="p-edit" type="button" data-edit="${escapeHtml(player.id)}" aria-label="Edit ${escapeHtml(player.name)}" ${isTesting() ? "disabled" : ""}><span aria-hidden="true">✎</span></button>
-    <button class="p-rm" type="button" data-remove="${escapeHtml(player.id)}" aria-label="Remove ${escapeHtml(player.name)}" ${isTesting() ? "disabled" : ""}>×</button>
+    ${mine ? `<button class="p-edit" type="button" data-edit="${escapeHtml(player.id)}" aria-label="Edit ${escapeHtml(player.name)}" ${isTesting() ? "disabled" : ""}><span aria-hidden="true">✎</span></button>` : ""}
+    ${canRemove ? `<button class="p-rm" type="button" data-remove="${escapeHtml(player.id)}" aria-label="Remove ${escapeHtml(player.name)}" ${isTesting() ? "disabled" : ""}>×</button>` : ""}
     <div class="p-head">${roleFor(player)}<div class="p-score"><b>${player.score}</b><span>${player.score === 1 ? "pt" : "pts"}</span></div></div>
     ${guessAction}
   </article>`;
 }
 
-function renderPlayerTable(player: Player, index: number) {
+function renderPlayerTable(player: ClientPlayer, index: number) {
   const roundResult = state.history
     .at(-1)
     ?.scores.find((score) => score.id === player.id);
@@ -214,15 +260,19 @@ function renderPlayerTable(player: Player, index: number) {
   const miss = roundResult?.miss;
   const tooFar =
     miss !== null && miss !== undefined && roundResult?.place === null;
+  const mine = isMine(player);
+  const canRemove = !roomMode || isRoomHost() || mine;
   const medal =
     place === 1 ? "🥇" : place === 2 ? "🥈" : place === 3 ? "🥉" : " ";
   const roundStatus = revealed
     ? miss === null || miss === undefined
       ? "No guess"
       : `${(miss * 100).toFixed(1)}% miss${tooFar ? " (too far)" : ""}`
-    : player.locked
-      ? `<button class="locked-pill" type="button" data-guess="${escapeHtml(player.id)}" ${state.phase !== "guessing" || isTesting() ? "disabled" : ""}>🔒 Locked in <small>Change</small></button>`
-      : `<button class="guess-button" type="button" data-guess="${escapeHtml(player.id)}" ${state.phase !== "guessing" || isTesting() ? "disabled" : ""}>Guess</button>`;
+    : roomMode && !mine
+      ? `<span class="room-status-pill">${player.locked ? "🔒 Locked in" : "Thinking"}</span>`
+      : player.locked
+        ? `<span class="p-table-round"><button class="locked-pill" type="button" data-guess="${escapeHtml(player.id)}" ${state.phase !== "guessing" || isTesting() ? "disabled" : ""}>🔒 Locked in <small>Change</small></button>${roomMode ? `<button class="room-unlock" type="button" data-unlock="${escapeHtml(player.id)}" ${isTesting() ? "disabled" : ""}>Unlock</button>` : ""}</span>`
+        : `<button class="guess-button" type="button" data-guess="${escapeHtml(player.id)}" ${state.phase !== "guessing" || isTesting() ? "disabled" : ""}>Guess</button>`;
   return `<tr class="${place === 1 && revealed ? "is-winner" : ""}" style="--card-index:${index}">
     <td class="p-pos">${medal}${index + 1}</td>
     <td><span class="p-emoji">${escapeHtml(player.emoji)}</span><span class="p-name">${escapeHtml(player.name)}</span><span class="p-role">${escapeHtml(player.role)}</span></td>
@@ -231,8 +281,8 @@ function renderPlayerTable(player: Player, index: number) {
     <td>${roundStatus}</td>
     <td class="p-score">${formatScoreLabel(player.score)}</td>
     <td><div class="p-table-actions">
-      <button class="p-edit" type="button" data-edit="${escapeHtml(player.id)}" aria-label="Edit ${escapeHtml(player.name)}" ${isTesting() ? "disabled" : ""}><span aria-hidden="true">✎</span></button>
-      <button class="p-rm" type="button" data-remove="${escapeHtml(player.id)}" aria-label="Remove ${escapeHtml(player.name)}" ${isTesting() ? "disabled" : ""}>×</button>
+      ${mine ? `<button class="p-edit" type="button" data-edit="${escapeHtml(player.id)}" aria-label="Edit ${escapeHtml(player.name)}" ${isTesting() ? "disabled" : ""}><span aria-hidden="true">✎</span></button>` : ""}
+      ${canRemove ? `<button class="p-rm" type="button" data-remove="${escapeHtml(player.id)}" aria-label="Remove ${escapeHtml(player.name)}" ${isTesting() ? "disabled" : ""}>×</button>` : ""}
     </div></td>
   </tr>`;
 }
@@ -257,9 +307,14 @@ function renderPlayers() {
   }
   $$<HTMLButtonElement>("[data-remove]").forEach((button) => {
     button.addEventListener("click", () => {
-      state = removePlayer(state, button.dataset.remove ?? "");
-      persist();
-      render();
+      const id = button.dataset.remove ?? "";
+      if (roomMode) {
+        store.send({ type: "remove", id });
+      } else {
+        state = removePlayer(state, id);
+        persist();
+        render();
+      }
     });
   });
   $$<HTMLButtonElement>("[data-edit]").forEach((button) => {
@@ -269,6 +324,18 @@ function renderPlayers() {
     button.addEventListener("click", () =>
       openGuess(button.dataset.guess ?? ""),
     );
+  });
+  $$<HTMLButtonElement>("[data-unlock]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const id = button.dataset.unlock ?? "";
+      if (roomMode) {
+        store.send({ type: "unlock", id });
+      } else {
+        state = unlockGuess(state, id);
+        persist();
+        render();
+      }
+    });
   });
 }
 
@@ -369,13 +436,28 @@ function formatSpeed(value: number) {
 
 function syncControls() {
   const devMode = isDevMode();
+  const host = isRoomHost();
   const guessing = state.phase === "guessing";
   const testing = isTesting();
+  const lockedGuess = state.players.some((player) => player.locked);
   startButton.disabled =
-    (!devMode &&
-      (!guessing || !state.players.some((player) => player.locked))) ||
-    runInProgress;
-  startButton.hidden = !devMode && state.phase === "results";
+    (!devMode && (!guessing || !lockedGuess)) || runInProgress;
+  startButton.hidden =
+    (roomMode && !host) ||
+    (!devMode && state.phase === "results") ||
+    (roomMode && state.phase === "champion");
+  const waiting = $<HTMLParagraphElement>("[data-room-waiting]");
+  waiting.hidden = !roomMode || host;
+  waiting.textContent =
+    state.phase === "testing"
+      ? "The host is running the speed test."
+      : state.phase === "results"
+        ? "Waiting for the host to continue."
+        : "Waiting for the host to start the test.";
+  const resetButton = $<HTMLButtonElement>("[data-reset]");
+  resetButton.textContent = roomMode ? "New game" : "Reset scores";
+  resetButton.hidden = roomMode && !host;
+  $<HTMLFormElement>("[data-add-form]").hidden = roomMode && !host;
   $<HTMLSpanElement>("[data-start-label]").textContent = devMode
     ? testing
       ? "Testing..."
@@ -417,6 +499,7 @@ function renderChampion() {
     if (championDialog.open) championDialog.close();
     return;
   }
+  $<HTMLButtonElement>("[data-play-again]").hidden = roomMode && !isRoomHost();
   const sorted = [...state.players].sort((a, b) => b.score - a.score);
   const topScore = sorted[0]?.score ?? 0;
   const champions = sorted.filter((player) => player.score === topScore);
@@ -485,7 +568,9 @@ function render() {
       state.round >= state.settings.rounds
         ? "See the champion"
         : "Next round";
-    $<HTMLButtonElement>("[data-next-round]")?.removeAttribute("hidden");
+    const nextRoundButton = $<HTMLButtonElement>("[data-next-round]");
+    if (roomMode && !isRoomHost()) nextRoundButton.hidden = true;
+    else nextRoundButton?.removeAttribute("hidden");
   } else {
     $<HTMLButtonElement>("[data-next-round]")?.setAttribute("hidden", "");
   }
@@ -494,7 +579,7 @@ function render() {
 function openGuess(id: string) {
   if (state.phase !== "guessing") return;
   const player = state.players.find((candidate) => candidate.id === id);
-  if (!player) return;
+  if (!player || !isMine(player)) return;
   activePlayerId = player.id;
   $<HTMLSpanElement>("[data-guess-emoji]").textContent = player.emoji;
   $<HTMLElement>("[data-guess-player]").textContent = player.name;
@@ -511,7 +596,7 @@ function openGuess(id: string) {
 function openEdit(id: string) {
   if (isTesting()) return;
   const player = state.players.find((candidate) => candidate.id === id);
-  if (!player) return;
+  if (!player || !isMine(player)) return;
   editingPlayerId = player.id;
   const form = $<HTMLFormElement>("[data-edit-form]");
   (form.elements.namedItem("name") as HTMLInputElement).value = player.name;
@@ -543,19 +628,117 @@ function setProgress(step: number, steps: number) {
   progressFill.style.width = `${(safeStep / safeSteps) * 100}%`;
 }
 
+function setRemoteTesting(active: boolean) {
+  if (!roomMode || isRoomHost()) return;
+  if (active) {
+    if (!runInProgress) {
+      runInProgress = true;
+      roomStartedAt = Date.now();
+      liveDot.hidden = false;
+      if (!reduceMotion) liveDot.classList.add("is-live");
+      elapsedLabel.hidden = false;
+      const updateElapsed = () => {
+        elapsedLabel.textContent = `· ${Math.floor((Date.now() - roomStartedAt) / 1000)} s`;
+      };
+      updateElapsed();
+      roomElapsedTimer = window.setInterval(updateElapsed, 1000);
+    }
+  } else if (runInProgress) {
+    runInProgress = false;
+    window.clearInterval(roomElapsedTimer);
+    liveDot.classList.remove("is-live");
+    liveDot.hidden = true;
+    elapsedLabel.hidden = true;
+    slowHint.hidden = true;
+    progressBar.hidden = true;
+    document.dispatchEvent(
+      new CustomEvent<boolean>("gts:testing-change", { detail: false }),
+    );
+  }
+}
+
+function applyRoomView(view: RoomView) {
+  const previousPhase = state.phase;
+  const previousHistoryLength = state.history.length;
+  state = {
+    ...state,
+    players: view.players as ClientPlayer[],
+    settings: {
+      ...state.settings,
+      rounds: view.settings.rounds,
+      tieMode: view.settings.tieMode,
+    },
+    round: view.round,
+    phase: view.phase,
+    history: view.history,
+    isRoomHost: view.isHost,
+  };
+  if (view.phase === "testing") {
+    if (previousPhase !== "testing" && !view.isHost)
+      playCue("start", activeTheme, state.settings.sound);
+    setRemoteTesting(true);
+  } else {
+    setRemoteTesting(false);
+    if (previousPhase === "testing" && view.phase === "results" && !view.isHost)
+      playCue("reveal", activeTheme, state.settings.sound);
+    if (previousPhase !== "champion" && view.phase === "champion")
+      playCue("champion", activeTheme, state.settings.sound);
+    lastRoomProgressPhase = null;
+    if (!view.history.length && previousHistoryLength) {
+      latestPing = undefined;
+      setGauge(0);
+      setResultText("ping", undefined);
+      setResultText("down", undefined);
+      setResultText("up", undefined);
+    }
+  }
+  activeTheme = getResolvedTheme();
+  render();
+}
+
+function applyRoomProgress(progress: {
+  phase: Phase;
+  mbps?: number;
+  pingMs?: number;
+  step?: number;
+  steps?: number;
+  bytes?: number;
+}) {
+  if (!roomMode || isRoomHost() || state.phase !== "testing") return;
+  if (lastRoomProgressPhase !== progress.phase) {
+    lastRoomProgressPhase = progress.phase;
+    playCue("phase", activeTheme, state.settings.sound);
+    if (progress.phase === "up") setGauge(0);
+  }
+  if (progress.step !== undefined && progress.steps !== undefined)
+    setProgress(progress.step, progress.steps);
+  if (progress.phase === "ping") setPhase("ping");
+  else setPhase(progress.phase, progress.bytes);
+  if (progress.mbps !== undefined) setGauge(progress.mbps);
+  if (progress.pingMs !== undefined) setGauge(progress.pingMs);
+  playCue(
+    "tick",
+    activeTheme,
+    state.settings.sound,
+    gaugePosition(progress.mbps ?? progress.pingMs ?? 0),
+  );
+}
+
 async function startTest() {
   const devRun = isDevMode();
+  if (roomMode && (!isRoomHost() || state.phase !== "guessing")) return;
   if (
     runInProgress ||
     (!devRun && !state.players.some((player) => player.locked))
   )
     return;
+  if (roomMode && !store.send({ type: "start" })) return;
   runInProgress = true;
   lastSpeedPhase = null;
   errorNote.hidden = true;
   if (devRun) {
     document.dispatchEvent(new CustomEvent("gts:dev-run-start"));
-  } else {
+  } else if (!roomMode) {
     latestPing = undefined;
     state = { ...state, phase: "testing" };
     persist();
@@ -572,6 +755,8 @@ async function startTest() {
   let currentBytes: number | undefined;
   let steps = Number(progressBar.getAttribute("aria-valuemax")) || 13;
   let lastUpdateAt = Date.now();
+  let lastRoomProgressAt = 0;
+  let lastRoomSentPhase: Phase | null = null;
   const startedAt = lastUpdateAt;
   const updateElapsed = () => {
     elapsedLabel.textContent = `· ${Math.floor((Date.now() - startedAt) / 1000)} s`;
@@ -610,6 +795,22 @@ async function startTest() {
           setGauge(update.pingMs);
           if (!devRun) setResultText("ping", update.pingMs);
         }
+        if (
+          roomMode &&
+          (lastRoomSentPhase !== update.phase ||
+            Date.now() - lastRoomProgressAt >= 200)
+        ) {
+          lastRoomSentPhase = update.phase;
+          lastRoomProgressAt = Date.now();
+          sendRoomProgress({
+            phase: update.phase,
+            mbps: update.mbps,
+            pingMs: update.pingMs,
+            step: update.step,
+            steps: update.steps,
+            bytes: update.bytes,
+          });
+        }
         playCue(
           "tick",
           activeTheme,
@@ -634,6 +835,25 @@ async function startTest() {
         : "idle";
       $<HTMLSpanElement>("[data-mode]").textContent = "Download";
       $<HTMLSpanElement>("[data-unit]").textContent = "Mbps";
+    } else if (roomMode) {
+      latestPing = actual.ping;
+      setResultText("down", actual.down);
+      setResultText("up", actual.up);
+      setResultText("ping", actual.ping);
+      if (
+        !store.send({
+          type: "result",
+          down: actual.down,
+          up: actual.up,
+          ping: actual.ping,
+        })
+      )
+        errorNote.textContent =
+          "The result could not reach the room. Reconnect and try again.";
+      document.documentElement.dataset.phase = "done";
+      $<HTMLSpanElement>("[data-mode]").textContent = "Download";
+      $<HTMLSpanElement>("[data-unit]").textContent = "Mbps";
+      playCue("reveal", activeTheme, state.settings.sound);
     } else {
       latestPing = actual.ping;
       setResultText("down", actual.down);
@@ -649,7 +869,9 @@ async function startTest() {
     }
     render();
   } catch (error) {
-    if (!devRun) {
+    if (roomMode) {
+      store.send({ type: "abort" });
+    } else if (!devRun) {
       state = { ...state, phase: "guessing" };
       persist();
     }
@@ -680,12 +902,55 @@ async function startTest() {
 }
 
 document.addEventListener("gts:settings-change", (event) => {
+  const nextSettings = (event as CustomEvent<GameSettings>).detail;
   state = {
     ...state,
-    settings: (event as CustomEvent<GameSettings>).detail,
+    settings: roomMode
+      ? {
+          ...state.settings,
+          themeMode: nextSettings.themeMode,
+          sound: nextSettings.sound,
+        }
+      : nextSettings,
   };
   activeTheme = getResolvedTheme();
   render();
+});
+
+document.addEventListener("gts:room-state", (event) => {
+  if (!roomMode) return;
+  const view = (event as CustomEvent<RoomView>).detail;
+  const recoverInterruptedTest =
+    view.isHost &&
+    view.phase === "testing" &&
+    !runInProgress &&
+    !interruptedRoomTestRecoveryRequested;
+  applyRoomView(view);
+  if (!recoverInterruptedTest) return;
+  interruptedRoomTestRecoveryRequested = true;
+  errorNote.textContent =
+    "The last test was interrupted. Press Start to run it again.";
+  errorNote.hidden = false;
+  store.send({ type: "abort" });
+});
+
+document.addEventListener("gts:room-progress", (event) => {
+  if (roomMode) applyRoomProgress((event as CustomEvent).detail);
+});
+
+document.addEventListener("gts:room-settings-change", (event) => {
+  if (!roomMode || !isRoomHost()) return;
+  const detail = (
+    event as CustomEvent<{
+      rounds: GameSettings["rounds"];
+      tieMode: GameSettings["tieMode"];
+    }>
+  ).detail;
+  store.send({
+    type: "settings",
+    rounds: detail.rounds,
+    tieMode: detail.tieMode,
+  });
 });
 
 document.addEventListener("gts:dev-change", (event) => {
@@ -726,12 +991,25 @@ $<HTMLFormElement>("[data-edit-form]").addEventListener("submit", (event) => {
     )?.value ?? 0,
   );
   const role = ROLES[selected] ?? ROLES[0];
-  state = updatePlayer(state, editingPlayerId, {
-    name,
-    emoji: role.emoji,
-    role: role.role,
-  });
-  persist();
+  if (roomMode) {
+    if (
+      !store.send({
+        type: "edit",
+        id: editingPlayerId,
+        name,
+        emoji: role.emoji,
+        role: role.role,
+      })
+    )
+      return;
+  } else {
+    state = updatePlayer(state, editingPlayerId, {
+      name,
+      emoji: role.emoji,
+      role: role.role,
+    });
+    persist();
+  }
   editingPlayerId = null;
   editDialog.close();
   render();
@@ -751,8 +1029,35 @@ $<HTMLFormElement>("[data-guess-form]").addEventListener("submit", (event) => {
     $<HTMLInputElement>('[name="down"]', form).focus();
     return;
   }
-  state = lockGuess(state, activePlayerId, guess);
-  persist();
+  if (
+    roomMode &&
+    (guess.down === null ||
+      guess.up === null ||
+      guess.down > 100000 ||
+      guess.up > 100000)
+  ) {
+    $<HTMLInputElement>(
+      guess.down === null || guess.down > 100000
+        ? '[name="down"]'
+        : '[name="up"]',
+      form,
+    ).focus();
+    return;
+  }
+  if (roomMode) {
+    if (
+      !store.send({
+        type: "guess",
+        id: activePlayerId,
+        down: guess.down!,
+        up: guess.up!,
+      })
+    )
+      return;
+  } else {
+    state = lockGuess(state, activePlayerId, guess);
+    persist();
+  }
   guessDialog.close();
   playCue("lockIn", activeTheme, state.settings.sound);
   render();
@@ -775,12 +1080,24 @@ $<HTMLFormElement>("[data-add-form]").addEventListener("submit", (event) => {
     )?.value ?? 0,
   );
   const role = ROLES[selected] ?? ROLES[0];
-  const id =
-    typeof crypto.randomUUID === "function"
-      ? crypto.randomUUID()
-      : `${Date.now()}-${Math.random()}`;
-  state = addPlayer(state, name, role.emoji, role.role, id);
-  persist();
+  if (roomMode) {
+    if (
+      !store.send({
+        type: "join",
+        name,
+        emoji: role.emoji,
+        role: role.role,
+      })
+    )
+      return;
+  } else {
+    const id =
+      typeof crypto.randomUUID === "function"
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random()}`;
+    state = addPlayer(state, name, role.emoji, role.role, id);
+    persist();
+  }
   form.reset();
   (form.querySelector('input[name="emoji"]') as HTMLInputElement).checked =
     true;
@@ -801,6 +1118,10 @@ $$<HTMLButtonElement>("[data-view-toggle] button").forEach((button) => {
 });
 
 $<HTMLButtonElement>("[data-reset]").addEventListener("click", () => {
+  if (roomMode) {
+    store.send({ type: "newGame" });
+    return;
+  }
   state = newGame(state);
   persist();
   latestPing = undefined;
@@ -812,6 +1133,11 @@ $<HTMLButtonElement>("[data-reset]").addEventListener("click", () => {
 });
 
 $<HTMLButtonElement>("[data-play-again]").addEventListener("click", () => {
+  if (roomMode && !isRoomHost()) return;
+  if (roomMode) {
+    if (store.send({ type: "newGame" })) championDialog.close();
+    return;
+  }
   championDialog.close();
   state = newGame(state);
   persist();
@@ -838,11 +1164,15 @@ nextButton.dataset.nextRound = "";
 nextButton.textContent = "Next round";
 nextButton.hidden = true;
 nextButton.addEventListener("click", () => {
-  state = nextRound(state);
-  persist();
-  if (state.phase === "champion")
-    playCue("champion", activeTheme, state.settings.sound);
-  render();
+  if (roomMode) {
+    if (isRoomHost()) store.send({ type: "next" });
+  } else {
+    state = nextRound(state);
+    persist();
+    if (state.phase === "champion")
+      playCue("champion", activeTheme, state.settings.sound);
+    render();
+  }
 });
 $<HTMLDivElement>(".gauge-card").append(nextButton);
 

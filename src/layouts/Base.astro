@@ -54,20 +54,30 @@ const appSchema = {
   <head>
     <meta charset="utf-8" />
     <script is:inline>
+      const roomQueryMode = new URLSearchParams(window.location.search).has("room");
+      if (roomQueryMode) document.documentElement.dataset.room = "1";
       const devParam = new URLSearchParams(window.location.search).get("dev");
       let devEnabled = devParam === "1";
       try {
-        if (devParam === "1" || devParam === "0")
+        if (!roomQueryMode && (devParam === "1" || devParam === "0"))
           localStorage.setItem("gts:dev", devParam);
-        if (devParam === null)
+        if (!roomQueryMode && devParam === null)
           devEnabled = localStorage.getItem("gts:dev") === "1";
       } catch {}
-      if (devEnabled) document.documentElement.dataset.dev = "1";
+      if (!roomQueryMode && devEnabled)
+        document.documentElement.dataset.dev = "1";
     </script>
     <script is:inline>
       try {
-        const themeMode = JSON.parse(localStorage.getItem("gts:v1") ?? "null")
-          ?.settings?.themeMode;
+        const roomPage = document.documentElement.dataset.room === "1";
+        const savedSettings = JSON.parse(
+          localStorage.getItem(
+            roomPage ? "gts:room-settings" : "gts:v1",
+          ) ?? "null",
+        );
+        const themeMode = roomPage
+          ? savedSettings?.themeMode
+          : savedSettings?.settings?.themeMode;
         const explicitThemes = [
           "light",
           "dark",
@@ -205,6 +215,7 @@ const appSchema = {
             <span>Developer mode<small>Show raw speed test data. Hides the game.</small></span>
             <input type="checkbox" name="devMode" />
           </label>
+          <p class="room-settings-note" data-room-settings-note hidden>Only the host can change rounds or tie rules in this room.</p>
           <div class="dialog-actions">
             <button class="go" type="submit">Save settings</button>
           </div>

@@ -1,6 +1,8 @@
 import { loadGame, saveGame, type GameSettings } from "../lib/game";
+import { readRoomLocalSettings, saveRoomLocalSettings } from "./room-settings";
 import { isThemeId, themes, themeForDate, type ThemeId } from "../lib/themes";
 import { playCue } from "../lib/sound";
+import type { RoomView } from "../lib/room";
 
 const $ = <T extends Element>(selector: string): T =>
   document.querySelector(selector) as T;
@@ -28,14 +30,23 @@ const reduceMotion = window.matchMedia(
   "(prefers-reduced-motion: reduce)",
 ).matches;
 
-const initialGame = loadGame();
-let settings = initialGame.settings;
-let testing = initialGame.phase === "testing";
-let devMode = document.documentElement.dataset.dev === "1";
+const roomMode = document.documentElement.dataset.room === "1";
+const initialGame = roomMode ? null : loadGame();
+let roomHost = false;
+let settings: GameSettings = roomMode
+  ? {
+      rounds: 3,
+      tieMode: "share",
+      ...readRoomLocalSettings(),
+    }
+  : initialGame!.settings;
+let testing = initialGame?.phase === "testing";
+let devMode = !roomMode && document.documentElement.dataset.dev === "1";
 let activeTheme: ThemeId = "light";
 devBadge.hidden = !devMode;
 
 function setDevMode(enabled: boolean) {
+  if (roomMode) return;
   devMode = enabled;
   if (enabled) document.documentElement.dataset.dev = "1";
   else delete document.documentElement.dataset.dev;
@@ -133,6 +144,16 @@ function syncControls() {
   syncThemePicker();
   soundButton.disabled = testing;
   settingsButton.disabled = testing;
+  const roundsControl = settingsForm.elements.namedItem(
+    "rounds",
+  ) as HTMLSelectElement;
+  const tieControl = settingsForm.elements.namedItem(
+    "tieMode",
+  ) as HTMLSelectElement;
+  roundsControl.disabled = roomMode && (!roomHost || testing);
+  tieControl.disabled = roomMode && (!roomHost || testing);
+  $<HTMLElement>("[data-room-settings-note]").hidden = !roomMode || roomHost;
+  $<HTMLElement>(".dev-setting").hidden = roomMode;
   soundButton.setAttribute("aria-pressed", String(settings.sound));
   soundButton.setAttribute(
     "aria-label",
@@ -143,9 +164,17 @@ function syncControls() {
 }
 
 function saveSettings(patch: Partial<GameSettings>, playSound = false) {
-  const currentGame = loadGame();
-  settings = { ...currentGame.settings, ...patch };
-  saveGame({ ...currentGame, settings });
+  if (roomMode) {
+    settings = { ...settings, ...patch };
+    saveRoomLocalSettings({
+      themeMode: settings.themeMode,
+      sound: settings.sound,
+    });
+  } else {
+    const currentGame = loadGame();
+    settings = { ...currentGame.settings, ...patch };
+    saveGame({ ...currentGame, settings });
+  }
   applyTheme(settings.themeMode);
   syncControls();
   document.dispatchEvent(
@@ -155,7 +184,7 @@ function saveSettings(patch: Partial<GameSettings>, playSound = false) {
 }
 
 function fillSettingsForm() {
-  settings = loadGame().settings;
+  if (!roomMode) settings = loadGame().settings;
   applyTheme(settings.themeMode);
   syncControls();
   (settingsForm.elements.namedItem("rounds") as HTMLSelectElement).value =
@@ -227,7 +256,7 @@ document.addEventListener("pointerdown", (event) => {
 });
 
 soundButton.addEventListener("click", () => {
-  saveSettings({ sound: !loadGame().settings.sound }, true);
+  saveSettings({ sound: !settings.sound }, true);
 });
 
 settingsButton.addEventListener("click", () => {
@@ -243,7 +272,7 @@ settingsForm.addEventListener("submit", (event) => {
   const roundsValue = (
     settingsForm.elements.namedItem("rounds") as HTMLSelectElement
   ).value;
-  const currentSettings = loadGame().settings;
+  const currentSettings = roomMode ? settings : loadGame().settings;
   const rounds: GameSettings["rounds"] =
     roundsValue === "endless"
       ? "endless"
@@ -256,24 +285,48 @@ settingsForm.addEventListener("submit", (event) => {
   const themeModeValue = (
     settingsForm.elements.namedItem("themeMode") as HTMLSelectElement
   ).value;
-  saveSettings({
-    rounds,
-    tieMode: tieModeValue === "download" ? "download" : "share",
-    themeMode:
-      themeModeValue === "auto"
-        ? "auto"
-        : isThemeId(themeModeValue)
-          ? themeModeValue
-          : currentSettings.themeMode,
-    sound: (settingsForm.elements.namedItem("sound") as HTMLInputElement)
-      .checked,
-  });
-  setDevMode(devModeInput.checked);
+  const tieMode = tieModeValue === "download" ? "download" : "share";
+  const themeMode =
+    themeModeValue === "auto"
+      ? "auto"
+      : isThemeId(themeModeValue)
+        ? themeModeValue
+        : currentSettings.themeMode;
+  const sound = (settingsForm.elements.namedItem("sound") as HTMLInputElement)
+    .checked;
+  if (roomMode) {
+    if (roomHost)
+      document.dispatchEvent(
+        new CustomEvent("gts:room-settings-change", {
+          detail: { rounds, tieMode },
+        }),
+      );
+    saveSettings({ themeMode, sound });
+  } else {
+    saveSettings({ rounds, tieMode, themeMode, sound });
+    setDevMode(devModeInput.checked);
+  }
   settingsDialog.close();
 });
 
 document.addEventListener("gts:testing-change", (event) => {
   testing = (event as CustomEvent<boolean>).detail;
+  syncControls();
+});
+
+document.addEventListener("gts:room-state", (event) => {
+  if (!roomMode) return;
+  const view = (event as CustomEvent<RoomView>).detail;
+  roomHost = view.isHost;
+  settings = {
+    ...settings,
+    rounds: view.settings.rounds,
+    tieMode: view.settings.tieMode,
+  };
+  (settingsForm.elements.namedItem("rounds") as HTMLSelectElement).value =
+    String(settings.rounds);
+  (settingsForm.elements.namedItem("tieMode") as HTMLSelectElement).value =
+    settings.tieMode;
   syncControls();
 });
 

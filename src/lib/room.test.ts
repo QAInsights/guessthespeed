@@ -1,0 +1,393 @@
+import { describe, expect, it } from "vitest";
+import { applyResult, initialGameState, type GameState } from "./game";
+import {
+  applyAction,
+  createRoom,
+  generateRoomCode,
+  MAX_PLAYERS,
+  normalizeRoomCode,
+  ROOM_ALPHABET,
+  ROOM_CODE_LENGTH,
+  viewFor,
+  type Room,
+  type RoomPlayer,
+} from "./room";
+
+const hostId = "host-client";
+const firstId = "player-one";
+const secondId = "player-two";
+
+function addPlayer(
+  room: Room,
+  clientId: string,
+  isHost: boolean,
+  name: string,
+  now = room.updatedAt + 1,
+): Room {
+  const result = applyAction(
+    room,
+    clientId,
+    isHost,
+    { type: "join", name, emoji: "🧑", role: "Friend" },
+    now,
+  );
+  if ("error" in result) throw new Error(result.error);
+  return result.room;
+}
+
+function act(
+  room: Room,
+  clientId: string,
+  isHost: boolean,
+  action: unknown,
+  now = room.updatedAt + 1,
+): Room {
+  const result = applyAction(room, clientId, isHost, action, now);
+  if ("error" in result) throw new Error(result.error);
+  return result.room;
+}
+
+function joinedRoom(): Room {
+  let room = createRoom("BCDFGH", "secret-host-token", 100);
+  room = addPlayer(room, hostId, true, "Host");
+  room = addPlayer(room, firstId, false, "First");
+  room = addPlayer(room, secondId, false, "Second");
+  return room;
+}
+
+function playerByOwner(room: Room, owner: string): RoomPlayer {
+  const player = room.game.players.find(
+    (candidate) => candidate.owner === owner,
+  );
+  if (!player) throw new Error(`No player owned by ${owner}`);
+  return player;
+}
+
+function withGuess(room: Room, clientId: string, down: number, up: number) {
+  const player = playerByOwner(room, clientId);
+  return act(room, clientId, false, {
+    type: "guess",
+    id: player.id,
+    down,
+    up,
+  });
+}
+
+describe("room codes", () => {
+  it("normalizes spaces and dashes and rejects invalid codes", () => {
+    expect(normalizeRoomCode(" bcdf-gh ")).toBe("BCDFGH");
+    expect(normalizeRoomCode("BCDFGH")).toBe("BCDFGH");
+    expect(normalizeRoomCode("BCDFG")).toBeNull();
+    expect(normalizeRoomCode("BCDFGHA")).toBeNull();
+    expect(normalizeRoomCode("ABCDEF")).toBeNull();
+    expect(normalizeRoomCode("BCDF!H")).toBeNull();
+  });
+
+  it("generates codes with the required alphabet and length", () => {
+    const code = generateRoomCode(() => 0.5);
+    expect(code).toHaveLength(ROOM_CODE_LENGTH);
+    expect([...code].every((letter) => ROOM_ALPHABET.includes(letter))).toBe(
+      true,
+    );
+  });
+
+  it("creates a room with the expected defaults and private credentials", () => {
+    const room = createRoom("bcdfgh", "secret-host-token", 42);
+    expect(room).toMatchObject({
+      code: "BCDFGH",
+      hostToken: "secret-host-token",
+      updatedAt: 42,
+      game: {
+        players: [],
+        settings: {
+          rounds: 3,
+          tieMode: "share",
+          themeMode: "auto",
+          sound: true,
+        },
+        round: 1,
+        history: [],
+        phase: "guessing",
+      },
+    });
+    const view = viewFor(room, hostId, true);
+    expect(JSON.stringify(view)).not.toContain("secret-host-token");
+    expect(JSON.stringify(view)).not.toContain("owner");
+  });
+});
+
+describe("room actions and views", () => {
+  it("hides other players' guesses from players and the host while guessing and testing, then reveals them", () => {
+    let room = joinedRoom();
+    room = withGuess(room, hostId, 101, 21);
+    room = withGuess(room, firstId, 102, 22);
+    room = withGuess(room, secondId, 103, 23);
+    const hostPlayer = playerByOwner(room, hostId);
+    const firstPlayer = playerByOwner(room, firstId);
+
+    const hostGuessing = viewFor(room, hostId, true);
+    expect(
+      hostGuessing.players.find((p) => p.id === hostPlayer.id)?.guess,
+    ).toEqual({
+      down: 101,
+      up: 21,
+    });
+    expect(
+      hostGuessing.players.find((p) => p.id === firstPlayer.id)?.guess,
+    ).toEqual({
+      down: null,
+      up: null,
+    });
+    expect(
+      hostGuessing.players.find((p) => p.id === firstPlayer.id)?.locked,
+    ).toBe(true);
+
+    const firstGuessing = viewFor(room, firstId, false);
+    expect(
+      firstGuessing.players.find((p) => p.id === firstPlayer.id)?.guess,
+    ).toEqual({
+      down: 102,
+      up: 22,
+    });
+    expect(
+      firstGuessing.players.find((p) => p.id === hostPlayer.id)?.guess,
+    ).toEqual({
+      down: null,
+      up: null,
+    });
+
+    room = act(room, hostId, true, { type: "start" });
+    expect(viewFor(room, firstId, false).players[0].guess).toEqual({
+      down: null,
+      up: null,
+    });
+    room = act(room, hostId, true, {
+      type: "result",
+      down: 100,
+      up: 20,
+      ping: 8,
+    });
+    expect(
+      viewFor(room, firstId, false).players.find((p) => p.id === hostPlayer.id)
+        ?.guess,
+    ).toEqual({
+      down: 101,
+      up: 21,
+    });
+    expect(
+      viewFor(room, firstId, false).players.find((p) => p.id === firstPlayer.id)
+        ?.guess,
+    ).toEqual({
+      down: 102,
+      up: 22,
+    });
+  });
+
+  it("lets an owner edit, guess, unlock, and remove only their player", () => {
+    let room = joinedRoom();
+    const own = playerByOwner(room, firstId);
+    const other = playerByOwner(room, secondId);
+    room = act(room, firstId, false, {
+      type: "edit",
+      id: own.id,
+      name: "  Renamed  ",
+      emoji: "🐱",
+      role: "Cat",
+    });
+    expect(playerByOwner(room, firstId)).toMatchObject({
+      name: "Renamed",
+      emoji: "🐱",
+      role: "Cat",
+    });
+    expect(
+      applyAction(
+        room,
+        firstId,
+        false,
+        {
+          type: "edit",
+          id: other.id,
+          name: "Nope",
+          emoji: "🧑",
+          role: "Friend",
+        },
+        500,
+      ),
+    ).toEqual({ error: "You can only edit your own player." });
+    room = withGuess(room, firstId, 12, 4);
+    expect(playerByOwner(room, firstId).locked).toBe(true);
+    room = act(room, firstId, false, { type: "unlock", id: own.id });
+    expect(playerByOwner(room, firstId).locked).toBe(false);
+    expect(
+      applyAction(room, firstId, false, { type: "remove", id: other.id }, 600),
+    ).toEqual({ error: "You can only remove your own player." });
+    room = act(room, firstId, false, { type: "remove", id: own.id });
+    expect(room.game.players.some((player) => player.id === own.id)).toBe(
+      false,
+    );
+  });
+
+  it("restricts settings, start, result, abort, next, and new game to the host", () => {
+    const room = joinedRoom();
+    for (const action of [
+      { type: "settings", rounds: 5, tieMode: "download" },
+      { type: "start" },
+      { type: "result", down: 100, up: 20 },
+      { type: "abort" },
+      { type: "next" },
+      { type: "newGame" },
+    ]) {
+      expect(applyAction(room, firstId, false, action, 600)).toHaveProperty(
+        "error",
+      );
+    }
+    const hostRemoved = act(room, hostId, true, {
+      type: "remove",
+      id: playerByOwner(room, firstId).id,
+    });
+    expect(hostRemoved.game.players).toHaveLength(room.game.players.length - 1);
+  });
+
+  it("limits non-hosts to one player and all rooms to twelve players", () => {
+    let room = createRoom("BCDFGH", "token", 0);
+    room = addPlayer(room, firstId, false, "First");
+    expect(
+      applyAction(
+        room,
+        firstId,
+        false,
+        { type: "join", name: "Extra", emoji: "🧑", role: "Friend" },
+        2,
+      ),
+    ).toEqual({ error: "This device already has a player in the room." });
+
+    for (let index = 1; index < MAX_PLAYERS; index += 1) {
+      room = addPlayer(room, `host-${index}`, true, `Host ${index}`);
+    }
+    expect(room.game.players).toHaveLength(MAX_PLAYERS);
+    expect(
+      applyAction(
+        room,
+        "another-host",
+        true,
+        { type: "join", name: "Too many", emoji: "🧑", role: "Friend" },
+        100,
+      ),
+    ).toEqual({ error: `A room can have up to ${MAX_PLAYERS} players.` });
+  });
+
+  it("rejects malformed actions, invalid names, oversized labels, unknown IDs, and out-of-range speeds", () => {
+    const room = joinedRoom();
+    const player = playerByOwner(room, firstId);
+    const invalidActions: unknown[] = [
+      null,
+      { type: "unknown" },
+      { type: "join", name: "   ", emoji: "🧑", role: "Friend" },
+      { type: "join", name: "a".repeat(17), emoji: "🧑", role: "Friend" },
+      { type: "join", name: "Valid", emoji: "🙂".repeat(9), role: "Friend" },
+      { type: "join", name: "Valid", emoji: "🧑", role: "r".repeat(17) },
+      { type: "guess", id: player.id, down: Number.NaN, up: 1 },
+      { type: "guess", id: player.id, down: -1, up: 1 },
+      { type: "guess", id: player.id, down: 100_001, up: 1 },
+      { type: "guess", id: "missing", down: 1, up: 1 },
+    ];
+    for (const action of invalidActions) {
+      expect(applyAction(room, firstId, false, action, 700)).toHaveProperty(
+        "error",
+      );
+    }
+    expect(
+      applyAction(
+        room,
+        firstId,
+        false,
+        {
+          type: "edit",
+          id: "missing",
+          name: "New",
+          emoji: "🧑",
+          role: "Friend",
+        },
+        700,
+      ),
+    ).toEqual({ error: "Player not found." });
+  });
+
+  it("requires a locked guess before the host can start", () => {
+    const room = joinedRoom();
+    expect(applyAction(room, hostId, true, { type: "start" }, 900)).toEqual({
+      error: "At least one player must lock a guess first.",
+    });
+    const lockedRoom = withGuess(room, firstId, 40, 12);
+    expect(act(lockedRoom, hostId, true, { type: "start" }).game.phase).toBe(
+      "testing",
+    );
+  });
+
+  it("does not let the host reset while a speed test is running", () => {
+    let room = joinedRoom();
+    room = withGuess(room, firstId, 40, 12);
+    room = act(room, hostId, true, { type: "start" });
+    expect(applyAction(room, hostId, true, { type: "newGame" }, 900)).toEqual({
+      error: "Wait for the test to finish before starting a new game.",
+    });
+  });
+
+  it("uses the existing result scoring, including the 50 percent eligibility cutoff", () => {
+    let room = createRoom("BCDFGH", "token", 0);
+    room = addPlayer(room, firstId, false, "Accurate");
+    room = addPlayer(room, secondId, false, "Too far");
+    room = withGuess(room, firstId, 100, 20);
+    room = withGuess(room, secondId, 160, 30);
+    room = act(room, hostId, true, { type: "start" });
+
+    const expectedState: GameState = {
+      ...initialGameState(),
+      players: room.game.players.map(({ owner: _owner, ...player }) => player),
+      settings: room.game.settings,
+      round: room.game.round,
+      history: room.game.history,
+      phase: room.game.phase,
+    };
+    const expected = applyResult(expectedState, { down: 100, up: 20, ping: 8 });
+    room = act(room, hostId, true, {
+      type: "result",
+      down: 100,
+      up: 20,
+      ping: 8,
+    });
+    expect(room.game.history.at(-1)).toEqual(expected.state.history.at(-1));
+    expect(room.game.players.map((player) => player.score)).toEqual(
+      expected.state.players.map((player) => player.score),
+    );
+    expect(
+      room.game.history
+        .at(-1)
+        ?.scores.find((score) => score.id === playerByOwner(room, secondId).id),
+    ).toMatchObject({ place: null, placePoints: 0 });
+  });
+
+  it("advances to champion and starts a new game with the same players", () => {
+    let room = createRoom("BCDFGH", "token", 0);
+    room = addPlayer(room, firstId, false, "First");
+    room = withGuess(room, firstId, 100, 20);
+    room = act(room, hostId, true, {
+      type: "settings",
+      rounds: 1,
+      tieMode: "share",
+    });
+    room = act(room, hostId, true, { type: "start" });
+    room = act(room, hostId, true, { type: "result", down: 100, up: 20 });
+    room = act(room, hostId, true, { type: "next" });
+    expect(room.game.phase).toBe("champion");
+    const playerId = room.game.players[0].id;
+    room = act(room, hostId, true, { type: "newGame" });
+    expect(room.game).toMatchObject({
+      round: 1,
+      history: [],
+      phase: "guessing",
+      players: [{ id: playerId, score: 0, locked: false }],
+    });
+    expect(room.game.players[0].guess).toEqual({ down: null, up: null });
+  });
+});

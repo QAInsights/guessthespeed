@@ -30,7 +30,7 @@ const questions = [
   {
     question: 'Does Cloudflare receive my game results?',
     answer:
-      'Your game results stay on your device. Cloudflare receives the measurement traffic. See the privacy page for details.',
+      'Local-game results stay on your device. For separate-phone games, Cloudflare temporarily stores the shared room state. See the privacy page for details.',
   },
 ];
 
@@ -149,11 +149,15 @@ const faqSchema = {
 
       <h2>Where do the results go?</h2>
       <p>
-        Game results stay on this device. Cloudflare receives the measurement traffic. Read the{' '}
+        Local-game results stay on this device. For room games, Cloudflare temporarily stores the
+        shared game state and deletes it after six hours without activity. Read the{' '}
         <a href="/privacy/">privacy page</a> for the details, or visit{' '}
         <a href="/internet-speed-101/">Internet speed 101</a> for a friendly guide to Mbps, ping,
         and Wi-Fi.
       </p>
+
+      <h2>How room codes keep guesses secret</h2>
+      <p>When you play on separate phones, the room server sends each device its own view. While guesses are open or the test is running, each player sees their own numbers and other guesses remain hidden. The server reveals them after the host submits the result.</p>
 
       <h2>Frequently asked questions</h2>
       <div class="faq">
