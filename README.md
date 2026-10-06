@@ -23,7 +23,7 @@ Add players, pass the device around for private guesses, and run a real Cloudfla
 
 ## Deploy
 
-Deploy with Cloudflare Workers Builds. Use `npm run build` as the build command and `dist` as the output directory. The repository includes `wrangler.jsonc` for static assets.
+Deploy with Cloudflare Workers Builds. `wrangler.jsonc` runs `npm run build` before `npx wrangler deploy` and uploads `dist` as static assets, so the dashboard build command can stay empty.
 
 To enable optional Cloudflare Web Analytics, configure `PUBLIC_CF_BEACON_TOKEN` in the Cloudflare build environment. Without the token, the analytics beacon is not included.
 
