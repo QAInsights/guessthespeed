@@ -1,0 +1,234 @@
+---
+import Base from '../layouts/Base.astro';
+
+const questions = [
+  {
+    question: 'What is a good internet speed in 2026?',
+    answer:
+      'For many homes, about 100 Mbps download and 20 Mbps upload is a useful starting point. That matches the FCC fixed broadband benchmark, but it is not a rule that every household needs the same plan.',
+  },
+  {
+    question: 'Is 100 Mbps fast enough for a family?',
+    answer:
+      'It can be. A 100 Mbps plan gives several people room for video, browsing, and calls, but the best fit depends on how many high-resolution streams and large downloads overlap.',
+  },
+  {
+    question: 'How much upload speed do I need?',
+    answer:
+      'About 20 Mbps upload is a practical baseline for many households. Video calls, live streaming, cloud backups, and sending large files all use upload capacity, so heavy creators may want more.',
+  },
+  {
+    question: 'What is a good ping for calls and games?',
+    answer:
+      'Zoom says latency of 150 ms or less and jitter of 40 ms or less are typical recommendations for calls. Games do not share one universal ping threshold, and a lower, steady ping usually feels more responsive.',
+  },
+  {
+    question: 'Why is my speed test lower than my internet plan?',
+    answer:
+      'A speed test measures what reached that device at that moment. Wi-Fi distance, the device, busy hours, other people using the connection, and the overhead of moving data can all reduce the measured result.',
+  },
+  {
+    question: 'Is 4K streaming 15 Mbps or 20 Mbps?',
+    answer:
+      'Both figures are right for different services. Netflix recommends at least 15 Mbps for UHD, while YouTube lists a sustained 20 Mbps for 4K playback, so plan on about 15 to 20 Mbps per stream.',
+  },
+];
+
+const faqSchema = {
+  '@type': 'FAQPage',
+  mainEntity: questions.map(({ question, answer }) => ({
+    '@type': 'Question',
+    name: question,
+    acceptedAnswer: { '@type': 'Answer', text: answer },
+  })),
+};
+---
+
+<Base
+  title="What Is a Good Internet Speed in 2026? A Plain-English Guide"
+  description="A practical 2026 guide to good download, upload, and ping speeds, with sourced recommendations for streaming, calls, games, and busy households."
+  breadcrumb="Good internet speed"
+  schema={[faqSchema]}
+>
+  <main class="wrap content-page">
+    <span class="round-banner">Speed school</span>
+    <h1>What Is a Good Internet Speed in 2026?</h1>
+    <p class="lede">
+      For many homes, about 100 Mbps download and 20 Mbps upload is a useful starting point. That
+      matches the <a href="https://www.fcc.gov/document/fcc-increases-broadband-speed-benchmark">FCC's 2024 fixed broadband benchmark</a>,
+      but it is not a one-size-fits-all plan: lighter households can use less, while busy homes,
+      creators, and people moving large files may benefit from more.
+    </p>
+    <article class="content-card stk">
+      <h2>How fast is good for your household?</h2>
+      <p>
+        Begin with the people and activities that overlap, not the largest number on a plan
+        advertisement. The ranges below are planning starting points, not provider guarantees or
+        a promise that every device will reach the full speed over Wi-Fi. Published service
+        recommendations differ: Netflix recommends at least 15 Mbps for UHD, YouTube lists 20 Mbps
+        for sustained 4K playback, and Zoom publishes separate rates by call quality.
+      </p>
+      <div class="guide-table-wrap" role="region" aria-label="Starting internet speed ranges by household" tabindex="0">
+        <table class="guide-table">
+          <caption>Household starting ranges for a steady connection</caption>
+          <thead>
+            <tr>
+              <th scope="col">Household</th>
+              <th scope="col">Download</th>
+              <th scope="col">Upload</th>
+              <th scope="col">Ping</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">1 to 2 people, light use</th>
+              <td>About 25 to 50 Mbps</td>
+              <td>About 5 to 10 Mbps</td>
+              <td>For calls, Zoom's typical target is 150 ms or less</td>
+            </tr>
+            <tr>
+              <th scope="row">3 to 4 people, streaming</th>
+              <td>About 50 to 100 Mbps</td>
+              <td>About 10 to 20 Mbps</td>
+              <td>Lower and steadier is better for interactive use</td>
+            </tr>
+            <tr>
+              <th scope="row">5 or more people, gamers, or creators</th>
+              <td>About 100 to 300 Mbps</td>
+              <td>About 20 to 50 Mbps</td>
+              <td>Zoom recommends 150 ms or less; games vary</td>
+            </tr>
+            <tr>
+              <th scope="row">Work from home with heavy uploads</th>
+              <td>About 100 to 300 Mbps</td>
+              <td>About 50 to 100 Mbps</td>
+              <td>Zoom recommends 150 ms or less and steady jitter</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="guide-table-note">
+        The FCC's benchmark is a national fixed-broadband benchmark, not a recommended plan tier
+        for every family. The household ranges are practical estimates based on overlapping
+        activities; measure your own connection and adjust for your routine. See the
+        <a href="https://www.fcc.gov/document/fcc-increases-broadband-speed-benchmark">FCC's 2024 announcement</a>,
+        <a href="https://help.netflix.com/en/node/306">Netflix's speed recommendations</a>, and
+        <a href="https://support.google.com/youtube/answer/78358">YouTube's sustained playback rates</a>.
+      </p>
+      <p>
+        The heavier-upload range is a planning estimate too. YouTube's H.264 guidance lists about
+        30 Mbps for 4K at 30 frames per second and 35 Mbps at 60 frames per second, and its
+        streaming tips recommend 20% spare headroom. One such stream can use roughly 36 to
+        42 Mbps including that cushion; two can use about 72 to 84 Mbps before calls or other
+        uploads. These are encoder settings for live video, not a household-wide requirement.
+        Check <a href="https://support.google.com/youtube/answer/2853702">YouTube's live encoder settings</a>{' '}
+        and <a href="https://support.google.com/youtube/answer/2853856">its network streaming tips</a>.
+      </p>
+
+      <h2>What is a good upload speed?</h2>
+      <p>
+        A useful upload speed depends on what leaves your home connection. Zoom's published
+        bandwidth requirements for a group video call range from about 1.8 Mbps up at 720p to
+        about 3.0 Mbps up at 1080p. A single call is only one part of a household: backups, shared
+        screens, and another person sending files can use upload at the same time.
+        <a href="https://support.zoom.com/hc/en/article?id=zm_kb&amp;sysparm_article=KB0060748">Zoom lists the rates by meeting quality</a>.
+      </p>
+      <p>
+        If you stream live video, size upload for the stream itself and keep some spare capacity.
+        YouTube's H.264 recommendations are about 30 Mbps for 4K at 30 frames per second and
+        35 Mbps at 60 frames per second. Its streaming tips recommend leaving about 20 percent
+        headroom. Those are encoder bitrates for those live-video settings, not a universal
+        upload requirement for a video call or a home plan. Read
+        <a href="https://support.google.com/youtube/answer/2853702">YouTube's live encoder settings</a>{' '}
+        and <a href="https://support.google.com/youtube/answer/2853856">network streaming tips</a>.
+      </p>
+
+      <h2>What is a good ping?</h2>
+      <p>
+        Ping is the round-trip delay for a small request, measured in milliseconds. A connection
+        can have excellent download speed and still feel slow if each response takes a long time
+        to arrive. Zoom describes 150 ms or less latency and 40 ms or less jitter as typical
+        recommendations for calls. For games, lower and steadier ping is usually preferable, but
+        the game server, route, and game itself matter, so there is no single cutoff that promises
+        a good match. See
+        <a href="https://support.zoom.com/hc/en/article?id=zm_kb&amp;sysparm_article=KB0070504">Zoom's guidance on latency and jitter</a>{' '}
+        and <a href="https://www.playstation.com/en-us/support/games/ps4-remote-play-connection-troubleshooting/">PlayStation's Remote Play troubleshooting</a>.
+      </p>
+      <p>
+        For a concrete game-streaming example, PlayStation says Remote Play needs at least
+        5 Mbps in each direction and recommends 15 Mbps each way for the best experience. Those
+        figures apply to Remote Play, not every online multiplayer game.
+      </p>
+
+      <h2>Why does my speed test show less than my plan?</h2>
+      <p>
+        Your plan describes a service tier. A test shows what one device received at one moment,
+        over one path through your home and your provider. A gap is not automatically a sign that
+        the plan is broken. Check these common causes before changing anything.
+      </p>
+      <ul>
+        <li>
+          <strong>Wi-Fi band and distance.</strong> The 2.4 GHz band can reach farther but is often
+          busier; 5 GHz and 6 GHz can be faster nearby and weaken sooner through walls.
+        </li>
+        <li>
+          <strong>The test device.</strong> An older Wi-Fi radio, power-saving mode, background
+          apps, or a browser with many open tabs can limit what the test reports.
+        </li>
+        <li>
+          <strong>Busy hours.</strong> Your provider's route or a shared neighborhood segment may
+          be busier at one time than another.
+        </li>
+        <li>
+          <strong>Other people and devices.</strong> Streaming, video calls, backups, and updates
+          share the same connection while a test is running.
+        </li>
+        <li>
+          <strong>Protocol overhead.</strong> Real network traffic includes headers, acknowledgements,
+          and retransmissions. The full line rate is not all application data.
+        </li>
+      </ul>
+      <p>
+        For a useful comparison, run more than one test near your router, pause other heavy
+        transfers, and try a wired connection if available. Keep the device and test service the
+        same when you compare results over time.
+      </p>
+
+      <h2>How can I check my own speed?</h2>
+      <p>
+        Run the real browser-based test in
+        <a href="/">Guess the Speed</a>, or add <code>?dev=1</code> to the home-page URL to open
+        <a href="/?dev=1">Dev mode</a> with the raw measurement details. Test download and upload
+        separately, note the ping, and compare the result with the room and device you actually
+        use. A speed test is a snapshot, not a permanent grade for your internet.
+      </p>
+      <p>
+        Want to add up streams, calls, and devices? Use the
+        <a href="/how-much-internet-speed-do-i-need/">household speed calculator</a>.
+        If the speed you see is in MB/s, the
+        <a href="/mbps-to-mbs/">Mbps to MB/s converter</a> helps compare it with your plan.
+      </p>
+
+      <h2>Can guessing make a speed test more fun?</h2>
+      <p>
+        It can. Before you start the test, ask everyone to guess both download and upload speed.
+        Then the needle reveals the answer and the closest guess wins the round. That little
+        prediction turns a number on a screen into a shared moment, and it gives kids a reason to
+        think about Wi-Fi, distance, and all the devices using the connection.
+      </p>
+
+      <h2>Frequently asked questions</h2>
+      <div class="faq">
+        {questions.map(({ question, answer }) => (
+          <section>
+            <h3>{question}</h3>
+            <p>{answer}</p>
+          </section>
+        ))}
+      </div>
+      <div class="story-cta">
+        <a class="go" href="/">Start a game</a>
+      </div>
+    </article>
+  </main>
+</Base>
