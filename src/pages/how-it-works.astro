@@ -1,0 +1,143 @@
+---
+import Base from '../layouts/Base.astro';
+
+const questions = [
+  {
+    question: 'Where does the speed test run?',
+    answer:
+      "It runs in your browser against Cloudflare's global network, using speed.cloudflare.com/__down and speed.cloudflare.com/__up. No app or install is needed.",
+  },
+  {
+    question: 'How are ping and jitter measured?',
+    answer:
+      'The test starts with one warm-up request, then sends 20 tiny requests. Ping is their median, or middle, round-trip time. Jitter is the average change between consecutive pings.',
+  },
+  {
+    question: 'Why does the test use larger files?',
+    answer:
+      'Download sizes ramp from 100 kB to 1 MB, 10 MB, 25 MB, and 100 MB. Upload sizes ramp from 100 kB to 50 MB. The engine skips larger sizes once requests take about one second.',
+  },
+  {
+    question: 'Does the test measure loaded latency or packet loss?',
+    answer:
+      'No. Loaded latency and packet loss are not measured, which keeps a round quick, roughly 20 to 40 seconds.',
+  },
+  {
+    question: 'Why can two tests show different numbers?',
+    answer:
+      'Other devices on the network, Wi-Fi signal, time-of-day congestion, the server route, and browser or device limits can change a test result.',
+  },
+  {
+    question: 'Does Cloudflare receive my game results?',
+    answer:
+      'Your game results stay on your device. Cloudflare receives the measurement traffic. See the privacy page for details.',
+  },
+];
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: questions.map(({ question, answer }) => ({
+    '@type': 'Question',
+    name: question,
+    acceptedAnswer: { '@type': 'Answer', text: answer },
+  })),
+};
+---
+
+<Base
+  title="How the Guess the Speed test works"
+  description="Learn how the browser speed test measures ping, download speed, upload speed, and game scoring."
+>
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(faqSchema)}></script>
+  </Fragment>
+  <main class="wrap content-page">
+    <span class="round-banner">Under the hood</span>
+    <h1>How does the real speed test work?</h1>
+    <p class="lede">
+      A real connection check runs right in your browser. It measures ping, download, and upload,
+      then turns your guesses into points.
+    </p>
+    <article class="content-card stk">
+      <h2>A real test in your browser</h2>
+      <p>
+        The test runs in your browser against Cloudflare's global network, using
+        <code>speed.cloudflare.com/__down</code> for downloads and
+        <code>speed.cloudflare.com/__up</code> for uploads. No app or install is needed.
+      </p>
+
+      <h2>Ping and jitter</h2>
+      <p>
+        The test starts with one warm-up request, then sends 20 tiny requests. Ping is the median,
+        or middle, round-trip time. Jitter is the average change between consecutive pings.
+      </p>
+
+      <h2>Download and upload ramps</h2>
+      <p>
+        Download files grow from 100 kB through 1 MB, 10 MB, and 25 MB up to 100 MB. Uploads use
+        the same ramp from 100 kB up to 50 MB. When requests take about one second, the engine
+        skips bigger files in that direction. Slow connections do not wait forever, and fast
+        connections still get pushed.
+      </p>
+
+      <h2>How the final speed is chosen</h2>
+      <p>
+        The final speed is the 90th percentile of the timed requests, and only requests longer
+        than 10 ms count. That reflects what the line sustains near its best, not one lucky or
+        unlucky burst.
+      </p>
+
+      <h2>A quick round, not a network deep dive</h2>
+      <p>
+        Loaded latency and packet loss are not measured, which keeps a round quick, roughly 20 to
+        40 seconds.
+      </p>
+
+      <h2>Why does the gauge move that way?</h2>
+      <p>
+        The gauge scale is not linear. Its marks are 0, 5, 10, 25, 50, 100, 250, 500, and 1000
+        Mbps, so both slow and fast lines move the needle. It caps visually at 1000 Mbps, while
+        the readout keeps the exact number.
+      </p>
+
+      <h2>From guess to points</h2>
+      <p>
+        For each speed, miss is the gap between the guess and the actual result, divided by the
+        actual result. Download and upload misses are averaged. For example, if the test measures
+        100 Mbps download and 20 Mbps upload, a guess of 90 and 18 is 10% off on both, for a 10%
+        average miss. A lower average miss ranks higher.
+      </p>
+      <p>
+        First place gets 3 points, second gets 2, and third gets 1. A guess within 5% earns a
+        bonus point for that speed. See <a href="/how-to-play/">How to play</a> for the full rules
+        and tie options.
+      </p>
+
+      <h2>Why do two tests give different numbers?</h2>
+      <p>
+        A speed test is a snapshot of the connection at that moment. Results can shift with other
+        devices on the network, Wi-Fi signal, time-of-day congestion, the server route, and
+        browser or device limits.
+      </p>
+
+      <h2>Where do the results go?</h2>
+      <p>
+        Game results stay on this device. Cloudflare receives the measurement traffic. Read the
+        <a href="/privacy/">privacy page</a> for the details, or visit
+        <a href="/internet-speed-101/">Internet speed 101</a> for a friendly guide to Mbps, ping,
+        and Wi-Fi.
+      </p>
+
+      <h2>Frequently asked questions</h2>
+      <div class="faq">
+        {questions.map(({ question, answer }) => (
+          <section>
+            <h3>{question}</h3>
+            <p>{answer}</p>
+          </section>
+        ))}
+      </div>
+    </article>
+  </main>
+</Base>

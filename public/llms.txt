@@ -4,6 +4,8 @@
 
 ## Pages
 - [Play Guess the Speed](https://guessthespeed.com/)
-- [How to play](https://guessthespeed.com/how-to-play)
-- [Privacy](https://guessthespeed.com/privacy)
+- [How to play](https://guessthespeed.com/how-to-play/)
+- [How it works](https://guessthespeed.com/how-it-works/)
+- [Internet speed 101](https://guessthespeed.com/internet-speed-101/)
+- [Privacy](https://guessthespeed.com/privacy/)
 - [Full game guide](https://guessthespeed.com/llms-full.txt)

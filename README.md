@@ -29,4 +29,4 @@ To enable optional Cloudflare Web Analytics, configure `PUBLIC_CF_BEACON_TOKEN` 
 
 ## Privacy
 
-Game data is stored in this browser's local storage. The Cloudflare speed test engine collects aggregated, anonymous test results. See [the privacy page](https://guessthespeed.com/privacy).
+Game data is stored in this browser's local storage. The Cloudflare speed test engine collects aggregated, anonymous test results. See [the privacy page](https://guessthespeed.com/privacy/).
