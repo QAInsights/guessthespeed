@@ -39,6 +39,7 @@ import {
 } from "./room-client";
 import { readRoomLocalSettings } from "./room-settings";
 import type { ClientAction, RoomView } from "../lib/room";
+import { sendStat } from "./stats-client";
 
 type ClientPlayer = Player & { mine?: boolean };
 type ClientGameState = Omit<GameState, "players"> & {
@@ -108,6 +109,8 @@ let roomStartedAt = 0;
 let shareStatusTimer = 0;
 const isDevMode = () =>
   !roomMode && document.documentElement.dataset.dev === "1";
+const isMockMode = () =>
+  new URLSearchParams(window.location.search).has("mock");
 const isTesting = () => state.phase === "testing" || runInProgress;
 const isMine = (player: ClientPlayer) => !roomMode || player.mine === true;
 const isRoomHost = () => !roomMode || state.isRoomHost === true;
@@ -914,8 +917,12 @@ async function startTest() {
       setResultText("down", actual.down);
       setResultText("up", actual.up);
       setResultText("ping", actual.ping);
+      const lockedGuesses = state.players.filter(
+        (player) => player.locked,
+      ).length;
       const result = applyResult(state, actual);
       state = result.state;
+      if (!isMockMode()) sendStat({ kind: "round", guesses: lockedGuesses });
       persist();
       document.documentElement.dataset.phase = "done";
       $<HTMLSpanElement>("[data-mode]").textContent = "Download";
@@ -1300,8 +1307,10 @@ nextButton.addEventListener("click", () => {
   } else {
     state = nextRound(state);
     persist();
-    if (state.phase === "champion")
+    if (state.phase === "champion") {
+      if (!isMockMode()) sendStat({ kind: "game" });
       playCue("champion", activeTheme, state.settings.sound);
+    }
     render();
   }
 });

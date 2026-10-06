@@ -50,6 +50,7 @@ const homeSchema: Record<string, unknown>[] = [
         <h2 class="display dev-title" data-dev-title hidden>Dev mode</h2>
         <p data-game-lede>Guess the download and upload. Run a real speed test. Closest guesses score!</p>
         <p class="dev-lede" data-dev-lede hidden>Raw Cloudflare speed test data. No game, no scores.</p>
+        <p class="play-stat" data-play-stat hidden><span>🎉{' '}<span data-play-stat-text></span></span></p>
       </div>
 
       <div class="gauge-card stk">
@@ -370,5 +371,10 @@ const homeSchema: Record<string, unknown>[] = [
     import '../scripts/room-client';
     import '../scripts/game-client';
     import '../scripts/dev-client';
+    import { loadPlayStat } from '../scripts/stats-client';
+
+    requestAnimationFrame(() => {
+      window.setTimeout(() => void loadPlayStat(), 0);
+    });
   </script>
 </Base>

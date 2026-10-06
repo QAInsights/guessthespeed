@@ -968,6 +968,46 @@ footer {
   line-height: 1.5;
 }
 
+.intro .play-stat {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  max-width: 100%;
+  margin: 18px 0 0;
+  padding: 7px 12px;
+  border: 2.5px solid var(--ink);
+  border-radius: 7px;
+  background: var(--accent);
+  box-shadow: 4px 4px 0 var(--shadow);
+  color: var(--on-accent);
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.25;
+  transform: rotate(-2deg);
+}
+
+.intro .play-stat[hidden],
+.story-stat[hidden],
+html[data-dev="1"] .intro .play-stat {
+  display: none;
+}
+
+.story-stat {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  margin: 18px 0;
+  padding: 7px 12px;
+  border: 2.5px solid var(--ink);
+  border-radius: 7px;
+  background: var(--accent);
+  box-shadow: 4px 4px 0 var(--shadow);
+  color: var(--on-accent);
+  font-weight: 800;
+  line-height: 1.25;
+  transform: rotate(-1deg);
+}
+
 .round {
   display: inline-flex;
   align-items: center;
@@ -1929,6 +1969,11 @@ footer {
   max-width: 72ch;
   color: var(--muted);
   line-height: 1.65;
+}
+
+.content-card p.story-stat {
+  color: var(--on-accent);
+  font-weight: 800;
 }
 
 .content-card strong {

@@ -58,6 +58,7 @@ const articleSchema = {
 
       <h2>Your turn</h2>
       <p>If you have kids, nieces, nephews or a competitive group of friends, give it a try tonight. Put it on the big screen, let everyone lock in a guess, and press Start. And if you want to lose on purpose, your secret is safe with me.</p>
+      <p class="story-stat" data-play-stat data-play-stat-short hidden><span>Families have played{' '}<span data-play-stat-text></span>.</span></p>
       <div class="story-cta">
         <a class="go" href="/">Start a game</a>
         <a class="guess-button" href="/how-to-play/">How to play</a>
@@ -67,4 +68,11 @@ const articleSchema = {
       </p>
     </article>
   </main>
+  <script>
+    import { loadPlayStat } from '../scripts/stats-client';
+
+    requestAnimationFrame(() => {
+      window.setTimeout(() => void loadPlayStat(), 0);
+    });
+  </script>
 </Base>

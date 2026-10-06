@@ -7,6 +7,7 @@ import {
   viewFor,
   type Room,
 } from "../src/lib/room";
+import type { StatEvent } from "../src/lib/stats";
 import type { Env } from "./types";
 
 interface SocketAttachment {
@@ -95,6 +96,10 @@ export class GameRoom extends DurableObject<Env> {
       socket.close(1000, "Room ended");
       return;
     }
+    const previousPhase = room.game.phase;
+    const lockedGuesses = room.game.players.filter(
+      (player) => player.locked,
+    ).length;
     const result = applyAction(
       room,
       attachment.clientId,
@@ -109,6 +114,14 @@ export class GameRoom extends DurableObject<Env> {
     await this.ctx.storage.put(ROOM_KEY, result.room);
     await this.ctx.storage.setAlarm(result.room.updatedAt + ROOM_TTL_MS);
     this.broadcastState(result.room);
+    if (
+      parsed.type === "result" &&
+      previousPhase === "testing" &&
+      result.room.game.phase === "results"
+    )
+      this.recordStat({ kind: "round", guesses: lockedGuesses });
+    else if (parsed.type === "next" && result.room.game.phase === "champion")
+      this.recordStat({ kind: "game" });
   }
 
   webSocketClose(socket: WebSocket): void {
@@ -117,6 +130,21 @@ export class GameRoom extends DurableObject<Env> {
 
   webSocketError(socket: WebSocket): void {
     this.rateLimits.delete(socket);
+  }
+
+  private recordStat(event: StatEvent): void {
+    try {
+      const request = this.env.STATS.get(
+        this.env.STATS.idFromName("global"),
+      ).fetch("https://stats.internal/add", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(event),
+      });
+      this.ctx.waitUntil(request.then(() => undefined).catch(() => {}));
+    } catch {
+      return;
+    }
   }
 
   async alarm(): Promise<void> {

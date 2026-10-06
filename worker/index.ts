@@ -1,8 +1,12 @@
 import { generateRoomCode, normalizeRoomCode } from "../src/lib/room";
+import { parseStatEvent } from "../src/lib/stats";
 import type { Env } from "./types";
 import { GameRoom } from "./game-room";
+import { PlayStats } from "./play-stats";
 
-export { GameRoom };
+export { GameRoom, PlayStats };
+
+const STATS_CACHE_SECONDS = 60;
 
 const jsonResponse = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -13,6 +17,7 @@ const jsonResponse = (body: unknown, status = 200) =>
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
+    if (url.pathname === "/api/stats") return handleStats(request, env);
     if (url.pathname === "/api" || url.pathname.startsWith("/api/")) {
       if (url.pathname === "/api/rooms" && request.method === "POST")
         return createRoom(env);
@@ -46,6 +51,74 @@ export default {
     return env.ASSETS.fetch(request);
   },
 };
+
+async function handleStats(request: Request, env: Env): Promise<Response> {
+  if (request.method === "POST") {
+    const contentType = request.headers
+      .get("content-type")
+      ?.split(";", 1)[0]
+      .trim()
+      .toLowerCase();
+    if (contentType !== "application/json")
+      return jsonResponse(
+        { error: "Content-Type must be application/json." },
+        400,
+      );
+
+    const body = await request.text();
+    if (new TextEncoder().encode(body).byteLength > 256)
+      return jsonResponse({ error: "Request body is too large." }, 400);
+
+    let input: unknown;
+    try {
+      input = JSON.parse(body);
+    } catch {
+      return jsonResponse({ error: "Invalid JSON." }, 400);
+    }
+    const event = parseStatEvent(input);
+    if (!event) return jsonResponse({ error: "Invalid event." }, 400);
+
+    const stub = env.STATS.get(env.STATS.idFromName("global"));
+    try {
+      await stub.fetch("https://stats.internal/add", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(event),
+      });
+    } catch {
+      return new Response(null, { status: 204 });
+    }
+    return new Response(null, { status: 204 });
+  }
+
+  if (request.method === "GET") {
+    const cache = (caches as CacheStorage & { default: Cache }).default;
+    const cacheKey = new Request(new URL("/api/stats", request.url));
+    const cached = await cache.match(cacheKey);
+    if (cached) return cached;
+
+    let totals: unknown;
+    try {
+      const stub = env.STATS.get(env.STATS.idFromName("global"));
+      const response = await stub.fetch("https://stats.internal/totals");
+      if (!response.ok)
+        return jsonResponse({ error: "Could not load play totals." }, 503);
+      totals = await response.json();
+    } catch {
+      return jsonResponse({ error: "Could not load play totals." }, 503);
+    }
+
+    const response = jsonResponse(totals);
+    response.headers.set(
+      "cache-control",
+      `public, max-age=${STATS_CACHE_SECONDS}`,
+    );
+    await cache.put(cacheKey, response.clone());
+    return response;
+  }
+
+  return jsonResponse({ error: "Method not allowed." }, 405);
+}
 
 async function createRoom(env: Env): Promise<Response> {
   for (let attempt = 0; attempt < 5; attempt += 1) {
