@@ -44,7 +44,7 @@ When dates overlap, priority is Diwali, Holi, Easter, Thanksgiving, Pongal, Hall
 
 ## Privacy
 
-For a local game, player names, guesses, settings, scores, and history are stored in local storage on the current device. Multiplayer rooms temporarily share the game state on Cloudflare. There are no accounts or game cookies. The speed test sends measurements to Cloudflare, which collects aggregated, anonymous results to understand internet connection quality. Optional Cloudflare Web Analytics uses a cookieless beacon and only loads when the site owner configures its public token.
+For a local game, player names, guesses, settings, scores, and history are stored in local storage on the current device. Multiplayer rooms temporarily share the game state on Cloudflare. There are no accounts or game cookies. The speed test sends measurements to Cloudflare, which collects aggregated, anonymous results to understand internet connection quality. Optional Cloudflare Web Analytics uses a cookieless beacon and only loads when the site owner configures its public token. A public play counter stores only aggregate totals for completed real rounds, games reaching the champion phase, and locked guesses; it stores no IP addresses, device IDs, timestamps per event, names, guesses, or speeds.
 
 Developer mode turns the home page into a raw Cloudflare speed test diagnostics console. Add `?dev=1` to the home page URL to enable it. IP addresses are masked on screen by default, omitted from JSON exports, and not saved in local storage.
 
