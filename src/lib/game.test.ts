@@ -78,7 +78,7 @@ describe("game state", () => {
   it("preserves saved names when the default family names change", () => {
     const saved = initialGameState();
     saved.players[2].name = "Priya";
-    saved.players[3].name = "Little Sis";
+    saved.players[3].name = "Meena";
 
     const loaded = loadGame(memoryStorage(JSON.stringify(saved)));
 
@@ -86,7 +86,7 @@ describe("game state", () => {
       "Mom",
       "Dad",
       "Priya",
-      "Little Sis",
+      "Meena",
     ]);
   });
 

@@ -6,7 +6,7 @@ import { ROLES } from '../lib/game';
 const roleChoices = ROLES;
 const homeTitle = 'Guess the Speed | The Internet Speed Guessing Game for Families';
 const homeDescription =
-  "A free family game and two-minute filler: everyone guesses the Wi-Fi download and upload speed, then a real speed test reveals who came closest. Play on one screen or on everyone's phone.";
+  "A free family game: everyone guesses the Wi-Fi download and upload speed, then a real speed test reveals who came closest. Play on one screen or on everyone's phone.";
 const homeSchema: Record<string, unknown>[] = [
   {
     '@type': 'WebApplication',
@@ -14,7 +14,7 @@ const homeSchema: Record<string, unknown>[] = [
     url: 'https://guessthespeed.com/',
     description: homeDescription,
     applicationCategory: 'GameApplication',
-    genre: ['Family game', 'Party game', 'Filler game'],
+    genre: ['Family game', 'Party game'],
     operatingSystem: 'Any',
     browserRequirements: 'Requires JavaScript and a modern browser',
     isAccessibleForFree: true,
@@ -36,7 +36,6 @@ const homeSchema: Record<string, unknown>[] = [
       'Choose light, dark, or seasonal themes.',
       'Play with optional sound effects.',
       'Play without accounts or cookies.',
-      'Play a quick round in about two minutes as a filler game between longer games.',
     ],
   },
 ];
@@ -236,6 +235,11 @@ const homeSchema: Record<string, unknown>[] = [
           <a href="/speed-test-game/">Speed test game</a>,{' '}
           <a href="/family-game-night-ideas/">Game night ideas</a>, and{' '}
           <a href="/internet-speed-lesson-for-kids/">Classroom lesson</a>.
+        </p>
+        <p>
+          It also makes a great filler game. A round takes about a minute, so it
+          fits between dinner and dessert, during an ad break, or while everyone
+          hunts for the remote.
         </p>
       </div>
       <p class="note stk"><strong>Why both numbers?</strong> Most home plans upload more slowly than they download. Guessing both makes the game extra interesting.</p>
