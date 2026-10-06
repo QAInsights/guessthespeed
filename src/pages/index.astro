@@ -33,7 +33,17 @@ const roleChoices = ROLES;
             <span class="unit" data-unit>Mbps</span>
           </div>
         </div>
-        <div class="phase" data-phase-label aria-live="polite">Ready when you are</div>
+        <div class="phase-status">
+          <span class="live-dot" data-live-dot aria-hidden="true" hidden></span>
+          <div class="phase" data-phase-label aria-live="polite">
+            <span data-phase-text>Ready when you are</span>
+            <span class="elapsed" data-elapsed aria-hidden="true" hidden></span>
+            <span class="slow-hint" data-slow-hint hidden>Big file still on its way...</span>
+          </div>
+        </div>
+        <div class="test-progress" data-test-progress role="progressbar" aria-label="Speed test progress" aria-valuemin="0" aria-valuemax="13" aria-valuenow="0" hidden>
+          <div class="test-progress-fill" data-progress-fill></div>
+        </div>
         <button class="go" type="button" data-start-btn disabled>
           <Icon name="ph:lightning-fill" />
           <span data-start-label>Waiting for guesses</span>
