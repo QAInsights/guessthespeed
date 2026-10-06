@@ -160,6 +160,9 @@ function renderPlayerCard(player: Player, index: number) {
     .at(-1)
     ?.scores.find((score) => score.id === player.id);
   const revealed = state.phase === "results" || state.phase === "champion";
+  const miss = roundResult?.miss;
+  const tooFar =
+    miss !== null && miss !== undefined && roundResult?.place === null;
   const medal =
     roundResult?.place === 1
       ? "🥇"
@@ -174,7 +177,7 @@ function renderPlayerCard(player: Player, index: number) {
     ? `<div class="p-results">
         <span>Download guess: ${player.guess.down === null ? "No guess" : `${player.guess.down.toLocaleString()} Mbps`}</span>
         <span>Upload guess: ${player.guess.up === null ? "No guess" : `${player.guess.up.toLocaleString()} Mbps`}</span>
-        <span>${roundResult?.miss === null || roundResult?.miss === undefined ? "No guess this round" : `${(roundResult.miss * 100).toFixed(1)}% average miss`}</span>
+        <span>${miss === null || miss === undefined ? "No guess this round" : `${(miss * 100).toFixed(1)}% average miss${tooFar ? ", too far for place points" : ""}`}</span>
       </div>
       <div class="p-actions">
         <span class="points-pill">${medal ? `${medal} ` : ""}${formatPointAward(roundResult?.total ?? 0)}</span>
@@ -196,12 +199,15 @@ function renderPlayerTable(player: Player, index: number) {
     ?.scores.find((score) => score.id === player.id);
   const revealed = state.phase === "results" || state.phase === "champion";
   const place = roundResult?.place;
+  const miss = roundResult?.miss;
+  const tooFar =
+    miss !== null && miss !== undefined && roundResult?.place === null;
   const medal =
     place === 1 ? "🥇" : place === 2 ? "🥈" : place === 3 ? "🥉" : " ";
   const roundStatus = revealed
-    ? roundResult?.miss === null || roundResult?.miss === undefined
+    ? miss === null || miss === undefined
       ? "No guess"
-      : `${(roundResult.miss * 100).toFixed(1)}% miss`
+      : `${(miss * 100).toFixed(1)}% miss${tooFar ? " (too far)" : ""}`
     : player.locked
       ? `<button class="locked-pill" type="button" data-guess="${escapeHtml(player.id)}" ${state.phase !== "guessing" ? "disabled" : ""}>🔒 Locked in <small>Change</small></button>`
       : `<button class="guess-button" type="button" data-guess="${escapeHtml(player.id)}" ${state.phase !== "guessing" ? "disabled" : ""}>Guess</button>`;
@@ -274,6 +280,7 @@ function renderWinner() {
     return;
   }
   const scores = state.history.at(-1)?.scores ?? [];
+  const guessedScores = scores.filter((score) => score.miss !== null);
   const winners = scores
     .filter((score) => score.place === 1)
     .flatMap((score) => {
@@ -283,8 +290,23 @@ function renderWinner() {
       return player ? [{ player, score }] : [];
     });
   if (!winners.length) {
-    banner.innerHTML =
-      '<span class="wb-emoji">🤔</span><span>No locked guesses this round. Everyone can try again next round.</span>';
+    const closest = guessedScores.reduce<(typeof guessedScores)[number] | null>(
+      (best, score) =>
+        best === null || score.miss! < best.miss! ? score : best,
+      null,
+    );
+    const closestPlayer = closest
+      ? state.players.find((player) => player.id === closest.id)
+      : undefined;
+    if (closest && closestPlayer) {
+      const bonusNote = scores.some((score) => score.bonus > 0)
+        ? " Spot-on bonuses still count."
+        : "";
+      banner.innerHTML = `<span class="wb-emoji">${escapeHtml(closestPlayer.emoji)}</span><span><b>Nobody landed within 50% this round</b>, so no place points. Closest was ${escapeHtml(closestPlayer.name)} at ${(closest.miss! * 100).toFixed(1)}% off.${bonusNote}</span>`;
+    } else {
+      banner.innerHTML =
+        '<span class="wb-emoji">🤔</span><span>No locked guesses this round. Everyone can try again next round.</span>';
+    }
   } else {
     const names = winners.map(({ player }) => escapeHtml(player.name));
     const message =

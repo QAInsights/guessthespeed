@@ -1,6 +1,6 @@
 # Guess the Speed
 
-A family game-night app for guessing download and upload speed before running a real internet speed test. Closest guesses earn points, and the local scoreboard keeps the game going across rounds.
+A family game-night app for guessing download and upload speed before running a real internet speed test. Guesses with an average miss of 50 percent or less earn place points, while spot-on guesses can add bonuses. The local scoreboard keeps the game going across rounds.
 
 ## Local development
 

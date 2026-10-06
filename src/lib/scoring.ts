@@ -4,6 +4,7 @@ export interface ScoringSettings {
   tieMode: TieMode;
   placePoints: number[];
   spotOnPct: number;
+  maxMissPct: number;
 }
 
 export interface Guess {
@@ -31,6 +32,7 @@ export const DEFAULT_SCORING_SETTINGS: ScoringSettings = {
   tieMode: "share",
   placePoints: [3, 2, 1],
   spotOnPct: 0.05,
+  maxMissPct: 0.5,
 };
 
 const rounded = (value: number) => Math.round(value * 10_000) / 10_000;
@@ -90,15 +92,26 @@ export function scoreRound(
   };
 
   ranked.sort(compare);
+  const eligible = ranked.filter(
+    (result) => rounded(result.miss!) <= settings.maxMissPct,
+  );
+  const tooFar = ranked.filter(
+    (result) => rounded(result.miss!) > settings.maxMissPct,
+  );
   let place = 0;
-  for (let index = 0; index < ranked.length; index += 1) {
-    if (index === 0 || compare(ranked[index - 1], ranked[index]) !== 0) {
+  for (let index = 0; index < eligible.length; index += 1) {
+    if (index === 0 || compare(eligible[index - 1], eligible[index]) !== 0) {
       place = index + 1;
     }
-    const result = ranked[index];
+    const result = eligible[index];
     result.place = place;
     result.placePoints = settings.placePoints[place - 1] ?? 0;
     result.total = result.placePoints + result.bonus;
+  }
+  for (const result of tooFar) {
+    result.place = null;
+    result.placePoints = 0;
+    result.total = result.bonus;
   }
 
   const byId = new Map(
