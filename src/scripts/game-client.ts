@@ -13,7 +13,8 @@ import {
   type GameSettings,
   type Player,
 } from "../lib/game";
-import { runSpeedTest, type Phase } from "../lib/speedtest";
+import { runSpeedTest, StalledError, type Phase } from "../lib/speedtest";
+import { phaseText, SLOW_HINT_MS } from "../lib/progress";
 import { themes, themeForDate, type ThemeId } from "../lib/themes";
 import { playCue } from "../lib/sound";
 
@@ -57,6 +58,11 @@ const championDialog = $<HTMLDialogElement>("[data-champion-dialog]");
 const startButton = $<HTMLButtonElement>("[data-start-btn]");
 const errorNote = $<HTMLParagraphElement>("[data-error-note]");
 const playerContainer = $<HTMLDivElement>("[data-players]");
+const progressBar = $<HTMLDivElement>("[data-test-progress]");
+const progressFill = $<HTMLDivElement>("[data-progress-fill]");
+const liveDot = $<HTMLSpanElement>("[data-live-dot]");
+const elapsedLabel = $<HTMLSpanElement>("[data-elapsed]");
+const slowHint = $<HTMLSpanElement>("[data-slow-hint]");
 
 if (state.phase === "testing") {
   state = { ...state, phase: "guessing" };
@@ -375,7 +381,7 @@ function syncControls() {
         : state.players.some((player) => player.locked)
           ? "Start the speed test"
           : "Waiting for guesses";
-  $<HTMLDivElement>("[data-phase-label]").textContent =
+  $<HTMLSpanElement>("[data-phase-text]").textContent =
     state.phase === "testing"
       ? "Pinging Cloudflare"
       : state.phase === "results" || state.phase === "champion"
@@ -506,18 +512,22 @@ function openEdit(id: string) {
   (form.elements.namedItem("name") as HTMLInputElement).focus();
 }
 
-function setPhase(phase: Phase) {
+function setPhase(phase: Phase, bytes?: number) {
   document.documentElement.dataset.phase = phase;
   $<HTMLSpanElement>("[data-mode]").textContent =
     phase === "ping" ? "Ping" : phase === "up" ? "Upload" : "Download";
   $<HTMLSpanElement>("[data-unit]").textContent =
     phase === "ping" ? "ms" : "Mbps";
-  $<HTMLDivElement>("[data-phase-label]").textContent =
-    phase === "ping"
-      ? "Pinging Cloudflare"
-      : phase === "down"
-        ? "Measuring download"
-        : "Measuring upload";
+  $<HTMLSpanElement>("[data-phase-text]").textContent = phaseText(phase, bytes);
+}
+
+function setProgress(step: number, steps: number) {
+  const safeSteps = Math.max(1, steps);
+  const safeStep = Math.max(0, Math.min(step, safeSteps));
+  progressBar.hidden = false;
+  progressBar.setAttribute("aria-valuemax", String(safeSteps));
+  progressBar.setAttribute("aria-valuenow", String(safeStep));
+  progressFill.style.width = `${(safeStep / safeSteps) * 100}%`;
 }
 
 async function startTest() {
@@ -535,13 +545,41 @@ async function startTest() {
   setResultText("up", undefined);
   setGauge(0);
   setPhase("ping");
+  let currentBytes: number | undefined;
+  let steps = Number(progressBar.getAttribute("aria-valuemax")) || 13;
+  let lastUpdateAt = Date.now();
+  const startedAt = lastUpdateAt;
+  const updateElapsed = () => {
+    elapsedLabel.textContent = `· ${Math.floor((Date.now() - startedAt) / 1000)} s`;
+  };
+  progressBar.hidden = false;
+  progressBar.setAttribute("aria-valuenow", "0");
+  progressFill.style.width = "0%";
+  liveDot.hidden = false;
+  if (!reduceMotion) liveDot.classList.add("is-live");
+  elapsedLabel.hidden = false;
+  slowHint.hidden = true;
+  updateElapsed();
+  const elapsedTimer = window.setInterval(updateElapsed, 1000);
+  const slowHintTimer = window.setInterval(() => {
+    if (Date.now() - lastUpdateAt >= SLOW_HINT_MS) slowHint.hidden = false;
+  }, 500);
   try {
     const actual = await runSpeedTest((update) => {
-      if (lastSpeedPhase !== update.phase) {
-        lastSpeedPhase = update.phase;
-        playCue("phase", activeTheme, state.settings.sound);
+      lastUpdateAt = Date.now();
+      slowHint.hidden = true;
+      if (update.step !== undefined) {
+        if (lastSpeedPhase !== update.phase) {
+          lastSpeedPhase = update.phase;
+          playCue("phase", activeTheme, state.settings.sound);
+          if (update.phase === "up") setGauge(0);
+        }
+        if (update.bytes !== undefined) currentBytes = update.bytes;
+        else if (update.phase === "ping") currentBytes = undefined;
+        if (update.steps !== undefined) steps = update.steps;
+        setProgress(update.step, steps);
+        setPhase(update.phase, currentBytes);
       }
-      setPhase(update.phase);
       if (update.mbps !== undefined) setGauge(update.mbps);
       if (update.pingMs !== undefined) {
         setGauge(update.pingMs);
@@ -554,6 +592,7 @@ async function startTest() {
         gaugePosition(update.mbps ?? update.pingMs ?? 0),
       );
     });
+    setProgress(steps, steps);
     latestPing = actual.ping;
     setResultText("down", actual.down);
     setResultText("up", actual.up);
@@ -567,16 +606,27 @@ async function startTest() {
     $<HTMLSpanElement>("[data-unit]").textContent = "Mbps";
     playCue("reveal", activeTheme, state.settings.sound);
     render();
-  } catch {
+  } catch (error) {
     state = { ...state, phase: "guessing" };
     persist();
-    errorNote.textContent = "The speed test hiccuped. Try again?";
+    errorNote.textContent =
+      error instanceof StalledError
+        ? "The test stalled with no data for 45 seconds. Check your connection and press Start to try again."
+        : "The speed test hiccuped. Try again?";
     errorNote.hidden = false;
     document.documentElement.dataset.phase = "idle";
+    setGauge(0);
     $<HTMLSpanElement>("[data-mode]").textContent = "Download";
     $<HTMLSpanElement>("[data-unit]").textContent = "Mbps";
     render();
   } finally {
+    window.clearInterval(elapsedTimer);
+    window.clearInterval(slowHintTimer);
+    liveDot.classList.remove("is-live");
+    liveDot.hidden = true;
+    elapsedLabel.hidden = true;
+    slowHint.hidden = true;
+    progressBar.hidden = true;
     runInProgress = false;
     syncControls();
   }
