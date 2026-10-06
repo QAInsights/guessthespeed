@@ -718,6 +718,16 @@ h3,
   height: 21px;
 }
 
+.icon-btn[data-tv-toggle][aria-pressed="true"],
+.icon-btn[data-fullscreen][aria-pressed="true"] {
+  background: var(--ink);
+  color: var(--surface);
+}
+
+.wifi-nowrap {
+  white-space: nowrap;
+}
+
 .dev-badge {
   height: 38px;
   padding: 0 11px;
@@ -2352,15 +2362,12 @@ dialog::backdrop {
 
 .champion-actions .share-status {
   flex-basis: 100%;
+  min-height: 1.4em;
   margin: 0;
   color: var(--muted);
   font-size: 13px;
   font-weight: 700;
   text-align: center;
-}
-
-.champion-actions .share-status:empty {
-  display: none;
 }
 
 [hidden] {
@@ -2841,26 +2848,28 @@ html[data-dev="1"] .dev-console {
 
 @media (min-width: 900px) {
   html[data-tv="1"][data-home="1"] .wrap {
-    max-width: 1680px;
+    max-width: none;
+    padding-right: clamp(20px, 2vw, 38px);
+    padding-left: clamp(20px, 2vw, 38px);
   }
 
   html[data-tv="1"][data-home="1"] .game-main {
     display: grid;
-    grid-template-columns: minmax(0, 1.4fr) minmax(350px, 0.9fr);
+    grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
     align-content: start;
     align-items: start;
-    gap: 12px clamp(24px, 3vw, 48px);
+    gap: 12px clamp(20px, 2vw, 38px);
   }
 
   html[data-tv="1"][data-home="1"] .stage {
     grid-column: 1;
     grid-row: 1;
-    grid-template-columns: minmax(180px, 0.55fr) minmax(0, 1.45fr);
-    grid-template-rows: auto auto;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto auto;
     align-content: start;
-    align-items: center;
-    gap: 16px 20px;
-    padding: 0 0 20px;
+    align-items: start;
+    gap: clamp(6px, 1vh, 12px);
+    padding: 0;
   }
 
   html[data-tv="1"][data-home="1"] .intro {
@@ -2868,74 +2877,110 @@ html[data-dev="1"] .dev-console {
     grid-row: 1;
   }
 
-  html[data-tv="1"][data-home="1"] .intro h1 {
-    margin-bottom: 18px;
-    font-size: clamp(42px, 5vw, 68px);
-  }
-
-  html[data-tv="1"][data-home="1"] .intro p {
-    font-size: 20px;
-    line-height: 1.4;
+  html[data-tv="1"][data-home="1"] .intro h1,
+  html[data-tv="1"][data-home="1"] .intro [data-game-lede] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    clip-path: inset(50%);
   }
 
   html[data-tv="1"][data-home="1"] .round {
     gap: 9px;
-    margin-bottom: 18px;
-    padding: 8px 15px;
-    font-size: 18px;
+    margin-bottom: 0;
+    padding: 7px 14px;
+    font-size: 17px;
   }
 
   html[data-tv="1"][data-home="1"] .gauge-card {
-    grid-column: 2;
-    grid-row: 1 / span 2;
-    align-self: center;
-    padding: clamp(16px, 1.8vw, 28px);
+    grid-column: 1;
+    grid-row: 2;
+    align-self: start;
+    padding: 8px clamp(12px, 1.1vw, 20px) 12px;
   }
 
   html[data-tv="1"][data-home="1"] .gauge {
-    max-width: 640px;
+    width: min(100%, max(440px, calc((100vh - 400px) * 1.25)));
+    max-width: none;
   }
 
   html[data-tv="1"][data-home="1"] .readout .mode {
-    font-size: 16px;
+    font-size: clamp(14px, 1.1vw, 21px);
   }
 
   html[data-tv="1"][data-home="1"] .readout .num {
-    font-size: clamp(80px, 6vw, 96px);
+    font-size: clamp(90px, 8.2vw, 156px);
   }
 
   html[data-tv="1"][data-home="1"] .readout .unit {
-    font-size: 18px;
+    font-size: clamp(16px, 1.3vw, 24px);
   }
 
   html[data-tv="1"][data-home="1"] .phase {
-    font-size: clamp(18px, 1.5vw, 22px);
+    font-size: clamp(16px, 1.25vw, 22px);
   }
 
   html[data-tv="1"][data-home="1"] .test-progress {
-    height: 20px;
+    width: min(100%, 560px);
+    height: 17px;
+    margin-bottom: 10px;
   }
 
   html[data-tv="1"][data-home="1"] .go {
-    min-height: 72px;
-    padding: 0 38px;
-    font-size: clamp(24px, 2vw, 30px);
+    min-height: clamp(60px, 9vh, 88px);
+    padding: 0 clamp(28px, 3vw, 54px);
+    font-size: clamp(25px, 2.5vw, 38px);
   }
 
   html[data-tv="1"][data-home="1"] .stats {
     grid-column: 1;
-    grid-row: 2;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 10px;
+    grid-row: 3;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
     align-self: start;
+    margin-top: 4px;
   }
 
   html[data-tv="1"][data-home="1"] .stat {
-    padding: 16px 18px;
+    min-height: 58px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 8px 5px;
   }
 
   html[data-tv="1"][data-home="1"] .stat span {
-    font-size: 17px;
+    gap: 5px;
+    font-size: clamp(12px, 1vw, 16px);
+  }
+
+  html[data-tv="1"][data-home="1"] .stat span svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  html[data-tv="1"][data-home="1"] .stat b {
+    font-size: clamp(20px, 1.8vw, 30px);
+  }
+
+  html[data-tv="1"][data-home="1"] .phase-status {
+    min-height: 1.35em;
+    margin: 2px 0 5px;
+  }
+
+  html[data-tv="1"][data-home="1"] .winner {
+    gap: 8px;
+    margin-top: 8px;
+    padding: 8px 10px;
+    font-size: clamp(13px, 1vw, 16px);
+  }
+
+  html[data-tv="1"][data-home="1"] .wb-emoji {
+    font-size: 24px;
   }
 
   html[data-tv="1"][data-home="1"] .room-bar:not([hidden]) {
@@ -2955,50 +3000,103 @@ html[data-dev="1"] .dev-console {
     align-self: start;
   }
 
+  html[data-tv="1"][data-home="1"] [data-players] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(10px, 1vw, 18px);
+  }
+
   html[data-tv="1"][data-home="1"] .sec-head {
-    margin: 0 0 18px;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 14px;
   }
 
   html[data-tv="1"][data-home="1"] .sec-head h2 {
-    font-size: clamp(34px, 3vw, 44px);
+    font-size: clamp(28px, 2.4vw, 42px);
   }
 
-  html[data-tv="1"][data-home="1"] [data-players] {
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 22px;
+  html[data-tv="1"][data-home="1"] .section-actions {
+    gap: 8px;
+  }
+
+  html[data-tv="1"][data-home="1"] .ghost,
+  html[data-tv="1"][data-home="1"] .seg button {
+    padding: 8px 10px;
+    font-size: 14px;
   }
 
   html[data-tv="1"][data-home="1"] .add {
-    grid-template-columns: minmax(180px, 260px) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.4fr) auto;
+    gap: 12px;
+    padding: 14px;
   }
 
   html[data-tv="1"][data-home="1"] .add .go {
+    grid-column: auto;
+    min-height: 48px;
+    padding: 0 18px;
+    font-size: 18px;
+  }
+
+  html[data-tv="1"][data-home="1"] .tv-add-toggle:not([hidden]) {
+    display: inline-flex;
     grid-column: 1 / -1;
+    grid-row: 3;
+    justify-self: start;
+    min-height: 44px;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+    padding: 0 18px;
+    font-size: 17px;
+  }
+
+  html[data-tv="1"][data-home="1"] .add[hidden] {
+    display: none !important;
+  }
+
+  html[data-tv="1"][data-home="1"] .add:not([hidden]) {
+    grid-column: 1 / -1;
+    grid-row: 4;
+    margin-top: 10px;
   }
 
   html[data-tv="1"][data-home="1"] .p-card {
-    padding: 20px;
+    padding: clamp(12px, 1.15vw, 18px);
   }
 
   html[data-tv="1"][data-home="1"] .p-head {
-    gap: 14px;
-    margin-bottom: 16px;
+    gap: 9px;
+    margin-bottom: 10px;
   }
 
   html[data-tv="1"][data-home="1"] .p-emoji {
-    font-size: 54px;
+    font-size: clamp(38px, 3.2vw, 54px);
   }
 
   html[data-tv="1"][data-home="1"] .p-name {
-    font-size: 30px;
+    font-size: clamp(21px, 1.65vw, 30px);
   }
 
   html[data-tv="1"][data-home="1"] .p-role {
-    font-size: 16px;
+    font-size: clamp(12px, 0.9vw, 16px);
   }
 
   html[data-tv="1"][data-home="1"] .p-score b {
-    font-size: 48px;
+    font-size: clamp(34px, 2.6vw, 48px);
+  }
+
+  html[data-tv="1"][data-home="1"] .p-score span {
+    font-size: 13px;
+  }
+
+  html[data-tv="1"][data-home="1"] .room-bar:not([hidden]) {
+    z-index: 10;
+  }
+
+  html[data-tv="1"][data-home="1"] .tv-add-toggle svg {
+    width: 18px;
+    height: 18px;
   }
 
   html[data-tv="1"][data-home="1"] .dev-console,
@@ -3010,6 +3108,7 @@ html[data-dev="1"] .dev-console {
 
   html[data-tv="1"][data-home="1"] .how,
   html[data-tv="1"][data-home="1"] .story-teaser,
+  html[data-tv="1"][data-home="1"] .room-entry,
   html[data-tv="1"][data-home="1"] footer {
     display: none !important;
   }
@@ -3021,46 +3120,5 @@ html[data-dev="1"] .dev-console {
   body.tv-cursor-hidden,
   body.tv-cursor-hidden * {
     cursor: none !important;
-  }
-}
-
-@media (min-width: 900px) and (max-width: 1400px) {
-  html[data-tv="1"][data-home="1"] .gauge-card {
-    align-self: start;
-    padding: 8px 16px;
-  }
-
-  html[data-tv="1"][data-home="1"] .gauge {
-    max-width: 480px;
-  }
-
-  html[data-tv="1"][data-home="1"] [data-players] {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 14px;
-  }
-
-  html[data-tv="1"][data-home="1"] .p-card {
-    padding: 14px;
-  }
-
-  html[data-tv="1"][data-home="1"] .p-head {
-    gap: 10px;
-    margin-bottom: 10px;
-  }
-
-  html[data-tv="1"][data-home="1"] .p-emoji {
-    font-size: 44px;
-  }
-
-  html[data-tv="1"][data-home="1"] .p-name {
-    font-size: 24px;
-  }
-
-  html[data-tv="1"][data-home="1"] .p-role {
-    font-size: 14px;
-  }
-
-  html[data-tv="1"][data-home="1"] .p-score b {
-    font-size: 40px;
   }
 }

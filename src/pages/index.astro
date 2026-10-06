@@ -46,7 +46,7 @@ const homeSchema: Record<string, unknown>[] = [
     <section class="stage" aria-label="Speed test game">
       <div class="intro">
         <div class="round" data-round-banner><Icon name="ph:flag-checkered-fill" /><span data-round-label>Round 1 of 3</span></div>
-        <h1 class="display" data-game-title>Guess the Wi-Fi. <em>Beat the family.</em></h1>
+        <h1 class="display" data-game-title>Guess the <span class="wifi-nowrap">Wi-Fi</span>. <em>Beat the family.</em></h1>
         <h2 class="display dev-title" data-dev-title hidden>Dev mode</h2>
         <p data-game-lede>Guess the download and upload. Run a real speed test. Closest guesses score!</p>
         <p class="dev-lede" data-dev-lede hidden>Raw Cloudflare speed test data. No game, no scores.</p>
@@ -196,7 +196,10 @@ const homeSchema: Record<string, unknown>[] = [
         <div class="p-empty"><span>🏁</span><p>Add the first player</p></div>
       </div>
 
-      <form class="add stk" data-add-form>
+      <button class="guess-button tv-add-toggle" type="button" data-tv-add-toggle aria-expanded="false" aria-controls="add-player-form" hidden>
+        <Icon name="ph:plus-bold" />Add player
+      </button>
+      <form class="add stk" id="add-player-form" data-add-form>
         <div>
           <label class="lbl" for="player-name">Player name</label>
           <input id="player-name" name="name" maxlength="16" autocomplete="off" placeholder="e.g. Grandpa Raj" required />

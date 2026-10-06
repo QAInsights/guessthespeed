@@ -119,6 +119,8 @@ const editDialog = $<HTMLDialogElement>("[data-edit-dialog]");
 const championDialog = $<HTMLDialogElement>("[data-champion-dialog]");
 const shareButton = $<HTMLButtonElement>("[data-share-result]");
 const shareStatus = $<HTMLParagraphElement>("[data-share-status]");
+const addForm = $<HTMLFormElement>("[data-add-form]");
+const tvAddToggle = $<HTMLButtonElement>("[data-tv-add-toggle]");
 const startButton = $<HTMLButtonElement>("[data-start-btn]");
 const errorNote = $<HTMLParagraphElement>("[data-error-note]");
 const playerContainer = $<HTMLDivElement>("[data-players]");
@@ -127,6 +129,19 @@ const progressFill = $<HTMLDivElement>("[data-progress-fill]");
 const liveDot = $<HTMLSpanElement>("[data-live-dot]");
 const elapsedLabel = $<HTMLSpanElement>("[data-elapsed]");
 const slowHint = $<HTMLSpanElement>("[data-slow-hint]");
+let tvAddExpanded = false;
+
+function syncTVAddForm() {
+  const tvLayout =
+    document.documentElement.dataset.tv === "1" &&
+    window.matchMedia("(min-width: 900px)").matches;
+  const canAdd = !roomMode || isRoomHost();
+  tvAddToggle.hidden = !tvLayout || !canAdd;
+  if (!tvLayout) tvAddExpanded = false;
+  if (!canAdd) tvAddExpanded = false;
+  tvAddToggle.setAttribute("aria-expanded", String(tvAddExpanded));
+  addForm.hidden = !canAdd || (tvLayout && !tvAddExpanded);
+}
 
 if (!roomMode && state.phase === "testing") {
   state = { ...state, phase: "guessing" };
@@ -486,7 +501,7 @@ function syncControls() {
   const resetButton = $<HTMLButtonElement>("[data-reset]");
   resetButton.textContent = roomMode ? "New game" : "Reset scores";
   resetButton.hidden = roomMode && !host;
-  $<HTMLFormElement>("[data-add-form]").hidden = roomMode && !host;
+  syncTVAddForm();
   $<HTMLSpanElement>("[data-start-label]").textContent = devMode
     ? testing
       ? "Testing..."
@@ -1123,7 +1138,18 @@ $<HTMLButtonElement>("[data-start-btn]").addEventListener(
   "click",
   () => void startTest(),
 );
-$<HTMLFormElement>("[data-add-form]").addEventListener("submit", (event) => {
+tvAddToggle.addEventListener("click", () => {
+  tvAddExpanded = !tvAddExpanded;
+  syncTVAddForm();
+  if (tvAddExpanded) $<HTMLInputElement>("#player-name").focus();
+});
+
+document.addEventListener("gts:tv-change", () => {
+  syncTVAddForm();
+});
+window.addEventListener("resize", syncTVAddForm);
+
+addForm.addEventListener("submit", (event) => {
   event.preventDefault();
   const form = event.currentTarget as HTMLFormElement;
   const name = (form.elements.namedItem("name") as HTMLInputElement).value;
