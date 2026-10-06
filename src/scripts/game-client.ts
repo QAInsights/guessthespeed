@@ -28,7 +28,6 @@ import {
   buildPodiumEntries,
   buildSharePayload,
   buildShareText,
-  joinNames,
 } from "../lib/share";
 import {
   canRunRoomTest,
@@ -40,6 +39,10 @@ import {
 import { readRoomLocalSettings } from "./room-settings";
 import type { ClientAction, RoomView } from "../lib/room";
 import { sendStat } from "./stats-client";
+import { formatNumber } from "../lib/i18n";
+import { defaultPlayerNames, roleLabel } from "../lib/ui-messages";
+import * as m from "../paraglide/messages.js";
+import { getLocale } from "../paraglide/runtime.js";
 
 type ClientPlayer = Player & { mine?: boolean };
 type ClientGameState = Omit<GameState, "players"> & {
@@ -82,7 +85,7 @@ const escapeHtml = (value: string) =>
         "'": "&#39;",
       })[char]!,
   );
-const emptyRoomGame = initialGameState();
+const emptyRoomGame = initialGameState(defaultPlayerNames());
 let state: ClientGameState = roomMode
   ? {
       ...emptyRoomGame,
@@ -90,7 +93,7 @@ let state: ClientGameState = roomMode
       settings: { ...emptyRoomGame.settings, ...readRoomLocalSettings() },
       isRoomHost: false,
     }
-  : loadGame();
+  : loadGame(undefined, defaultPlayerNames());
 let activePlayerId: string | null = null;
 let editingPlayerId: string | null = null;
 let gaugeValue = 0;
@@ -243,7 +246,7 @@ function initializeGauge() {
 }
 
 function roleFor(player: Player) {
-  return `<span class="p-emoji" aria-hidden="true">${escapeHtml(player.emoji)}</span><div><h3 class="p-name">${escapeHtml(player.name)}</h3><span class="p-role">${escapeHtml(player.role)}</span></div>`;
+  return `<span class="p-emoji" aria-hidden="true">${escapeHtml(player.emoji)}</span><div><h3 class="p-name">${escapeHtml(player.name)}</h3><span class="p-role">${escapeHtml(roleLabel(player.role))}</span></div>`;
 }
 
 function renderPlayerCard(player: ClientPlayer, index: number) {
@@ -267,25 +270,32 @@ function renderPlayerCard(player: ClientPlayer, index: number) {
   const mine = isMine(player);
   const canRemove = !roomMode || isRoomHost() || mine;
   const concealed = roomMode && !mine && !revealed;
+  const percent =
+    miss === null || miss === undefined
+      ? ""
+      : formatNumber(miss * 100, getLocale(), {
+          minimumFractionDigits: 1,
+          maximumFractionDigits: 1,
+        });
   const guessAction = revealed
     ? `<div class="p-results">
-        <span>Download guess: ${player.guess.down === null ? "No guess" : `${player.guess.down.toLocaleString()} Mbps`}</span>
-        <span>Upload guess: ${player.guess.up === null ? "No guess" : `${player.guess.up.toLocaleString()} Mbps`}</span>
-        <span>${miss === null || miss === undefined ? "No guess this round" : `${(miss * 100).toFixed(1)}% average miss${tooFar ? ", too far for place points" : ""}`}</span>
+        <span>${m.game_download_guess({ speed: displaySpeed(player.guess.down) })}</span>
+        <span>${m.game_upload_guess({ speed: displaySpeed(player.guess.up) })}</span>
+        <span>${miss === null || miss === undefined ? m.game_no_guess_round() : tooFar ? m.game_average_miss_too_far({ percent }) : m.game_average_miss({ percent })}</span>
       </div>
       <div class="p-actions">
         <span class="points-pill">${medal ? `${medal} ` : ""}${formatPointAward(roundResult?.total ?? 0)}</span>
-        ${roundResult?.bonus ? `<span class="bonus-pill">Spot on! +${roundResult.bonus}</span>` : ""}
+        ${roundResult?.bonus ? `<span class="bonus-pill">${m.game_spot_on_bonus({ points: formatNumber(roundResult.bonus, getLocale()) })}</span>` : ""}
       </div>`
     : concealed
-      ? `<div class="p-actions"><span class="room-status-pill">${locked ? "🔒 Locked in" : "Thinking"}</span></div>`
+      ? `<div class="p-actions"><span class="room-status-pill">${locked ? `🔒 ${m.game_locked_in()}` : m.game_thinking()}</span></div>`
       : locked
-        ? `<div class="p-actions"><button type="button" class="locked-pill" data-guess="${escapeHtml(player.id)}" ${isTesting() ? "disabled" : ""}><span aria-hidden="true">🔒</span>Locked in <small>Change</small></button>${roomMode ? `<button class="room-unlock" type="button" data-unlock="${escapeHtml(player.id)}" ${isTesting() ? "disabled" : ""}>Unlock</button>` : ""}</div>`
-        : `<div class="p-actions"><button type="button" class="guess-button" data-guess="${escapeHtml(player.id)}" ${isTesting() ? "disabled" : ""}>Guess</button></div>`;
+        ? `<div class="p-actions"><button type="button" class="locked-pill" data-guess="${escapeHtml(player.id)}" ${isTesting() ? "disabled" : ""}><span aria-hidden="true">🔒</span>${m.game_locked_in()} <small>${m.game_change_guess()}</small></button>${roomMode ? `<button class="room-unlock" type="button" data-unlock="${escapeHtml(player.id)}" ${isTesting() ? "disabled" : ""}>${m.game_unlock_guess()}</button>` : ""}</div>`
+        : `<div class="p-actions"><button type="button" class="guess-button" data-guess="${escapeHtml(player.id)}" ${isTesting() ? "disabled" : ""}>${m.game_guess_action()}</button></div>`;
   return `<article class="p-card ${winnerClass}" style="--card-index:${index}">
-    ${mine ? `<button class="p-edit" type="button" data-edit="${escapeHtml(player.id)}" aria-label="Edit ${escapeHtml(player.name)}" ${isTesting() ? "disabled" : ""}><span aria-hidden="true">✎</span></button>` : ""}
-    ${canRemove ? `<button class="p-rm" type="button" data-remove="${escapeHtml(player.id)}" aria-label="Remove ${escapeHtml(player.name)}" ${isTesting() ? "disabled" : ""}>×</button>` : ""}
-    <div class="p-head">${roleFor(player)}<div class="p-score"><b>${player.score}</b><span>${player.score === 1 ? "pt" : "pts"}</span></div></div>
+    ${mine ? `<button class="p-edit" type="button" data-edit="${escapeHtml(player.id)}" aria-label="${escapeHtml(m.game_edit_player_aria({ name: player.name }))}" ${isTesting() ? "disabled" : ""}><span aria-hidden="true">✎</span></button>` : ""}
+    ${canRemove ? `<button class="p-rm" type="button" data-remove="${escapeHtml(player.id)}" aria-label="${escapeHtml(m.game_remove_player_aria({ name: player.name }))}" ${isTesting() ? "disabled" : ""}>×</button>` : ""}
+    <div class="p-head">${roleFor(player)}<div class="p-score"><b>${formatNumber(player.score, getLocale())}</b><span>${m.game_points_unit({ count: player.score }, { locale: getLocale() })}</span></div></div>
     ${guessAction}
   </article>`;
 }
@@ -305,23 +315,35 @@ function renderPlayerTable(player: ClientPlayer, index: number) {
     place === 1 ? "🥇" : place === 2 ? "🥈" : place === 3 ? "🥉" : " ";
   const roundStatus = revealed
     ? miss === null || miss === undefined
-      ? "No guess"
-      : `${(miss * 100).toFixed(1)}% miss${tooFar ? " (too far)" : ""}`
+      ? m.game_no_guess()
+      : tooFar
+        ? m.game_table_miss_too_far({
+            percent: formatNumber(miss * 100, getLocale(), {
+              minimumFractionDigits: 1,
+              maximumFractionDigits: 1,
+            }),
+          })
+        : m.game_table_miss({
+            percent: formatNumber(miss * 100, getLocale(), {
+              minimumFractionDigits: 1,
+              maximumFractionDigits: 1,
+            }),
+          })
     : roomMode && !mine
-      ? `<span class="room-status-pill">${player.locked ? "🔒 Locked in" : "Thinking"}</span>`
+      ? `<span class="room-status-pill">${player.locked ? `🔒 ${m.game_locked_in()}` : m.game_thinking()}</span>`
       : player.locked
-        ? `<span class="p-table-round"><button class="locked-pill" type="button" data-guess="${escapeHtml(player.id)}" ${state.phase !== "guessing" || isTesting() ? "disabled" : ""}>🔒 Locked in <small>Change</small></button>${roomMode ? `<button class="room-unlock" type="button" data-unlock="${escapeHtml(player.id)}" ${isTesting() ? "disabled" : ""}>Unlock</button>` : ""}</span>`
-        : `<button class="guess-button" type="button" data-guess="${escapeHtml(player.id)}" ${state.phase !== "guessing" || isTesting() ? "disabled" : ""}>Guess</button>`;
+        ? `<span class="p-table-round"><button class="locked-pill" type="button" data-guess="${escapeHtml(player.id)}" ${state.phase !== "guessing" || isTesting() ? "disabled" : ""}>🔒 ${m.game_locked_in()} <small>${m.game_change_guess()}</small></button>${roomMode ? `<button class="room-unlock" type="button" data-unlock="${escapeHtml(player.id)}" ${isTesting() ? "disabled" : ""}>${m.game_unlock_guess()}</button>` : ""}</span>`
+        : `<button class="guess-button" type="button" data-guess="${escapeHtml(player.id)}" ${state.phase !== "guessing" || isTesting() ? "disabled" : ""}>${m.game_guess_action()}</button>`;
   return `<tr class="${place === 1 && revealed ? "is-winner" : ""}" style="--card-index:${index}">
-    <td class="p-pos">${medal}${index + 1}</td>
-    <td><span class="p-emoji">${escapeHtml(player.emoji)}</span><span class="p-name">${escapeHtml(player.name)}</span><span class="p-role">${escapeHtml(player.role)}</span></td>
-    <td>${revealed ? (player.guess.down === null ? "No guess" : `${player.guess.down.toLocaleString()} Mbps`) : "Hidden"}</td>
-    <td>${revealed ? (player.guess.up === null ? "No guess" : `${player.guess.up.toLocaleString()} Mbps`) : "Hidden"}</td>
+    <td class="p-pos">${medal}${formatNumber(index + 1, getLocale())}</td>
+    <td><span class="p-emoji">${escapeHtml(player.emoji)}</span><span class="p-name">${escapeHtml(player.name)}</span><span class="p-role">${escapeHtml(roleLabel(player.role))}</span></td>
+    <td>${revealed ? displaySpeed(player.guess.down) : m.game_hidden()}</td>
+    <td>${revealed ? displaySpeed(player.guess.up) : m.game_hidden()}</td>
     <td>${roundStatus}</td>
     <td class="p-score">${formatScoreLabel(player.score)}</td>
     <td><div class="p-table-actions">
-      ${mine ? `<button class="p-edit" type="button" data-edit="${escapeHtml(player.id)}" aria-label="Edit ${escapeHtml(player.name)}" ${isTesting() ? "disabled" : ""}><span aria-hidden="true">✎</span></button>` : ""}
-      ${canRemove ? `<button class="p-rm" type="button" data-remove="${escapeHtml(player.id)}" aria-label="Remove ${escapeHtml(player.name)}" ${isTesting() ? "disabled" : ""}>×</button>` : ""}
+      ${mine ? `<button class="p-edit" type="button" data-edit="${escapeHtml(player.id)}" aria-label="${escapeHtml(m.game_edit_player_aria({ name: player.name }))}" ${isTesting() ? "disabled" : ""}><span aria-hidden="true">✎</span></button>` : ""}
+      ${canRemove ? `<button class="p-rm" type="button" data-remove="${escapeHtml(player.id)}" aria-label="${escapeHtml(m.game_remove_player_aria({ name: player.name }))}" ${isTesting() ? "disabled" : ""}>×</button>` : ""}
     </div></td>
   </tr>`;
 }
@@ -334,11 +356,10 @@ function renderPlayers() {
     );
   });
   if (!state.players.length) {
-    playerContainer.innerHTML =
-      '<div class="p-empty"><span>🏁</span><p>Add the first player</p></div>';
+    playerContainer.innerHTML = `<div class="p-empty"><span>🏁</span><p>${m.home_empty_players()}</p></div>`;
   } else if (state.view === "table") {
     playerContainer.innerHTML = `<div class="p-table-wrap"><table class="p-table">
-      <thead><tr><th>#</th><th>Player</th><th>Download</th><th>Upload</th><th>Round status</th><th>Score</th><th><span class="sr">Player actions</span></th></tr></thead>
+      <thead><tr><th>#</th><th>${m.game_table_player()}</th><th>${m.game_table_download()}</th><th>${m.game_table_upload()}</th><th>${m.game_table_round_status()}</th><th>${m.game_table_score()}</th><th><span class="sr">${m.game_table_actions()}</span></th></tr></thead>
       <tbody>${state.players.map(renderPlayerTable).join("")}</tbody>
     </table></div>`;
   } else {
@@ -380,16 +401,31 @@ function renderPlayers() {
 
 function currentRoundLabel() {
   return state.settings.rounds === "endless"
-    ? `Round ${state.round}`
-    : `Round ${state.round} of ${state.settings.rounds}`;
+    ? m.game_round_endless(
+        { round: formatNumber(state.round, getLocale()) },
+        { locale: getLocale() },
+      )
+    : m.game_round_label(
+        {
+          round: formatNumber(state.round, getLocale()),
+          total: formatNumber(state.settings.rounds, getLocale()),
+        },
+        { locale: getLocale() },
+      );
 }
 
 function formatPointAward(points: number) {
-  return `+${points} ${points === 1 ? "point" : "points"}`;
+  return m.game_point_award(
+    { formatted: formatNumber(points, getLocale()), count: points },
+    { locale: getLocale() },
+  );
 }
 
 function formatScoreLabel(points: number) {
-  return `${points} ${points === 1 ? "pt" : "pts"}`;
+  return m.game_score_label(
+    { formatted: formatNumber(points, getLocale()), count: points },
+    { locale: getLocale() },
+  );
 }
 
 function renderWinner() {
@@ -418,33 +454,40 @@ function renderWinner() {
       ? state.players.find((player) => player.id === closest.id)
       : undefined;
     if (closest && closestPlayer) {
-      const bonusNote = scores.some((score) => score.bonus > 0)
-        ? " Spot-on bonuses still count."
-        : "";
-      banner.innerHTML = `<span class="wb-emoji">${escapeHtml(closestPlayer.emoji)}</span><span><b>Nobody landed within 50% this round</b>, so no place points. Closest was ${escapeHtml(closestPlayer.name)} at ${(closest.miss! * 100).toFixed(1)}% off.${bonusNote}</span>`;
+      const percent = formatNumber(closest.miss! * 100, getLocale(), {
+        minimumFractionDigits: 1,
+        maximumFractionDigits: 1,
+      });
+      const hasBonus = scores.some((score) => score.bonus > 0);
+      const text = hasBonus
+        ? m.game_winner_no_place_bonus({
+            name: escapeHtml(closestPlayer.name),
+            percent,
+          })
+        : m.game_winner_no_place({
+            name: escapeHtml(closestPlayer.name),
+            percent,
+          });
+      banner.innerHTML = `<span class="wb-emoji">${escapeHtml(closestPlayer.emoji)}</span><span>${text}</span>`;
     } else {
-      banner.innerHTML =
-        '<span class="wb-emoji">🤔</span><span>No locked guesses this round. Everyone can try again next round.</span>';
+      banner.innerHTML = `<span class="wb-emoji">🤔</span><span>${m.game_winner_no_guesses()}</span>`;
     }
   } else {
     const names = winners.map(({ player }) => escapeHtml(player.name));
-    const message =
-      names.length > 1
-        ? `${joinNames(names)} tie for the win`
-        : `${names[0]} wins the round`;
     const totals = winners.map(({ score }) => score.total);
-    const awards =
+    const text =
       winners.length === 1
-        ? ` and gets ${formatPointAward(totals[0])}`
+        ? m.game_winner_single({
+            name: names[0],
+            points: formatPointAward(totals[0]),
+          })
         : totals.every((total) => total === totals[0])
-          ? ` and each get ${formatPointAward(totals[0])}`
-          : `: ${winners
-              .map(
-                ({ player, score }) =>
-                  `${escapeHtml(player.name)} gets ${formatPointAward(score.total)}`,
-              )
-              .join("; ")}`;
-    banner.innerHTML = `<span class="wb-emoji">${escapeHtml(winners[0].player.emoji)}</span><span><b>${message}</b>${awards}. Nice guessing!</span>`;
+          ? m.game_winner_tie_equal({
+              names: names.join(", "),
+              points: formatPointAward(totals[0]),
+            })
+          : m.game_winner_tie({ names: names.join(", ") });
+    banner.innerHTML = `<span class="wb-emoji">${escapeHtml(winners[0].player.emoji)}</span><span>${text}</span>`;
   }
   banner.hidden = false;
 }
@@ -464,8 +507,17 @@ function setResultText(key: string, value: number | undefined) {
 
 function formatSpeed(value: number) {
   return value >= 100
-    ? value.toLocaleString(undefined, { maximumFractionDigits: 1 })
-    : value.toFixed(1);
+    ? formatNumber(value, getLocale(), { maximumFractionDigits: 1 })
+    : formatNumber(value, getLocale(), {
+        minimumFractionDigits: 1,
+        maximumFractionDigits: 1,
+      });
+}
+
+function displaySpeed(value: number | null): string {
+  return value === null
+    ? m.game_no_guess()
+    : `${formatNumber(value, getLocale())} Mbps`;
 }
 
 function syncControls() {
@@ -493,38 +545,40 @@ function syncControls() {
     (host && state.phase === "results");
   waiting.textContent =
     state.phase === "results"
-      ? "Waiting for the host to continue."
+      ? m.game_waiting_host_continue()
       : state.phase === "testing"
         ? assignedTester
-          ? `${assignedTester.name} is running the speed test.`
-          : "The host is running the speed test."
+          ? m.game_player_running_test({ name: assignedTester.name })
+          : m.game_host_running_test()
         : assignedTester
-          ? `Waiting for ${assignedTester.name} to start the test.`
-          : "Waiting for the host to start the test.";
+          ? m.game_waiting_player_start({ name: assignedTester.name })
+          : m.game_waiting_host_start();
   const resetButton = $<HTMLButtonElement>("[data-reset]");
-  resetButton.textContent = roomMode ? "New game" : "Reset scores";
+  resetButton.textContent = roomMode
+    ? m.game_new_game()
+    : m.home_reset_scores();
   resetButton.hidden = roomMode && !host;
   syncTVAddForm();
   $<HTMLSpanElement>("[data-start-label]").textContent = devMode
     ? testing
-      ? "Testing..."
-      : "Run speed test"
+      ? m.game_testing()
+      : m.game_run_speed_test()
     : state.phase === "testing"
-      ? "Testing..."
+      ? m.game_testing()
       : state.phase === "results" || state.phase === "champion"
-        ? "Round complete"
+        ? m.game_round_complete()
         : state.players.some((player) => player.locked)
-          ? "Start the speed test"
-          : "Waiting for guesses";
+          ? m.game_start_speed_test()
+          : m.game_waiting_guesses();
   $<HTMLSpanElement>("[data-phase-text]").textContent = devMode
     ? testing
-      ? "Pinging Cloudflare"
-      : "Ready when you are"
+      ? m.game_pinging_cloudflare()
+      : m.game_ready()
     : state.phase === "testing"
-      ? "Pinging Cloudflare"
+      ? m.game_pinging_cloudflare()
       : state.phase === "results" || state.phase === "champion"
-        ? "Results are in"
-        : "Ready when you are";
+        ? m.game_results_in()
+        : m.game_ready();
   $<HTMLButtonElement>("[data-reset]").disabled = testing;
   $<HTMLInputElement>("#player-name").disabled = testing;
   $$<HTMLInputElement>("[data-emoji-picker] input").forEach((input) => {
@@ -552,10 +606,12 @@ function renderChampion() {
   const champions = sorted.filter((player) => player.score === topScore);
   $<HTMLParagraphElement>("[data-champion-message]").textContent =
     champions.length > 1
-      ? `${joinNames(champions.map((player) => player.name))} tie for the win!`
+      ? m.game_champion_tie({
+          names: champions.map((player) => player.name).join(", "),
+        })
       : champions.length
-        ? `${champions[0].name} is this game night’s speed champion!`
-        : "Thanks for playing together!";
+        ? m.game_champion_single({ name: champions[0].name })
+        : m.game_champion_thanks();
   $<HTMLDivElement>("[data-podium]").innerHTML = buildPodiumEntries(
     state.players,
   )
@@ -609,8 +665,8 @@ function render() {
     nextButton.textContent =
       state.settings.rounds !== "endless" &&
       state.round >= state.settings.rounds
-        ? "See the champion"
-        : "Next round";
+        ? m.game_see_champion()
+        : m.game_next_round();
     const nextRoundButton = $<HTMLButtonElement>("[data-next-round]");
     if (roomMode && !isRoomHost()) nextRoundButton.hidden = true;
     else nextRoundButton?.removeAttribute("hidden");
@@ -656,10 +712,18 @@ function openEdit(id: string) {
 function setPhase(phase: Phase, bytes?: number) {
   document.documentElement.dataset.phase = phase;
   $<HTMLSpanElement>("[data-mode]").textContent =
-    phase === "ping" ? "Ping" : phase === "up" ? "Upload" : "Download";
+    phase === "ping"
+      ? m.game_phase_ping()
+      : phase === "up"
+        ? m.game_phase_upload()
+        : m.game_phase_download();
   $<HTMLSpanElement>("[data-unit]").textContent =
     phase === "ping" ? "ms" : "Mbps";
-  $<HTMLSpanElement>("[data-phase-text]").textContent = phaseText(phase, bytes);
+  $<HTMLSpanElement>("[data-phase-text]").textContent = phaseText(
+    phase,
+    bytes,
+    getLocale(),
+  );
 }
 
 function setProgress(step: number, steps: number) {
@@ -681,7 +745,12 @@ function setRemoteTesting(active: boolean) {
       if (!reduceMotion) liveDot.classList.add("is-live");
       elapsedLabel.hidden = false;
       const updateElapsed = () => {
-        elapsedLabel.textContent = `· ${Math.floor((Date.now() - roomStartedAt) / 1000)} s`;
+        elapsedLabel.textContent = m.game_elapsed({
+          seconds: formatNumber(
+            Math.floor((Date.now() - roomStartedAt) / 1000),
+            getLocale(),
+          ),
+        });
       };
       updateElapsed();
       roomElapsedTimer = window.setInterval(updateElapsed, 1000);
@@ -815,7 +884,12 @@ async function startTest() {
   let lastRoomSentPhase: Phase | null = null;
   const startedAt = lastUpdateAt;
   const updateElapsed = () => {
-    elapsedLabel.textContent = `· ${Math.floor((Date.now() - startedAt) / 1000)} s`;
+    elapsedLabel.textContent = m.game_elapsed({
+      seconds: formatNumber(
+        Math.floor((Date.now() - startedAt) / 1000),
+        getLocale(),
+      ),
+    });
   };
   progressBar.hidden = false;
   progressBar.setAttribute("aria-valuenow", "0");
@@ -891,7 +965,7 @@ async function startTest() {
       document.documentElement.dataset.phase = state.history.length
         ? "done"
         : "idle";
-      $<HTMLSpanElement>("[data-mode]").textContent = "Download";
+      $<HTMLSpanElement>("[data-mode]").textContent = m.game_phase_download();
       $<HTMLSpanElement>("[data-unit]").textContent = "Mbps";
     } else if (roomMode) {
       latestPing = actual.ping;
@@ -906,10 +980,9 @@ async function startTest() {
           ping: actual.ping,
         })
       )
-        errorNote.textContent =
-          "The result could not reach the room. Reconnect and try again.";
+        errorNote.textContent = m.game_result_unreachable();
       document.documentElement.dataset.phase = "done";
-      $<HTMLSpanElement>("[data-mode]").textContent = "Download";
+      $<HTMLSpanElement>("[data-mode]").textContent = m.game_phase_download();
       $<HTMLSpanElement>("[data-unit]").textContent = "Mbps";
       playCue("reveal", activeTheme, state.settings.sound);
     } else {
@@ -925,7 +998,7 @@ async function startTest() {
       if (!isMockMode()) sendStat({ kind: "round", guesses: lockedGuesses });
       persist();
       document.documentElement.dataset.phase = "done";
-      $<HTMLSpanElement>("[data-mode]").textContent = "Download";
+      $<HTMLSpanElement>("[data-mode]").textContent = m.game_phase_download();
       $<HTMLSpanElement>("[data-unit]").textContent = "Mbps";
       playCue("reveal", activeTheme, state.settings.sound);
     }
@@ -937,7 +1010,7 @@ async function startTest() {
         ? "done"
         : "idle";
       setGauge(0);
-      $<HTMLSpanElement>("[data-mode]").textContent = "Download";
+      $<HTMLSpanElement>("[data-mode]").textContent = m.game_phase_download();
       $<HTMLSpanElement>("[data-unit]").textContent = "Mbps";
       render();
       return;
@@ -949,15 +1022,17 @@ async function startTest() {
       persist();
     }
     errorNote.textContent =
-      error instanceof StalledError
-        ? "The test stalled with no data for 45 seconds. Check your connection and press Start to try again."
-        : "The speed test hiccuped. Try again?";
+      error instanceof SpeedTestCancelledError
+        ? m.game_speed_test_cancelled()
+        : error instanceof StalledError
+          ? m.game_speed_test_stalled()
+          : m.game_speed_test_failed();
     errorNote.hidden = false;
     document.documentElement.dataset.phase = state.history.length
       ? "done"
       : "idle";
     setGauge(0);
-    $<HTMLSpanElement>("[data-mode]").textContent = "Download";
+    $<HTMLSpanElement>("[data-mode]").textContent = m.game_phase_download();
     $<HTMLSpanElement>("[data-unit]").textContent = "Mbps";
     render();
   } finally {
@@ -1006,8 +1081,7 @@ document.addEventListener("gts:room-state", (event) => {
   applyRoomView(view);
   if (!recoverInterruptedTest) return;
   interruptedRoomTestRecoveryRequested = true;
-  errorNote.textContent =
-    "The last test was interrupted. Press Start to run it again.";
+  errorNote.textContent = m.game_test_interrupted();
   errorNote.hidden = false;
   store.send({ type: "abort" });
 });
@@ -1263,7 +1337,7 @@ async function shareResult() {
   if (typeof navigator.share === "function") {
     try {
       await navigator.share({
-        title: "Guess the Speed",
+        title: m.share_title(),
         text: payload.text,
         url: payload.url,
       });
@@ -1281,9 +1355,9 @@ async function shareResult() {
   }
   try {
     await navigator.clipboard.writeText(fullText);
-    setShareStatus("Copied! Paste it in your family chat.");
+    setShareStatus(m.game_share_copied());
   } catch {
-    setShareStatus("Could not share from this browser.");
+    setShareStatus(m.game_share_failed());
   }
 }
 
@@ -1299,7 +1373,7 @@ const nextButton = document.createElement("button");
 nextButton.type = "button";
 nextButton.className = "go next-round";
 nextButton.dataset.nextRound = "";
-nextButton.textContent = "Next round";
+nextButton.textContent = m.game_next_round();
 nextButton.hidden = true;
 nextButton.addEventListener("click", () => {
   if (roomMode) {

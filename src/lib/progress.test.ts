@@ -12,6 +12,10 @@ describe("sizeLabel", () => {
   ])("formats %i bytes", (bytes, expected) => {
     expect(sizeLabel(bytes)).toBe(expected);
   });
+
+  it("formats measured sizes using the requested locale", () => {
+    expect(sizeLabel(1.25e6, "de")).toBe("1,25 MB");
+  });
 });
 
 describe("phaseText", () => {

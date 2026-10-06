@@ -1,4 +1,5 @@
 import { formatPlayStat, type PlayTotals, type StatEvent } from "../lib/stats";
+import { getLocale } from "../paraglide/runtime.js";
 
 export function sendStat(event: StatEvent): void {
   try {
@@ -41,9 +42,11 @@ export async function loadPlayStat(): Promise<void> {
     for (const element of elements) {
       const text = element.querySelector<HTMLElement>("[data-play-stat-text]");
       if (!text) continue;
-      const formatted = formatPlayStat(totals, {
-        short: element.hasAttribute("data-play-stat-short"),
-      });
+      const formatted = formatPlayStat(
+        totals,
+        { short: element.hasAttribute("data-play-stat-short") },
+        getLocale(),
+      );
       if (!formatted) continue;
       text.textContent = formatted;
       element.hidden = false;

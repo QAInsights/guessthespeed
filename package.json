@@ -6,10 +6,12 @@
   "scripts": {
     "dev": "astro dev",
     "dev:worker": "npm run build && wrangler dev",
-    "build": "astro build",
+    "i18n": "paraglide-js compile --project ./project.inlang --outdir ./src/paraglide --emit-ts-declarations",
+    "build": "npm run i18n && astro build",
     "preview": "astro preview",
-    "check": "astro check && tsc -p worker",
-    "test": "vitest run",
+    "check": "npm run i18n && astro check && tsc -p worker",
+    "test": "npm run i18n && vitest run",
+    "check:i18n": "node scripts/check-i18n-build.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
@@ -26,6 +28,7 @@
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
     "@cloudflare/workers-types": "^5.20261006.1",
+    "@inlang/paraglide-js": "^2.25.4",
     "prettier": "^3.9.9",
     "puppeteer-core": "^25.12.0",
     "typescript": "^6.0.3",

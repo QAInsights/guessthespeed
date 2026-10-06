@@ -1,4 +1,6 @@
 import { MAX_PLAYERS } from "./room";
+import { formatNumber, type Locale } from "./i18n";
+import * as m from "../paraglide/messages.js";
 
 export interface PlayTotals {
   rounds: number;
@@ -44,10 +46,11 @@ export function addStatEvent(totals: PlayTotals, event: StatEvent): PlayTotals {
 export function formatPlayStat(
   totals: PlayTotals | null,
   options: { short?: boolean } = {},
+  locale: Locale = "en",
 ): string | null {
   if (!totals || totals.rounds < STAT_DISPLAY_MIN_ROUNDS) return null;
-  const rounds = new Intl.NumberFormat("en-US").format(totals.rounds);
+  const formatted = formatNumber(totals.rounds, locale);
   return options.short
-    ? `${rounds} rounds so far`
-    : `${rounds} rounds played so far`;
+    ? m.stats_rounds_short({ count: totals.rounds, formatted }, { locale })
+    : m.stats_rounds_long({ count: totals.rounds, formatted }, { locale });
 }

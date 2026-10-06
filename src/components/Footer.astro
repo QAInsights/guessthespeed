@@ -1,17 +1,26 @@
 ---
 import { Icon } from 'astro-icon/components';
+import { LOCALES, LOCALE_INFO, type Locale } from '../lib/i18n';
+import * as m from '../paraglide/messages.js';
+
+interface Props {
+  locale: Locale;
+  localized: boolean;
+}
+
+const { locale, localized } = Astro.props;
 ---
 
 <footer>
   <div class="wrap foot">
     <div class="foot-copy">
-      <p><b>Guess the Speed</b> is a free family game. No accounts, scores stay on this device.</p>
-      <p>Made by NaveenKumar for game night with his kids</p>
-      <p>© 2026 Guess the Speed</p>
+      <p>{m.footer_description({}, { locale })}</p>
+      <p>{m.footer_made_by({}, { locale })}</p>
+      <p>{m.footer_copyright({}, { locale })}</p>
     </div>
     <div class="foot-groups">
-      <nav class="foot-group" aria-label="More projects">
-        <h2>More projects</h2>
+      <nav class="foot-group" aria-label={m.footer_more_projects({}, { locale })}>
+        <h2>{m.footer_more_projects({}, { locale })}</h2>
         <div class="foot-links">
           <a href="https://qainsights.com" rel="noopener">QAInsights</a>
           <a href="https://dosa.dev" rel="noopener">dosa.dev</a>
@@ -19,7 +28,7 @@ import { Icon } from 'astro-icon/components';
           <a href="https://iamspeed.dev" rel="noopener">iamspeed.dev</a>
           <a href="https://buymeacoffee.com/qainsights" target="_blank" rel="noopener">
             <Icon name="ph:coffee-fill" aria-hidden="true" />
-            Buy me a coffee
+            {m.footer_buy_coffee({}, { locale })}
           </a>
           <a href="https://github.com/QAInsights/guessthespeed" target="_blank" rel="noopener">
             <Icon name="ph:github-logo-fill" aria-hidden="true" />
@@ -27,25 +36,40 @@ import { Icon } from 'astro-icon/components';
           </a>
         </div>
       </nav>
-      <nav class="foot-group" aria-label="Guide">
-        <h2>Guide</h2>
+      <nav class="foot-group" aria-label={m.footer_guide({}, { locale })}>
+        <h2>{m.footer_guide({}, { locale })}</h2>
         <div class="foot-links">
-          <a href="/story/">Our story</a>
-          <a href="/how-to-play/">How to play</a>
-          <a href="/how-it-works/">How it works</a>
-          <a href="/internet-speed-101/">Internet speed 101</a>
-          <a href="/what-is-a-good-internet-speed/">Good internet speed</a>
-          <a href="/how-much-internet-speed-do-i-need/">Speed calculator</a>
-          <a href="/mbps-to-mbs/">Mbps to MB/s</a>
-          <a href="/privacy/">Privacy</a>
+          <a href="/story/">{m.footer_our_story({}, { locale })}</a>
+          <a href="/how-to-play/">{m.footer_how_to_play({}, { locale })}</a>
+          <a href="/how-it-works/">{m.footer_how_it_works({}, { locale })}</a>
+          <a href="/internet-speed-101/">{m.footer_internet_speed_101({}, { locale })}</a>
+          <a href="/what-is-a-good-internet-speed/">{m.footer_good_speed({}, { locale })}</a>
+          <a href="/how-much-internet-speed-do-i-need/">{m.footer_speed_calculator({}, { locale })}</a>
+          <a href="/mbps-to-mbs/">{m.footer_mbps_converter({}, { locale })}</a>
+          <a href="/privacy/">{m.footer_privacy({}, { locale })}</a>
         </div>
       </nav>
-      <nav class="foot-group" aria-label="Play ideas">
-        <h2>Play ideas</h2>
+      <nav class="foot-group" aria-label={m.footer_play_ideas({}, { locale })}>
+        <h2>{m.footer_play_ideas({}, { locale })}</h2>
         <div class="foot-links">
-          <a href="/speed-test-game/">Speed test game</a>
-          <a href="/family-game-night-ideas/">Game night ideas</a>
-          <a href="/internet-speed-lesson-for-kids/">Classroom lesson</a>
+          <a href="/speed-test-game/">{m.footer_speed_test_game({}, { locale })}</a>
+          <a href="/family-game-night-ideas/">{m.footer_game_night_ideas({}, { locale })}</a>
+          <a href="/internet-speed-lesson-for-kids/">{m.footer_classroom_lesson({}, { locale })}</a>
+        </div>
+      </nav>
+      <nav class="foot-group" aria-label={m.footer_languages({}, { locale })}>
+        <h2>{m.footer_languages({}, { locale })}</h2>
+        <div class="foot-links">
+          {LOCALES.map((code) => (
+            <a
+              href={code === 'en' ? '/' : `/${code}/`}
+              lang={code}
+              hreflang={code}
+              aria-current={localized && code === locale ? 'page' : undefined}
+            >
+              {LOCALE_INFO[code].native}
+            </a>
+          ))}
         </div>
       </nav>
     </div>

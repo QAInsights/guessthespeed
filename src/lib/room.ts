@@ -7,6 +7,8 @@ import {
   removePlayer,
   unlockGuess,
   updatePlayer,
+  normalizeRoleId,
+  type RoleId,
   type GameSettings,
   type GameState,
   type Player,
@@ -17,6 +19,113 @@ export const ROOM_ALPHABET = "BCDFGHJKMNPQRSTVWXZ";
 export const ROOM_CODE_LENGTH = 6;
 export const MAX_PLAYERS = 12;
 export const ROOM_TTL_MS = 6 * 60 * 60 * 1000;
+
+export const ROOM_ERROR_CODES = [
+  "invalid_action",
+  "name_required",
+  "join_during_test",
+  "device_already_joined",
+  "room_full",
+  "player_add_failed",
+  "player_not_found",
+  "edit_own_player_only",
+  "edit_during_test",
+  "guess_own_player_only",
+  "guesses_closed",
+  "invalid_speed",
+  "unlock_own_player_only",
+  "remove_own_player_only",
+  "remove_during_test",
+  "host_only_settings",
+  "invalid_game_settings",
+  "settings_during_test",
+  "host_only_tester",
+  "tester_during_test",
+  "tester_not_in_room",
+  "tester_only_start",
+  "game_not_ready",
+  "guess_required",
+  "tester_only_result",
+  "test_not_in_progress",
+  "invalid_ping",
+  "tester_or_host_only_abort",
+  "host_only_next",
+  "round_result_required",
+  "host_only_new_game",
+  "test_must_finish_before_new_game",
+  "unknown_action",
+  "room_ended",
+  "too_many_messages",
+  "text_messages_required",
+  "invalid_json_message",
+  "invalid_message",
+  "connection_already_identified",
+  "valid_hello_required",
+  "tester_only_progress",
+  "not_found",
+  "invalid_room_code",
+  "websocket_upgrade_required",
+  "room_not_found",
+  "room_code_exists",
+  "invalid_initialization",
+  "could_not_create_room",
+  "no_room_code_available",
+] as const;
+
+export type RoomErrorCode = (typeof ROOM_ERROR_CODES)[number];
+
+export const ROOM_ERROR_TEXT: Record<RoomErrorCode, string> = {
+  invalid_action: "Invalid action.",
+  name_required: "Enter a name and choose a face.",
+  join_during_test: "Wait for the test to finish before joining.",
+  device_already_joined: "This device already has a player in the room.",
+  room_full: `A room can have up to ${MAX_PLAYERS} players.`,
+  player_add_failed: "Could not add this player.",
+  player_not_found: "Player not found.",
+  edit_own_player_only: "You can only edit your own player.",
+  edit_during_test: "Players cannot be edited during a test.",
+  guess_own_player_only: "You can only guess for your own player.",
+  guesses_closed: "Guesses are closed for this round.",
+  invalid_speed: "Enter speeds between 0 and 100000 Mbps.",
+  unlock_own_player_only: "You can only unlock your own player.",
+  remove_own_player_only: "You can only remove your own player.",
+  remove_during_test: "Players cannot be removed during a test.",
+  host_only_settings: "Only the host can change settings.",
+  invalid_game_settings: "Invalid game settings.",
+  settings_during_test: "Settings cannot change during a test.",
+  host_only_tester: "Only the host can choose the tester.",
+  tester_during_test: "The tester cannot change during a test.",
+  tester_not_in_room: "The selected tester is not in this room.",
+  tester_only_start: "Only the assigned tester can start the test.",
+  game_not_ready: "The game is not ready to start.",
+  guess_required: "At least one player must lock a guess first.",
+  tester_only_result: "Only the assigned tester can submit the result.",
+  test_not_in_progress: "There is no test in progress.",
+  invalid_ping: "Enter a valid ping.",
+  tester_or_host_only_abort: "Only the tester or host can stop the test.",
+  host_only_next: "Only the host can advance the round.",
+  round_result_required: "The current round has no result yet.",
+  host_only_new_game: "Only the host can start a new game.",
+  test_must_finish_before_new_game:
+    "Wait for the test to finish before starting a new game.",
+  unknown_action: "Unknown action.",
+  room_ended: "This room has ended.",
+  too_many_messages: "Too many messages. Please slow down.",
+  text_messages_required: "Text messages are required.",
+  invalid_json_message: "Invalid JSON message.",
+  invalid_message: "Invalid message.",
+  connection_already_identified: "This connection is already identified.",
+  valid_hello_required: "A valid hello message is required first.",
+  tester_only_progress: "Only the assigned tester can share test progress.",
+  not_found: "Not found.",
+  invalid_room_code: "Invalid room code.",
+  websocket_upgrade_required: "WebSocket upgrade required.",
+  room_not_found: "Room not found.",
+  room_code_exists: "Room code already exists.",
+  invalid_initialization: "Invalid initialization.",
+  could_not_create_room: "Could not create a room.",
+  no_room_code_available: "Could not find an available room code.",
+};
 
 export interface RoomPlayer extends Player {
   owner: string;
@@ -31,8 +140,8 @@ export interface Room {
 }
 
 export type ClientAction =
-  | { type: "join"; name: string; emoji: string; role: string }
-  | { type: "edit"; id: string; name: string; emoji: string; role: string }
+  | { type: "join"; name: string; emoji: string; role: RoleId }
+  | { type: "edit"; id: string; name: string; emoji: string; role: RoleId }
   | { type: "guess"; id: string; down: number; up: number }
   | { type: "unlock"; id: string }
   | { type: "remove"; id: string }
@@ -110,34 +219,34 @@ export function applyAction(
   isHost: boolean,
   action: unknown,
   now: number,
-): { room: Room } | { error: string } {
+): { room: Room } | { error: RoomErrorCode } {
   if (!isRecord(action) || typeof action.type !== "string")
-    return { error: "Invalid action." };
+    return { error: "invalid_action" };
 
   const game = toGameState(room.game);
   switch (action.type) {
     case "join": {
       const name = validName(action.name);
       const emoji = shortString(action.emoji);
-      const role = shortString(action.role);
+      const role =
+        typeof action.role === "string" ? normalizeRoleId(action.role) : null;
       if (name === null || emoji === null || role === null)
-        return { error: "Enter a name and choose a face." };
-      if (game.phase === "testing")
-        return { error: "Wait for the test to finish before joining." };
+        return { error: "name_required" };
+      if (game.phase === "testing") return { error: "join_during_test" };
       if (
         !isHost &&
         room.game.players.some((player) => player.owner === clientId)
       )
-        return { error: "This device already has a player in the room." };
+        return { error: "device_already_joined" };
       if (room.game.players.length >= MAX_PLAYERS)
-        return { error: `A room can have up to ${MAX_PLAYERS} players.` };
+        return { error: "room_full" };
 
       let id = createPlayerId();
       while (room.game.players.some((player) => player.id === id))
         id = createPlayerId();
       const nextGame = addPlayer(game, name, emoji, role, id);
       const added = nextGame.players.find((player) => player.id === id);
-      if (!added) return { error: "Could not add this player." };
+      if (!added) return { error: "player_add_failed" };
       return {
         room: {
           ...room,
@@ -151,16 +260,15 @@ export function applyAction(
     }
     case "edit": {
       const player = findPlayer(room, action.id);
-      if (!player) return { error: "Player not found." };
-      if (player.owner !== clientId)
-        return { error: "You can only edit your own player." };
-      if (game.phase === "testing")
-        return { error: "Players cannot be edited during a test." };
+      if (!player) return { error: "player_not_found" };
+      if (player.owner !== clientId) return { error: "edit_own_player_only" };
+      if (game.phase === "testing") return { error: "edit_during_test" };
       const name = validName(action.name);
       const emoji = shortString(action.emoji);
-      const role = shortString(action.role);
+      const role =
+        typeof action.role === "string" ? normalizeRoleId(action.role) : null;
       if (name === null || emoji === null || role === null)
-        return { error: "Enter a name and choose a face." };
+        return { error: "name_required" };
       return updateRoomGame(
         room,
         updatePlayer(game, player.id, { name, emoji, role }),
@@ -169,13 +277,11 @@ export function applyAction(
     }
     case "guess": {
       const player = findPlayer(room, action.id);
-      if (!player) return { error: "Player not found." };
-      if (player.owner !== clientId)
-        return { error: "You can only guess for your own player." };
-      if (game.phase !== "guessing")
-        return { error: "Guesses are closed for this round." };
+      if (!player) return { error: "player_not_found" };
+      if (player.owner !== clientId) return { error: "guess_own_player_only" };
+      if (game.phase !== "guessing") return { error: "guesses_closed" };
       if (!validSpeed(action.down) || !validSpeed(action.up))
-        return { error: "Enter speeds between 0 and 100000 Mbps." };
+        return { error: "invalid_speed" };
       return updateRoomGame(
         room,
         lockGuess(game, player.id, {
@@ -187,20 +293,17 @@ export function applyAction(
     }
     case "unlock": {
       const player = findPlayer(room, action.id);
-      if (!player) return { error: "Player not found." };
-      if (player.owner !== clientId)
-        return { error: "You can only unlock your own player." };
-      if (game.phase !== "guessing")
-        return { error: "Guesses are closed for this round." };
+      if (!player) return { error: "player_not_found" };
+      if (player.owner !== clientId) return { error: "unlock_own_player_only" };
+      if (game.phase !== "guessing") return { error: "guesses_closed" };
       return updateRoomGame(room, unlockGuess(game, player.id), now);
     }
     case "remove": {
       const player = findPlayer(room, action.id);
-      if (!player) return { error: "Player not found." };
+      if (!player) return { error: "player_not_found" };
       if (!isHost && player.owner !== clientId)
-        return { error: "You can only remove your own player." };
-      if (game.phase === "testing")
-        return { error: "Players cannot be removed during a test." };
+        return { error: "remove_own_player_only" };
+      if (game.phase === "testing") return { error: "remove_during_test" };
       const updated = updateRoomGame(room, removePlayer(game, player.id), now);
       return {
         room: {
@@ -213,11 +316,10 @@ export function applyAction(
       };
     }
     case "settings": {
-      if (!isHost) return { error: "Only the host can change settings." };
+      if (!isHost) return { error: "host_only_settings" };
       if (!validRounds(action.rounds) || !validTieMode(action.tieMode))
-        return { error: "Invalid game settings." };
-      if (game.phase === "testing")
-        return { error: "Settings cannot change during a test." };
+        return { error: "invalid_game_settings" };
+      if (game.phase === "testing") return { error: "settings_during_test" };
       return updateRoomGame(
         room,
         {
@@ -232,14 +334,13 @@ export function applyAction(
       );
     }
     case "setTester": {
-      if (!isHost) return { error: "Only the host can choose the tester." };
-      if (game.phase === "testing")
-        return { error: "The tester cannot change during a test." };
+      if (!isHost) return { error: "host_only_tester" };
+      if (game.phase === "testing") return { error: "tester_during_test" };
       if (
         action.id !== null &&
         !room.game.players.some((player) => player.id === action.id)
       )
-        return { error: "The selected tester is not in this room." };
+        return { error: "tester_not_in_room" };
       return {
         room: {
           ...room,
@@ -250,22 +351,20 @@ export function applyAction(
     }
     case "start": {
       if (!canRunTest(room, clientId, isHost))
-        return { error: "Only the assigned tester can start the test." };
-      if (game.phase !== "guessing")
-        return { error: "The game is not ready to start." };
+        return { error: "tester_only_start" };
+      if (game.phase !== "guessing") return { error: "game_not_ready" };
       if (!game.players.some((player) => player.locked))
-        return { error: "At least one player must lock a guess first." };
+        return { error: "guess_required" };
       return updateRoomGame(room, { ...game, phase: "testing" }, now);
     }
     case "result": {
       if (!canRunTest(room, clientId, isHost))
-        return { error: "Only the assigned tester can submit the result." };
-      if (game.phase !== "testing")
-        return { error: "There is no test in progress." };
+        return { error: "tester_only_result" };
+      if (game.phase !== "testing") return { error: "test_not_in_progress" };
       if (!validSpeed(action.down) || !validSpeed(action.up))
-        return { error: "Enter speeds between 0 and 100000 Mbps." };
+        return { error: "invalid_speed" };
       if (action.ping !== undefined && !validSpeed(action.ping))
-        return { error: "Enter a valid ping." };
+        return { error: "invalid_ping" };
       const result = applyResult(game, {
         down: action.down,
         up: action.up,
@@ -275,27 +374,23 @@ export function applyAction(
     }
     case "abort": {
       if (!canRunTest(room, clientId, isHost) && !isHost)
-        return { error: "Only the tester or host can stop the test." };
-      if (game.phase !== "testing")
-        return { error: "There is no test in progress." };
+        return { error: "tester_or_host_only_abort" };
+      if (game.phase !== "testing") return { error: "test_not_in_progress" };
       return updateRoomGame(room, { ...game, phase: "guessing" }, now);
     }
     case "next": {
-      if (!isHost) return { error: "Only the host can advance the round." };
-      if (game.phase !== "results")
-        return { error: "The current round has no result yet." };
+      if (!isHost) return { error: "host_only_next" };
+      if (game.phase !== "results") return { error: "round_result_required" };
       return updateRoomGame(room, nextRound(game), now);
     }
     case "newGame": {
-      if (!isHost) return { error: "Only the host can start a new game." };
+      if (!isHost) return { error: "host_only_new_game" };
       if (game.phase === "testing")
-        return {
-          error: "Wait for the test to finish before starting a new game.",
-        };
+        return { error: "test_must_finish_before_new_game" };
       return updateRoomGame(room, newGame(game), now);
     }
     default:
-      return { error: "Unknown action." };
+      return { error: "unknown_action" };
   }
 }
 

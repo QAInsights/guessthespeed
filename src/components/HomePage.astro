@@ -1,0 +1,401 @@
+---
+import { Icon } from 'astro-icon/components';
+import Base from '../layouts/Base.astro';
+import { ROLES } from '../lib/game';
+import { formatNumber, localeHome, type Locale } from '../lib/i18n';
+import { roleLabel } from '../lib/ui-messages';
+import * as m from '../paraglide/messages.js';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const roleChoices = ROLES;
+const homeTitle = m.home_title({}, { locale });
+const homeDescription = m.home_description({}, { locale });
+const homeSchema: Record<string, unknown>[] = [
+  {
+    '@type': 'WebApplication',
+    name: 'Guess the Speed',
+    url: `https://guessthespeed.com${localeHome(locale)}`,
+    description: homeDescription,
+    applicationCategory: 'GameApplication',
+    genre: ['Family game', 'Party game'],
+    operatingSystem: 'Any',
+    browserRequirements: 'Requires JavaScript and a modern browser',
+    isAccessibleForFree: true,
+    inLanguage: locale,
+    offers: { '@type': 'Offer', price: 0, priceCurrency: 'USD' },
+    author: { '@id': 'https://guessthespeed.com/#author' },
+    publisher: { '@id': 'https://guessthespeed.com/#author' },
+    screenshot: [
+      'https://guessthespeed.com/screenshots/home-wide.png',
+      'https://guessthespeed.com/screenshots/home-narrow.png',
+    ],
+    featureList: [
+      m.home_schema_feature_real_test({}, { locale }),
+      m.home_schema_feature_shared_screen({}, { locale }),
+      m.home_schema_feature_separate_phones({}, { locale }),
+      m.home_schema_feature_private_guesses({}, { locale }),
+      m.home_schema_feature_scoring({}, { locale }),
+      m.home_schema_feature_threshold({}, { locale }),
+      m.home_schema_feature_themes({}, { locale }),
+      m.home_schema_feature_sound({}, { locale }),
+      m.home_schema_feature_privacy({}, { locale }),
+    ],
+  },
+];
+---
+
+<Base
+  title={homeTitle}
+  description={homeDescription}
+  schema={homeSchema}
+  locale={locale}
+  localized={true}
+>
+  <main class="wrap game-main">
+    <section class="stage" aria-label={m.home_stage_aria({}, { locale })}>
+      <div class="intro">
+        <div class="round" data-round-banner><Icon name="ph:flag-checkered-fill" /><span data-round-label>{m.game_round_label({ round: formatNumber(1, locale), total: formatNumber(3, locale) }, { locale })}</span></div>
+        <h1 class="display" data-game-title><span data-title-guess>{m.home_h1_guess({}, { locale })}</span> <em data-title-tagline>{m.home_h1_tagline({}, { locale })}</em></h1>
+        <h2 class="display dev-title" data-dev-title hidden>Dev mode</h2>
+        <p data-game-lede>{m.home_lede({}, { locale })}</p>
+        <p class="dev-lede" data-dev-lede hidden>Raw Cloudflare speed test data. No game, no scores.</p>
+        <p class="play-stat" data-play-stat hidden><span>🎉{' '}<span data-play-stat-text></span></span></p>
+        {locale === 'en' && (
+          <aside class="lang-hint" data-language-hint hidden>
+            <span data-language-hint-text></span>
+            <button class="lang-hint-accept" type="button" data-language-hint-accept></button>
+            <button class="lang-hint-close" type="button" data-language-hint-close aria-label={m.lang_hint_close_aria({}, { locale })}>
+              <Icon name="ph:x-bold" aria-hidden="true" />
+            </button>
+          </aside>
+        )}
+      </div>
+
+      <div class="gauge-card stk">
+        <div class="gauge" data-gauge>
+          <svg viewBox="0 0 400 320" role="img" aria-label={m.home_gauge_aria({}, { locale })}>
+            <path class="track-o" data-arc data-cx="200" data-cy="185" data-r="150" data-start="-120" data-sweep="240"></path>
+            <path class="track" data-arc data-cx="200" data-cy="185" data-r="150" data-start="-120" data-sweep="240"></path>
+            <path class="gauge-fill" data-arc data-cx="200" data-cy="185" data-r="150" data-start="-120" data-sweep="240"></path>
+            <g data-ticks data-cx="200" data-cy="185" data-r="108" data-start="-120" data-sweep="240"></g>
+            <g class="gauge-needle">
+              <path class="needle" d="M194 185 L200 80 L206 185 Z"></path>
+              <circle class="hub" cx="200" cy="185" r="15"></circle>
+            </g>
+          </svg>
+          <div class="readout">
+            <span class="mode" data-mode>{m.game_phase_download({}, { locale })}</span>
+            <span class="num" data-live>0</span>
+            <span class="unit" data-unit>Mbps</span>
+          </div>
+        </div>
+        <div class="phase-status">
+          <span class="live-dot" data-live-dot aria-hidden="true" hidden></span>
+          <div class="phase" data-phase-label aria-live="polite">
+            <span data-phase-text>{m.game_ready({}, { locale })}</span>
+            <span class="elapsed" data-elapsed aria-hidden="true" hidden></span>
+            <span class="slow-hint" data-slow-hint hidden>{m.game_slow_hint({}, { locale })}</span>
+          </div>
+        </div>
+        <div class="test-progress" data-test-progress role="progressbar" aria-label={m.home_progress_aria({}, { locale })} aria-valuemin="0" aria-valuemax="13" aria-valuenow="0" hidden>
+          <div class="test-progress-fill" data-progress-fill></div>
+        </div>
+        <button class="go" type="button" data-start-btn disabled>
+          <Icon name="ph:lightning-fill" />
+          <span data-start-label>{m.game_waiting_guesses({}, { locale })}</span>
+        </button>
+        <p class="room-waiting" data-room-waiting hidden></p>
+        <div class="winner" data-winner-banner hidden aria-live="polite"></div>
+        <p class="error-note" data-error-note hidden></p>
+      </div>
+
+      <div class="stats" aria-label={m.home_latest_results_aria({}, { locale })}>
+        <div class="stat stk"><span><Icon name="ph:timer-fill" />{m.home_ping({}, { locale })}</span><div><b data-result="ping">-</b><small>ms</small></div></div>
+        <div class="stat stk"><span><Icon name="ph:arrow-down-fill" />{m.home_download({}, { locale })}</span><div><b data-result="down">-</b><small>Mbps</small></div></div>
+        <div class="stat stk"><span><Icon name="ph:arrow-up-fill" />{m.home_upload({}, { locale })}</span><div><b data-result="up">-</b><small>Mbps</small></div></div>
+      </div>
+    </section>
+
+    <section class="room-bar stk" data-room-bar aria-label={m.room_bar_aria({}, { locale })} hidden>
+      <div class="room-bar-code">
+        <span>{m.room_code_label({}, { locale })}</span>
+        <strong data-room-code></strong>
+      </div>
+      <div class="room-bar-actions">
+        <div class="room-tester-picker" data-room-tester-control hidden>
+          <button class="guess-button room-tester-trigger" type="button" data-room-tester-trigger aria-label={m.room_tester_aria({}, { locale })} aria-haspopup="listbox" aria-expanded="false" aria-controls="room-tester-menu">
+            <span>{m.room_tester_aria({}, { locale })}</span>
+            <strong data-room-tester-value>{m.room_this_screen({}, { locale })}</strong>
+            <Icon name="ph:caret-down-bold" aria-hidden="true" />
+          </button>
+          <div class="room-tester-menu" id="room-tester-menu" data-room-tester-menu role="listbox" aria-label={m.room_tester_aria({}, { locale })} hidden></div>
+        </div>
+        <span class="room-tester-chip" data-room-tester-chip hidden></span>
+        <button class="guess-button room-stop-test" type="button" data-room-stop-test hidden>{m.room_stop_test({}, { locale })}</button>
+        <button class="guess-button" type="button" data-show-room-qr>{m.room_show_qr({}, { locale })}</button>
+        <button class="guess-button" type="button" data-copy-room-link>{m.room_copy_link({}, { locale })}</button>
+        <span class="room-connection" data-room-connection aria-live="polite">{m.room_connection_connecting({}, { locale })}</span>
+        <a class="ghost" href={localeHome(locale)} data-leave-room>{m.room_leave({}, { locale })}</a>
+      </div>
+    </section>
+
+    <section class="dev-console" aria-labelledby="dev-console-title">
+      <div class="dev-console-head">
+        <div>
+          <h2 class="display" id="dev-console-title">Speed test diagnostics</h2>
+          <p>Live measurements from this browser. Only the latest run is kept in memory.</p>
+        </div>
+        <div class="dev-export">
+          <button class="guess-button" type="button" data-copy-json>Copy JSON</button>
+          <button class="guess-button" type="button" data-download-json>Download JSON</button>
+          <span data-copy-status aria-live="polite"></span>
+        </div>
+      </div>
+      <div class="dev-panels">
+        <article class="dev-panel stk" data-panel="connection">
+          <h3>Connection</h3>
+          <div data-connection-content><p>Turn on Dev mode to check this connection.</p></div>
+        </article>
+        <article class="dev-panel stk" data-panel="summary">
+          <h3>Summary</h3>
+          <div data-summary-content><p>Run a speed test to see results.</p></div>
+        </article>
+        <article class="dev-panel stk" data-panel="latency">
+          <h3>Latency</h3>
+          <div data-latency-content><p>Latency samples will appear here.</p></div>
+        </article>
+        <article class="dev-panel stk dev-panel-wide" data-panel="requests">
+          <h3>Requests</h3>
+          <div data-requests-content><p>Bandwidth requests will appear here.</p></div>
+        </article>
+        <article class="dev-panel stk dev-panel-wide" data-panel="percentile">
+          <h3>How the number was picked</h3>
+          <div data-percentile-content><p>Counted samples and the final percentile will appear here.</p></div>
+        </article>
+        <article class="dev-panel stk" data-panel="config">
+          <h3>Test plan and config</h3>
+          <div data-config-content></div>
+        </article>
+        <article class="dev-panel stk" data-panel="browser">
+          <h3>Browser</h3>
+          <div data-browser-content></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="room-entry stk" data-room-entry aria-labelledby="room-entry-title">
+      <div class="room-entry-copy">
+        <span class="room-kicker">{m.room_entry_kicker({}, { locale })}</span>
+        <h2 class="display" id="room-entry-title">{m.room_entry_title({}, { locale })}</h2>
+        <p>{m.room_entry_description({}, { locale })}</p>
+      </div>
+      <div class="room-entry-actions">
+        <button class="go" type="button" data-create-room>{m.room_create({}, { locale })}</button>
+        <form class="room-join-form" data-home-join-form>
+          <label class="sr" for="room-code-input">{m.room_code_placeholder({}, { locale })}</label>
+          <input class="dialog-input" id="room-code-input" name="code" type="text" maxlength="9" inputmode="text" autocomplete="off" placeholder={m.room_code_placeholder({}, { locale })} />
+          <button class="guess-button" type="submit">{m.room_join_code({}, { locale })}</button>
+        </form>
+        <p class="room-entry-error" data-room-entry-error role="status" hidden></p>
+      </div>
+    </section>
+
+    <section aria-labelledby="players-heading" data-game-section>
+      <div class="sec-head">
+        <h2 id="players-heading" class="display">{m.home_players_title({}, { locale })}</h2>
+        <div class="section-actions">
+          <button class="ghost" type="button" data-reset>{m.home_reset_scores({}, { locale })}</button>
+          <div class="seg" data-view-toggle aria-label={m.home_player_view({}, { locale })}>
+            <button type="button" data-view="grid" aria-pressed="true"><Icon name="ph:squares-four-fill" />{m.home_cards({}, { locale })}</button>
+            <button type="button" data-view="table" aria-pressed="false"><Icon name="ph:list-bold" />{m.home_table({}, { locale })}</button>
+          </div>
+        </div>
+      </div>
+      <div data-players aria-live="polite">
+        <div class="p-empty"><span>🏁</span><p>{m.home_empty_players({}, { locale })}</p></div>
+      </div>
+
+      <button class="guess-button tv-add-toggle" type="button" data-tv-add-toggle aria-expanded="false" aria-controls="add-player-form" hidden>
+        <Icon name="ph:plus-bold" />{m.home_add_player({}, { locale })}
+      </button>
+      <form class="add stk" id="add-player-form" data-add-form>
+        <div>
+          <label class="lbl" for="player-name">{m.home_player_name({}, { locale })}</label>
+          <input id="player-name" name="name" maxlength="16" autocomplete="off" placeholder={m.home_player_name_example({}, { locale })} required />
+        </div>
+        <fieldset class="role-fieldset">
+          <legend class="lbl">{m.home_pick_face({}, { locale })}</legend>
+          <div data-emoji-picker>
+            {roleChoices.map((choice, index) => (
+              <label title={roleLabel(choice.role)} data-role={choice.role}>
+                <input type="radio" name="emoji" value={index} checked={index === 0} />
+                <span>{choice.emoji}</span>
+                <small>{roleLabel(choice.role)}</small>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+        <button class="go" type="submit"><Icon name="ph:plus-bold" />{m.home_add_player_submit({}, { locale })}</button>
+      </form>
+    </section>
+
+    <section class="how" aria-labelledby="how-round-heading">
+      <div>
+        <h2 id="how-round-heading" class="display">{m.home_how_round_works({}, { locale })}</h2>
+        <ol>
+          <li><b>1</b><span>{m.home_round_step_one({}, { locale })}</span></li>
+          <li><b>2</b><span>{m.home_round_step_two({}, { locale })}</span></li>
+          <li><b>3</b><span>{m.home_round_step_three({}, { locale })}</span></li>
+        </ol>
+        <p class="learn-more">
+          {m.home_learn_more({}, { locale })}{' '}<a href="/how-it-works/">{m.home_link_how_test_works({}, { locale })}</a>,{' '}
+          <a href="/internet-speed-101/">{m.home_link_internet_speed_101({}, { locale })}</a>,{' '}
+          <a href="/speed-test-game/">{m.home_link_speed_test_game({}, { locale })}</a>,{' '}
+          <a href="/family-game-night-ideas/">{m.home_link_game_night_ideas({}, { locale })}</a>,{' '}
+          <a href="/internet-speed-lesson-for-kids/">{m.home_link_classroom_lesson({}, { locale })}</a>.
+        </p>
+      </div>
+      <p class="note stk"><strong>{m.home_both_numbers_title({}, { locale })}</strong> {m.home_both_numbers_body({}, { locale })}</p>
+    </section>
+
+    <aside class="story-teaser note stk" aria-labelledby="story-teaser-title">
+      <h2 id="story-teaser-title">{m.home_story_title({}, { locale })}</h2>
+      <p>{m.home_story_body({}, { locale })}</p>
+      <a href="/story/">{m.home_story_link({}, { locale })}</a>
+    </aside>
+  </main>
+
+  <dialog class="sticker-dialog" data-guess-dialog aria-labelledby="guess-title">
+    <div class="dialog-inner">
+      <div class="dialog-head">
+        <h2 id="guess-title" class="display">{m.home_guess_title({}, { locale })}</h2>
+        <button class="dialog-close" type="button" data-close-guess aria-label={m.home_close_guess_aria({}, { locale })}><Icon name="ph:x-bold" /></button>
+      </div>
+      <div class="guess-person"><span data-guess-emoji>🙂</span><b data-guess-player>{m.game_table_player({}, { locale })}</b></div>
+      <form class="dialog-form" data-guess-form>
+        <label class="dialog-field">{m.home_guess_download_label({}, { locale })}
+          <input class="dialog-input" name="down" type="number" inputmode="decimal" min="0" step="any" placeholder={m.home_guess_placeholder({}, { locale })} />
+          <small>{m.home_download_help({}, { locale })}</small>
+        </label>
+        <label class="dialog-field">{m.home_guess_upload_label({}, { locale })}
+          <input class="dialog-input" name="up" type="number" inputmode="decimal" min="0" step="any" placeholder={m.home_guess_placeholder({}, { locale })} />
+          <small>{m.home_upload_help({}, { locale })}</small>
+        </label>
+        <p class="guess-hint">{m.home_guesses_hidden({}, { locale })}</p>
+        <div class="dialog-actions">
+          <button class="go" type="submit"><Icon name="ph:lock-key-fill" />{m.home_lock_guess({}, { locale })}</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <dialog class="sticker-dialog room-join-dialog" data-room-join-dialog aria-labelledby="room-join-title">
+    <div class="dialog-inner">
+      <div class="dialog-head">
+        <h2 id="room-join-title" class="display">{m.room_join_title({}, { locale })}</h2>
+        <a class="dialog-close" href={localeHome(locale)} aria-label={m.home_leave_room_aria({}, { locale })}><Icon name="ph:x-bold" /></a>
+      </div>
+      <p class="room-join-code">{m.room_code_label({}, { locale })} <strong data-room-join-code></strong></p>
+      <form class="dialog-form" data-room-join-form>
+        <label class="dialog-field">{m.room_your_name({}, { locale })}
+          <input class="dialog-input" name="name" type="text" maxlength="16" autocomplete="off" required />
+        </label>
+        <fieldset class="edit-role-fieldset">
+          <legend class="lbl">{m.room_pick_face({}, { locale })}</legend>
+          <div data-room-emoji-picker>
+            {roleChoices.map((choice, index) => (
+              <label title={roleLabel(choice.role)} data-role={choice.role}>
+                <input type="radio" name="emoji" value={index} checked={index === 0} />
+                <span>{choice.emoji}</span>
+                <small>{roleLabel(choice.role)}</small>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+        <p class="room-join-error" data-room-join-error role="status" hidden></p>
+        <div class="dialog-actions">
+          <button class="go" type="submit"><Icon name="ph:user-plus-fill" />{m.room_join_game({}, { locale })}</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <dialog class="sticker-dialog room-qr-dialog" data-room-qr-dialog aria-labelledby="room-qr-title">
+    <div class="dialog-inner">
+      <div class="dialog-head">
+        <h2 id="room-qr-title" class="display">{m.room_qr_title({}, { locale })}</h2>
+        <button class="dialog-close" type="button" data-close-room-qr aria-label={m.room_close_qr({}, { locale })}><Icon name="ph:x-bold" /></button>
+      </div>
+      <div class="room-qr-image" data-room-qr-image></div>
+      <p class="room-qr-code">{m.room_code_label({}, { locale })} <strong data-room-qr-code></strong></p>
+      <button class="go" type="button" data-copy-room-qr-link>{m.room_copy_link({}, { locale })}</button>
+    </div>
+  </dialog>
+
+  <dialog class="sticker-dialog room-ended-dialog" data-room-ended-dialog aria-labelledby="room-ended-title">
+    <div class="dialog-inner">
+        <h2 id="room-ended-title" class="display">{m.room_ended_title({}, { locale })}</h2>
+        <p>{m.room_expiry({}, { locale })}</p>
+        <a class="go" href={localeHome(locale)}>{m.room_start_local_game({}, { locale })}</a>
+    </div>
+  </dialog>
+
+  <dialog class="sticker-dialog" data-edit-dialog aria-labelledby="edit-title">
+    <div class="dialog-inner">
+      <div class="dialog-head">
+        <h2 id="edit-title" class="display">{m.home_edit_player_title({}, { locale })}</h2>
+        <button class="dialog-close" type="button" data-close-edit aria-label={m.home_close_edit_aria({}, { locale })}><Icon name="ph:x-bold" /></button>
+      </div>
+      <form class="dialog-form" data-edit-form>
+        <label class="dialog-field">{m.home_player_name({}, { locale })}
+          <input class="dialog-input" name="name" type="text" maxlength="16" autocomplete="off" required />
+        </label>
+        <fieldset class="edit-role-fieldset">
+          <legend class="lbl">{m.home_pick_face({}, { locale })}</legend>
+          <div data-emoji-picker>
+            {roleChoices.map((choice, index) => (
+              <label title={roleLabel(choice.role)} data-role={choice.role}>
+                <input type="radio" name="emoji" value={index} />
+                <span>{choice.emoji}</span>
+                <small>{roleLabel(choice.role)}</small>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+        <div class="dialog-actions">
+          <button class="guess-button" type="button" data-cancel-edit>{m.home_cancel({}, { locale })}</button>
+          <button class="go" type="submit">{m.home_save_player({}, { locale })}</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <dialog class="champion-dialog" data-champion-dialog aria-labelledby="champion-title">
+    <div class="dialog-inner">
+      <div class="champion-confetti" data-champion-confetti aria-hidden="true"></div>
+      <h2 id="champion-title" class="champion-title display">{m.home_champion_title({}, { locale })}</h2>
+      <p class="champion-intro" data-champion-message></p>
+      <div class="podium" data-podium></div>
+      <div class="champion-actions">
+        <button class="go" type="button" data-play-again><Icon name="ph:arrow-counter-clockwise-bold" />{m.home_play_again({}, { locale })}</button>
+        <button class="guess-button" type="button" data-share-result><Icon name="ph:share-network-bold" />{m.home_share_result({}, { locale })}</button>
+        <button class="guess-button" type="button" data-close-champion>{m.home_close({}, { locale })}</button>
+        <p class="share-status" data-share-status aria-live="polite"></p>
+      </div>
+    </div>
+  </dialog>
+
+  <script>
+    import '../scripts/room-client';
+    import '../scripts/game-client';
+    import '../scripts/dev-client';
+    import { loadPlayStat } from '../scripts/stats-client';
+    requestAnimationFrame(() => {
+      window.setTimeout(() => void loadPlayStat(), 0);
+    });
+  </script>
+</Base>

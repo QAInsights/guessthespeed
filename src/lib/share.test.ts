@@ -5,6 +5,7 @@ import {
   buildShareText,
   joinNames,
   SHARE_URL,
+  shareUrl,
 } from "./share";
 
 describe("share results", () => {
@@ -94,6 +95,23 @@ describe("share results", () => {
     expect(
       buildShareText({ players: [{ name: "Ada", score: 3 }] }),
     ).not.toContain("Our internet hit");
+  });
+
+  it("formats numbers and the home URL for German", () => {
+    expect(shareUrl("de")).toBe("https://guessthespeed.com/de/");
+    expect(joinNames(["Ada", "Berta"], "de")).toBe("Ada und Berta");
+    expect(
+      buildShareText(
+        {
+          players: [{ name: "Ada", score: 1234 }],
+          lastActual: { down: 1234.5, up: 8.25 },
+        },
+        "de",
+      ),
+    ).toContain("Our internet hit 1.234,5 Mbps down and 8,3 Mbps up.");
+    expect(
+      buildShareText({ players: [{ name: "Ada", score: 1234 }] }, "de"),
+    ).toContain("https://guessthespeed.com/de/");
   });
 
   it("uses the friendly fallback when there are no players or all scores are zero", () => {

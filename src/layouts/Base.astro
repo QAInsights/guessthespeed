@@ -4,40 +4,53 @@ import '@fontsource-variable/figtree';
 import { Icon } from 'astro-icon/components';
 import '../styles/global.css';
 import Footer from '../components/Footer.astro';
-import { themes, type ThemeId } from '../lib/themes';
+import {
+  LOCALES,
+  LOCALE_INFO,
+  formatNumber,
+  localeHome,
+  type Locale,
+} from '../lib/i18n';
+import { themeHintMessages, themeLabelMessages } from '../lib/ui-messages';
+import { type ThemeId } from '../lib/themes';
+import * as m from '../paraglide/messages.js';
 
 interface Props {
   title?: string;
   description?: string;
   breadcrumb?: string;
   schema?: Record<string, unknown>[];
+  locale?: Locale;
+  localized?: boolean;
 }
 
 const {
-  title = 'Guess the Speed | The Internet Speed Guessing Game for Families',
-  description = "A free family game: everyone guesses the Wi-Fi download and upload speed, then a real speed test reveals who came closest. Play on one screen or on everyone's phone.",
+  locale = 'en',
+  title = m.home_title({}, { locale: 'en' }),
+  description = m.home_description({}, { locale: 'en' }),
   breadcrumb,
   schema = [],
+  localized = false,
 } = Astro.props;
 const canonical = new URL(Astro.url.pathname, 'https://guessthespeed.com').toString();
 const beaconToken = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
 const themeHints: Record<ThemeId, { emoji: string; hint: string }> = {
-  light: { emoji: '☀️', hint: 'Bright and bold' },
-  dark: { emoji: '🌙', hint: 'Night mode' },
-  halloween: { emoji: '🎃', hint: 'Oct 15 to 31' },
-  diwali: { emoji: '🪔', hint: 'Around Diwali' },
-  thanksgiving: { emoji: '🥧', hint: 'Late November' },
-  winter: { emoji: '❄️', hint: 'January' },
-  christmas: { emoji: '🎄', hint: 'Dec 1 to 26' },
-  newyear: { emoji: '🎉', hint: 'Dec 27 to Jan 2' },
-  pongal: { emoji: '🌾', hint: 'Jan 13 to 17' },
-  valentines: { emoji: '💌', hint: 'Feb 7 to 14' },
-  holi: { emoji: '🎨', hint: 'Around Holi' },
-  easter: { emoji: '🐣', hint: 'Easter week' },
+  light: { emoji: '☀️', hint: themeHintMessages.light() },
+  dark: { emoji: '🌙', hint: themeHintMessages.dark() },
+  halloween: { emoji: '🎃', hint: themeHintMessages.halloween() },
+  diwali: { emoji: '🪔', hint: themeHintMessages.diwali() },
+  thanksgiving: { emoji: '🥧', hint: themeHintMessages.thanksgiving() },
+  winter: { emoji: '❄️', hint: themeHintMessages.winter() },
+  christmas: { emoji: '🎄', hint: themeHintMessages.christmas() },
+  newyear: { emoji: '🎉', hint: themeHintMessages.newyear() },
+  pongal: { emoji: '🌾', hint: themeHintMessages.pongal() },
+  valentines: { emoji: '💌', hint: themeHintMessages.valentines() },
+  holi: { emoji: '🎨', hint: themeHintMessages.holi() },
+  easter: { emoji: '🐣', hint: themeHintMessages.easter() },
 };
 const themeChoices = (Object.keys(themeHints) as ThemeId[]).map((id) => ({
   id,
-  label: themes[id].label,
+  label: themeLabelMessages[id](),
   ...themeHints[id],
 }));
 const websiteId = 'https://guessthespeed.com/#website';
@@ -48,7 +61,7 @@ const graph: Record<string, unknown>[] = [
     '@id': websiteId,
     name: 'Guess the Speed',
     url: 'https://guessthespeed.com/',
-    inLanguage: 'en',
+    inLanguage: localized ? [...LOCALES] : 'en',
     publisher: { '@id': authorId },
   },
   {
@@ -72,7 +85,7 @@ if (breadcrumb && Astro.url.pathname !== '/') {
         '@type': 'ListItem',
         position: 1,
         name: 'Home',
-        item: 'https://guessthespeed.com/',
+      item: 'https://guessthespeed.com/',
       },
       {
         '@type': 'ListItem',
@@ -89,9 +102,9 @@ const graphSchema = { '@context': 'https://schema.org', '@graph': graph };
 
 <!doctype html>
 <html
-  lang="en"
+  lang={locale}
   data-theme="light"
-  data-home={Astro.url.pathname === '/' ? '1' : undefined}
+  data-home={localized ? '1' : undefined}
 >
   <head>
     <meta charset="utf-8" />
@@ -116,6 +129,13 @@ const graphSchema = { '@context': 'https://schema.org', '@graph': graph };
         else tvEnabled = localStorage.getItem("gts:tv") === "1";
       } catch {}
       document.documentElement.dataset.tv = tvEnabled ? "1" : "0";
+      try {
+        if (window.location.pathname === "/") {
+          const savedLocale = localStorage.getItem("gts:locale");
+          if (savedLocale && savedLocale !== "en" && ["ta", "hi", "es", "pt", "fr", "de"].includes(savedLocale))
+            window.location.replace("/" + savedLocale + "/" + window.location.search + window.location.hash);
+        }
+      } catch {}
     </script>
     <script is:inline>
       try {
@@ -156,6 +176,10 @@ const graphSchema = { '@context': 'https://schema.org', '@graph': graph };
     <link rel="manifest" href="/manifest.webmanifest" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Guess the Speed" />
+    <meta property="og:locale" content={LOCALE_INFO[locale].og} />
+    {localized && LOCALES.filter((code) => code !== locale).map((code) => (
+      <meta property="og:locale:alternate" content={LOCALE_INFO[code].og} />
+    ))}
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
@@ -166,6 +190,16 @@ const graphSchema = { '@context': 'https://schema.org', '@graph': graph };
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content="https://guessthespeed.com/og.png" />
+    {localized && LOCALES.map((code) => (
+      <link
+        rel="alternate"
+        hreflang={code}
+        href={`https://guessthespeed.com${localeHome(code)}`}
+      />
+    ))}
+    {localized && (
+      <link rel="alternate" hreflang="x-default" href="https://guessthespeed.com/" />
+    )}
     <title>{title}</title>
     <script type="application/ld+json" set:html={JSON.stringify(graphSchema)}></script>
     {beaconToken && (
@@ -180,23 +214,23 @@ const graphSchema = { '@context': 'https://schema.org', '@graph': graph };
   <body>
     <div class="fx-layer" data-fx-layer aria-hidden="true"></div>
     <header class="wrap top">
-      <a class="logo" href="/" aria-label="Guess the Speed home">
+      <a class="logo" href={localized ? localeHome(locale) : '/'} aria-label={m.header_logo_aria({}, { locale })}>
         <span class="logo-badge">?</span>
         <b>guess the speed</b>
       </a>
       <div class="ctrls">
         <div class="theme-picker" data-theme-picker>
-          <button class="ctrl theme-trigger" type="button" data-theme-trigger aria-haspopup="listbox" aria-expanded="false" aria-controls="theme-menu" aria-label="Choose a theme">
+          <button class="ctrl theme-trigger" type="button" data-theme-trigger aria-haspopup="listbox" aria-expanded="false" aria-controls="theme-menu" aria-label={m.header_theme_aria({}, { locale })}>
             <span class="theme-dot" aria-hidden="true"></span>
-            <span class="theme-trigger-label" data-theme-label>Auto (by date)</span>
+            <span class="theme-trigger-label" data-theme-label>{m.header_theme_auto({}, { locale })}</span>
             <Icon name="ph:caret-down-bold" class="theme-caret" aria-hidden="true" />
           </button>
           <div class="theme-menu" id="theme-menu" data-theme-menu hidden>
-            <p class="theme-menu-title" id="theme-menu-title">Pick a theme</p>
+            <p class="theme-menu-title" id="theme-menu-title">{m.header_theme_menu_title({}, { locale })}</p>
             <div class="theme-grid" role="listbox" aria-labelledby="theme-menu-title" data-theme-list>
               <button class="theme-option" type="button" role="option" aria-selected="false" tabindex="-1" data-theme-option="auto" data-theme="light">
                 <span class="theme-swatch" aria-hidden="true">📅</span>
-                <span class="theme-option-text"><b>Auto (by date)</b><small data-theme-auto-hint>Follows the calendar</small></span>
+                <span class="theme-option-text"><b>{m.header_theme_auto({}, { locale })}</b><small data-theme-auto-hint>{m.header_theme_auto_hint({}, { locale })}</small></span>
               </button>
               {themeChoices.map(({ id, label, emoji, hint }) => (
                 <button class="theme-option" type="button" role="option" aria-selected="false" tabindex="-1" data-theme-option={id} data-theme={id}>
@@ -207,21 +241,37 @@ const graphSchema = { '@context': 'https://schema.org', '@graph': graph };
             </div>
           </div>
         </div>
-        <button class="ctrl icon-btn" type="button" data-sound-toggle aria-label="Toggle sound" aria-pressed="true">
+        <button class="ctrl icon-btn" type="button" data-sound-toggle aria-label={m.settings_sound({}, { locale })} aria-pressed="true">
           <span data-sound-on><Icon name="ph:speaker-high-fill" /></span>
           <span data-sound-off hidden><Icon name="ph:speaker-slash-fill" /></span>
         </button>
-        <button class="ctrl icon-btn" type="button" data-tv-toggle aria-label="TV mode" title="TV mode: big screen layout" aria-pressed="false">
+        <button class="ctrl icon-btn" type="button" data-tv-toggle aria-label={m.header_tv_aria({}, { locale })} title={m.header_tv_title({}, { locale })} aria-pressed="false">
           <Icon name="ph:television-simple-bold" />
         </button>
-        <button class="ctrl icon-btn" type="button" data-fullscreen aria-label="Full screen" title="Full screen" aria-pressed="false" hidden>
+        <button class="ctrl icon-btn" type="button" data-fullscreen aria-label={m.header_fullscreen_aria({}, { locale })} title={m.header_fullscreen_aria({}, { locale })} aria-pressed="false" hidden>
           <Icon name="ph:corners-out-bold" />
         </button>
-        <a class="ctrl icon-btn how-link" href="/how-to-play/" aria-label="How to play">
+        <a class="ctrl icon-btn how-link" href="/how-to-play/" aria-label={m.header_how_to_play_aria({}, { locale })}>
           <Icon name="ph:question-fill" />
         </a>
-        <button class="dev-badge" type="button" data-dev-badge hidden aria-label="Turn off developer mode">DEV</button>
-        <button class="ctrl icon-btn" type="button" data-open-settings aria-label="Open settings">
+        <button class="dev-badge" type="button" data-dev-badge hidden aria-label={m.header_dev_mode_aria({}, { locale })}>DEV</button>
+        <div class="language-picker" data-language-picker>
+          <button class="ctrl language-trigger" type="button" data-language-trigger aria-haspopup="listbox" aria-expanded="false" aria-controls="language-menu" aria-label={m.header_language_aria({ language: LOCALE_INFO[locale].native }, { locale })}>
+            <Icon name="ph:globe-simple-bold" aria-hidden="true" />
+            <span data-current-language>{locale.toUpperCase()}</span>
+          </button>
+          <div class="language-menu" id="language-menu" data-language-menu hidden>
+            <p class="language-menu-title" id="language-menu-title">{m.header_language_menu_title({}, { locale })}</p>
+            <div role="listbox" aria-labelledby="language-menu-title" data-language-list>
+              {LOCALES.map((code) => (
+                <button class="language-option" type="button" role="option" aria-selected={code === locale} tabindex="-1" data-language-option={code}>
+                  <b>{LOCALE_INFO[code].native}</b><small>{LOCALE_INFO[code].english}</small>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+        <button class="ctrl icon-btn" type="button" data-open-settings aria-label={m.header_settings_aria({}, { locale })}>
           <Icon name="ph:gear-six-fill" />
         </button>
       </div>
@@ -229,61 +279,61 @@ const graphSchema = { '@context': 'https://schema.org', '@graph': graph };
     <dialog class="sticker-dialog" data-settings-dialog aria-labelledby="settings-title">
       <div class="dialog-inner">
         <div class="dialog-head">
-          <h2 id="settings-title" class="display">Game settings</h2>
-          <button class="dialog-close" type="button" data-close-settings aria-label="Close settings"><Icon name="ph:x-bold" /></button>
+          <h2 id="settings-title" class="display">{m.settings_title({}, { locale })}</h2>
+          <button class="dialog-close" type="button" data-close-settings aria-label={m.settings_close_aria({}, { locale })}><Icon name="ph:x-bold" /></button>
         </div>
         <form class="dialog-form" data-settings-form>
-          <label class="dialog-field">Rounds
+          <label class="dialog-field">{m.settings_rounds({}, { locale })}
             <select class="dialog-select" name="rounds">
-              <option value="1">1 round</option>
-              <option value="3">3 rounds</option>
-              <option value="5">5 rounds</option>
-              <option value="7">7 rounds</option>
-              <option value="10">10 rounds</option>
-              <option value="endless">Endless</option>
+              <option value="1">{m.settings_round_option({ count: 1, formatted: formatNumber(1, locale) }, { locale })}</option>
+              <option value="3">{m.settings_round_option({ count: 3, formatted: formatNumber(3, locale) }, { locale })}</option>
+              <option value="5">{m.settings_round_option({ count: 5, formatted: formatNumber(5, locale) }, { locale })}</option>
+              <option value="7">{m.settings_round_option({ count: 7, formatted: formatNumber(7, locale) }, { locale })}</option>
+              <option value="10">{m.settings_round_option({ count: 10, formatted: formatNumber(10, locale) }, { locale })}</option>
+              <option value="endless">{m.settings_endless({}, { locale })}</option>
             </select>
           </label>
-          <label class="dialog-field">Ties
+          <label class="dialog-field">{m.settings_ties({}, { locale })}
             <select class="dialog-select" name="tieMode">
-              <option value="share">Share the points</option>
-              <option value="download">Closest download breaks the tie</option>
+              <option value="share">{m.settings_share_points({}, { locale })}</option>
+              <option value="download">{m.settings_download_tiebreak({}, { locale })}</option>
             </select>
           </label>
-          <label class="dialog-field">Theme
+          <label class="dialog-field">{m.settings_theme({}, { locale })}
             <select class="dialog-select" name="themeMode">
-              <option value="auto">Auto (by date)</option>
-              <option value="light">Light</option>
-              <option value="dark">Dark</option>
-              <option value="halloween">Halloween</option>
-              <option value="diwali">Diwali</option>
-              <option value="thanksgiving">Thanksgiving</option>
-              <option value="winter">Winter</option>
-              <option value="christmas">Christmas</option>
-              <option value="newyear">New Year</option>
-              <option value="pongal">Pongal</option>
-              <option value="valentines">Valentine’s Day</option>
-              <option value="holi">Holi</option>
-              <option value="easter">Easter</option>
+              <option value="auto">{m.header_theme_auto({}, { locale })}</option>
+              <option value="light">{m.theme_light({}, { locale })}</option>
+              <option value="dark">{m.theme_dark({}, { locale })}</option>
+              <option value="halloween">{m.theme_halloween({}, { locale })}</option>
+              <option value="diwali">{m.theme_diwali({}, { locale })}</option>
+              <option value="thanksgiving">{m.theme_thanksgiving({}, { locale })}</option>
+              <option value="winter">{m.theme_winter({}, { locale })}</option>
+              <option value="christmas">{m.theme_christmas({}, { locale })}</option>
+              <option value="newyear">{m.theme_newyear({}, { locale })}</option>
+              <option value="pongal">{m.theme_pongal({}, { locale })}</option>
+              <option value="valentines">{m.theme_valentines({}, { locale })}</option>
+              <option value="holi">{m.theme_holi({}, { locale })}</option>
+              <option value="easter">{m.theme_easter({}, { locale })}</option>
             </select>
           </label>
-          <label class="dialog-field sound-setting"><span>Sound</span><input type="checkbox" name="sound" /></label>
+          <label class="dialog-field sound-setting"><span>{m.settings_sound({}, { locale })}</span><input type="checkbox" name="sound" /></label>
           <label class="dialog-field tv-setting">
-            <span>TV mode<small>Bigger gauge and text for the living-room screen.</small></span>
+            <span>{m.settings_tv_mode({}, { locale })}<small>{m.settings_tv_mode_help({}, { locale })}</small></span>
             <input type="checkbox" name="tvMode" />
           </label>
           <label class="dialog-field dev-setting">
-            <span>Developer mode<small>Show raw speed test data. Hides the game.</small></span>
+            <span>{m.settings_developer_mode({}, { locale })}<small>{m.settings_developer_mode_help({}, { locale })}</small></span>
             <input type="checkbox" name="devMode" />
           </label>
-          <p class="room-settings-note" data-room-settings-note hidden>Only the host can change rounds or tie rules in this room.</p>
+          <p class="room-settings-note" data-room-settings-note hidden>{m.settings_room_host_note({}, { locale })}</p>
           <div class="dialog-actions">
-            <button class="go" type="submit">Save settings</button>
+            <button class="go" type="submit">{m.settings_save({}, { locale })}</button>
           </div>
         </form>
       </div>
     </dialog>
     <slot />
-    <Footer />
+    <Footer locale={locale} localized={localized} />
     <script>
       import '../scripts/header-client';
     </script>

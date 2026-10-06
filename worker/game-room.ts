@@ -3,9 +3,11 @@ import {
   applyAction,
   canRunTest,
   createRoom,
+  ROOM_ERROR_TEXT,
   ROOM_TTL_MS,
   viewFor,
   type Room,
+  type RoomErrorCode,
 } from "../src/lib/room";
 import type { StatEvent } from "../src/lib/stats";
 import type { Env } from "./types";
@@ -42,7 +44,10 @@ export class GameRoom extends DurableObject<Env> {
         : Response.json({ exists: false }, { status: 404 });
     if (request.headers.get("Upgrade")?.toLowerCase() === "websocket")
       return this.connectWebSocket();
-    return Response.json({ error: "Not found." }, { status: 404 });
+    return Response.json(
+      { code: "not_found", error: "Not found." },
+      { status: 404 },
+    );
   }
 
   async webSocketMessage(
@@ -54,12 +59,12 @@ export class GameRoom extends DurableObject<Env> {
       return;
     }
     if (!this.allowMessage(socket)) {
-      sendError(socket, "Too many messages. Please slow down.");
+      sendError(socket, "too_many_messages");
       socket.close(1008, "Rate limit exceeded");
       return;
     }
     if (typeof message !== "string") {
-      sendError(socket, "Text messages are required.");
+      sendError(socket, "text_messages_required");
       socket.close(1003, "Text messages are required");
       return;
     }
@@ -68,11 +73,11 @@ export class GameRoom extends DurableObject<Env> {
     try {
       parsed = JSON.parse(message);
     } catch {
-      sendError(socket, "Invalid JSON message.");
+      sendError(socket, "invalid_json_message");
       return;
     }
     if (!isRecord(parsed) || typeof parsed.type !== "string") {
-      sendError(socket, "Invalid message.");
+      sendError(socket, "invalid_message");
       return;
     }
 
@@ -82,7 +87,7 @@ export class GameRoom extends DurableObject<Env> {
       return;
     }
     if (parsed.type === "hello") {
-      sendError(socket, "This connection is already identified.");
+      sendError(socket, "connection_already_identified");
       return;
     }
     if (parsed.type === "progress") {
@@ -92,7 +97,7 @@ export class GameRoom extends DurableObject<Env> {
 
     const room = await this.loadRoom();
     if (!room) {
-      sendError(socket, "This room has ended.");
+      sendError(socket, "room_ended");
       socket.close(1000, "Room ended");
       return;
     }
@@ -166,7 +171,7 @@ export class GameRoom extends DurableObject<Env> {
   private async initialize(request: Request): Promise<Response> {
     if (await this.loadRoom())
       return Response.json(
-        { error: "Room code already exists." },
+        { code: "room_code_exists", error: "Room code already exists." },
         { status: 409 },
       );
     let input: unknown;
@@ -174,7 +179,7 @@ export class GameRoom extends DurableObject<Env> {
       input = await request.json();
     } catch {
       return Response.json(
-        { error: "Invalid initialization." },
+        { code: "invalid_initialization", error: "Invalid initialization." },
         { status: 400 },
       );
     }
@@ -186,14 +191,17 @@ export class GameRoom extends DurableObject<Env> {
       !Number.isFinite(input.now)
     )
       return Response.json(
-        { error: "Invalid initialization." },
+        { code: "invalid_initialization", error: "Invalid initialization." },
         { status: 400 },
       );
     let room: Room;
     try {
       room = createRoom(input.code, input.hostToken, input.now);
     } catch {
-      return Response.json({ error: "Invalid room code." }, { status: 400 });
+      return Response.json(
+        { code: "invalid_room_code", error: "Invalid room code." },
+        { status: 400 },
+      );
     }
     await this.ctx.storage.put(ROOM_KEY, room);
     await this.ctx.storage.setAlarm(room.updatedAt + ROOM_TTL_MS);
@@ -202,7 +210,10 @@ export class GameRoom extends DurableObject<Env> {
 
   private async connectWebSocket(): Promise<Response> {
     if (!(await this.loadRoom()))
-      return Response.json({ error: "Room not found." }, { status: 404 });
+      return Response.json(
+        { code: "room_not_found", error: "Room not found." },
+        { status: 404 },
+      );
     const pair = new WebSocketPair();
     const client = pair[0];
     const server = pair[1];
@@ -224,13 +235,13 @@ export class GameRoom extends DurableObject<Env> {
       message.clientId.length > 64 ||
       !CLIENT_ID_PATTERN.test(message.clientId)
     ) {
-      sendError(socket, "A valid hello message is required first.");
+      sendError(socket, "valid_hello_required");
       socket.close(1008, "Invalid hello");
       return;
     }
     const room = await this.loadRoom();
     if (!room) {
-      sendError(socket, "This room has ended.");
+      sendError(socket, "room_ended");
       socket.close(1000, "Room ended");
       return;
     }
@@ -251,11 +262,11 @@ export class GameRoom extends DurableObject<Env> {
   ): Promise<void> {
     const room = await this.loadRoom();
     if (!room) {
-      sendError(sender, "This room has ended.");
+      sendError(sender, "room_ended");
       return;
     }
     if (!canRunTest(room, attachment.clientId, attachment.isHost)) {
-      sendError(sender, "Only the assigned tester can share test progress.");
+      sendError(sender, "tester_only_progress");
       return;
     }
     const now = Date.now();
@@ -340,9 +351,11 @@ function getAttachment(socket: WebSocket): SocketAttachment | null {
     : null;
 }
 
-function sendError(socket: WebSocket, message: string): void {
+function sendError(socket: WebSocket, code: RoomErrorCode): void {
   try {
-    socket.send(JSON.stringify({ type: "error", message }));
+    socket.send(
+      JSON.stringify({ type: "error", code, message: ROOM_ERROR_TEXT[code] }),
+    );
   } catch {
     return;
   }

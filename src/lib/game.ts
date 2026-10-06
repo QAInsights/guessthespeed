@@ -8,25 +8,63 @@ import {
 } from "./scoring";
 import { isThemeId, type ThemeId } from "./themes";
 
-export const ROLES = [
-  { emoji: "👨", role: "Dad" },
-  { emoji: "👩", role: "Mom" },
-  { emoji: "👦", role: "Brother" },
-  { emoji: "👧", role: "Sister" },
-  { emoji: "👶", role: "Baby" },
-  { emoji: "👴", role: "Grandpa" },
-  { emoji: "👵", role: "Grandma" },
-  { emoji: "🧒", role: "Cousin" },
-  { emoji: "🧑", role: "Friend" },
-  { emoji: "🐶", role: "Dog" },
-  { emoji: "🐱", role: "Cat" },
+export const ROLE_IDS = [
+  "dad",
+  "mom",
+  "brother",
+  "sister",
+  "baby",
+  "grandpa",
+  "grandma",
+  "cousin",
+  "friend",
+  "dog",
+  "cat",
 ] as const;
+
+export type RoleId = (typeof ROLE_IDS)[number];
+
+const legacyRoleIds: Record<string, RoleId> = {
+  Dad: "dad",
+  Mom: "mom",
+  Brother: "brother",
+  Sister: "sister",
+  Baby: "baby",
+  Grandpa: "grandpa",
+  Grandma: "grandma",
+  Cousin: "cousin",
+  Friend: "friend",
+  Dog: "dog",
+  Cat: "cat",
+};
+
+export function isRoleId(value: unknown): value is RoleId {
+  return typeof value === "string" && ROLE_IDS.includes(value as RoleId);
+}
+
+export function normalizeRoleId(value: string): RoleId | null {
+  return isRoleId(value) ? value : (legacyRoleIds[value] ?? null);
+}
+
+export const ROLES: ReadonlyArray<{ emoji: string; role: RoleId }> = [
+  { emoji: "👨", role: "dad" },
+  { emoji: "👩", role: "mom" },
+  { emoji: "👦", role: "brother" },
+  { emoji: "👧", role: "sister" },
+  { emoji: "👶", role: "baby" },
+  { emoji: "👴", role: "grandpa" },
+  { emoji: "👵", role: "grandma" },
+  { emoji: "🧒", role: "cousin" },
+  { emoji: "🧑", role: "friend" },
+  { emoji: "🐶", role: "dog" },
+  { emoji: "🐱", role: "cat" },
+];
 
 export interface Player {
   id: string;
   name: string;
   emoji: string;
-  role: string;
+  role: RoleId;
   score: number;
   guess: Guess;
   locked: boolean;
@@ -35,10 +73,10 @@ export interface Player {
 export const DEFAULT_PLAYERS: ReadonlyArray<
   Pick<Player, "id" | "name" | "emoji" | "role">
 > = [
-  { id: "p-mom", name: "Mom", emoji: "👩", role: "Mom" },
-  { id: "p-dad", name: "Dad", emoji: "👨", role: "Dad" },
-  { id: "p-big-sis", name: "Big Sis", emoji: "👧", role: "Sister" },
-  { id: "p-little-sis", name: "Little Sis", emoji: "👧", role: "Sister" },
+  { id: "p-mom", name: "Mom", emoji: "👩", role: "mom" },
+  { id: "p-dad", name: "Dad", emoji: "👨", role: "dad" },
+  { id: "p-big-sis", name: "Big Sis", emoji: "👧", role: "sister" },
+  { id: "p-little-sis", name: "Little Sis", emoji: "👧", role: "sister" },
 ];
 
 export interface GameSettings {
@@ -69,10 +107,11 @@ export interface GameState {
 
 export const STORAGE_KEY = "gts:v1";
 
-export function initialGameState(): GameState {
+export function initialGameState(defaultNames?: readonly string[]): GameState {
   return {
-    players: DEFAULT_PLAYERS.map((player) => ({
+    players: DEFAULT_PLAYERS.map((player, index) => ({
       ...player,
+      name: defaultNames?.[index] ?? player.name,
       score: 0,
       guess: { down: null, up: null },
       locked: false,
@@ -89,7 +128,7 @@ export function addPlayer(
   state: GameState,
   name: string,
   emoji: string,
-  role: string,
+  role: RoleId,
   id: string,
 ): GameState {
   const trimmedName = name.trim().slice(0, 16);
@@ -243,17 +282,26 @@ export interface StorageLike {
   setItem(key: string, value: string): void;
 }
 
-export function loadGame(storage?: StorageLike): GameState {
+export function loadGame(
+  storage?: StorageLike,
+  defaultNames?: readonly string[],
+): GameState {
   try {
     const target =
       storage ??
       (typeof localStorage === "undefined" ? undefined : localStorage);
-    if (!target) return initialGameState();
+    if (!target) return initialGameState(defaultNames);
     const parsed: unknown = JSON.parse(target.getItem(STORAGE_KEY) ?? "null");
-    if (!isGameState(parsed)) return initialGameState();
-    return parsed;
+    if (!isGameState(parsed)) return initialGameState(defaultNames);
+    return {
+      ...parsed,
+      players: parsed.players.map((player) => ({
+        ...player,
+        role: normalizeRoleId(player.role)!,
+      })),
+    };
   } catch {
-    return initialGameState();
+    return initialGameState(defaultNames);
   }
 }
 
@@ -307,6 +355,7 @@ function isGameState(value: unknown): value is GameState {
         typeof player.name === "string" &&
         typeof player.emoji === "string" &&
         typeof player.role === "string" &&
+        normalizeRoleId(player.role) !== null &&
         typeof player.score === "number" &&
         Number.isFinite(player.score) &&
         player.score >= 0 &&

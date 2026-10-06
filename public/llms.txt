@@ -11,6 +11,10 @@
 - Place scoring awards 3 points for first, 2 for second, and 1 for third. Each download or upload guess within 5% earns one spot-on bonus point, while place points require an average miss of 50% or less.
 - Single-device game data stays in that browser. Multiplayer rooms are deleted after six hours without activity.
 
+## Languages
+
+Home pages: English https://guessthespeed.com/, Tamil https://guessthespeed.com/ta/, Hindi https://guessthespeed.com/hi/, Spanish https://guessthespeed.com/es/, Portuguese https://guessthespeed.com/pt/, French https://guessthespeed.com/fr/, German https://guessthespeed.com/de/.
+
 ## Pages
 
 - [Play Guess the Speed](https://guessthespeed.com/)

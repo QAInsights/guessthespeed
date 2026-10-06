@@ -29,7 +29,7 @@ function addPlayer(
     room,
     clientId,
     isHost,
-    { type: "join", name, emoji: "🧑", role: "Friend" },
+    { type: "join", name, emoji: "🧑", role: "friend" },
     now,
   );
   if ("error" in result) throw new Error(result.error);
@@ -194,12 +194,12 @@ describe("room actions and views", () => {
       id: own.id,
       name: "  Renamed  ",
       emoji: "🐱",
-      role: "Cat",
+      role: "cat",
     });
     expect(playerByOwner(room, firstId)).toMatchObject({
       name: "Renamed",
       emoji: "🐱",
-      role: "Cat",
+      role: "cat",
     });
     expect(
       applyAction(
@@ -211,18 +211,18 @@ describe("room actions and views", () => {
           id: other.id,
           name: "Nope",
           emoji: "🧑",
-          role: "Friend",
+          role: "friend",
         },
         500,
       ),
-    ).toEqual({ error: "You can only edit your own player." });
+    ).toEqual({ error: "edit_own_player_only" });
     room = withGuess(room, firstId, 12, 4);
     expect(playerByOwner(room, firstId).locked).toBe(true);
     room = act(room, firstId, false, { type: "unlock", id: own.id });
     expect(playerByOwner(room, firstId).locked).toBe(false);
     expect(
       applyAction(room, firstId, false, { type: "remove", id: other.id }, 600),
-    ).toEqual({ error: "You can only remove your own player." });
+    ).toEqual({ error: "remove_own_player_only" });
     room = act(room, firstId, false, { type: "remove", id: own.id });
     expect(room.game.players.some((player) => player.id === own.id)).toBe(
       false,
@@ -261,7 +261,7 @@ describe("room actions and views", () => {
         { type: "setTester", id: tester.id },
         600,
       ),
-    ).toEqual({ error: "Only the host can choose the tester." });
+    ).toEqual({ error: "host_only_tester" });
     expect(
       applyAction(
         room,
@@ -270,7 +270,7 @@ describe("room actions and views", () => {
         { type: "setTester", id: "missing-player" },
         600,
       ),
-    ).toEqual({ error: "The selected tester is not in this room." });
+    ).toEqual({ error: "tester_not_in_room" });
 
     room = act(room, hostId, true, { type: "setTester", id: tester.id });
     expect(room.testerId).toBe(tester.id);
@@ -282,7 +282,7 @@ describe("room actions and views", () => {
     room = act(room, firstId, false, { type: "start" });
     expect(
       applyAction(room, hostId, true, { type: "setTester", id: null }, 700),
-    ).toEqual({ error: "The tester cannot change during a test." });
+    ).toEqual({ error: "tester_during_test" });
   });
 
   it("lets only the assigned player run a test while keeping a host abort safety net", () => {
@@ -292,7 +292,7 @@ describe("room actions and views", () => {
     room = act(room, hostId, true, { type: "setTester", id: tester.id });
 
     expect(applyAction(room, hostId, true, { type: "start" }, 700)).toEqual({
-      error: "Only the assigned tester can start the test.",
+      error: "tester_only_start",
     });
     expect(
       applyAction(room, secondId, false, { type: "start" }, 700),
@@ -391,10 +391,10 @@ describe("room actions and views", () => {
         room,
         firstId,
         false,
-        { type: "join", name: "Extra", emoji: "🧑", role: "Friend" },
+        { type: "join", name: "Extra", emoji: "🧑", role: "friend" },
         2,
       ),
-    ).toEqual({ error: "This device already has a player in the room." });
+    ).toEqual({ error: "device_already_joined" });
 
     for (let index = 1; index < MAX_PLAYERS; index += 1) {
       room = addPlayer(room, `host-${index}`, true, `Host ${index}`);
@@ -405,10 +405,10 @@ describe("room actions and views", () => {
         room,
         "another-host",
         true,
-        { type: "join", name: "Too many", emoji: "🧑", role: "Friend" },
+        { type: "join", name: "Too many", emoji: "🧑", role: "friend" },
         100,
       ),
-    ).toEqual({ error: `A room can have up to ${MAX_PLAYERS} players.` });
+    ).toEqual({ error: "room_full" });
   });
 
   it("rejects malformed actions, invalid names, oversized labels, unknown IDs, and out-of-range speeds", () => {
@@ -417,10 +417,10 @@ describe("room actions and views", () => {
     const invalidActions: unknown[] = [
       null,
       { type: "unknown" },
-      { type: "join", name: "   ", emoji: "🧑", role: "Friend" },
-      { type: "join", name: "a".repeat(17), emoji: "🧑", role: "Friend" },
-      { type: "join", name: "Valid", emoji: "🙂".repeat(9), role: "Friend" },
-      { type: "join", name: "Valid", emoji: "🧑", role: "r".repeat(17) },
+      { type: "join", name: "   ", emoji: "🧑", role: "friend" },
+      { type: "join", name: "a".repeat(17), emoji: "🧑", role: "friend" },
+      { type: "join", name: "Valid", emoji: "🙂".repeat(9), role: "friend" },
+      { type: "join", name: "Valid", emoji: "🧑", role: "friend" },
       { type: "guess", id: player.id, down: Number.NaN, up: 1 },
       { type: "guess", id: player.id, down: -1, up: 1 },
       { type: "guess", id: player.id, down: 100_001, up: 1 },
@@ -441,17 +441,17 @@ describe("room actions and views", () => {
           id: "missing",
           name: "New",
           emoji: "🧑",
-          role: "Friend",
+          role: "friend",
         },
         700,
       ),
-    ).toEqual({ error: "Player not found." });
+    ).toEqual({ error: "player_not_found" });
   });
 
   it("requires a locked guess before the host can start", () => {
     const room = joinedRoom();
     expect(applyAction(room, hostId, true, { type: "start" }, 900)).toEqual({
-      error: "At least one player must lock a guess first.",
+      error: "guess_required",
     });
     const lockedRoom = withGuess(room, firstId, 40, 12);
     expect(act(lockedRoom, hostId, true, { type: "start" }).game.phase).toBe(
@@ -464,7 +464,7 @@ describe("room actions and views", () => {
     room = withGuess(room, firstId, 40, 12);
     room = act(room, hostId, true, { type: "start" });
     expect(applyAction(room, hostId, true, { type: "newGame" }, 900)).toEqual({
-      error: "Wait for the test to finish before starting a new game.",
+      error: "test_must_finish_before_new_game",
     });
   });
 

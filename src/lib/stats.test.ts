@@ -70,4 +70,10 @@ describe("formatPlayStat", () => {
       ),
     ).toBe("12,345 rounds so far");
   });
+
+  it("formats the round count using the requested locale", () => {
+    expect(
+      formatPlayStat({ rounds: 12345, games: 20, guesses: 150 }, {}, "de"),
+    ).toBe("12.345 rounds played so far");
+  });
 });

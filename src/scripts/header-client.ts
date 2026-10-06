@@ -3,6 +3,15 @@ import { readRoomLocalSettings, saveRoomLocalSettings } from "./room-settings";
 import { isThemeId, themes, themeForDate, type ThemeId } from "../lib/themes";
 import { playCue } from "../lib/sound";
 import type { RoomView } from "../lib/room";
+import {
+  LOCALE_INFO,
+  LOCALE_STORAGE_KEY,
+  isLocale,
+  localeHome,
+} from "../lib/i18n";
+import { defaultPlayerNames, themeLabelMessages } from "../lib/ui-messages";
+import * as m from "../paraglide/messages.js";
+import { getLocale } from "../paraglide/runtime.js";
 
 const $ = <T extends Element>(selector: string): T =>
   document.querySelector(selector) as T;
@@ -29,12 +38,19 @@ const devBadge = $<HTMLButtonElement>("[data-dev-badge]");
 const devModeInput = $<HTMLInputElement>('input[name="devMode"]');
 const tvModeInput = $<HTMLInputElement>('input[name="tvMode"]');
 const fxLayer = $<HTMLDivElement>("[data-fx-layer]");
+const languagePicker = $<HTMLDivElement>("[data-language-picker]");
+const languageTrigger = $<HTMLButtonElement>("[data-language-trigger]");
+const languageMenu = $<HTMLDivElement>("[data-language-menu]");
+const languageOptions = [
+  ...document.querySelectorAll<HTMLButtonElement>("[data-language-option]"),
+];
 const reduceMotion = window.matchMedia(
   "(prefers-reduced-motion: reduce)",
 ).matches;
 
 const roomMode = document.documentElement.dataset.room === "1";
-const initialGame = roomMode ? null : loadGame();
+const loadLocalizedGame = () => loadGame(undefined, defaultPlayerNames());
+const initialGame = roomMode ? null : loadLocalizedGame();
 let roomHost = false;
 let settings: GameSettings = roomMode
   ? {
@@ -48,7 +64,7 @@ let devMode = !roomMode && document.documentElement.dataset.dev === "1";
 let tvMode = document.documentElement.dataset.tv === "1";
 let activeTheme: ThemeId = "light";
 devBadge.hidden = !devMode;
-const homePage = window.location.pathname === "/";
+const homePage = document.documentElement.dataset.home === "1";
 type WakeLockSentinelLike = {
   release(): Promise<void>;
   addEventListener?(
@@ -86,9 +102,107 @@ function syncFullscreenControl() {
   fullscreenButton.setAttribute("aria-pressed", String(active));
   fullscreenButton.setAttribute(
     "aria-label",
-    active ? "Exit full screen" : "Full screen",
+    active ? m.header_exit_fullscreen_aria() : m.header_fullscreen_aria(),
   );
-  fullscreenButton.title = active ? "Exit full screen" : "Full screen";
+  fullscreenButton.title = active
+    ? m.header_exit_fullscreen_aria()
+    : m.header_fullscreen_aria();
+}
+
+function syncLanguagePicker(): void {
+  const current = getLocale();
+  const currentCode = $<HTMLElement>("[data-current-language]");
+  if (currentCode) currentCode.textContent = current.toUpperCase();
+  languageTrigger.setAttribute(
+    "aria-label",
+    m.header_language_aria({ language: LOCALE_INFO[current].native }),
+  );
+  languageOptions.forEach((option) => {
+    const selected = option.dataset.languageOption === current;
+    option.setAttribute("aria-selected", String(selected));
+    option.tabIndex = selected ? 0 : -1;
+  });
+}
+
+function focusLanguageOption(option: HTMLButtonElement): void {
+  languageOptions.forEach((candidate) => {
+    candidate.tabIndex = candidate === option ? 0 : -1;
+  });
+  option.focus();
+  option.scrollIntoView({ block: "nearest" });
+}
+
+function openLanguageMenu(target: "selected" | "last" = "selected"): void {
+  languageMenu.hidden = false;
+  languageTrigger.setAttribute("aria-expanded", "true");
+  const selected =
+    languageOptions.find(
+      (option) => option.getAttribute("aria-selected") === "true",
+    ) ?? languageOptions[0];
+  focusLanguageOption(target === "last" ? languageOptions.at(-1)! : selected);
+}
+
+function closeLanguageMenu(returnFocus = true): void {
+  if (languageMenu.hidden) return;
+  languageMenu.hidden = true;
+  languageTrigger.setAttribute("aria-expanded", "false");
+  if (returnFocus) languageTrigger.focus();
+}
+
+function selectLanguage(localeValue: string): void {
+  if (!isLocale(localeValue)) return;
+  try {
+    localStorage.setItem(LOCALE_STORAGE_KEY, localeValue);
+  } catch {}
+  const isHome = document.documentElement.dataset.home === "1";
+  const destination = localeHome(localeValue);
+  window.location.assign(
+    isHome
+      ? `${destination}${window.location.search}${window.location.hash}`
+      : destination,
+  );
+}
+
+function showLanguageHint(): void {
+  const hint = $<HTMLElement>("[data-language-hint]");
+  if (
+    !hint ||
+    document.documentElement.dataset.dev === "1" ||
+    document.documentElement.dataset.tv === "1"
+  )
+    return;
+  try {
+    if (
+      localStorage.getItem(LOCALE_STORAGE_KEY) ||
+      localStorage.getItem("gts:locale-hint") === "1"
+    )
+      return;
+  } catch {
+    return;
+  }
+  const suggestion = navigator.languages
+    .map((language) => language.split("-")[0].toLowerCase())
+    .find((language) => isLocale(language) && language !== "en");
+  if (!suggestion || !isLocale(suggestion)) return;
+  const language = LOCALE_INFO[suggestion].native;
+  const text = $<HTMLElement>("[data-language-hint-text]");
+  const accept = $<HTMLButtonElement>("[data-language-hint-accept]");
+  const close = $<HTMLButtonElement>("[data-language-hint-close]");
+  if (!text || !accept || !close) return;
+  text.textContent = m.lang_hint({ language }, { locale: suggestion });
+  accept.textContent = language;
+  accept.setAttribute(
+    "aria-label",
+    m.lang_hint_accept_aria({ language }, { locale: suggestion }),
+  );
+  hint.hidden = false;
+  accept.addEventListener("click", () => selectLanguage(suggestion));
+  close.addEventListener("click", () => {
+    try {
+      localStorage.setItem("gts:locale-hint", "1");
+    } catch {}
+    hint.hidden = true;
+  });
 }
 
 function syncTVControls() {
@@ -215,8 +329,10 @@ function syncThemePicker() {
       option.dataset.theme = activeTheme;
   });
   themeLabel.textContent =
-    mode === "auto" ? "Auto (by date)" : themes[mode].label;
-  themeAutoHint.textContent = `Now: ${themes[activeTheme].label}`;
+    mode === "auto" ? m.header_theme_auto() : themeLabelMessages[mode]();
+  themeAutoHint.textContent = m.header_theme_now({
+    theme: themeLabelMessages[activeTheme](),
+  });
   themeTrigger.disabled = testing;
   if (testing) closeThemeMenu(false);
 }
@@ -265,7 +381,7 @@ function syncControls() {
   soundButton.setAttribute("aria-pressed", String(settings.sound));
   soundButton.setAttribute(
     "aria-label",
-    settings.sound ? "Turn sound off" : "Turn sound on",
+    settings.sound ? m.header_sound_on_aria() : m.header_sound_off_aria(),
   );
   soundOn.hidden = !settings.sound;
   soundOff.hidden = settings.sound;
@@ -279,7 +395,7 @@ function saveSettings(patch: Partial<GameSettings>, playSound = false) {
       sound: settings.sound,
     });
   } else {
-    const currentGame = loadGame();
+    const currentGame = loadLocalizedGame();
     settings = { ...currentGame.settings, ...patch };
     saveGame({ ...currentGame, settings });
   }
@@ -292,7 +408,7 @@ function saveSettings(patch: Partial<GameSettings>, playSound = false) {
 }
 
 function fillSettingsForm() {
-  if (!roomMode) settings = loadGame().settings;
+  if (!roomMode) settings = loadLocalizedGame().settings;
   applyTheme(settings.themeMode);
   syncControls();
   (settingsForm.elements.namedItem("rounds") as HTMLSelectElement).value =
@@ -310,6 +426,54 @@ function fillSettingsForm() {
 themeTrigger.addEventListener("click", () => {
   if (themeMenu.hidden) openThemeMenu();
   else closeThemeMenu();
+});
+
+languageTrigger.addEventListener("click", () => {
+  if (languageMenu.hidden) openLanguageMenu();
+  else closeLanguageMenu();
+});
+
+languageTrigger.addEventListener("keydown", (event) => {
+  if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
+  event.preventDefault();
+  openLanguageMenu(event.key === "ArrowUp" ? "last" : "selected");
+});
+
+languageOptions.forEach((option) => {
+  option.addEventListener("click", () => {
+    selectLanguage(option.dataset.languageOption ?? "");
+    closeLanguageMenu(false);
+  });
+});
+
+languageMenu.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") {
+    event.preventDefault();
+    closeLanguageMenu();
+    return;
+  }
+  if (event.key === "Tab") {
+    closeLanguageMenu(false);
+    return;
+  }
+  const index = languageOptions.indexOf(
+    document.activeElement as HTMLButtonElement,
+  );
+  const steps: Record<string, number> = {
+    ArrowDown: 1,
+    ArrowRight: 1,
+    ArrowUp: -1,
+    ArrowLeft: -1,
+  };
+  let next: number | null = null;
+  if (event.key in steps) next = index < 0 ? 0 : index + steps[event.key];
+  else if (event.key === "Home") next = 0;
+  else if (event.key === "End") next = languageOptions.length - 1;
+  if (next === null) return;
+  event.preventDefault();
+  focusLanguageOption(
+    languageOptions[Math.min(Math.max(next, 0), languageOptions.length - 1)],
+  );
 });
 
 themeTrigger.addEventListener("keydown", (event) => {
@@ -362,6 +526,8 @@ themeMenu.addEventListener("keydown", (event) => {
 document.addEventListener("pointerdown", (event) => {
   if (!themeMenu.hidden && !themePicker.contains(event.target as Node))
     closeThemeMenu(false);
+  if (!languageMenu.hidden && !languagePicker.contains(event.target as Node))
+    closeLanguageMenu(false);
 });
 
 soundButton.addEventListener("click", () => {
@@ -391,7 +557,7 @@ settingsForm.addEventListener("submit", (event) => {
   const roundsValue = (
     settingsForm.elements.namedItem("rounds") as HTMLSelectElement
   ).value;
-  const currentSettings = roomMode ? settings : loadGame().settings;
+  const currentSettings = roomMode ? settings : loadLocalizedGame().settings;
   const rounds: GameSettings["rounds"] =
     roundsValue === "endless"
       ? "endless"
@@ -465,6 +631,8 @@ window
 
 applyTheme(settings.themeMode);
 syncControls();
+syncLanguagePicker();
+showLanguageHint();
 if (tvMode) {
   void acquireScreenWakeLock();
   showCursorAndScheduleHide();

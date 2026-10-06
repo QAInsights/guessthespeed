@@ -24,28 +24,49 @@ export default {
 
       const match = url.pathname.match(/^\/api\/rooms\/([^/]+)(\/ws)?$/);
       if (!match || !["GET"].includes(request.method))
-        return jsonResponse({ error: "Not found." }, 404);
+        return jsonResponse({ code: "not_found", error: "Not found." }, 404);
 
       let inputCode: string;
       try {
         inputCode = decodeURIComponent(match[1]);
       } catch {
-        return jsonResponse({ error: "Invalid room code." }, 400);
+        return jsonResponse(
+          { code: "invalid_room_code", error: "Invalid room code." },
+          400,
+        );
       }
       const code = normalizeRoomCode(inputCode);
-      if (!code) return jsonResponse({ error: "Invalid room code." }, 400);
+      if (!code)
+        return jsonResponse(
+          { code: "invalid_room_code", error: "Invalid room code." },
+          400,
+        );
 
       const stub = env.ROOMS.get(env.ROOMS.idFromName(code));
       if (match[2]) {
         if (request.headers.get("Upgrade")?.toLowerCase() !== "websocket")
-          return jsonResponse({ error: "WebSocket upgrade required." }, 400);
+          return jsonResponse(
+            {
+              code: "websocket_upgrade_required",
+              error: "WebSocket upgrade required.",
+            },
+            400,
+          );
         const exists = await stub.fetch("https://room.internal/check");
-        if (!exists.ok) return jsonResponse({ error: "Room not found." }, 404);
+        if (!exists.ok)
+          return jsonResponse(
+            { code: "room_not_found", error: "Room not found." },
+            404,
+          );
         return stub.fetch(request);
       }
 
       const response = await stub.fetch("https://room.internal/check");
-      if (!response.ok) return jsonResponse({ error: "Room not found." }, 404);
+      if (!response.ok)
+        return jsonResponse(
+          { code: "room_not_found", error: "Room not found." },
+          404,
+        );
       return jsonResponse({ exists: true });
     }
     return env.ASSETS.fetch(request);
@@ -61,22 +82,35 @@ async function handleStats(request: Request, env: Env): Promise<Response> {
       .toLowerCase();
     if (contentType !== "application/json")
       return jsonResponse(
-        { error: "Content-Type must be application/json." },
+        {
+          code: "invalid_content_type",
+          error: "Content-Type must be application/json.",
+        },
         400,
       );
 
     const body = await request.text();
     if (new TextEncoder().encode(body).byteLength > 256)
-      return jsonResponse({ error: "Request body is too large." }, 400);
+      return jsonResponse(
+        { code: "request_body_too_large", error: "Request body is too large." },
+        400,
+      );
 
     let input: unknown;
     try {
       input = JSON.parse(body);
     } catch {
-      return jsonResponse({ error: "Invalid JSON." }, 400);
+      return jsonResponse(
+        { code: "invalid_json", error: "Invalid JSON." },
+        400,
+      );
     }
     const event = parseStatEvent(input);
-    if (!event) return jsonResponse({ error: "Invalid event." }, 400);
+    if (!event)
+      return jsonResponse(
+        { code: "invalid_event", error: "Invalid event." },
+        400,
+      );
 
     const stub = env.STATS.get(env.STATS.idFromName("global"));
     try {
@@ -117,7 +151,10 @@ async function handleStats(request: Request, env: Env): Promise<Response> {
     return response;
   }
 
-  return jsonResponse({ error: "Method not allowed." }, 405);
+  return jsonResponse(
+    { code: "method_not_allowed", error: "Method not allowed." },
+    405,
+  );
 }
 
 async function createRoom(env: Env): Promise<Response> {
@@ -136,7 +173,16 @@ async function createRoom(env: Env): Promise<Response> {
     });
     if (response.status === 201) return jsonResponse({ code, hostToken }, 201);
     if (response.status !== 409)
-      return jsonResponse({ error: "Could not create a room." }, 503);
+      return jsonResponse(
+        { code: "could_not_create_room", error: "Could not create a room." },
+        503,
+      );
   }
-  return jsonResponse({ error: "Could not find an available room code." }, 503);
+  return jsonResponse(
+    {
+      code: "no_room_code_available",
+      error: "Could not find an available room code.",
+    },
+    503,
+  );
 }
