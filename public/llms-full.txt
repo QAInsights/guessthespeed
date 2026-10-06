@@ -49,8 +49,8 @@ Player names, guesses, settings, scores, and history are stored in local storage
 ## Pages
 
 - Home game: https://guessthespeed.com/
-- Rules and FAQ: https://guessthespeed.com/how-to-play
-- Privacy: https://guessthespeed.com/privacy
+- Rules and FAQ: https://guessthespeed.com/how-to-play/
+- Privacy: https://guessthespeed.com/privacy/
 
 ## Credits
 

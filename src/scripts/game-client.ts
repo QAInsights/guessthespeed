@@ -9,10 +9,11 @@ import {
   saveGame,
   ROLES,
   type GameState,
+  type GameSettings,
   type Player,
 } from "../lib/game";
 import { runSpeedTest, type Phase } from "../lib/speedtest";
-import { isThemeId, themes, themeForDate, type ThemeId } from "../lib/themes";
+import { themes, themeForDate, type ThemeId } from "../lib/themes";
 import { playCue } from "../lib/sound";
 
 const $ = <T extends Element>(
@@ -35,8 +36,6 @@ const escapeHtml = (value: string) =>
         "'": "&#39;",
       })[char]!,
   );
-const valueOf = (value: unknown) => (typeof value === "string" ? value : "");
-
 let state: GameState = loadGame();
 let activePlayerId: string | null = null;
 let gaugeValue = 0;
@@ -50,15 +49,16 @@ let latestPing: number | undefined;
 const reduceMotion = window.matchMedia(
   "(prefers-reduced-motion: reduce)",
 ).matches;
-const settingDialog = $<HTMLDialogElement>("[data-settings-dialog]");
 const guessDialog = $<HTMLDialogElement>("[data-guess-dialog]");
 const championDialog = $<HTMLDialogElement>("[data-champion-dialog]");
-const themeSelect = $<HTMLSelectElement>("[data-theme-select]");
 const startButton = $<HTMLButtonElement>("[data-start-btn]");
 const errorNote = $<HTMLParagraphElement>("[data-error-note]");
 const playerContainer = $<HTMLDivElement>("[data-players]");
 
-if (state.phase === "testing") state = { ...state, phase: "guessing" };
+if (state.phase === "testing") {
+  state = { ...state, phase: "guessing" };
+  saveGame(state);
+}
 
 function persist() {
   saveGame(state);
@@ -71,34 +71,6 @@ function getResolvedTheme(): ThemeId {
   return window.matchMedia("(prefers-color-scheme: dark)").matches
     ? "dark"
     : "light";
-}
-
-function applyTheme() {
-  activeTheme = getResolvedTheme();
-  document.documentElement.dataset.theme = activeTheme;
-  themeSelect.value = state.settings.themeMode;
-  const metaTheme = $('meta[name="theme-color"]') as HTMLMetaElement;
-  const computed = getComputedStyle(document.documentElement)
-    .getPropertyValue("--bg")
-    .trim();
-  metaTheme.content = computed || "#eceff3";
-  const layer = $<HTMLDivElement>("[data-fx-layer]");
-  layer.replaceChildren();
-  const fx = themes[activeTheme].fx;
-  if (!fx || reduceMotion) return;
-  for (let index = 0; index < 14; index += 1) {
-    const piece = document.createElement("span");
-    piece.textContent = fx[index % fx.length];
-    piece.style.left = `${(Math.random() * 100).toFixed(1)}vw`;
-    piece.style.fontSize = `${(14 + Math.random() * 18).toFixed(0)}px`;
-    piece.style.animationDuration = `${(9 + Math.random() * 10).toFixed(1)}s`;
-    piece.style.animationDelay = `${(-Math.random() * 18).toFixed(1)}s`;
-    piece.style.setProperty(
-      "--drift",
-      `${(Math.random() * 80 - 40).toFixed(0)}px`,
-    );
-    layer.append(piece);
-  }
 }
 
 function setGauge(value: number, readoutValue?: number) {
@@ -384,18 +356,8 @@ function syncControls() {
   });
   $<HTMLButtonElement>('[data-add-form] button[type="submit"]').disabled =
     state.phase === "testing";
-  $<HTMLButtonElement>("[data-open-settings]").disabled = testing;
-  themeSelect.disabled = testing;
-  $<HTMLButtonElement>("[data-sound-toggle]").setAttribute(
-    "aria-pressed",
-    String(state.settings.sound),
-  );
-  const soundButton = $<HTMLButtonElement>("[data-sound-toggle]");
-  $<HTMLSpanElement>("[data-sound-on]").hidden = !state.settings.sound;
-  $<HTMLSpanElement>("[data-sound-off]").hidden = state.settings.sound;
-  soundButton.setAttribute(
-    "aria-label",
-    state.settings.sound ? "Turn sound off" : "Turn sound on",
+  document.dispatchEvent(
+    new CustomEvent<boolean>("gts:testing-change", { detail: testing }),
   );
 }
 
@@ -450,7 +412,6 @@ function renderChampion() {
 }
 
 function render() {
-  applyTheme();
   renderPlayers();
   renderWinner();
   $<HTMLSpanElement>("[data-round-label]").textContent = currentRoundLabel();
@@ -572,74 +533,14 @@ async function startTest() {
   }
 }
 
-function setThemeMode(mode: string) {
+document.addEventListener("gts:settings-change", (event) => {
   state = {
     ...state,
-    settings: { ...state.settings, themeMode: isThemeId(mode) ? mode : "auto" },
+    settings: (event as CustomEvent<GameSettings>).detail,
   };
-  persist();
-  applyTheme();
-}
-
-themeSelect.addEventListener("change", () => {
-  setThemeMode(themeSelect.value);
-  playCue("lockIn", activeTheme, state.settings.sound);
+  activeTheme = getResolvedTheme();
+  render();
 });
-
-$<HTMLButtonElement>("[data-sound-toggle]").addEventListener("click", () => {
-  state = {
-    ...state,
-    settings: { ...state.settings, sound: !state.settings.sound },
-  };
-  persist();
-  syncControls();
-  playCue("lockIn", activeTheme, state.settings.sound);
-});
-
-$<HTMLButtonElement>("[data-open-settings]").addEventListener("click", () => {
-  const form = $<HTMLFormElement>("[data-settings-form]");
-  (form.elements.namedItem("rounds") as HTMLSelectElement).value = String(
-    state.settings.rounds,
-  );
-  (form.elements.namedItem("tieMode") as HTMLSelectElement).value =
-    state.settings.tieMode;
-  (form.elements.namedItem("themeMode") as HTMLSelectElement).value =
-    state.settings.themeMode;
-  (form.elements.namedItem("sound") as HTMLInputElement).checked =
-    state.settings.sound;
-  settingDialog.showModal();
-});
-$<HTMLButtonElement>("[data-close-settings]").addEventListener("click", () =>
-  settingDialog.close(),
-);
-$<HTMLFormElement>("[data-settings-form]").addEventListener(
-  "submit",
-  (event) => {
-    event.preventDefault();
-    const form = event.currentTarget as HTMLFormElement;
-    const rounds = valueOf(
-      (form.elements.namedItem("rounds") as HTMLSelectElement).value,
-    );
-    const tieMode = (form.elements.namedItem("tieMode") as HTMLSelectElement)
-      .value;
-    const themeMode = (
-      form.elements.namedItem("themeMode") as HTMLSelectElement
-    ).value;
-    state = {
-      ...state,
-      settings: {
-        ...state.settings,
-        rounds: rounds === "endless" ? "endless" : Number(rounds),
-        tieMode: tieMode === "download" ? "download" : "share",
-        themeMode: isThemeId(themeMode) ? themeMode : "auto",
-        sound: (form.elements.namedItem("sound") as HTMLInputElement).checked,
-      },
-    };
-    persist();
-    settingDialog.close();
-    render();
-  },
-);
 
 $<HTMLButtonElement>("[data-close-guess]").addEventListener("click", () =>
   guessDialog.close(),
@@ -739,13 +640,6 @@ championDialog.addEventListener("close", () => {
   if (state.phase === "champion")
     $<HTMLButtonElement>("[data-open-settings]").focus();
 });
-window
-  .matchMedia("(prefers-color-scheme: dark)")
-  .addEventListener("change", () => {
-    if (state.settings.themeMode === "auto" && !themeForDate(new Date()))
-      applyTheme();
-  });
-
 const nextButton = document.createElement("button");
 nextButton.type = "button";
 nextButton.className = "go next-round";
@@ -762,7 +656,7 @@ nextButton.addEventListener("click", () => {
 $<HTMLDivElement>(".gauge-card").append(nextButton);
 
 initializeGauge();
-applyTheme();
+activeTheme = getResolvedTheme();
 if (state.history.length) {
   const lastRound = state.history.at(-1)!;
   latestPing = lastRound.actual.ping;
