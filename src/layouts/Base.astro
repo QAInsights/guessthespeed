@@ -1,0 +1,106 @@
+---
+import '@fontsource-variable/bricolage-grotesque';
+import '@fontsource-variable/figtree';
+import { Icon } from 'astro-icon/components';
+import '../styles/global.css';
+import Footer from '../components/Footer.astro';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = 'Guess the Speed | A real speed test family game',
+  description = 'Make your download and upload guesses, run a real internet speed test, and see who came closest.',
+} = Astro.props;
+const canonical = new URL(Astro.url.pathname, 'https://guessthespeed.com').toString();
+const beaconToken = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
+const appSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebApplication',
+  name: 'Guess the Speed',
+  url: 'https://guessthespeed.com/',
+  description,
+  applicationCategory: 'GameApplication',
+  operatingSystem: 'Any',
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+  author: { '@type': 'Person', name: 'NaveenKumar Namachivayam', url: 'https://qainsights.com' },
+};
+---
+
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <meta name="theme-color" content="#eceff3" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Guess the Speed" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content="https://guessthespeed.com/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content="https://guessthespeed.com/og.png" />
+    <title>{title}</title>
+    <script type="application/ld+json" set:html={JSON.stringify(appSchema)}></script>
+    {beaconToken && (
+      <script
+        defer
+        src="https://static.cloudflareinsights.com/beacon.min.js"
+        data-cf-beacon={JSON.stringify({ token: beaconToken })}
+      ></script>
+    )}
+    <slot name="head" />
+  </head>
+  <body>
+    <div class="fx-layer" data-fx-layer aria-hidden="true"></div>
+    <header class="wrap top">
+      <a class="logo" href="/" aria-label="Guess the Speed home">
+        <span class="logo-badge">?</span>
+        <b>guess the speed</b>
+      </a>
+      <div class="ctrls">
+        <label class="sr" for="theme-select">Theme</label>
+        <select id="theme-select" class="ctrl theme-select" data-theme-select aria-label="Choose a theme">
+          <option value="auto">Auto (by date)</option>
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+          <option value="halloween">Halloween</option>
+          <option value="diwali">Diwali</option>
+          <option value="thanksgiving">Thanksgiving</option>
+          <option value="winter">Winter</option>
+          <option value="christmas">Christmas</option>
+          <option value="newyear">New Year</option>
+          <option value="pongal">Pongal</option>
+          <option value="valentines">Valentine’s Day</option>
+          <option value="holi">Holi</option>
+          <option value="easter">Easter</option>
+        </select>
+        <button class="ctrl icon-btn" type="button" data-sound-toggle aria-label="Toggle sound" aria-pressed="true">
+          <span data-sound-on><Icon name="ph:speaker-high-fill" /></span>
+          <span data-sound-off hidden><Icon name="ph:speaker-slash-fill" /></span>
+        </button>
+        <a class="ctrl icon-btn how-link" href="/how-to-play" aria-label="How to play">
+          <Icon name="ph:question-fill" />
+        </a>
+        <button class="ctrl icon-btn" type="button" data-open-settings aria-label="Open settings">
+          <Icon name="ph:gear-six-fill" />
+        </button>
+      </div>
+    </header>
+    <slot />
+    <Footer />
+  </body>
+</html>
