@@ -1,0 +1,310 @@
+---
+import Base from "../layouts/Base.astro";
+
+const questions = [
+  {
+    question: "What is a family game night idea that needs no board?",
+    answer:
+      "Try Guess the Speed, a free browser game where players guess download and upload speed before a real Cloudflare speed test. The other ideas on this page use a router app, paper, or a short household experiment.",
+  },
+  {
+    question: "How many people can play Guess the Speed?",
+    answer:
+      "Room-code games support up to 12 players. A local game uses one shared screen, where you can add players and pass the device around.",
+  },
+  {
+    question: "Does everyone need a phone?",
+    answer:
+      "No. A family can play on one shared laptop, tablet, or phone. Room codes are optional when players want to enter guesses from separate phones.",
+  },
+  {
+    question: "Is Guess the Speed free?",
+    answer:
+      "Yes. Guess the Speed is free in a modern browser and does not require an account or an app install.",
+  },
+  {
+    question: "How can we keep game night from becoming more screen time?",
+    answer:
+      "Use a screen only to run one short test or check one clue, then put it away. Most of these ideas work with a paper scorecard and a family conversation.",
+  },
+];
+
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: questions.map(({ question, answer }) => ({
+    "@type": "Question",
+    name: question,
+    acceptedAnswer: { "@type": "Answer", text: answer },
+  })),
+};
+---
+
+<Base
+  title="Family Game Night Ideas That Use Your Wi-Fi (Free, No Board Needed)"
+  description="Nine low-prep family game night ideas use your home Wi-Fi for guessing, room hunts, download math, and paper scorecards. No board required."
+  breadcrumb="Family game night ideas"
+>
+  <Fragment slot="head">
+    <script
+      type="application/ld+json"
+      set:html={JSON.stringify(faqSchema)}
+    ></script>
+  </Fragment>
+  <main class="wrap content-page">
+    <h1>Family game night ideas that use your Wi-Fi</h1>
+    <p class="lede">
+      You do not need a new board game to make the family laugh around the
+      Wi-Fi. Here are nine easy ideas that turn the router, a speed test, and a
+      sheet of paper into a little game night. My favorite starts with everybody
+      guessing before the numbers appear.
+    </p>
+    <article class="content-card stk">
+      <p>
+        I like activities that give the screen a job, then let the people in the
+        room take over. A phone can run one speed test, the family can make a
+        few predictions, and then the device can go face down while everyone
+        argues about the result. Pick one idea or combine two. None of these
+        need a board, a paid app, or a perfect internet plan.
+      </p>
+
+      <ol>
+        <li>
+          <h2>Guess the Speed</h2>
+          <p>
+            <strong>What you need:</strong> One browser on a phone, tablet,
+            laptop, or TV-connected computer, plus the people playing.
+          </p>
+          <p>
+            <strong>How to play:</strong> Everyone predicts download and upload
+            speed in Mbps, locks in the guesses, and watches a real test against
+            Cloudflare’s network. Use one shared screen or create a room code
+            for separate phones. Room guesses stay hidden by the server until
+            the result, and the host can choose which device runs the test.
+          </p>
+          <p>
+            <strong>Best ages:</strong> About 7 and up, with a grown-up
+            explaining the numbers.
+          </p>
+          <p>
+            <strong>Why kids love it:</strong> The gauge turns an ordinary
+            utility check into a reveal. Someone is usually sure they know the
+            answer, which makes the score even better.
+          </p>
+        </li>
+        <li>
+          <h2>Room-to-room speed hunt</h2>
+          <p>
+            <strong>What you need:</strong> A phone, a paper scorecard, and
+            permission to walk around the home.
+          </p>
+          <p>
+            <strong>How to play:</strong> Choose two or three safe spots, such
+            as the living room, kitchen, and a bedroom. At each spot, write down
+            a download and upload guess before running a test. Keep the same
+            device and avoid starting other downloads during the round. Compare
+            the readings and talk about what might have changed.
+          </p>
+          <p>
+            <strong>Best ages:</strong> About 6 to 13, with an adult choosing
+            the route.
+          </p>
+          <p>
+            <strong>Why kids love it:</strong> They get to move, make a
+            prediction, and see whether a wall or a longer walk seems to matter.
+          </p>
+        </li>
+        <li>
+          <h2>Find the best Wi-Fi spot treasure hunt</h2>
+          <p>
+            <strong>What you need:</strong> A phone with Wi-Fi, a few written
+            clues, and a small household treasure such as choosing dessert.
+          </p>
+          <p>
+            <strong>How to play:</strong> Hide a note in one of several approved
+            rooms. At each stop, players guess which spot will have the
+            strongest connection, then use one quick speed test as a clue. The
+            grown-up can put the next clue where the family thinks the signal
+            will be best. Treat the result as one measurement, not a permanent
+            map of the home.
+          </p>
+          <p>
+            <strong>Best ages:</strong> About 5 to 11, with a grown-up nearby.
+          </p>
+          <p>
+            <strong>Why kids love it:</strong> The treasure is real, and the
+            Wi-Fi clue makes the house feel like a puzzle.
+          </p>
+        </li>
+        <li>
+          <h2>Guess how long a 5 GB game download takes</h2>
+          <p>
+            <strong>What you need:</strong> Paper, a pencil, and the speed
+            conversion table in the{" "}
+            <a href="/internet-speed-101/">Internet Speed 101 guide</a>.
+          </p>
+          <p>
+            <strong>How to play:</strong> Ask everyone to estimate the download
+            time for a 5 GB game on a 100 Mbps connection. Then convert megabits
+            to megabytes by dividing by eight. At that speed, 5 GB takes about
+            400 seconds, or 6 minutes and 40 seconds, before real-world
+            overhead. Try a second speed and see which estimate is closest.
+          </p>
+          <p>
+            <strong>Best ages:</strong> About 9 to 14, or younger with help on
+            division.
+          </p>
+          <p>
+            <strong>Why kids love it:</strong> It answers a familiar question
+            about game downloads and lets them catch a grown-up doing math on
+            paper.
+          </p>
+        </li>
+        <li>
+          <h2>Guess how many devices are on the Wi-Fi</h2>
+          <p>
+            <strong>What you need:</strong> A router app or router screen that
+            an adult can open, and a family list of guesses.
+          </p>
+          <p>
+            <strong>How to play:</strong> Before checking, let everyone estimate
+            how many devices are connected. Count phones, tablets, TVs,
+            computers, speakers, and other devices that may appear in the router
+            app. A router may show old or sleeping devices too, so discuss what
+            its list actually means instead of treating it as an exact live
+            count.
+          </p>
+          <p>
+            <strong>Best ages:</strong> About 6 to 12.
+          </p>
+          <p>
+            <strong>Why kids love it:</strong> The family discovers that the
+            home has more connected gadgets than the obvious phones and
+            televisions.
+          </p>
+        </li>
+        <li>
+          <h2>Streaming quality guess</h2>
+          <p>
+            <strong>What you need:</strong> A TV or tablet, a familiar video,
+            and a note with a few rough speed clues.
+          </p>
+          <p>
+            <strong>How to play:</strong> Guess whether a household could
+            comfortably support one HD stream, several streams, or a 4K stream
+            while another person joins a video call. Use the activity ranges in
+            the <a href="/internet-speed-101/">speed guide</a> as conversation
+            starters, not guarantees. Add up the activity estimates, then
+            consider that Wi-Fi and other network use can change the experience.
+          </p>
+          <p>
+            <strong>Best ages:</strong> About 8 to 14.
+          </p>
+          <p>
+            <strong>Why kids love it:</strong> They get to plan the household’s
+            pretend streaming schedule and challenge the most confident guess.
+          </p>
+        </li>
+        <li>
+          <h2>Ping race between rooms</h2>
+          <p>
+            <strong>What you need:</strong> A phone or laptop, paper, and two or
+            more locations chosen by an adult.
+          </p>
+          <p>
+            <strong>How to play:</strong> Predict which room will show the
+            lowest ping, measured in milliseconds. Run one test in each place
+            and write down the ping result. The lowest reading wins this house
+            challenge, but repeat a round if the numbers are close. The game
+            reports ping as a result; it does not have a separate ping-guess
+            score.
+          </p>
+          <p>
+            <strong>Best ages:</strong> About 8 to 14.
+          </p>
+          <p>
+            <strong>Why kids love it:</strong> The race is over a tiny number,
+            but everyone gets to cheer for the room they picked.
+          </p>
+        </li>
+        <li>
+          <h2>Keep a week-long family speed log</h2>
+          <p>
+            <strong>What you need:</strong> A paper notebook, a pencil, and a
+            few minutes on different days.
+          </p>
+          <p>
+            <strong>How to play:</strong> Pick a consistent time, device, and
+            room when possible. Record the date, download, upload, and ping for
+            one test a day. At the end of the week, look for patterns instead of
+            declaring that one reading proves the connection is good or bad.
+            Note when other people were streaming or downloading.
+          </p>
+          <p>
+            <strong>Best ages:</strong> About 8 to 14, with younger children
+            helping to record.
+          </p>
+          <p>
+            <strong>Why kids love it:</strong> Their predictions become a real
+            paper chart, and they can spot changes with their own eyes.
+          </p>
+        </li>
+        <li>
+          <h2>Parents versus kids tournament</h2>
+          <p>
+            <strong>What you need:</strong> A shared screen or room code, two
+            teams, and a score sheet.
+          </p>
+          <p>
+            <strong>How to play:</strong> Pair each parent with a child or play
+            as two family teams. Use the game's regular individual scoring, then
+            add each team’s points by hand after every round. Choose three
+            rounds for a short match, or ask the host to select a longer game in
+            settings. The app does not have a built-in team mode.
+          </p>
+          <p>
+            <strong>Best ages:</strong> About 7 and up.
+          </p>
+          <p>
+            <strong>Why kids love it:</strong> They get to challenge the adults,
+            and a surprise bonus point can change the family bragging rights.
+          </p>
+        </li>
+      </ol>
+
+      <h2>Making it a weekly ritual</h2>
+      <p>
+        Pick one idea, keep the score sheet where everyone can find it, and give
+        the activity a natural ending. We might run one test, add a single mark
+        to a paper chart, and then choose a snack. That is enough. The point is
+        not to measure every corner of the house or to turn a family evening
+        into a technology audit. It is to make a small thing we already do
+        together a little more playful.
+      </p>
+      <p>
+        If you want a ready-to-run round, visit the{" "}
+        <a href="/speed-test-game/">speed test game guide</a> and the{" "}
+        <a href="/how-to-play/">rules and scoring page</a>. For a
+        classroom-friendly version, I also wrote a{" "}
+        <a href="/internet-speed-lesson-for-kids/">30-minute lesson plan</a>. If
+        the Mbps and MB/s math is new to your group, keep the{" "}
+        <a href="/internet-speed-101/">Internet Speed 101 guide</a> nearby.
+      </p>
+
+      <h2>Frequently asked questions</h2>
+      <div class="faq">
+        {questions.map(({ question, answer }) => (
+          <section>
+            <h3>{question}</h3>
+            <p>{answer}</p>
+          </section>
+        ))}
+      </div>
+      <div class="story-cta">
+        <a class="go" href="/">
+          Start a game
+        </a>
+      </div>
+    </article>
+  </main>
+</Base>

@@ -1,0 +1,336 @@
+---
+import Base from "../layouts/Base.astro";
+
+const learningResourceSchema: Record<string, unknown>[] = [
+  {
+    "@type": "LearningResource",
+    name: "Internet speed lesson for kids: a 30-minute classroom activity",
+    url: "https://guessthespeed.com/internet-speed-lesson-for-kids/",
+    description:
+      "A practical 30-minute activity for ages 8 to 14 that teaches estimation, bits and bytes, percent error, and reading internet speed test results.",
+    educationalLevel: "Ages 8 to 14",
+    audience: {
+      "@type": "EducationalAudience",
+      educationalRole: [
+        "teacher",
+        "student",
+        "homeschool educator",
+        "coding club leader",
+      ],
+    },
+    learningResourceType: "Lesson plan",
+    timeRequired: "PT30M",
+    teaches: [
+      "Estimate download and upload speed",
+      "Convert megabits to megabytes",
+      "Calculate percent error",
+      "Read and compare test results",
+    ],
+    isAccessibleForFree: true,
+    inLanguage: "en",
+    author: {
+      "@type": "Person",
+      "@id": "https://guessthespeed.com/#author",
+      name: "NaveenKumar Namachivayam",
+      url: "https://qainsights.com",
+    },
+  },
+];
+
+const questions = [
+  {
+    question: "Who is this internet speed lesson for?",
+    answer:
+      "For ages 8 to 14, teachers, homeschool educators, and coding clubs.",
+  },
+  {
+    question: "How long does the lesson take?",
+    answer:
+      "Thirty minutes: five for a hook, five for vocabulary, 15 for three rounds, and five for discussion.",
+  },
+  {
+    question: "Does the activity use a real speed test?",
+    answer:
+      "Yes. The browser runs a real speed test against Cloudflare’s network and compares download and upload results with players’ guesses.",
+  },
+  {
+    question: "Do students need phones?",
+    answer:
+      "No. A teacher can run one projector-connected device. Student phones are optional, subject to school rules.",
+  },
+  {
+    question: "Can a class use room codes?",
+    answer:
+      "Yes, for up to 12 players. Use nicknames, follow school policies, and remember room data is deleted after six hours without activity.",
+  },
+  {
+    question: "Does the site collect student information?",
+    answer:
+      "There are no accounts or game cookies, and the site does not ask for school names, emails, or student IDs. Room play temporarily stores entered names, faces, guesses, and scores on Cloudflare, deleting them after six hours without activity.",
+  },
+];
+
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: questions.map(({ question, answer }) => ({
+    "@type": "Question",
+    name: question,
+    acceptedAnswer: { "@type": "Answer", text: answer },
+  })),
+};
+---
+
+<Base
+  title="Internet Speed Lesson for Kids: A 30-Minute Classroom Activity"
+  description="Teach ages 8 to 14 estimation, bits and bytes, percent error, and data reading with a 30-minute real internet speed test activity."
+  breadcrumb="Internet speed lesson"
+  schema={learningResourceSchema}
+>
+  <Fragment slot="head">
+    <script
+      type="application/ld+json"
+      set:html={JSON.stringify(faqSchema)}
+    ></script>
+  </Fragment>
+  <main class="wrap content-page">
+    <h1>Internet speed lesson for kids: a 30-minute classroom activity</h1>
+    <p class="lede">
+      This 30-minute internet speed lesson helps students ages 8 to 14 estimate,
+      measure, and explain a real result. Teachers, homeschool educators, and
+      coding clubs can use one shared screen, while student phones are optional
+      when school rules allow.
+    </p>
+    <article class="content-card stk">
+      <h2>What students will learn</h2>
+      <p>
+        A speed test gives a class numbers to question, not just a score.
+        Students predict, measure, and explain results while practicing
+        estimation, bits and bytes, percent error, and data reading.
+      </p>
+      <ul>
+        <li>
+          Estimate download and upload speed in megabits per second, or Mbps.
+        </li>
+        <li>
+          Convert Mbps to megabytes per second, or MB/s, by dividing by eight.
+        </li>
+        <li>
+          Calculate the size of a miss as a percentage of the actual result.
+        </li>
+        <li>
+          Read download, upload, and ping values and compare results across
+          rounds.
+        </li>
+      </ul>
+      <p>
+        The activity is suitable for ages 8 to 14. Younger learners can focus on
+        making and comparing estimates. Older students can calculate each
+        percent error by hand and discuss why results change from one run to the
+        next.
+      </p>
+
+      <h2>What you need</h2>
+      <ul>
+        <li>
+          A projector or TV and one computer with a modern browser and internet
+          connection.
+        </li>
+        <li>
+          A whiteboard or paper for vocabulary, guesses, and calculations.
+        </li>
+        <li>Pencils or calculators for the worksheet questions.</li>
+        <li>
+          Optional student phones for room-code play, only if the school allows
+          them and the activity has the required permission.
+        </li>
+      </ul>
+      <p>
+        The simplest setup is a teacher-controlled device on the projector.
+        Students can call out estimates or take turns entering guesses on the
+        shared device. If phones are allowed, the host can create a room and
+        share a code. The host chooses which device runs the test, so the
+        teacher can keep the speed test on the classroom computer while students
+        submit guesses from phones.
+      </p>
+
+      <h2>The 30-minute lesson plan</h2>
+      <ol>
+        <li>
+          <strong>Minutes 0 to 5, the hook.</strong> Show a speed test gauge
+          before starting it. Ask students to estimate the download speed and
+          write a few predictions on the board. Run one test and ask what
+          surprised them. Keep the first discussion focused on observing the
+          numbers, not on whether the school connection is good or bad.
+        </li>
+        <li>
+          <strong>Minutes 5 to 10, vocabulary.</strong> Explain that download is
+          data arriving at a device, upload is data leaving it, and Mbps means
+          megabits per second. Introduce MB/s as megabytes per second. There are
+          eight bits in a byte, so an approximate conversion from Mbps to MB/s
+          divides the number by eight. Introduce percent error as the size of a
+          miss compared with the actual value.
+        </li>
+        <li>
+          <strong>Minutes 10 to 25, three game rounds.</strong> Play Guess the
+          Speed three times. Before each real test, students estimate download
+          and upload speed, lock in their guesses, and watch the measured
+          result. Between rounds, ask one student to explain what changed in the
+          next guess. The default game setting is three rounds, which fits this
+          activity. Use one shared screen or room codes, according to classroom
+          policy.
+        </li>
+        <li>
+          <strong>Minutes 25 to 30, discussion.</strong> Choose one guess and
+          calculate its download miss on the board. Compare the upload miss,
+          then average the two percentages as the game does for the round score.
+          Ask whether the test device, Wi-Fi location, or other network activity
+          could help explain the result.
+        </li>
+      </ol>
+      <p>
+        A speed test is one measurement at one time and place, not a guarantee
+        for every app or a grade for the school’s internet service.
+      </p>
+
+      <h2>How to calculate percent error by hand</h2>
+      <p>
+        For one speed, subtract the actual result from the guess, take the
+        absolute value, divide by the actual result, then multiply by 100. In
+        symbols, percent miss equals absolute value of guess minus actual,
+        divided by actual, times 100. The absolute value makes a guess that is
+        too high comparable to one that is too low.
+      </p>
+      <p>
+        Suppose the actual download speed is 80 Mbps and a student guessed 50
+        Mbps. The difference is 30 Mbps. Divide 30 by the actual 80 and multiply
+        by 100: the download miss is 37.5 percent. It is important to divide by
+        the actual value, not the guess.
+      </p>
+      <p>
+        The game also asks for an upload guess. If a round measures 100 Mbps
+        download and 20 Mbps upload, and a player guesses 90 Mbps download and
+        18 Mbps upload, each miss is 10 percent. The round average is therefore
+        10 percent. In general, the game averages download and upload miss
+        percentages. Place points are available when that average is 50 percent
+        or less. A download or upload estimate within 5 percent of its actual
+        value earns one spot-on bonus point for that speed.
+      </p>
+      <p>
+        For a quick unit conversion, 100 Mbps is approximately 12.5 MB/s because
+        100 divided by eight is 12.5. A 5 GB download at 100 Mbps would take
+        about 400 seconds, or 6 minutes and 40 seconds, before real-world
+        overhead. The{" "}
+        <a href="/internet-speed-101/">Internet Speed 101 guide</a> has more
+        examples for converting units and estimating download times.
+      </p>
+
+      <h2>Student worksheet: six questions</h2>
+      <ol>
+        <li>Convert 100 Mbps to megabytes per second.</li>
+        <li>
+          If the actual speed is 80 Mbps and the guess is 50 Mbps, what is the
+          percent miss?
+        </li>
+        <li>
+          Actual results are 100 Mbps download and 20 Mbps upload. A player
+          guesses 90 and 18 Mbps. What is the average miss?
+        </li>
+        <li>
+          If a round’s average miss is 55 percent, does it qualify for place
+          points under the game rules?
+        </li>
+        <li>
+          About how long does a 5 GB download take at 100 Mbps, before overhead?
+        </li>
+        <li>
+          If the actual upload is 20 Mbps and the guess is 19 Mbps, does that
+          speed earn the spot-on bonus?
+        </li>
+      </ol>
+
+      <h3>Answer key</h3>
+      <ol>
+        <li>12.5 MB/s, because 100 divided by 8 is 12.5.</li>
+        <li>
+          37.5 percent. The calculation is absolute value of 50 minus 80,
+          divided by 80, times 100.
+        </li>
+        <li>
+          10 percent. Download miss is 10 percent and upload miss is 10 percent,
+          so their average is 10 percent.
+        </li>
+        <li>
+          No. Place points require an average miss of 50 percent or less. Bonus
+          points for an individual speed within 5 percent are separate.
+        </li>
+        <li>
+          About 400 seconds, or 6 minutes and 40 seconds, before overhead. Five
+          gigabytes is approximately 40,000 megabits, and 40,000 divided by 100
+          is 400 seconds.
+        </li>
+        <li>
+          Yes. The miss is 1 divided by 20, or 5 percent, which meets the game’s
+          within-5-percent bonus threshold.
+        </li>
+      </ol>
+
+      <h2>Extensions for another class period</h2>
+      <p>
+        <strong>Chart a school-day pattern.</strong> If school policy permits,
+        run the same test at a few agreed times, such as before class, at lunch,
+        and near the end of the day. Use the same device and location where
+        possible. Students can make a simple line chart for download speed and a
+        second chart for upload. Label the device, room, and time so the class
+        knows what was held constant and what may have changed.
+      </p>
+      <p>
+        <strong>Compare Wi-Fi with a cable.</strong> If the teacher has
+        permission and equipment, compare the same computer on Wi-Fi and on an
+        Ethernet cable. Keep the location, test service, and approximate time as
+        similar as practical. Ask students to list possible confounding factors
+        before drawing conclusions. A single result is useful for a class
+        discussion, but it is not enough to prove that one connection method is
+        always faster.
+      </p>
+
+      <h2>Privacy and classroom use</h2>
+      <p>
+        Guess the Speed has no accounts or game cookies and does not ask for a
+        school name, email address, or student ID. In a local game, the roster
+        and scores stay in the browser on the device. In a room-code game, the
+        service temporarily stores the names, faces, guesses, and scores entered
+        by players on Cloudflare. Room data is deleted after six hours without
+        activity.
+      </p>
+      <p>
+        A display name can identify a student, so room play does temporarily
+        store student-entered information. Use nicknames or teacher-chosen
+        labels, follow school policy, or stay on the shared projector without
+        student phones.
+      </p>
+
+      <h2>Frequently asked questions</h2>
+      <div class="faq">
+        {questions.map(({ question, answer }) => (
+          <section>
+            <h3>{question}</h3>
+            <p>{answer}</p>
+          </section>
+        ))}
+      </div>
+      <p>
+        To run a family version, see the{" "}
+        <a href="/speed-test-game/">speed test game guide</a>. For an activity
+        students can do outside a lesson, browse these{" "}
+        <a href="/family-game-night-ideas/">family game night ideas</a>. The{" "}
+        <a href="/how-to-play/">How to play page</a> explains rooms and scoring.
+      </p>
+      <div class="story-cta">
+        <a class="go" href="/">
+          Start a game
+        </a>
+      </div>
+    </article>
+  </main>
+</Base>
