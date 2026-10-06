@@ -188,6 +188,25 @@ const homeSchema: Record<string, unknown>[] = [
     </section>
 
     <section aria-labelledby="players-heading" data-game-section>
+      <aside
+        class="classroom-session-banner stk"
+        data-classroom-banner
+        aria-label="Classroom game"
+        hidden
+      >
+        <div class="classroom-session-copy">
+          <p class="classroom-session-chip" data-classroom-chip aria-live="polite"></p>
+          <p class="classroom-session-note" data-classroom-room-note hidden>
+            Rooms are off in Classroom mode, so student names stay on this device.
+          </p>
+        </div>
+        <div class="classroom-session-actions">
+          <a class="guess-button" href="/classroom/">Class menu</a>
+          <button class="ghost classroom-end-button" type="button" data-end-class>
+            End class
+          </button>
+        </div>
+      </aside>
       <div class="sec-head">
         <h2 id="players-heading" class="display">Who’s playing?</h2>
         <div class="section-actions">
@@ -249,6 +268,10 @@ const homeSchema: Record<string, unknown>[] = [
       <h2 id="story-teaser-title">Why this game exists</h2>
       <p>It started with a speed test on our living-room TV and two kids who guess the number right every time. Dad loses on purpose. Mostly.</p>
       <a href="/story/">Read our story</a>
+    </aside>
+
+    <aside class="classroom-teaser stk" aria-label="Classroom mode">
+      <p>Teaching a class? <a href="/classroom/">Try Classroom mode</a>.</p>
     </aside>
   </main>
 

@@ -9,12 +9,14 @@ import {
   removePlayer,
   unlockGuess,
   saveGame,
+  STORAGE_KEY,
   updatePlayer,
   ROLES,
   type GameState,
   type GameSettings,
   type Player,
 } from "../lib/game";
+import { BACKUP_KEY, clearSession, loadSession } from "../lib/classroom";
 import {
   runSpeedTest,
   SpeedTestCancelledError,
@@ -53,6 +55,8 @@ interface GameStore {
   send(action: ClientAction): boolean;
 }
 
+const classroomSession = loadSession();
+const classroomMode = classroomSession !== null;
 const roomMode = isRoomMode();
 const localStore: GameStore = {
   persist: (current) => saveGame(current),
@@ -110,7 +114,7 @@ let roomStartedAt = 0;
 let shareStatusTimer = 0;
 let hasAppliedRoomView = false;
 const isDevMode = () =>
-  !roomMode && document.documentElement.dataset.dev === "1";
+  !roomMode && !classroomMode && document.documentElement.dataset.dev === "1";
 const isMockMode = () =>
   new URLSearchParams(window.location.search).has("mock");
 const isTesting = () => state.phase === "testing" || runInProgress;
@@ -134,6 +138,12 @@ const progressFill = $<HTMLDivElement>("[data-progress-fill]");
 const liveDot = $<HTMLSpanElement>("[data-live-dot]");
 const elapsedLabel = $<HTMLSpanElement>("[data-elapsed]");
 const slowHint = $<HTMLSpanElement>("[data-slow-hint]");
+const classroomBanner = $<HTMLElement>("[data-classroom-banner]");
+const classroomChip = $<HTMLElement>("[data-classroom-chip]");
+const classroomRoomNote = $<HTMLElement>("[data-classroom-room-note]");
+const roomEntry = $<HTMLElement>("[data-room-entry]");
+const classroomTeaser = $<HTMLElement>(".classroom-teaser");
+const endClassButton = $<HTMLButtonElement>("[data-end-class]");
 let tvAddExpanded = false;
 
 function syncTVAddForm() {
@@ -156,6 +166,36 @@ if (!roomMode && state.phase === "testing") {
 function persist() {
   store.persist(state);
 }
+
+function endClass() {
+  try {
+    const backup = localStorage.getItem(BACKUP_KEY);
+    if (backup !== null) localStorage.setItem(STORAGE_KEY, backup);
+    else saveGame(initialGameState());
+    localStorage.removeItem(BACKUP_KEY);
+    clearSession();
+    if (loadSession())
+      throw new Error("Classroom session could not be cleared");
+    window.location.assign("/");
+  } catch {
+    errorNote.textContent =
+      "The class could not end because this browser could not restore its saved game.";
+  }
+}
+
+function configureClassroomMode() {
+  if (!classroomSession) return;
+  classroomBanner.hidden = false;
+  classroomChip.textContent = `🏫 ${classroomSession.className} · ${
+    classroomSession.mode === "teams" ? "Team game" : "Spotlight"
+  }`;
+  roomEntry.hidden = true;
+  classroomTeaser.hidden = true;
+  classroomRoomNote.hidden = false;
+  endClassButton.addEventListener("click", endClass);
+}
+
+configureClassroomMode();
 
 function getResolvedTheme(): ThemeId {
   if (state.settings.themeMode !== "auto") return state.settings.themeMode;

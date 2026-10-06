@@ -3,6 +3,7 @@ import {
   type ClientAction,
   type RoomView,
 } from "../lib/room";
+import { loadSession } from "../lib/classroom";
 
 export interface RoomProgress {
   type: "progress";
@@ -14,7 +15,9 @@ export interface RoomProgress {
   bytes?: number;
 }
 
-const isRoom = document.documentElement.dataset.room === "1";
+const classroomSessionActive = loadSession() !== null;
+const isRoom =
+  document.documentElement.dataset.room === "1" && !classroomSessionActive;
 const params = new URLSearchParams(window.location.search);
 const rawCode = params.get("room") ?? "";
 const roomCode = normalizeRoomCode(rawCode);
@@ -635,7 +638,7 @@ if (isRoom) {
   });
   if (!roomCode) showEndedRoom();
   else connect();
-} else {
+} else if (!classroomSessionActive) {
   $<HTMLButtonElement>("[data-create-room]")?.addEventListener(
     "click",
     () => void createRoom(),

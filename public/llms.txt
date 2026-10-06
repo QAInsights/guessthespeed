@@ -9,6 +9,7 @@
 - It runs a real speed test in your browser against Cloudflare's network.
 - Play with one or more players on one screen; room-code games support up to 12 players.
 - Play together on one screen or use room codes on separate phones. The room server hides guesses from other players until the result is ready.
+- Classroom Mode lets teachers organize classes and teams on one shared device; student rosters stay in that browser.
 - Place scoring awards 3 points for first, 2 for second, and 1 for third. Each download or upload guess within 5% earns one spot-on bonus point, while place points require an average miss of 50% or less.
 - Single-device game data stays in that browser. Multiplayer rooms are deleted after six hours without activity.
 
@@ -24,6 +25,7 @@
 - [Mbps to MB/s converter and download time](https://guessthespeed.com/mbps-to-mbs/)
 - [Speed test game](https://guessthespeed.com/speed-test-game/)
 - [Family game night ideas](https://guessthespeed.com/family-game-night-ideas/)
+- [Classroom Mode](https://guessthespeed.com/classroom/)
 - [Internet speed lesson for kids](https://guessthespeed.com/internet-speed-lesson-for-kids/)
 - [Privacy](https://guessthespeed.com/privacy/)
 - [Full game guide](https://guessthespeed.com/llms-full.txt)

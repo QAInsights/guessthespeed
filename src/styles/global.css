@@ -1111,7 +1111,7 @@ html[data-dev="1"] .intro .play-stat {
 .gauge-fill {
   fill: none;
   stroke: var(--accent);
-  stroke-dasharray: 100;
+  stroke-dasharray: 100 101;
   stroke-dashoffset: calc(100 - 100 * var(--p, 0));
   stroke-linecap: round;
   stroke-width: 30;
@@ -1479,6 +1479,49 @@ html[data-dev="1"] .intro .play-stat {
   font-size: 13px;
   font-weight: 700;
   opacity: 0.75;
+}
+
+.classroom-session-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 18px;
+  padding: 12px 14px;
+  border: 2.5px solid var(--ink);
+  border-radius: var(--r);
+  background: var(--surface);
+  box-shadow: 4px 4px 0 var(--shadow);
+}
+
+.classroom-session-chip {
+  margin: 0;
+  font-size: clamp(17px, 2vw, 22px);
+  font-weight: 900;
+}
+
+.classroom-session-copy {
+  min-width: 0;
+}
+
+.classroom-session-note {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.classroom-session-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.classroom-session-actions .guess-button,
+.classroom-session-actions .classroom-end-button {
+  min-height: 48px;
 }
 
 .p-score {
@@ -1858,6 +1901,51 @@ html[data-dev="1"] .intro .play-stat {
 .story-teaser a {
   color: var(--ink);
   font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.classroom-teaser {
+  max-width: 540px;
+  margin: 22px auto 0 0;
+  padding: 15px 18px;
+  border: 2.5px solid var(--ink);
+  border-radius: var(--r);
+  background: var(--accent);
+  box-shadow: 4px 4px 0 var(--shadow);
+  color: var(--on-accent);
+  font-size: 17px;
+  font-weight: 900;
+  transform: rotate(0.7deg);
+}
+
+.classroom-teaser p {
+  margin: 0;
+}
+
+.classroom-teaser a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.lesson-classroom-callout {
+  margin: 20px 0;
+  padding: 16px 20px;
+  border: 2.5px solid var(--ink);
+  border-radius: var(--r);
+  background: var(--surface);
+  box-shadow: 5px 5px 0 var(--shadow);
+  transform: rotate(-0.35deg);
+}
+
+.lesson-classroom-callout p {
+  margin: 0;
+}
+
+.lesson-classroom-callout a {
+  color: var(--ink);
+  font-weight: 900;
   text-decoration: underline;
   text-underline-offset: 3px;
 }
@@ -3032,6 +3120,43 @@ html[data-dev="1"] .dev-console {
     overflow: hidden;
   }
 
+  html[data-tv="1"][data-home="1"] .classroom-session-banner:not([hidden]) {
+    flex-wrap: nowrap;
+    gap: 12px;
+    margin: 0 0 10px;
+    padding: 8px 12px;
+  }
+
+  html[data-tv="1"][data-home="1"] .classroom-session-copy {
+    flex: 1 1 auto;
+  }
+
+  html[data-tv="1"][data-home="1"] .classroom-session-chip {
+    overflow: hidden;
+    font-size: clamp(16px, 1.4vw, 22px);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  html[data-tv="1"][data-home="1"] .classroom-session-note {
+    display: none !important;
+  }
+
+  html[data-tv="1"][data-home="1"] .classroom-session-actions {
+    flex-wrap: nowrap;
+    gap: 7px;
+  }
+
+  html[data-tv="1"][data-home="1"] .classroom-session-actions .guess-button,
+  html[data-tv="1"][data-home="1"]
+    .classroom-session-actions
+    .classroom-end-button {
+    min-height: 44px;
+    padding: 6px 11px;
+    font-size: clamp(13px, 0.95vw, 16px);
+    white-space: nowrap;
+  }
+
   html[data-tv="1"][data-home="1"] .stage {
     grid-column: 1;
     grid-row: 2;
@@ -3251,6 +3376,8 @@ html[data-dev="1"] .dev-console {
     height: 100%;
     overflow-x: hidden;
     overflow-y: auto;
+    padding-block-start: 12px;
+    padding-inline-end: 14px;
     overscroll-behavior: contain;
     scrollbar-gutter: stable;
   }
@@ -3333,8 +3460,22 @@ html[data-dev="1"] .dev-console {
     font-size: clamp(21px, 1.65vw, 30px);
   }
 
+  html[data-tv="1"][data-home="1"] .p-head > div:not(.p-score) {
+    min-width: 0;
+  }
+
   html[data-tv="1"][data-home="1"] .p-role {
+    display: -webkit-box;
+    max-height: 2.5em;
+    overflow: hidden;
     font-size: clamp(12px, 0.9vw, 16px);
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+    text-overflow: ellipsis;
+    white-space: normal;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
   }
 
   html[data-tv="1"][data-home="1"] .p-score b {
@@ -3357,12 +3498,14 @@ html[data-dev="1"] .dev-console {
   html[data-tv="1"][data-home="1"] .dev-console,
   html[data-tv="1"][data-home="1"] .room-entry,
   html[data-tv="1"][data-home="1"] .how,
-  html[data-tv="1"][data-home="1"] .story-teaser {
+  html[data-tv="1"][data-home="1"] .story-teaser,
+  html[data-tv="1"][data-home="1"] .classroom-teaser {
     grid-column: 1 / -1;
   }
 
   html[data-tv="1"][data-home="1"] .how,
   html[data-tv="1"][data-home="1"] .story-teaser,
+  html[data-tv="1"][data-home="1"] .classroom-teaser,
   html[data-tv="1"][data-home="1"] .room-entry,
   html[data-tv="1"][data-home="1"] footer {
     display: none !important;

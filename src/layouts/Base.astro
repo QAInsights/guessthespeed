@@ -96,17 +96,34 @@ const graphSchema = { '@context': 'https://schema.org', '@graph': graph };
   <head>
     <meta charset="utf-8" />
     <script is:inline>
-      const roomQueryMode = new URLSearchParams(window.location.search).has("room");
+      const roomQueryRequested = new URLSearchParams(window.location.search).has("room");
+      let classroomSessionActive = false;
+      try {
+        const session = JSON.parse(
+          localStorage.getItem("gts:classroom-session") ?? "null",
+        );
+        classroomSessionActive =
+          !!session &&
+          typeof session.classId === "string" &&
+          !!session.classId &&
+          typeof session.className === "string" &&
+          !!session.className.trim() &&
+          (session.mode === "teams" || session.mode === "spotlight") &&
+          typeof session.startedAt === "number" &&
+          Number.isFinite(session.startedAt) &&
+          session.startedAt >= 0;
+      } catch {}
+      const roomQueryMode = roomQueryRequested && !classroomSessionActive;
       if (roomQueryMode) document.documentElement.dataset.room = "1";
       const devParam = new URLSearchParams(window.location.search).get("dev");
       let devEnabled = devParam === "1";
       try {
-        if (!roomQueryMode && (devParam === "1" || devParam === "0"))
+        if (!roomQueryMode && !classroomSessionActive && (devParam === "1" || devParam === "0"))
           localStorage.setItem("gts:dev", devParam);
-        if (!roomQueryMode && devParam === null)
+        if (!roomQueryMode && !classroomSessionActive && devParam === null)
           devEnabled = localStorage.getItem("gts:dev") === "1";
       } catch {}
-      if (!roomQueryMode && devEnabled)
+      if (!roomQueryMode && !classroomSessionActive && devEnabled)
         document.documentElement.dataset.dev = "1";
       const tvParam = new URLSearchParams(window.location.search).get("tv");
       let tvEnabled = tvParam === "1";

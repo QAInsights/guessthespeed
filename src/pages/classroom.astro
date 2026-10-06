@@ -1,0 +1,1556 @@
+---
+import Base from "../layouts/Base.astro";
+
+const description =
+  "A free internet speed game for teachers. Build a private class roster, make balanced teams or spotlight students, then guess a real speed test together on one shared screen.";
+
+const questions = [
+  {
+    question: "Is Classroom Mode free?",
+    answer:
+      "Yes. Classroom Mode is free to use, needs no account, and runs on the teacher's device.",
+  },
+  {
+    question: "Where are student names stored?",
+    answer:
+      "The roster stays in this browser's local storage. Classroom Mode does not send student names to the server.",
+  },
+  {
+    question: "How many students can I add to a class?",
+    answer: "A class can have up to 40 students.",
+  },
+  {
+    question: "Do students need their own devices?",
+    answer:
+      "No. One teacher device connected to a projector or shared screen is enough.",
+  },
+];
+
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: questions.map(({ question, answer }) => ({
+    "@type": "Question",
+    name: question,
+    acceptedAnswer: { "@type": "Answer", text: answer },
+  })),
+};
+---
+
+<Base
+  title="Classroom Mode: A Free Internet Speed Game for Teachers"
+  description={description}
+  breadcrumb="Classroom mode"
+>
+  <Fragment slot="head">
+    <script
+      type="application/ld+json"
+      set:html={JSON.stringify(faqSchema)}
+    ></script>
+  </Fragment>
+
+  <main class="wrap content-page classroom-page">
+    <header class="classroom-hero">
+      <div class="classroom-hero-copy">
+        <span class="round-banner">Classroom mode</span>
+        <h1 class="display">Your class vs. <em>the Wi-Fi.</em></h1>
+        <p class="lede">
+          Turn your students' speed guesses into a quick, lively class game.
+        </p>
+        <p class="privacy-sticker stk">
+          <span aria-hidden="true">🔒</span>
+          <strong>Your class list never leaves this device.</strong>
+        </p>
+      </div>
+      <div class="classroom-team-stickers" aria-label="Example team scores">
+        <article class="classroom-team-sticker classroom-team-sticker-rockets">
+          <span class="classroom-team-name"><span aria-hidden="true">🚀</span> Rockets</span>
+          <strong>12<small>pts</small></strong>
+        </article>
+        <article class="classroom-team-sticker classroom-team-sticker-lightning">
+          <span class="classroom-team-name"><span aria-hidden="true">⚡</span> Lightning</span>
+          <strong>9<small>pts</small></strong>
+        </article>
+        <article class="classroom-team-sticker classroom-team-sticker-dolphins">
+          <span class="classroom-team-name"><span aria-hidden="true">🐬</span> Dolphins</span>
+          <strong>7<small>pts</small></strong>
+        </article>
+      </div>
+    </header>
+
+    <section class="classroom-tool" aria-labelledby="class-picker-title">
+      <div class="classroom-tool-heading">
+        <div>
+          <span class="classroom-kicker">Your teaching desk</span>
+          <h2 id="class-picker-title">Choose a class</h2>
+          <p>Keep a roster here, then pick how today's class will play.</p>
+        </div>
+        <span class="class-count-badge" data-class-count>0 classes</span>
+      </div>
+
+      <div
+        class="class-picker"
+        data-class-list
+        aria-label="Your saved classes"
+      ></div>
+
+      <p class="classroom-toast" data-toast role="status" aria-live="polite"></p>
+
+      <div class="classroom-workspace">
+        <section
+          class="classroom-panel stk"
+          data-class-editor
+          aria-labelledby="editor-title"
+          hidden
+        >
+          <div class="panel-heading">
+            <div>
+              <span class="classroom-kicker">Class details</span>
+              <h2 id="editor-title">Build your roster</h2>
+            </div>
+            <button
+              class="quiet-button"
+              type="button"
+              data-delete-class
+              aria-label="Delete this class"
+            >Delete class</button>
+          </div>
+
+          <label class="classroom-field">
+            <span>Class name</span>
+            <input
+              class="classroom-input"
+              data-class-name
+              type="text"
+              maxlength="24"
+              autocomplete="off"
+              required
+            />
+          </label>
+
+          <fieldset class="emoji-field">
+            <legend>Choose a class sticker</legend>
+            <div
+              class="emoji-picker class-emoji-picker"
+              data-class-emoji-picker
+              role="group"
+              aria-label="Class sticker"
+            ></div>
+          </fieldset>
+
+          <form class="roster-form" data-roster-form>
+            <label class="classroom-field" for="roster-paste">
+              <span>Paste a class list</span>
+              <textarea
+                class="classroom-input roster-textarea"
+                id="roster-paste"
+                data-roster-text
+                rows="5"
+                placeholder="Ada&#10;Grace&#10;Katherine"
+              ></textarea>
+              <small>One name per line, or separated by commas. First names or nicknames work best.</small>
+            </label>
+            <button class="guess-button classroom-secondary" type="submit">
+              Add students
+            </button>
+          </form>
+
+          <div class="roster-heading">
+            <h3>Student roster</h3>
+            <span data-student-count>0 of 40</span>
+          </div>
+          <div
+            class="student-roster"
+            data-student-roster
+            aria-label="Students in this class"
+          ></div>
+          <p class="roster-empty" data-roster-empty>
+            Add a few names to make your first teams.
+          </p>
+
+          <div class="roster-actions">
+            <button class="quiet-button" type="button" data-clear-list>
+              Clear list
+            </button>
+          </div>
+        </section>
+
+        <section
+          class="classroom-panel play-panel stk"
+          data-play-panel
+          aria-labelledby="play-title"
+          hidden
+        >
+          <div class="panel-heading">
+            <div>
+              <span class="classroom-kicker">Game setup</span>
+              <h2 id="play-title">How will the class play?</h2>
+            </div>
+            <span class="play-ready" data-play-ready>Roster ready</span>
+          </div>
+
+          <fieldset class="mode-picker">
+            <legend>Choose a round</legend>
+            <div class="mode-cards">
+              <label class="mode-card">
+                <input type="radio" name="classroomMode" value="teams" checked />
+                <span class="mode-card-icon" aria-hidden="true">🚀</span>
+                <span>
+                  <strong>Team game</strong>
+                  <small>Teams huddle and enter one shared guess.</small>
+                </span>
+              </label>
+              <label class="mode-card">
+                <input
+                  type="radio"
+                  name="classroomMode"
+                  value="spotlight"
+                />
+                <span class="mode-card-icon" aria-hidden="true">🌟</span>
+                <span>
+                  <strong>Spotlight round</strong>
+                  <small>Pick students to enter their own guesses.</small>
+                </span>
+              </label>
+            </div>
+          </fieldset>
+
+          <div class="team-setup" data-team-setup>
+            <div class="setup-row">
+              <label class="classroom-field compact-field" for="team-count">
+                <span>Number of teams</span>
+                <input
+                  class="classroom-input stepper-input"
+                  id="team-count"
+                  data-team-count
+                  type="number"
+                  min="2"
+                  max="6"
+                  step="1"
+                  value="4"
+                />
+              </label>
+              <button
+                class="guess-button classroom-secondary"
+                type="button"
+                data-shuffle-teams
+              >Shuffle teams</button>
+            </div>
+            <p class="setup-help">
+              Tap any student to move them to the next team.
+            </p>
+            <div
+              class="team-preview"
+              data-team-preview
+              aria-live="polite"
+              aria-label="Team preview"
+            ></div>
+          </div>
+
+          <div class="spotlight-setup" data-spotlight-setup hidden>
+            <div class="setup-row">
+              <label class="classroom-field compact-field" for="spotlight-count">
+                <span>Students to spotlight</span>
+                <input
+                  class="classroom-input stepper-input"
+                  id="spotlight-count"
+                  data-spotlight-count
+                  type="number"
+                  min="2"
+                  max="8"
+                  step="1"
+                  value="4"
+                />
+              </label>
+              <button
+                class="go spotlight-spin"
+                type="button"
+                data-spin-spotlight
+              >Spin</button>
+            </div>
+            <div
+              class="spotlight-preview"
+              data-spotlight-preview
+              aria-live="polite"
+              aria-label="Spotlight selection"
+            >
+              <p class="preview-placeholder">
+                Spin to pick students for this round.
+              </p>
+            </div>
+            <button
+              class="text-button"
+              type="button"
+              data-reset-spotlight
+            >Reset played students</button>
+          </div>
+
+          <p class="no-students-note" data-no-students>
+            Add at least two students before starting a game.
+          </p>
+          <button
+            class="go start-class-game"
+            type="button"
+            data-start-class
+            disabled
+          >
+            Start the game
+          </button>
+          <p class="game-note" data-room-start-note hidden>
+            Leave the room before starting a class game.
+          </p>
+        </section>
+      </div>
+
+      <details class="classroom-backup stk">
+        <summary>Move to another device</summary>
+        <div class="backup-content">
+          <p>
+            Download a class file to move this roster. The file contains student
+            names, so keep it somewhere you trust.
+          </p>
+          <div class="backup-actions">
+            <button class="guess-button classroom-secondary" type="button" data-export>
+              Export class file
+            </button>
+            <label class="file-picker">
+              <span>Import a class file</span>
+              <input type="file" data-import accept="application/json,.json" />
+            </label>
+            <button
+              class="quiet-button danger-button"
+              type="button"
+              data-delete-all
+            >Delete all class data</button>
+          </div>
+        </div>
+      </details>
+    </section>
+
+    <section class="classroom-explainer content-card stk" aria-labelledby="lesson-title">
+      <span class="classroom-kicker">Four quick steps</span>
+      <h2 id="lesson-title">A real speed test becomes a class activity</h2>
+      <ol class="lesson-steps">
+        <li>
+          <strong>Project the screen.</strong>
+          Connect the teacher's device to the classroom display.
+        </li>
+        <li>
+          <strong>Huddle with your team.</strong>
+          Talk through the connection and agree on a download and upload guess.
+        </li>
+        <li>
+          <strong>Let the captain enter it.</strong>
+          The team's captain locks in the shared guess on the teacher's device.
+        </li>
+        <li>
+          <strong>Watch the gauge.</strong>
+          Run the real test, compare the result, and see which guesses came closest.
+        </li>
+      </ol>
+      <aside class="projector-tip stk">
+        <strong>Projector tip</strong>
+        <span>Turn on TV mode from the header for a bigger gauge and cards that are easy to read across the room.</span>
+      </aside>
+      <p>
+        Want a ready-to-run lesson? Use the{" "}
+        <a href="/internet-speed-lesson-for-kids/">30-minute internet speed lesson for kids</a>.
+      </p>
+      <h3>Privacy and classroom use</h3>
+      <p>
+        Your roster remains in this browser's local storage. Classroom Mode does
+        not create a room or send student names to the server. Clearing this
+        site's data deletes the roster. Export a class file to move it to
+        another device.
+      </p>
+      <div class="classroom-faq">
+        <h3>Frequently asked questions</h3>
+        {questions.map(({ question, answer }) => (
+          <section>
+            <h4>{question}</h4>
+            <p>{answer}</p>
+          </section>
+        ))}
+      </div>
+    </section>
+  </main>
+
+  <dialog
+    class="sticker-dialog classroom-dialog"
+    data-student-dialog
+    aria-labelledby="student-dialog-title"
+  >
+    <div class="dialog-inner">
+      <div class="dialog-head">
+        <h2 id="student-dialog-title">Edit student</h2>
+        <button
+          class="dialog-close"
+          type="button"
+          data-close-student
+          aria-label="Close student editor"
+        >×</button>
+      </div>
+      <form class="dialog-form" data-student-form>
+        <label class="dialog-field">
+          Student name
+          <input
+            class="dialog-input"
+            data-student-name
+            name="name"
+            type="text"
+            maxlength="16"
+            autocomplete="off"
+            required
+          />
+        </label>
+        <fieldset class="emoji-field">
+          <legend>Choose a face</legend>
+          <div
+            class="emoji-picker student-emoji-picker"
+            data-student-emoji-picker
+            role="group"
+            aria-label="Student face"
+          ></div>
+        </fieldset>
+        <p class="dialog-error" data-student-error role="alert"></p>
+        <div class="dialog-actions">
+          <button
+            class="quiet-button danger-button"
+            type="button"
+            data-remove-student
+          >Remove student</button>
+          <button class="go" type="submit">Save student</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <script>
+    import "../scripts/classroom-client";
+  </script>
+</Base>
+
+<style>
+  .classroom-page {
+    max-width: 1120px;
+  }
+
+  .classroom-page [hidden] {
+    display: none !important;
+  }
+
+  .classroom-hero {
+    margin-bottom: 28px;
+  }
+
+  .classroom-hero h1 {
+    max-width: 13ch;
+    margin: 0 0 14px;
+    font-size: clamp(42px, 6vw, 68px);
+    line-height: 0.96;
+  }
+
+  .classroom-hero h1 em {
+    display: inline;
+    padding: 0 8px;
+    border-radius: 8px;
+    background: var(--accent);
+    box-decoration-break: clone;
+    color: var(--on-accent);
+    font-style: normal;
+    white-space: nowrap;
+    -webkit-box-decoration-break: clone;
+  }
+
+  .classroom-hero .lede {
+    margin-bottom: 16px;
+  }
+
+  .classroom-team-stickers {
+    display: none;
+  }
+
+  .classroom-team-sticker {
+    display: flex;
+    min-height: 78px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 17px;
+    border: 2.5px solid var(--ink);
+    border-radius: 18px;
+    background: var(--surface);
+    box-shadow: 5px 5px 0 var(--shadow);
+  }
+
+  .classroom-team-sticker-rockets {
+    background: #fff1b8;
+    transform: rotate(-5deg) translateX(-8px);
+  }
+
+  .classroom-team-sticker-lightning {
+    background: #e3f5fa;
+    transform: rotate(3deg) translateX(18px);
+  }
+
+  .classroom-team-sticker-dolphins {
+    background: #f3e9ff;
+    transform: rotate(-2deg) translateX(2px);
+  }
+
+  .classroom-team-name {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 1.2rem;
+    font-weight: 900;
+  }
+
+  .classroom-team-name span {
+    font-size: 1.65rem;
+  }
+
+  .classroom-team-sticker > strong {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    font-size: 1.8rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .classroom-team-sticker small {
+    font-size: 0.75rem;
+    font-weight: 850;
+  }
+
+  @media (min-width: 900px) {
+    .classroom-hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(300px, 0.72fr);
+      align-items: center;
+      gap: 44px;
+    }
+
+    .classroom-team-stickers {
+      display: grid;
+      gap: 14px;
+      padding: 14px 12px;
+    }
+  }
+
+  .privacy-sticker {
+    display: inline-flex;
+    min-height: 48px;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    padding: 10px 18px;
+    background: #e8f7cf;
+    box-shadow: 4px 4px 0 var(--shadow);
+    color: #1f4e24;
+    font-size: 1rem;
+    transform: rotate(-1deg);
+  }
+
+  .privacy-sticker span {
+    font-size: 1.25rem;
+  }
+
+  .classroom-tool {
+    margin-top: 22px;
+  }
+
+  .classroom-tool-heading,
+  .panel-heading,
+  .roster-heading,
+  .setup-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .classroom-tool-heading {
+    margin-bottom: 18px;
+  }
+
+  .classroom-tool-heading h2,
+  .panel-heading h2 {
+    margin: 0;
+    font-size: clamp(26px, 4vw, 38px);
+  }
+
+  .classroom-tool-heading p,
+  .setup-help {
+    margin: 6px 0 0;
+    color: var(--muted);
+  }
+
+  .classroom-kicker {
+    display: inline-block;
+    margin-bottom: 5px;
+    color: var(--accent-dark, #a43d12);
+    font-family: var(--mono, ui-monospace, monospace);
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .class-count-badge,
+  .play-ready {
+    flex: none;
+    padding: 8px 12px;
+    border: 2px solid var(--ink);
+    border-radius: 999px;
+    background: #fff2b8;
+    box-shadow: 2px 2px 0 var(--shadow);
+    font-size: 0.82rem;
+    font-weight: 900;
+  }
+
+  .class-picker {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 205px), 1fr));
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+
+  .class-picker :global(.class-card),
+  .class-picker :global(.new-class-card) {
+    display: flex;
+    min-height: 128px;
+    align-items: center;
+    gap: 14px;
+    padding: 18px;
+    border: 2.5px solid var(--ink);
+    border-radius: 20px;
+    background: var(--surface);
+    box-shadow: 4px 4px 0 var(--shadow);
+    color: var(--ink);
+    text-align: left;
+    transition:
+      transform 0.12s ease,
+      box-shadow 0.12s ease,
+      background 0.12s ease;
+  }
+
+  .class-picker :global(.class-card:nth-child(3n + 1)) {
+    transform: rotate(-0.7deg);
+  }
+
+  .class-picker :global(.class-card:nth-child(3n + 2)) {
+    transform: rotate(0.7deg);
+  }
+
+  .class-picker :global(.class-card:hover),
+  .class-picker :global(.new-class-card:hover) {
+    transform: translate(-2px, -2px) rotate(0);
+    box-shadow: 7px 7px 0 var(--shadow);
+  }
+
+  .class-picker :global(.class-card[aria-pressed="true"]) {
+    background: #fff1b3;
+    outline: 3px solid #ebad24;
+    outline-offset: 2px;
+  }
+
+  .class-picker :global(.class-card-face) {
+    display: grid;
+    width: 56px;
+    height: 56px;
+    flex: none;
+    place-items: center;
+    border: 2px solid var(--ink);
+    border-radius: 16px;
+    background: #fff;
+    font-size: 1.9rem;
+  }
+
+  .class-picker :global(.class-card-copy) {
+    display: grid;
+    min-width: 0;
+    gap: 4px;
+  }
+
+  .class-picker :global(.class-card-copy strong) {
+    overflow-wrap: anywhere;
+    font-size: 1.1rem;
+    line-height: 1.1;
+  }
+
+  .class-picker :global(.class-card-copy small) {
+    color: var(--muted);
+    font-weight: 700;
+  }
+
+  .class-picker :global(.new-class-card) {
+    justify-content: center;
+    border-style: dashed;
+    background: #fff9e8;
+    font-size: 1.2rem;
+    font-weight: 900;
+    text-align: center;
+  }
+
+  .class-picker :global(.new-class-card span) {
+    display: grid;
+    width: 40px;
+    height: 40px;
+    place-items: center;
+    border: 2px solid var(--ink);
+    border-radius: 50%;
+    background: var(--accent);
+    font-size: 1.7rem;
+  }
+
+  .class-picker :global(.empty-classes) {
+    display: grid;
+    grid-column: 1 / -1;
+    margin: 0;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 22px;
+    padding: 22px 24px;
+    border: 2.5px solid var(--ink);
+    border-radius: 22px;
+    background: linear-gradient(115deg, #fff5ce, var(--surface) 56%);
+    box-shadow: 5px 5px 0 var(--shadow);
+  }
+
+  .class-picker :global(.empty-class-face) {
+    display: grid;
+    width: 76px;
+    height: 76px;
+    place-items: center;
+    border: 2.5px solid var(--ink);
+    border-radius: 22px;
+    background: #fff;
+    box-shadow: 3px 3px 0 var(--shadow);
+    font-size: 3rem;
+    transform: rotate(-7deg);
+  }
+
+  .class-picker :global(.empty-class-copy) {
+    min-width: 0;
+  }
+
+  .class-picker :global(.empty-class-copy h3) {
+    margin: 0;
+    font-size: clamp(23px, 3vw, 32px);
+  }
+
+  .class-picker :global(.empty-class-steps) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    margin: 12px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .class-picker :global(.empty-class-steps li) {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.92rem;
+    font-weight: 800;
+  }
+
+  .class-picker :global(.empty-class-steps b) {
+    display: grid;
+    width: 27px;
+    height: 27px;
+    flex: none;
+    place-items: center;
+    border: 1.5px solid var(--ink);
+    border-radius: 50%;
+    background: #ffdb66;
+    font-size: 0.78rem;
+  }
+
+  .class-picker :global(.empty-classes .new-class-card) {
+    min-height: 58px;
+    justify-content: center;
+    border-style: solid;
+    background: var(--accent);
+    box-shadow: 4px 4px 0 var(--shadow);
+    color: var(--on-accent);
+    font-size: 1.05rem;
+    font-weight: 900;
+    transform: rotate(1deg);
+  }
+
+  .class-picker :global(.empty-classes .new-class-card span) {
+    border-color: var(--on-accent);
+    background: transparent;
+  }
+
+  .class-picker :global(.empty-classes .new-class-card:hover) {
+    transform: translate(-2px, -2px) rotate(0);
+    box-shadow: 7px 7px 0 var(--shadow);
+  }
+
+  .classroom-toast {
+    min-height: 0;
+    margin: 0;
+    color: var(--ink);
+    font-weight: 800;
+  }
+
+  .classroom-toast:not(:empty) {
+    margin: 0 0 14px;
+    padding: 12px 16px;
+    border: 2px solid var(--ink);
+    border-radius: 14px;
+    background: #e8f7cf;
+    box-shadow: 3px 3px 0 var(--shadow);
+  }
+
+  .classroom-workspace {
+    display: grid;
+    grid-template-columns: minmax(0, 1.02fr) minmax(0, 0.98fr);
+    align-items: start;
+    gap: 20px;
+  }
+
+  .classroom-panel {
+    min-width: 0;
+    padding: clamp(18px, 3vw, 28px);
+    background: linear-gradient(140deg, var(--surface), var(--bg));
+  }
+
+  .panel-heading {
+    margin-bottom: 18px;
+  }
+
+  .panel-heading h2 {
+    font-size: clamp(23px, 3vw, 31px);
+  }
+
+  .classroom-field {
+    display: grid;
+    min-width: 0;
+    gap: 7px;
+    font-weight: 850;
+  }
+
+  .classroom-input {
+    width: 100%;
+    min-height: 52px;
+    padding: 10px 13px;
+    border: 2.5px solid var(--ink);
+    border-radius: 13px;
+    background: var(--bg);
+    color: var(--ink);
+    font: inherit;
+  }
+
+  .classroom-input:focus-visible,
+  .classroom-page :global(.class-card:focus-visible),
+  .classroom-page :global(.new-class-card:focus-visible),
+  .emoji-picker :global(.emoji-choice:focus-visible),
+  .classroom-dialog :global(.emoji-choice:focus-visible),
+  .student-roster :global(.student-chip:focus-visible),
+  .roster-form button:focus-visible,
+  .quiet-button:focus-visible,
+  .text-button:focus-visible {
+    outline: 3px solid #e99c13;
+    outline-offset: 3px;
+  }
+
+  .emoji-field {
+    min-width: 0;
+    margin: 16px 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .emoji-field legend {
+    margin-bottom: 8px;
+    font-weight: 850;
+  }
+
+  .emoji-picker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .emoji-picker :global(.emoji-choice) {
+    display: grid;
+    width: 48px;
+    height: 48px;
+    place-items: center;
+    border: 2px solid var(--ink);
+    border-radius: 14px;
+    background: var(--bg);
+    font-size: 1.45rem;
+  }
+
+  .emoji-picker :global(.emoji-choice[aria-pressed="true"]) {
+    background: #fff0ad;
+    box-shadow: 2px 2px 0 var(--shadow);
+  }
+
+  .roster-form {
+    display: grid;
+    gap: 11px;
+    margin-top: 20px;
+  }
+
+  .roster-textarea {
+    min-height: 128px;
+    resize: vertical;
+  }
+
+  .classroom-field small,
+  .setup-help,
+  .game-note {
+    color: var(--muted);
+    font-size: 0.88rem;
+    font-weight: 600;
+    line-height: 1.45;
+  }
+
+  .classroom-secondary {
+    min-height: 50px;
+    justify-self: start;
+    padding: 9px 18px;
+    border: 2.5px solid var(--ink);
+    border-radius: 999px;
+    background: #fff1b8;
+    box-shadow: 3px 3px 0 var(--shadow);
+    color: var(--ink);
+    font: 850 1rem "Bricolage Grotesque Variable", sans-serif;
+  }
+
+  .classroom-secondary:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 5px 5px 0 var(--shadow);
+  }
+
+  .roster-heading {
+    margin-top: 23px;
+    padding-bottom: 9px;
+    border-bottom: 2px dashed var(--shadow);
+  }
+
+  .roster-heading h3 {
+    margin: 0;
+    font-size: 1.15rem;
+  }
+
+  .roster-heading span {
+    color: var(--muted);
+    font-size: 0.85rem;
+    font-weight: 800;
+  }
+
+  .student-roster {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .student-roster :global(.student-chip) {
+    display: inline-flex;
+    min-height: 48px;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 11px;
+    border: 2px solid var(--ink);
+    border-radius: 999px;
+    background: var(--bg);
+    box-shadow: 2px 2px 0 var(--shadow);
+    color: var(--ink);
+    font-size: 0.88rem;
+    font-weight: 800;
+  }
+
+  .student-roster :global(.student-chip span) {
+    font-size: 1.2rem;
+  }
+
+  .student-roster :global(.student-chip:hover) {
+    transform: rotate(-1deg) translateY(-1px);
+  }
+
+  .roster-empty,
+  .no-students-note {
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+
+  .roster-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 12px;
+  }
+
+  .quiet-button {
+    display: inline-flex;
+    min-height: 48px;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 14px;
+    border: 2px solid var(--ink);
+    border-radius: 12px;
+    background: var(--bg);
+    color: var(--ink);
+    font: 800 0.9rem "Figtree Variable", sans-serif;
+  }
+
+  .danger-button {
+    color: #8c1d18;
+  }
+
+  .play-panel {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .mode-picker {
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .mode-picker legend {
+    margin-bottom: 9px;
+    font-weight: 850;
+  }
+
+  .mode-cards {
+    display: grid;
+    gap: 9px;
+  }
+
+  .mode-card {
+    display: grid;
+    min-height: 74px;
+    grid-template-columns: auto auto minmax(0, 1fr);
+    align-items: center;
+    gap: 12px;
+    padding: 11px 14px;
+    border: 2px solid var(--ink);
+    border-radius: 15px;
+    background: var(--bg);
+    box-shadow: 2px 2px 0 var(--shadow);
+  }
+
+  .mode-card:has(input:checked) {
+    background: #fff1b8;
+    box-shadow: 4px 4px 0 var(--shadow);
+  }
+
+  .mode-card input {
+    width: 21px;
+    height: 21px;
+    grid-row: 1;
+    grid-column: 1;
+    accent-color: var(--accent-dark, #a43d12);
+  }
+
+  .mode-card-icon {
+    grid-row: 1;
+    grid-column: 2;
+    font-size: 1.4rem;
+  }
+
+  .mode-card > span:nth-of-type(2) {
+    display: grid;
+    grid-row: 1;
+    grid-column: 3;
+    gap: 2px;
+  }
+
+  .mode-card small {
+    color: var(--muted);
+    font-size: 0.79rem;
+    line-height: 1.3;
+  }
+
+  .team-setup,
+  .spotlight-setup {
+    margin-top: 19px;
+  }
+
+  .compact-field {
+    max-width: 170px;
+  }
+
+  .stepper-input {
+    min-height: 50px;
+    font-size: 1.1rem;
+    font-weight: 900;
+  }
+
+  .setup-row {
+    align-items: end;
+  }
+
+  .team-preview {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 13px;
+  }
+
+  .team-preview :global(.team-card) {
+    min-width: 0;
+    padding: 12px;
+    border: 2px solid var(--ink);
+    border-radius: 15px;
+    background: #fff5ce;
+    box-shadow: 3px 3px 0 var(--shadow);
+  }
+
+  .team-preview :global(.team-card:nth-child(3n + 2)) {
+    background: #e3f5fa;
+    transform: rotate(0.4deg);
+  }
+
+  .team-preview :global(.team-card:nth-child(3n + 3)) {
+    background: #f3e9ff;
+    transform: rotate(-0.4deg);
+  }
+
+  .team-preview :global(.team-card h3) {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin: 0 0 8px;
+    font-size: 1rem;
+  }
+
+  .team-preview :global(.team-card ul) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .team-preview :global(.team-card li) {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .team-preview :global(.team-member-button) {
+    display: flex;
+    width: auto;
+    max-width: 100%;
+    min-height: 44px;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 9px;
+    border: 1px solid rgb(44 39 34 / 28%);
+    border-radius: 999px;
+    background: rgb(255 255 255 / 76%);
+    color: var(--ink);
+    font-size: 0.82rem;
+    font-weight: 750;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  .team-preview :global(.team-member-button span) {
+    flex: none;
+  }
+
+  .team-preview :global(.team-member-button strong) {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .team-preview :global(.team-member-button:hover) {
+    border-color: var(--ink);
+    background: #fff;
+  }
+
+  .spotlight-preview {
+    display: flex;
+    min-height: 94px;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 9px;
+    margin-top: 14px;
+    padding: 13px;
+    border: 2px dashed var(--ink);
+    border-radius: 15px;
+    background: rgb(255 255 255 / 48%);
+  }
+
+  .classroom-page :global(.preview-placeholder) {
+    margin: 0;
+    color: var(--muted);
+    font-weight: 700;
+  }
+
+  .spotlight-preview :global(.spotlight-student) {
+    display: inline-flex;
+    min-height: 52px;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 14px;
+    border: 2px solid var(--ink);
+    border-radius: 15px;
+    background: #fff0ac;
+    box-shadow: 3px 3px 0 var(--shadow);
+    font-weight: 850;
+  }
+
+  .spotlight-preview :global(.spotlight-student span) {
+    font-size: 1.45rem;
+  }
+
+  .spotlight-preview.spotlight-reveal :global(.spotlight-student) {
+    animation: spotlight-pop 0.42s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+  }
+
+  .spotlight-preview.spotlight-reveal :global(.spotlight-student:nth-child(2)) {
+    animation-delay: 70ms;
+  }
+
+  .spotlight-preview.spotlight-reveal :global(.spotlight-student:nth-child(3)) {
+    animation-delay: 140ms;
+  }
+
+  .spotlight-preview.spotlight-reveal :global(.spotlight-student:nth-child(4)) {
+    animation-delay: 210ms;
+  }
+
+  @keyframes spotlight-pop {
+    from {
+      opacity: 0;
+      transform: scale(0.55) rotate(-8deg);
+    }
+
+    to {
+      opacity: 1;
+      transform: scale(1) rotate(0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .spotlight-preview.spotlight-reveal :global(.spotlight-student) {
+      animation: none;
+    }
+
+    .class-picker :global(.class-card),
+    .class-picker :global(.new-class-card),
+    .student-roster :global(.student-chip) {
+      transition: none;
+    }
+  }
+
+  .text-button {
+    min-height: 48px;
+    margin-top: 6px;
+    padding: 8px 4px;
+    border: 0;
+    background: transparent;
+    color: var(--accent-dark, #a43d12);
+    font-weight: 850;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .no-students-note {
+    margin: 18px 0 8px;
+  }
+
+  .start-class-game {
+    width: 100%;
+    margin-top: 16px;
+    padding: 10px 20px;
+    font-size: clamp(1.2rem, 2.4vw, 1.55rem);
+  }
+
+  .start-class-game:disabled {
+    cursor: not-allowed;
+    opacity: 0.52;
+  }
+
+  .game-note {
+    margin: 12px 0 0;
+    color: #8c1d18;
+    font-weight: 800;
+  }
+
+  .classroom-backup {
+    margin-top: 21px;
+    padding: 0;
+    background: linear-gradient(140deg, var(--surface), var(--bg));
+  }
+
+  .classroom-backup summary {
+    min-height: 58px;
+    padding: 17px 22px;
+    font-size: 1.1rem;
+    font-weight: 900;
+    cursor: pointer;
+  }
+
+  .backup-content {
+    padding: 0 22px 22px;
+  }
+
+  .backup-content p {
+    margin-top: 0;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  .backup-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .file-picker {
+    display: inline-flex;
+    min-height: 50px;
+    align-items: center;
+    padding: 8px 14px;
+    border: 2px solid var(--ink);
+    border-radius: 12px;
+    background: var(--bg);
+    font-weight: 850;
+    cursor: pointer;
+  }
+
+  .file-picker input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    clip-path: inset(50%);
+  }
+
+  .classroom-explainer {
+    margin-top: 54px;
+  }
+
+  .classroom-explainer h2 {
+    max-width: 23ch;
+    margin-top: 0;
+  }
+
+  .lesson-steps {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    margin: 22px 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: classroom-step;
+  }
+
+  .lesson-steps li {
+    position: relative;
+    min-height: 126px;
+    padding: 20px 18px 18px 64px;
+    border: 2px solid var(--ink);
+    border-radius: 17px;
+    background: var(--bg);
+    box-shadow: 3px 3px 0 var(--shadow);
+    counter-increment: classroom-step;
+  }
+
+  .lesson-steps li::before {
+    position: absolute;
+    top: 17px;
+    left: 15px;
+    display: grid;
+    width: 36px;
+    height: 36px;
+    place-items: center;
+    border: 2px solid var(--ink);
+    border-radius: 50%;
+    background: #ffdb66;
+    color: var(--ink);
+    content: counter(classroom-step);
+    font-weight: 950;
+  }
+
+  .lesson-steps li strong {
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .projector-tip {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 20px 0;
+    padding: 15px 18px;
+    background: #e3f5fa;
+  }
+
+  .projector-tip strong {
+    flex: none;
+  }
+
+  .classroom-explainer a {
+    color: var(--ink);
+    font-weight: 850;
+    text-underline-offset: 3px;
+  }
+
+  .classroom-faq {
+    margin-top: 30px;
+  }
+
+  .classroom-faq h3 {
+    margin-bottom: 10px;
+  }
+
+  .classroom-faq section {
+    padding: 14px 0;
+    border-top: 1.5px dashed var(--shadow);
+  }
+
+  .classroom-faq h4 {
+    margin: 0 0 4px;
+    font-size: 1.03rem;
+  }
+
+  .classroom-faq p {
+    margin: 0;
+  }
+
+  .classroom-dialog {
+    width: min(94vw, 540px);
+  }
+
+  .classroom-dialog .dialog-actions {
+    justify-content: space-between;
+  }
+
+  .classroom-dialog .dialog-actions .go {
+    min-height: 48px;
+    padding: 8px 18px;
+    font-size: 1rem;
+  }
+
+  .dialog-error {
+    min-height: 0;
+    margin: 0;
+    color: #a42b21;
+    font-weight: 800;
+  }
+
+  @media (max-width: 760px) {
+    .classroom-workspace {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  @media (max-width: 560px) {
+    .classroom-tool-heading,
+    .panel-heading {
+      align-items: flex-start;
+    }
+
+    .classroom-tool-heading {
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    .class-count-badge {
+      align-self: flex-start;
+    }
+
+    .class-picker {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .class-picker :global(.class-card),
+    .class-picker :global(.new-class-card) {
+      min-height: 92px;
+    }
+
+    .class-picker :global(.empty-classes) {
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 12px;
+      padding: 16px;
+    }
+
+    .class-picker :global(.empty-class-face) {
+      width: 58px;
+      height: 58px;
+      border-radius: 17px;
+      font-size: 2.3rem;
+    }
+
+    .class-picker :global(.empty-class-copy h3) {
+      font-size: 23px;
+    }
+
+    .class-picker :global(.empty-class-steps) {
+      gap: 7px 10px;
+      margin-top: 8px;
+    }
+
+    .class-picker :global(.empty-class-steps li) {
+      font-size: 0.82rem;
+    }
+
+    .class-picker :global(.empty-classes .new-class-card) {
+      grid-column: 1 / -1;
+    }
+
+    .panel-heading {
+      flex-wrap: wrap;
+    }
+
+    .team-preview {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .setup-row {
+      align-items: end;
+      gap: 10px;
+    }
+
+    .setup-row > button {
+      flex: 1;
+      padding-right: 10px;
+      padding-left: 10px;
+    }
+
+    .lesson-steps {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .lesson-steps li {
+      min-height: 95px;
+    }
+
+    .projector-tip {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .backup-actions,
+    .backup-actions > * {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .classroom-dialog .dialog-actions {
+      align-items: stretch;
+      flex-direction: column-reverse;
+    }
+  }
+</style>
