@@ -22,7 +22,7 @@
 
 ## Why this exists
 
-TV Speedtest nights became our family game night, with everyone guessing before I press go. My kids get it right every time, and Dad loses on purpose. I started out in performance testing, moved into development, and turned that ritual into a game other families can play; [here is the story](https://guessthespeed.com/story/).
+Speed test nights on the living-room TV became our family game night, with everyone shouting a guess before I press go. My kids get it right every time, and Dad loses on purpose. I started out in performance testing, moved into development, and turned that ritual into a game other families can play; [here is the story](https://guessthespeed.com/story/).
 
 ## How a round works
 
