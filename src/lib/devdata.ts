@@ -22,6 +22,59 @@ export function parseTrace(text: string): Record<string, string> {
   );
 }
 
+export interface CloudflareMeta {
+  colo: string;
+  city: string;
+  country: string;
+  asn: string;
+  network: string;
+}
+
+export function parseMeta(json: unknown): Partial<CloudflareMeta> {
+  if (!json || typeof json !== "object" || Array.isArray(json)) return {};
+  const meta = json as Record<string, unknown>;
+  const colo =
+    meta.colo && typeof meta.colo === "object" && !Array.isArray(meta.colo)
+      ? (meta.colo as Record<string, unknown>)
+      : {};
+  const text = (value: unknown) =>
+    typeof value === "string" && value.trim()
+      ? value.trim()
+      : typeof value === "number" && Number.isFinite(value)
+        ? String(value)
+        : undefined;
+  const iata = text(colo.iata);
+  const coloCity = text(colo.city);
+  const cityName = text(meta.city);
+  const region = text(meta.region);
+  const rawAsn = text(meta.asn);
+  const asn = rawAsn
+    ? /^AS\d+$/i.test(rawAsn)
+      ? rawAsn.toUpperCase()
+      : /^\d+$/.test(rawAsn)
+        ? `AS${rawAsn}`
+        : undefined
+    : undefined;
+  const country = text(meta.country);
+  const network = text(meta.asOrganization);
+  const parsed: Partial<CloudflareMeta> = {};
+
+  if (iata || coloCity)
+    parsed.colo = iata
+      ? `${iata}${coloCity ? ` (${coloCity})` : ""}`
+      : coloCity;
+  if (cityName)
+    parsed.city =
+      region && region.toLowerCase() !== cityName.toLowerCase()
+        ? `${cityName}, ${region}`
+        : cityName;
+  if (country) parsed.country = country;
+  if (asn) parsed.asn = asn;
+  if (network) parsed.network = network;
+
+  return parsed;
+}
+
 export function maskIp(ip: string): string {
   if (ip.includes(":")) {
     const hextets = ip.split("%", 1)[0].split(":");

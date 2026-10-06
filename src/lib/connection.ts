@@ -1,11 +1,11 @@
-import { parseServerTiming, parseTrace } from "./devdata";
+import { parseMeta, parseServerTiming, parseTrace } from "./devdata";
 
 export interface ConnectionInfo {
   colo: string;
   city: string;
   country: string;
   asn: string;
-  timezone: string;
+  network: string;
   ip: string;
   ipVersion: string;
   http: string;
@@ -19,11 +19,11 @@ const unavailable = "unavailable";
 
 function mockConnectionInfo(): ConnectionInfo {
   return {
-    colo: "SJC",
-    city: "San Jose",
+    colo: "SJC (San Jose)",
+    city: "San Jose, California",
     country: "US",
     asn: "AS13335",
-    timezone: "America/Los_Angeles",
+    network: "Cloudflare, Inc.",
     ip: "203.0.113.42",
     ipVersion: "IPv4",
     http: "http/3",
@@ -32,10 +32,6 @@ function mockConnectionInfo(): ConnectionInfo {
     edgeRttMs: 15.3,
     minRttMs: 8.1,
   };
-}
-
-function headerValue(headers: Headers, name: string): string {
-  return headers.get(name)?.trim() || unavailable;
 }
 
 async function fetchWithTimeout(url: string): Promise<Response> {
@@ -61,7 +57,13 @@ export async function fetchConnectionInfo(): Promise<ConnectionInfo> {
     return mockConnectionInfo();
   }
 
-  const [trace, edge] = await Promise.all([
+  const [meta, trace, edge] = await Promise.all([
+    fetchWithTimeout("https://speed.cloudflare.com/meta")
+      .then(async (response) => {
+        if (!response.ok) throw new Error("Metadata request failed");
+        return parseMeta(await response.json());
+      })
+      .catch(() => parseMeta({})),
     fetchWithTimeout("https://speed.cloudflare.com/cdn-cgi/trace")
       .then(async (response) => {
         if (!response.ok) throw new Error("Trace request failed");
@@ -72,29 +74,25 @@ export async function fetchConnectionInfo(): Promise<ConnectionInfo> {
       .then((response) => {
         if (!response.ok) throw new Error("Edge request failed");
         return {
-          headers: response.headers,
           timing: parseServerTiming(
             response.headers.get("server-timing") ?? "",
           ),
         };
       })
       .catch(() => ({
-        headers: new Headers(),
         timing: {} as ReturnType<typeof parseServerTiming>,
       })),
   ]);
   const ip = trace.ip || unavailable;
-  const colo =
-    edge.headers.get("cf-meta-colo")?.trim() || trace.colo || unavailable;
-  const country =
-    edge.headers.get("cf-meta-country")?.trim() || trace.loc || unavailable;
+  const colo = meta.colo || trace.colo || unavailable;
+  const country = meta.country || trace.loc || unavailable;
 
   return {
     colo,
-    city: headerValue(edge.headers, "cf-meta-city"),
+    city: meta.city || unavailable,
     country,
-    asn: headerValue(edge.headers, "cf-meta-asn"),
-    timezone: headerValue(edge.headers, "cf-meta-timezone"),
+    asn: meta.asn || unavailable,
+    network: meta.network || unavailable,
     ip,
     ipVersion:
       ip === unavailable ? unavailable : ip.includes(":") ? "IPv6" : "IPv4",

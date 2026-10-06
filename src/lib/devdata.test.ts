@@ -3,6 +3,7 @@ import {
   buildExport,
   countedSamples,
   maskIp,
+  parseMeta,
   parseServerTiming,
   parseTrace,
   percentile,
@@ -24,6 +25,53 @@ describe("parseTrace", () => {
       warp: "off",
       colo: "SJC",
     });
+  });
+});
+
+describe("parseMeta", () => {
+  it("keeps the connection fields and formats Cloudflare metadata", () => {
+    expect(
+      parseMeta({
+        hostname: "speed.cloudflare.com",
+        clientIp: "203.0.113.42",
+        httpProtocol: "HTTP/1.1",
+        asn: 22348,
+        asOrganization: "Cognition AI, Inc.",
+        country: "US",
+        city: "Portland",
+        region: "Oregon",
+        postalCode: "97204",
+        latitude: "45.52345",
+        longitude: "-122.67621",
+        colo: { iata: "PDX", city: "Portland" },
+      }),
+    ).toEqual({
+      colo: "PDX (Portland)",
+      city: "Portland, Oregon",
+      country: "US",
+      asn: "AS22348",
+      network: "Cognition AI, Inc.",
+    });
+  });
+
+  it("omits unavailable and non-connection metadata", () => {
+    expect(
+      parseMeta({
+        asn: "AS22348",
+        city: "Portland",
+        region: "Portland",
+        colo: { iata: "PDX" },
+        postalCode: "97204",
+        latitude: "45.52345",
+        longitude: "-122.67621",
+      }),
+    ).toEqual({
+      colo: "PDX",
+      city: "Portland",
+      asn: "AS22348",
+    });
+    expect(parseMeta(null)).toEqual({});
+    expect(parseMeta({ asn: "unknown" })).toEqual({});
   });
 });
 

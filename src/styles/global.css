@@ -2081,7 +2081,7 @@ html[data-dev="1"] .dev-console {
 }
 
 .dev-ip-control {
-  margin-left: 8px;
+  margin-left: 0;
   padding: 2px 8px;
   border: 1.5px solid var(--ink);
   border-radius: 999px;
@@ -2091,6 +2091,12 @@ html[data-dev="1"] .dev-console {
   cursor: pointer;
 }
 
+.dev-ip-value {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .dev-privacy-note {
   margin-top: 12px !important;
   font-size: 11px;
@@ -2098,6 +2104,10 @@ html[data-dev="1"] .dev-console {
 
 @media (max-width: 980px) {
   .stage {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  html[data-dev="1"] .stage {
     grid-template-columns: minmax(0, 1fr);
   }
 

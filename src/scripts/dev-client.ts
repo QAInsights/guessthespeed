@@ -118,11 +118,12 @@ function renderConnection() {
     return;
   }
   const ip = showIp ? connection.ip : maskIp(connection.ip);
-  connectionContent.innerHTML = `${renderPairs([
+  const entries: [string, unknown][] = [
     ["Cloudflare colo", connection.colo],
     ["City", connection.city],
     ["Country", connection.country],
-    ["Network ASN", connection.asn],
+    ["ASN", connection.asn],
+    ["Network", connection.network],
     ["IP address", ip],
     ["IP version", connection.ipVersion],
     ["HTTP protocol", connection.http],
@@ -140,8 +141,16 @@ function renderConnection() {
         ? "unavailable"
         : `${displayValue(connection.minRttMs)} ms`,
     ],
-    ["Timezone", connection.timezone],
-  ])}<button class="dev-ip-control" type="button" data-toggle-ip aria-label="${showIp ? "Hide" : "Show"} IP address">${showIp ? "Hide" : "Show"}</button><p class="dev-privacy-note">Shown only on this screen. Never stored or sent anywhere.</p>`;
+  ];
+  connectionContent.innerHTML = `<dl class="dev-kv">${entries
+    .map(([label, value]) =>
+      label === "IP address"
+        ? `<dt>${escapeHtml(label)}</dt><dd class="dev-ip-value"><span>${escapeHtml(value)}</span><button class="dev-ip-control" type="button" data-toggle-ip aria-label="${showIp ? "Hide" : "Show"} IP address">${showIp ? "Hide" : "Show"}</button></dd>`
+        : `<dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd>`,
+    )
+    .join(
+      "",
+    )}</dl><p class="dev-privacy-note">Shown only on this screen. Never stored or sent anywhere.</p>`;
 }
 
 function getSummaryValue(
@@ -203,7 +212,11 @@ function renderSummary() {
     ["Bandwidth percentile", `P${SPEED_TEST_CONFIG.bandwidthPercentile * 100}`],
     [
       "AIM experience scores",
-      scores.length ? scores.join("; ") : "not available yet",
+      scores.length
+        ? scores.join("; ")
+        : details.totalDurationMs !== undefined
+          ? "Not measured (needs loaded latency and packet loss)"
+          : "not available yet",
     ],
   ]);
 }
@@ -444,7 +457,7 @@ async function loadConnectionInfo() {
       city: "unavailable",
       country: "unavailable",
       asn: "unavailable",
-      timezone: "unavailable",
+      network: "unavailable",
       ip: "unavailable",
       ipVersion: "unavailable",
       http: "unavailable",
