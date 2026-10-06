@@ -50,6 +50,7 @@ const roleChoices = ROLES;
           <Icon name="ph:lightning-fill" />
           <span data-start-label>Waiting for guesses</span>
         </button>
+        <p class="room-waiting" data-room-waiting hidden></p>
         <div class="winner" data-winner-banner hidden aria-live="polite"></div>
         <p class="error-note" data-error-note hidden></p>
       </div>
@@ -58,6 +59,19 @@ const roleChoices = ROLES;
         <div class="stat stk"><span><Icon name="ph:timer-fill" />Ping</span><div><b data-result="ping">-</b><small>ms</small></div></div>
         <div class="stat stk"><span><Icon name="ph:arrow-down-fill" />Download</span><div><b data-result="down">-</b><small>Mbps</small></div></div>
         <div class="stat stk"><span><Icon name="ph:arrow-up-fill" />Upload</span><div><b data-result="up">-</b><small>Mbps</small></div></div>
+      </div>
+    </section>
+
+    <section class="room-bar stk" data-room-bar aria-label="Multiplayer room" hidden>
+      <div class="room-bar-code">
+        <span>Room code</span>
+        <strong data-room-code></strong>
+      </div>
+      <div class="room-bar-actions">
+        <button class="guess-button" type="button" data-show-room-qr>Show QR</button>
+        <button class="guess-button" type="button" data-copy-room-link>Copy link</button>
+        <span class="room-connection" data-room-connection aria-live="polite">Connecting...</span>
+        <a class="ghost" href="/" data-leave-room>Leave room</a>
       </div>
     </section>
 
@@ -102,6 +116,23 @@ const roleChoices = ROLES;
           <h3>Browser</h3>
           <div data-browser-content></div>
         </article>
+      </div>
+    </section>
+
+    <section class="room-entry stk" data-room-entry aria-labelledby="room-entry-title">
+      <div class="room-entry-copy">
+        <span class="room-kicker">A room for everyone</span>
+        <h2 class="display" id="room-entry-title">Play on everyone’s phone</h2>
+        <p>Keep every guess on its owner’s screen until the real speed test is done.</p>
+      </div>
+      <div class="room-entry-actions">
+        <button class="go" type="button" data-create-room>Create a room</button>
+        <form class="room-join-form" data-home-join-form>
+          <label class="sr" for="room-code-input">Room code</label>
+          <input class="dialog-input" id="room-code-input" name="code" type="text" maxlength="9" inputmode="text" autocomplete="off" placeholder="Enter a code" />
+          <button class="guess-button" type="submit">Join with a code</button>
+        </form>
+        <p class="room-entry-error" data-room-entry-error role="status" hidden></p>
       </div>
     </section>
 
@@ -188,6 +219,57 @@ const roleChoices = ROLES;
     </div>
   </dialog>
 
+  <dialog class="sticker-dialog room-join-dialog" data-room-join-dialog aria-labelledby="room-join-title">
+    <div class="dialog-inner">
+      <div class="dialog-head">
+        <h2 id="room-join-title" class="display">Join the room</h2>
+        <a class="dialog-close" href="/" aria-label="Leave room"><Icon name="ph:x-bold" /></a>
+      </div>
+      <p class="room-join-code">Room <strong data-room-join-code></strong></p>
+      <form class="dialog-form" data-room-join-form>
+        <label class="dialog-field">Your name
+          <input class="dialog-input" name="name" type="text" maxlength="16" autocomplete="off" required />
+        </label>
+        <fieldset class="edit-role-fieldset">
+          <legend class="lbl">Pick your face</legend>
+          <div data-room-emoji-picker>
+            {roleChoices.map((choice, index) => (
+              <label title={choice.role}>
+                <input type="radio" name="emoji" value={index} checked={index === 0} />
+                <span>{choice.emoji}</span>
+                <small>{choice.role}</small>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+        <p class="room-join-error" data-room-join-error role="status" hidden></p>
+        <div class="dialog-actions">
+          <button class="go" type="submit"><Icon name="ph:user-plus-fill" />Join game</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <dialog class="sticker-dialog room-qr-dialog" data-room-qr-dialog aria-labelledby="room-qr-title">
+    <div class="dialog-inner">
+      <div class="dialog-head">
+        <h2 id="room-qr-title" class="display">Scan to join</h2>
+        <button class="dialog-close" type="button" data-close-room-qr aria-label="Close QR code"><Icon name="ph:x-bold" /></button>
+      </div>
+      <div class="room-qr-image" data-room-qr-image></div>
+      <p class="room-qr-code">Room code <strong data-room-qr-code></strong></p>
+      <button class="go" type="button" data-copy-room-qr-link>Copy link</button>
+    </div>
+  </dialog>
+
+  <dialog class="sticker-dialog room-ended-dialog" data-room-ended-dialog aria-labelledby="room-ended-title">
+    <div class="dialog-inner">
+      <h2 id="room-ended-title" class="display">This room has ended</h2>
+      <p>Room codes expire after six hours without activity.</p>
+      <a class="go" href="/">Start a local game</a>
+    </div>
+  </dialog>
+
   <dialog class="sticker-dialog" data-edit-dialog aria-labelledby="edit-title">
     <div class="dialog-inner">
       <div class="dialog-head">
@@ -232,6 +314,7 @@ const roleChoices = ROLES;
   </dialog>
 
   <script>
+    import '../scripts/room-client';
     import '../scripts/game-client';
     import '../scripts/dev-client';
   </script>
