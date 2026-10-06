@@ -93,6 +93,7 @@
 
 .room-bar {
   display: flex;
+  z-index: 20;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
@@ -174,7 +175,7 @@
 
 .room-tester-menu {
   position: absolute;
-  z-index: 20;
+  z-index: 21;
   top: calc(100% + 9px);
   left: 0;
   display: grid;
