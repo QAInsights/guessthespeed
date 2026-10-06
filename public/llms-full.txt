@@ -50,8 +50,16 @@ Player names, guesses, settings, scores, and history are stored in local storage
 
 - Home game: https://guessthespeed.com/
 - Rules and FAQ: https://guessthespeed.com/how-to-play/
+- How it works: https://guessthespeed.com/how-it-works/
+- Internet speed 101: https://guessthespeed.com/internet-speed-101/
 - Privacy: https://guessthespeed.com/privacy/
+
+## Guide page summaries
+
+How it works explains the real browser-based Cloudflare speed test, its ping, download, and upload measurements, the non-linear gauge, privacy, and how guesses become points.
+
+Internet speed 101 defines bits, bytes, Mbps, MB/s, download, upload, ping, and jitter. It includes approximate activity needs, Wi-Fi tips, a speed conversion table, and a glossary.
 
 ## Credits
 
-Made by NaveenKumar for game night with his kids. The site uses Cloudflare Speedtest, self-hosted Bricolage Grotesque and Figtree fonts, and Phosphor icons.
+Made by NaveenKumar for game night with his kids. The site uses Cloudflare Speedtest, self-hosted Bricolage Grotesque and Figtree fonts, and Phosphor icons. More projects: [QAInsights](https://qainsights.com), [dosa.dev](https://dosa.dev), [ai.dosa.dev](https://ai.dosa.dev), [iamspeed.dev](https://iamspeed.dev). Support: [Buy me a coffee](https://buymeacoffee.com/qainsights). Code: [GitHub](https://github.com/QAInsights/guessthespeed).

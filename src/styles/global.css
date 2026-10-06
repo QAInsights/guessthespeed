@@ -1033,10 +1033,10 @@ footer {
 }
 
 .foot {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 24px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr);
+  align-items: start;
+  gap: 32px;
 }
 
 .foot-copy {
@@ -1056,29 +1056,67 @@ footer {
   color: var(--ink);
 }
 
-.links {
-  display: flex;
-  max-width: 560px;
-  flex-wrap: wrap;
-  align-content: flex-start;
-  align-items: flex-start;
-  gap: 10px;
+.foot-groups {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(190px, 0.85fr);
+  gap: 28px;
 }
 
-.links a {
-  padding: 8px 12px;
+.foot-group {
+  min-width: 0;
+}
+
+.foot-group h2 {
+  margin: 0 0 10px;
+  font-size: 15px;
+  letter-spacing: 0.04em;
+}
+
+.foot-links {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.foot-group[aria-label="Guide"] .foot-links {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.foot-links a {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 10px;
   border: 2px solid var(--ink);
   border-radius: 999px;
   background: var(--surface);
   color: var(--ink);
   font-size: 14px;
   font-weight: 800;
+  text-align: center;
   text-decoration: none;
 }
 
-.links a:hover {
+.foot-group[aria-label="Guide"] .foot-links a {
+  white-space: nowrap;
+}
+
+.foot-links a:hover {
   background: var(--accent);
   color: var(--on-accent);
+}
+
+@media (max-width: 760px) {
+  .foot,
+  .foot-groups {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .foot-group[aria-label="Guide"] .foot-links {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .content-page {
@@ -1129,6 +1167,102 @@ footer {
 
 .content-card strong {
   color: var(--ink);
+}
+
+.guide-table-wrap {
+  position: relative;
+  max-width: 100%;
+  margin: 20px 0;
+  overflow-x: auto;
+  border: 2.5px solid var(--ink);
+  border-radius: var(--r);
+  background: var(--surface);
+  box-shadow: 6px 6px 0 var(--shadow);
+  -webkit-overflow-scrolling: touch;
+}
+
+.guide-table {
+  width: 100%;
+  min-width: 620px;
+  border-collapse: collapse;
+  color: var(--ink);
+}
+
+.guide-table caption {
+  padding: 12px 14px;
+  background: var(--surface);
+  color: var(--ink);
+  font-weight: 800;
+  text-align: left;
+  caption-side: top;
+}
+
+.guide-table th,
+.guide-table td {
+  padding: 12px 14px;
+  border-right: 2px solid var(--ink);
+  border-bottom: 2px solid var(--ink);
+  text-align: left;
+  vertical-align: top;
+}
+
+.guide-table th {
+  background: var(--soft);
+  color: var(--ink);
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.guide-table td {
+  background: var(--surface);
+  color: var(--muted);
+}
+
+.guide-table th:last-child,
+.guide-table td:last-child {
+  border-right: 0;
+}
+
+.guide-table tbody tr:last-child th,
+.guide-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.guide-table-note {
+  margin-top: 12px;
+  font-size: 14px;
+}
+
+.guide-glossary {
+  display: grid;
+  grid-template-columns: minmax(9ch, 0.3fr) minmax(0, 1fr);
+  gap: 8px 14px;
+  margin: 16px 0;
+}
+
+.guide-glossary dt {
+  color: var(--ink);
+  font-weight: 800;
+}
+
+.guide-glossary dd {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.learn-more {
+  margin: 16px 0 0;
+  color: var(--muted);
+}
+
+.learn-more a {
+  color: var(--ink);
+  font-weight: 800;
+}
+
+.how .learn-more {
+  margin: 16px 0 0;
 }
 
 .faq {

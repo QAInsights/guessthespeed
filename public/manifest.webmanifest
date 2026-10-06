@@ -1,10 +1,31 @@
 {
   "name": "Guess the Speed",
   "short_name": "Guess Speed",
+  "id": "/",
+  "scope": "/",
+  "lang": "en",
   "start_url": "/",
+  "description": "A friendly family game where players guess internet speeds, run a real test, and score points.",
   "display": "standalone",
   "background_color": "#eceff3",
   "theme_color": "#ff5a36",
+  "categories": ["games", "entertainment", "education"],
+  "screenshots": [
+    {
+      "src": "/screenshots/home-wide.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Guess the Speed on a desktop screen"
+    },
+    {
+      "src": "/screenshots/home-narrow.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Guess the Speed on a phone screen"
+    }
+  ],
   "icons": [
     { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
     { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },

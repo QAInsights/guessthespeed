@@ -1,3 +1,7 @@
+---
+import { Icon } from 'astro-icon/components';
+---
+
 <footer>
   <div class="wrap foot">
     <div class="foot-copy">
@@ -5,15 +9,33 @@
       <p>Made by NaveenKumar for game night with his kids</p>
       <p>© 2026 Guess the Speed</p>
     </div>
-    <nav class="links" aria-label="More projects">
-      <a href="https://qainsights.com" rel="noopener">QAInsights</a>
-      <a href="https://ai.dosa.dev" rel="noopener">ai.dosa.dev</a>
-      <a href="https://perf.jmeter.ai" rel="noopener">perf.jmeter.ai</a>
-      <a href="https://plugins.jmeter.ai" rel="noopener">plugins.jmeter.ai</a>
-      <a href="https://docs.jmeter.ai" rel="noopener">docs.jmeter.ai</a>
-      <a href="https://jmeter.ai" rel="noopener">jmeter.ai</a>
-      <a href="/how-to-play/">How to play</a>
-      <a href="/privacy/">Privacy</a>
-    </nav>
+    <div class="foot-groups">
+      <nav class="foot-group" aria-label="More projects">
+        <h2>More projects</h2>
+        <div class="foot-links">
+          <a href="https://qainsights.com" rel="noopener">QAInsights</a>
+          <a href="https://dosa.dev" rel="noopener">dosa.dev</a>
+          <a href="https://ai.dosa.dev" rel="noopener">ai.dosa.dev</a>
+          <a href="https://iamspeed.dev" rel="noopener">iamspeed.dev</a>
+          <a href="https://buymeacoffee.com/qainsights" target="_blank" rel="noopener">
+            <Icon name="ph:coffee-fill" aria-hidden="true" />
+            Buy me a coffee
+          </a>
+          <a href="https://github.com/QAInsights/guessthespeed" target="_blank" rel="noopener">
+            <Icon name="ph:github-logo-fill" aria-hidden="true" />
+            GitHub
+          </a>
+        </div>
+      </nav>
+      <nav class="foot-group" aria-label="Guide">
+        <h2>Guide</h2>
+        <div class="foot-links">
+          <a href="/how-to-play/">How to play</a>
+          <a href="/how-it-works/">How it works</a>
+          <a href="/internet-speed-101/">Internet speed 101</a>
+          <a href="/privacy/">Privacy</a>
+        </div>
+      </nav>
+    </div>
   </div>
 </footer>
