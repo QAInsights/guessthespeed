@@ -33,6 +33,28 @@ const appSchema = {
 <html lang="en" data-theme="light">
   <head>
     <meta charset="utf-8" />
+    <script is:inline>
+      try {
+        const themeMode = JSON.parse(localStorage.getItem("gts:v1") ?? "null")
+          ?.settings?.themeMode;
+        const explicitThemes = [
+          "light",
+          "dark",
+          "halloween",
+          "diwali",
+          "thanksgiving",
+          "winter",
+          "christmas",
+          "newyear",
+          "pongal",
+          "valentines",
+          "holi",
+          "easter",
+        ];
+        if (explicitThemes.includes(themeMode))
+          document.documentElement.dataset.theme = themeMode;
+      } catch {}
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
@@ -92,7 +114,7 @@ const appSchema = {
           <span data-sound-on><Icon name="ph:speaker-high-fill" /></span>
           <span data-sound-off hidden><Icon name="ph:speaker-slash-fill" /></span>
         </button>
-        <a class="ctrl icon-btn how-link" href="/how-to-play" aria-label="How to play">
+        <a class="ctrl icon-btn how-link" href="/how-to-play/" aria-label="How to play">
           <Icon name="ph:question-fill" />
         </a>
         <button class="ctrl icon-btn" type="button" data-open-settings aria-label="Open settings">
@@ -100,7 +122,57 @@ const appSchema = {
         </button>
       </div>
     </header>
+    <dialog class="sticker-dialog" data-settings-dialog aria-labelledby="settings-title">
+      <div class="dialog-inner">
+        <div class="dialog-head">
+          <h2 id="settings-title" class="display">Game settings</h2>
+          <button class="dialog-close" type="button" data-close-settings aria-label="Close settings"><Icon name="ph:x-bold" /></button>
+        </div>
+        <form class="dialog-form" data-settings-form>
+          <label class="dialog-field">Rounds
+            <select class="dialog-select" name="rounds">
+              <option value="1">1 round</option>
+              <option value="3">3 rounds</option>
+              <option value="5">5 rounds</option>
+              <option value="7">7 rounds</option>
+              <option value="10">10 rounds</option>
+              <option value="endless">Endless</option>
+            </select>
+          </label>
+          <label class="dialog-field">Ties
+            <select class="dialog-select" name="tieMode">
+              <option value="share">Share the points</option>
+              <option value="download">Closest download breaks the tie</option>
+            </select>
+          </label>
+          <label class="dialog-field">Theme
+            <select class="dialog-select" name="themeMode">
+              <option value="auto">Auto (by date)</option>
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+              <option value="halloween">Halloween</option>
+              <option value="diwali">Diwali</option>
+              <option value="thanksgiving">Thanksgiving</option>
+              <option value="winter">Winter</option>
+              <option value="christmas">Christmas</option>
+              <option value="newyear">New Year</option>
+              <option value="pongal">Pongal</option>
+              <option value="valentines">Valentine’s Day</option>
+              <option value="holi">Holi</option>
+              <option value="easter">Easter</option>
+            </select>
+          </label>
+          <label class="dialog-field sound-setting"><span>Sound</span><input type="checkbox" name="sound" /></label>
+          <div class="dialog-actions">
+            <button class="go" type="submit">Save settings</button>
+          </div>
+        </form>
+      </div>
+    </dialog>
     <slot />
     <Footer />
+    <script>
+      import '../scripts/header-client';
+    </script>
   </body>
 </html>
