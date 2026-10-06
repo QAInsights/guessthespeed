@@ -1,0 +1,355 @@
+---
+import Base from '../layouts/Base.astro';
+
+const questions = [
+  {
+    question: 'How do I convert Mbps to MB/s?',
+    answer:
+      'Divide megabits per second by eight to estimate megabytes per second. The conversion works because one byte contains eight bits.',
+  },
+  {
+    question: 'How many MB/s is 100 Mbps?',
+    answer:
+      'At the full line rate, 100 Mbps is 12.5 MB/s. Real download programs can show less because of network overhead, server speed, Wi-Fi, and other activity.',
+  },
+  {
+    question: 'Why does Steam or my browser show MB/s?',
+    answer:
+      'Internet plans usually describe megabits per second, while file transfers often show megabytes per second. The units measure the same data using different-sized units, so divide Mbps by eight to compare.',
+  },
+  {
+    question: 'How long does a 5 GB download take at 100 Mbps?',
+    answer:
+      'Using decimal units and the full link rate, the math gives about 6 minutes 40 seconds. At 90% efficiency, the estimate is about 7 minutes 24 seconds.',
+  },
+  {
+    question: 'Is MB the same as MiB?',
+    answer:
+      'No. A megabyte is 1,000,000 bytes in decimal units, while a mebibyte is 1,048,576 bytes in binary units. Check the exact unit shown by the program.',
+  },
+  {
+    question: 'Why can a real download take longer than this estimate?',
+    answer:
+      'The formula assumes the file source can send at that rate and your connection sustains it. Protocol overhead, Wi-Fi, congestion, device storage, and other people using the network can lower the achieved rate.',
+  },
+];
+
+const faqSchema = {
+  '@type': 'FAQPage',
+  mainEntity: questions.map(({ question, answer }) => ({
+    '@type': 'Question',
+    name: question,
+    acceptedAnswer: { '@type': 'Answer', text: answer },
+  })),
+};
+
+const calculatorSchema = {
+  '@type': 'WebApplication',
+  name: 'Mbps to MB/s converter and download-time calculator',
+  url: 'https://guessthespeed.com/mbps-to-mbs/',
+  applicationCategory: 'UtilitiesApplication',
+  isAccessibleForFree: true,
+  offers: { '@type': 'Offer', price: 0, priceCurrency: 'USD' },
+  author: { '@id': 'https://guessthespeed.com/#author' },
+  publisher: { '@id': 'https://guessthespeed.com/#author' },
+};
+---
+
+<Base
+  title="Mbps to MB/s Converter (and Download Time Calculator)"
+  description="Convert Mbps to MB/s and Gbps, then estimate a file download time at full speed and with a realistic 90% efficiency."
+  breadcrumb="Mbps to MB/s"
+  schema={[faqSchema, calculatorSchema]}
+>
+  <main class="wrap content-page">
+    <span class="round-banner">Bits, bytes, and download time</span>
+    <h1>Mbps to MB/s Converter</h1>
+    <p class="lede">
+      Divide Mbps by eight to estimate MB/s: a 100 Mbps connection has a line-rate equivalent of
+      12.5 MB/s. Enter either unit below to see the other value and its Gbps equivalent.
+    </p>
+    <article class="content-card stk">
+      <h2>How many megabytes per second is your speed?</h2>
+      <section class="converter-panel stk" data-mbps-converter aria-label="Mbps and MB/s converter">
+        <div class="converter-grid">
+          <label class="converter-field">
+            <span>Internet speed in Mbps</span>
+            <input
+              class="converter-input"
+              data-mbps-value
+              type="number"
+              min="0"
+              step="any"
+              inputmode="decimal"
+              value="100"
+              aria-describedby="converter-hint"
+            />
+          </label>
+          <label class="converter-field">
+            <span>File transfer speed in MB/s</span>
+            <input
+              class="converter-input"
+              data-mbps-file-value
+              type="number"
+              min="0"
+              step="any"
+              inputmode="decimal"
+              value="12.5"
+              aria-describedby="converter-hint"
+            />
+          </label>
+        </div>
+        <p id="converter-hint" class="converter-hint">
+          Type a positive number into either field. One byte contains eight bits.
+        </p>
+        <p class="converter-output" data-conversion-output aria-live="polite">
+          100 Mbps equals 12.5 MB/s or 0.1 Gbps.
+        </p>
+        <div class="converter-gigabit stk">
+          <span>Equivalent internet speed</span>
+          <output data-gbps-output aria-live="polite">0.1 Gbps</output>
+        </div>
+      </section>
+
+      <h2>Why does Steam or a browser show MB/s?</h2>
+      <p>
+        Internet plans label bandwidth in megabits per second. A browser, game launcher, or
+        download manager may report the number of megabytes moving each second. Eight bits fit
+        in one byte, so divide the plan's Mbps by eight to estimate a line-rate MB/s. The speed
+        shown in an app is a transfer rate, not a different internet plan.
+      </p>
+      <p>
+        I use a pizza to remember it: picture one byte as a pizza cut into eight slices. Mbps
+        counts slices per second; MB/s counts whole pizzas per second. For the longer version,
+        see{' '}<a href="/internet-speed-101/">Internet Speed 101</a>.
+      </p>
+
+      <h2>How long will a file download take?</h2>
+      <p>
+        Enter a file size and a connection speed to compare an idealized full-rate transfer with
+        a more realistic estimate at 90% efficiency. The calculator treats MB and GB as decimal
+        units, which makes the line-rate math easy to compare with internet plan speeds.
+      </p>
+      <section
+        class="download-panel stk"
+        data-download-calculator
+        aria-label="Download time calculator"
+      >
+        <div class="download-grid">
+          <label class="converter-field">
+            <span>File size</span>
+            <input
+              class="converter-input"
+              data-file-size
+              type="number"
+              min="0"
+              step="any"
+              inputmode="decimal"
+              value="5"
+              aria-describedby="download-hint"
+            />
+          </label>
+          <label class="converter-field">
+            <span>Size unit</span>
+            <select class="converter-select" data-file-unit aria-describedby="download-hint">
+              <option value="MB">MB</option>
+              <option value="GB" selected>GB</option>
+            </select>
+          </label>
+          <label class="converter-field">
+            <span>Internet speed in Mbps</span>
+            <input
+              class="converter-input"
+              data-download-speed
+              type="number"
+              min="0"
+              step="any"
+              inputmode="decimal"
+              value="100"
+              aria-describedby="download-hint"
+            />
+          </label>
+        </div>
+        <p id="download-hint" class="converter-hint">
+          At 100 Mbps, a 5 GB decimal file takes about 6 minutes 40 seconds at full rate.
+        </p>
+        <div class="download-results">
+          <p>At 100% efficiency: <output data-time-full aria-live="polite">About 6 min 40 s</output></p>
+          <p>At 90% efficiency: <output data-time-realistic aria-live="polite">About 7 min 24 s</output></p>
+        </div>
+        <p class="converter-output" data-download-summary aria-live="polite">
+          5 GB at 100 Mbps takes about 6 min 40 s at 100% efficiency, or about 7 min 24 s at 90%.
+        </p>
+      </section>
+
+      <h2>What is the difference between MB and MiB?</h2>
+      <p>
+        This calculator uses decimal file sizes: one MB is 1,000,000 bytes and one GB is
+        1,000,000,000 bytes. A MiB is 1,048,576 bytes and a GiB is 1,073,741,824 bytes. These
+        binary prefixes are useful when a computer program counts in powers of two; the unit
+        label tells you which number it means. The{' '}
+        <a href="https://physics.nist.gov/cuu/Units/binary.html">NIST guide to binary prefixes</a>{' '}
+        lists the decimal and binary definitions.
+      </p>
+
+      <h2>Which Mbps speeds are useful to compare?</h2>
+      <div class="guide-table-wrap" role="region" aria-label="Mbps to megabytes per second conversions" tabindex="0">
+        <table class="guide-table">
+          <caption>Line-rate conversion using one byte per eight bits</caption>
+          <thead>
+            <tr><th scope="col">Internet speed</th><th scope="col">Equivalent file rate</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">10 Mbps</th><td>1.25 MB/s</td></tr>
+            <tr><th scope="row">25 Mbps</th><td>3.125 MB/s</td></tr>
+            <tr><th scope="row">50 Mbps</th><td>6.25 MB/s</td></tr>
+            <tr><th scope="row">100 Mbps</th><td>12.5 MB/s</td></tr>
+            <tr><th scope="row">300 Mbps</th><td>37.5 MB/s</td></tr>
+            <tr><th scope="row">500 Mbps</th><td>62.5 MB/s</td></tr>
+            <tr><th scope="row">1,000 Mbps</th><td>125 MB/s</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="guide-table-note">
+        These are idealized decimal conversions. A real file transfer can be slower because the
+        source server, route, Wi-Fi, protocol overhead, and other network activity all matter.
+      </p>
+
+      <h2>Frequently asked questions</h2>
+      <div class="faq">
+        {questions.map(({ question, answer }) => (
+          <section>
+            <h3>{question}</h3>
+            <p>{answer}</p>
+          </section>
+        ))}
+      </div>
+      <p>
+        Need a household plan estimate too? Try the{' '}
+        <a href="/how-much-internet-speed-do-i-need/">household speed calculator</a>, then{' '}
+        <a href="/what-is-a-good-internet-speed/">read what makes a speed good</a>.
+      </p>
+      <div class="story-cta">
+        <a class="go" href="/">Start a game</a>
+      </div>
+    </article>
+  </main>
+</Base>
+
+<script>
+  import '../scripts/convert-client';
+</script>
+
+<style>
+  .converter-panel,
+  .download-panel {
+    margin: 24px 0;
+    padding: clamp(16px, 3vw, 28px);
+    background: var(--soft);
+  }
+
+  .converter-grid,
+  .download-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .download-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(110px, 0.5fr) minmax(0, 1fr);
+  }
+
+  .converter-field {
+    display: grid;
+    min-width: 0;
+    gap: 8px;
+    color: var(--ink);
+    font-weight: 800;
+  }
+
+  .converter-input,
+  .converter-select {
+    width: 100%;
+    min-height: 54px;
+    padding: 10px 14px;
+    border: 2.5px solid var(--ink);
+    border-radius: var(--r);
+    background: var(--surface);
+    color: var(--ink);
+    font-size: 20px;
+    font-weight: 800;
+  }
+
+  .converter-hint {
+    margin: 14px 0 0;
+    font-size: 14px;
+  }
+
+  .converter-output {
+    margin: 16px 0 0;
+    color: var(--ink) !important;
+    font-size: 18px;
+    font-weight: 800;
+  }
+
+  .converter-gigabit {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 18px;
+    padding: 14px;
+    background: var(--surface);
+  }
+
+  .converter-gigabit span {
+    color: var(--muted);
+    font-weight: 800;
+  }
+
+  .converter-gigabit output {
+    font-family: "Bricolage Grotesque Variable", sans-serif;
+    font-size: 26px;
+    font-weight: 900;
+  }
+
+  .download-results {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 18px;
+  }
+
+  .download-results p {
+    margin: 0;
+    padding: 14px;
+    border: 2px solid var(--ink);
+    border-radius: var(--r);
+    background: var(--surface);
+    color: var(--muted);
+    font-weight: 800;
+  }
+
+  .download-results output {
+    display: block;
+    margin-top: 6px;
+    color: var(--ink);
+    font-family: "Bricolage Grotesque Variable", sans-serif;
+    font-size: 22px;
+    font-weight: 900;
+  }
+
+  @media (max-width: 620px) {
+    .converter-grid,
+    .download-grid,
+    .download-results {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .converter-panel,
+    .download-panel {
+      padding: 14px;
+    }
+  }
+</style>

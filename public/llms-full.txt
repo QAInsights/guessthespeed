@@ -65,13 +65,22 @@ Room game data, including player names, face choices, guesses, and scores, is st
 - Rules and FAQ: https://guessthespeed.com/how-to-play/
 - How it works: https://guessthespeed.com/how-it-works/
 - Internet speed 101: https://guessthespeed.com/internet-speed-101/
+- Good internet speed guide: https://guessthespeed.com/what-is-a-good-internet-speed/
+- Household speed calculator: https://guessthespeed.com/how-much-internet-speed-do-i-need/
+- Mbps to MB/s converter and download-time calculator: https://guessthespeed.com/mbps-to-mbs/
 - Privacy: https://guessthespeed.com/privacy/
 
 ## Guide page summaries
 
 How it works explains the real browser-based Cloudflare speed test, its ping, download, and upload measurements, the non-linear gauge, privacy, and how guesses become points.
 
-Internet speed 101 defines bits, bytes, Mbps, MB/s, download, upload, ping, and jitter. It includes approximate activity needs, Wi-Fi tips, a speed conversion table, and a glossary.
+Internet speed 101 defines bits, bytes, Mbps, MB/s, download, upload, ping, and jitter. It includes sourced activity needs, Wi-Fi tips, a speed conversion table, and a glossary. Use the good internet speed guide for household download, upload, and ping planning, the household speed calculator to add overlapping activities, or the Mbps to MB/s converter to estimate transfer rates and download time.
+
+## Internet speed guides and calculators
+
+- [What is a good internet speed?](https://guessthespeed.com/what-is-a-good-internet-speed/) explains sourced download, upload, streaming, video-call, Remote Play, and latency recommendations, with household starting ranges and advice for diagnosing a lower speed test.
+- [Household speed calculator](https://guessthespeed.com/how-much-internet-speed-do-i-need/) adds estimated download and upload rates for simultaneous 4K and HD streams, HD calls, game streaming, downloads, and connected devices, then adds 25% headroom and rounds to a common tier. Its active-download allowance is explicitly a planning assumption.
+- [Mbps to MB/s converter and download-time calculator](https://guessthespeed.com/mbps-to-mbs/) converts between Mbps, MB/s, and Gbps, and estimates decimal file download times at full rate and 90% efficiency.
 
 Our story explains how living-room speed tests, two kids who love guessing, and a dad who loses on purpose inspired a family game. Naveen built the site to keep guesses private, carry scores across rounds, and wrap a real speed test in game night. Read it at https://guessthespeed.com/story/.
 

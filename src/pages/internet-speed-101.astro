@@ -15,7 +15,7 @@ const questions = [
   {
     question: 'How much internet speed does a household need?',
     answer:
-      'It depends on what everyone does at once. One 4K movie at about 25 Mbps, two HD streams at about 5 Mbps each, and one HD video call at about 4 Mbps add up to about 39 Mbps down. A 100 Mbps plan has headroom, while 25 Mbps would struggle. The US FCC broadband benchmark is 100 Mbps down and 20 Mbps up, set in 2024.',
+      'It depends on what everyone does at once. A 4K stream calls for about 15 to 20 Mbps down, two 1080p streams about 5 Mbps each, and a Zoom 1080p group call about 3.8 Mbps down and 3 Mbps up. That mix uses about 34 Mbps down before headroom. The FCC fixed broadband benchmark is 100 Mbps down and 20 Mbps up.',
   },
   {
     question: 'Does upload speed matter?',
@@ -25,7 +25,7 @@ const questions = [
   {
     question: 'What is a good ping for games and calls?',
     answer:
-      'As a rule of thumb, under 20 ms is excellent, 20 to 50 ms is good, 50 to 100 ms is okay, and over 100 ms can feel laggy.',
+      'There is no single target for every game. Zoom says latency of 150 ms or less is typically recommended for calls, while lower ping can make interactive play feel more responsive. The route to a particular game server matters too.',
   },
   {
     question: 'How can I make a better speed guess?',
@@ -111,9 +111,8 @@ const faqSchema = {
       <p>
         Download is data coming to your device. Upload is data going from your device to the
         internet. Most home plans are asymmetric, meaning the two directions are not equal.
-        Historically, homes mostly downloaded, so cable networks give most capacity to the
-        download direction. Cable plans are often 10:1 or more, while fiber is often symmetric,
-        with similar speeds both ways.
+        Cable plans may have less upload capacity, while some fiber plans offer similar speeds in
+        both directions. Check both numbers when you compare plans.
       </p>
       <p>
         Upload is not an afterthought. It matters for video calls, live streaming, cloud backups,
@@ -128,46 +127,73 @@ const faqSchema = {
         between consecutive ping measurements, so it helps describe how steady those times are.
         For games and calls, a quick response can matter more than a huge download number.
       </p>
-      <div class="guide-table-wrap" role="region" aria-label="Ping rules of thumb" tabindex="0">
+      <div class="guide-table-wrap" role="region" aria-label="Zoom latency and jitter recommendations" tabindex="0">
         <table class="guide-table">
-          <caption>How ping can feel, as a rule of thumb</caption>
+          <caption>Zoom's typical network recommendations</caption>
           <thead>
-            <tr><th scope="col">Ping</th><th scope="col">Rough feel</th></tr>
+            <tr><th scope="col">Measurement</th><th scope="col">Typical recommendation</th></tr>
           </thead>
           <tbody>
-            <tr><th scope="row">Under 20 ms</th><td>Excellent</td></tr>
-            <tr><th scope="row">20 to 50 ms</th><td>Good</td></tr>
-            <tr><th scope="row">50 to 100 ms</th><td>Okay</td></tr>
-            <tr><th scope="row">Over 100 ms</th><td>Can feel laggy for games and calls</td></tr>
+            <tr><th scope="row">Latency</th><td>150 ms or less</td></tr>
+            <tr><th scope="row">Jitter</th><td>40 ms or less</td></tr>
           </tbody>
         </table>
       </div>
-      <p class="guide-table-note">These are rules of thumb. Your experience can vary.</p>
+      <p class="guide-table-note">
+        <a href="https://support.zoom.com/hc/en/article?id=zm_kb&amp;sysparm_article=KB0070504">Zoom's network-statistics guide</a>{' '}
+        calls these typical recommendations. Games do not share one universal ping threshold, so
+        check the route and server for the game you play.
+      </p>
 
       <h2>How much speed do you need?</h2>
       <p>
-        These are approximate figures per stream or device. Try this household math: one 4K movie
-        at about 25 Mbps, two HD streams at about 5 Mbps each, and one HD video call at about
-        4 Mbps use about 39 Mbps of download speed together. A 100 Mbps plan leaves headroom for
-        that mix, while 25 Mbps would struggle. The US FCC broadband benchmark is 100 Mbps down
-        and 20 Mbps up, set in 2024. Add up what everyone does at once to get a useful starting
-        guess for your home.
+        Add the things your household does at the same time, then leave room for busy moments.
+        Netflix recommends at least 15 Mbps for 4K; YouTube recommends a sustained 20 Mbps, so
+        think about 15 to 20 Mbps per 4K stream rather than one universal figure. Two HD streams
+        at about 5 Mbps each and one Zoom 1080p group call at about 3.8 Mbps down and 3 Mbps up
+        bring that example to roughly 29 to 34 Mbps down before headroom.{' '}
+        <a href="https://www.fcc.gov/document/fcc-increases-broadband-speed-benchmark">The FCC's 2024 fixed broadband benchmark is 100 Mbps down and 20 Mbps up</a>.
+        {' '}It is a benchmark, not a guarantee that every home needs that exact plan.
       </p>
       <div class="guide-table-wrap" role="region" aria-label="Approximate internet speed needs by activity" tabindex="0">
         <table class="guide-table">
           <caption>Approximate speed per stream or device</caption>
           <thead>
-            <tr><th scope="col">Activity</th><th scope="col">Approximate speed</th><th scope="col">A quick note</th></tr>
+            <tr><th scope="col">Activity</th><th scope="col">Download and upload</th><th scope="col">A quick note</th></tr>
           </thead>
           <tbody>
-            <tr><th scope="row">Email and browsing</th><td>About 1 to 5 Mbps</td><td>Per device</td></tr>
-            <tr><th scope="row">HD video</th><td>About 5 Mbps</td><td>Per stream</td></tr>
-            <tr><th scope="row">4K video</th><td>About 15 to 25 Mbps</td><td>Per stream</td></tr>
-            <tr><th scope="row">HD video call</th><td>About 3 to 4 Mbps down and up</td><td>Both directions</td></tr>
-            <tr><th scope="row">Online gaming</th><td>About 3 to 6 Mbps</td><td>Low ping matters more</td></tr>
+            <tr><th scope="row">Email and browsing</th><td>No fixed per-device rate</td><td>Page size and activity vary</td></tr>
+            <tr>
+              <th scope="row">HD video</th>
+              <td>About 5 Mbps down</td>
+              <td><a href="https://help.netflix.com/en/node/306">Netflix 1080p</a> and <a href="https://support.google.com/youtube/answer/78358">YouTube 1080p</a></td>
+            </tr>
+            <tr>
+              <th scope="row">4K video</th>
+              <td>About 15 to 20 Mbps down</td>
+              <td><a href="https://help.netflix.com/en/node/306">Netflix UHD</a> and <a href="https://support.google.com/youtube/answer/78358">YouTube 4K</a> recommendations</td>
+            </tr>
+            <tr>
+              <th scope="row">HD group video call</th>
+              <td>About 2.6 down / 1.8 up at 720p; 3.8 down / 3.0 up at 1080p</td>
+              <td><a href="https://support.zoom.com/hc/en/article?id=zm_kb&amp;sysparm_article=KB0060748">Zoom's published requirements</a></td>
+            </tr>
+            <tr>
+              <th scope="row">PlayStation Remote Play</th>
+              <td>5 Mbps each way minimum; 15 Mbps each way recommended</td>
+              <td><a href="https://www.playstation.com/en-us/support/games/ps4-remote-play-connection-troubleshooting/">Remote Play guidance</a>; regular games vary</td>
+            </tr>
           </tbody>
         </table>
       </div>
+      <p class="learn-more">
+        For household starting ranges and planning advice, read{' '}
+        <a href="/what-is-a-good-internet-speed/">What is a good internet speed?</a>.
+        Add overlapping streams, calls, and devices with the{' '}
+        <a href="/how-much-internet-speed-do-i-need/">household speed calculator</a>.
+        To convert Mbps to MB/s and estimate a download time, use the{' '}
+        <a href="/mbps-to-mbs/">Mbps to MB/s converter</a>.
+      </p>
 
       <h2>Wi-Fi versus a cable</h2>
       <p>

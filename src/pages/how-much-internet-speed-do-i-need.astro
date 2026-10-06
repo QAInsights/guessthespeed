@@ -1,0 +1,397 @@
+---
+import Base from '../layouts/Base.astro';
+import { ACTIVITY_RATES, type ActivityId } from '../lib/speed-needs';
+
+const questions = [
+  {
+    question: 'How does this household speed calculator work?',
+    answer:
+      'It adds the selected download and upload allowances, adds 25% headroom, and rounds each direction up to a common plan tier. The result is a planning estimate, not a promise about Wi-Fi performance.',
+  },
+  {
+    question: 'Is this calculator a guarantee that my internet will be fast?',
+    answer:
+      'No. It estimates capacity for the activities you selected. Wi-Fi coverage, the device, your provider route, busy hours, and the services themselves affect the result you actually experience.',
+  },
+  {
+    question: 'Why does the calculator use 20 Mbps for a 4K stream?',
+    answer:
+      'YouTube recommends a sustained 20 Mbps for 4K playback, while Netflix recommends at least 15 Mbps for UHD. The calculator uses the upper end of that published range as a planning allowance.',
+  },
+  {
+    question: 'Does online gaming need a lot of upload speed?',
+    answer:
+      'Ordinary online multiplayer and game streaming are not the same. The gaming step uses PlayStation Remote Play guidance of 15 Mbps in both directions for a better experience; individual games can need less or more.',
+  },
+  {
+    question: 'Why does the calculator reserve speed for a large download?',
+    answer:
+      'A download can use spare capacity while it is active. There is no universal required rate, so the calculator reserves 25 Mbps as a clear planning allowance; Steam lets players cap its download rate.',
+  },
+  {
+    question: 'Can I use this calculator for a work-from-home call?',
+    answer:
+      'Yes. The HD group-call step uses Zoom’s published 1080p group-meeting rate of 3.8 Mbps down and 3 Mbps up. Choose the number of calls happening at the same time.',
+  },
+];
+
+const faqSchema = {
+  '@type': 'FAQPage',
+  mainEntity: questions.map(({ question, answer }) => ({
+    '@type': 'Question',
+    name: question,
+    acceptedAnswer: { '@type': 'Answer', text: answer },
+  })),
+};
+
+const calculatorSchema = {
+  '@type': 'WebApplication',
+  name: 'Household internet speed calculator',
+  url: 'https://guessthespeed.com/how-much-internet-speed-do-i-need/',
+  applicationCategory: 'UtilitiesApplication',
+  isAccessibleForFree: true,
+  offers: { '@type': 'Offer', price: 0, priceCurrency: 'USD' },
+  author: { '@id': 'https://guessthespeed.com/#author' },
+  publisher: { '@id': 'https://guessthespeed.com/#author' },
+};
+
+const activities: {
+  id: ActivityId;
+  title: string;
+  explanation: string;
+  sourceNote: string;
+  extraSource?: { label: string; href: string };
+}[] = [
+  {
+    id: 'streams4k',
+    title: '4K streams',
+    explanation:
+      'YouTube recommends a sustained 20 Mbps for 4K playback. Netflix recommends at least 15 Mbps for UHD, so this estimate uses the upper end.',
+    sourceNote: 'YouTube 4K playback',
+    extraSource: {
+      label: 'Netflix UHD',
+      href: 'https://help.netflix.com/en/node/306',
+    },
+  },
+  {
+    id: 'streamsHd',
+    title: 'HD streams',
+    explanation:
+      'Netflix lists 5 Mbps or higher for Full HD at 1080p. The calculator uses that as one stream allowance.',
+    sourceNote: 'Netflix speed recommendations',
+    extraSource: {
+      label: 'YouTube 1080p playback',
+      href: 'https://support.google.com/youtube/answer/78358',
+    },
+  },
+  {
+    id: 'callsHd',
+    title: 'HD video calls',
+    explanation:
+      'A Zoom 1080p group call lists 3.8 Mbps down and 3 Mbps up. Zoom also lists lower rates for 720p.',
+    sourceNote: 'Zoom system requirements',
+  },
+  {
+    id: 'onlineGamers',
+    title: 'Online gamers',
+    explanation:
+      'This uses PlayStation Remote Play’s 15 Mbps upload and download recommendation as a game-streaming allowance. Regular online multiplayer varies and may use less.',
+    sourceNote: 'PlayStation Remote Play',
+  },
+  {
+    id: 'largeDownloads',
+    title: 'Large downloads in progress',
+    explanation:
+      'There is no universal bandwidth requirement for a download. The calculator reserves 25 Mbps as a planning allowance, and Steam documents an adjustable download-rate limit.',
+    sourceNote: 'Steam download-rate limits',
+  },
+  {
+    id: 'smartHomeDevices',
+    title: 'Smart home or idle devices',
+    explanation:
+      'The 1 Mbps each-way allowance is comparable to Ring’s recommended speed for a 720p device. Camera models and background activity vary.',
+    sourceNote: 'Ring Wi-Fi recommendations',
+  },
+];
+---
+
+<Base
+  title="How Much Internet Speed Do I Need? Household Speed Calculator"
+  description="Count the streams, calls, games, downloads, and connected devices happening at once to estimate a household download and upload plan."
+  breadcrumb="Speed calculator"
+  schema={[faqSchema, calculatorSchema]}
+>
+  <main class="wrap content-page">
+    <span class="round-banner">Household speed calculator</span>
+    <h1>How Much Internet Speed Do I Need?</h1>
+    <p class="lede">
+      Add the activities that overlap and leave 25% headroom. Two 4K streams and three HD group
+      calls use about 51.4 Mbps down and 9 Mbps up before that buffer, so the calculator rounds
+      the plan target to 100 Mbps down and 25 Mbps up.
+    </p>
+    <article class="content-card stk">
+      <h2>What is everyone doing at the same time?</h2>
+      <p>
+        Count the activities that overlap during a busy moment. The calculator adds their
+        download and upload estimates separately, leaves a quarter spare, and rounds each number
+        up to a common plan tier. Change the counts below to see the estimate update.
+      </p>
+      <section class="speed-calculator stk" data-speed-needs aria-label="Household activity calculator">
+        <div class="activity-grid">
+          {activities.map(({ id, title, explanation }) => (
+            <fieldset class="activity-card stk">
+              <legend>{title}</legend>
+              <p>{explanation}</p>
+              <div class="activity-stepper" role="group" aria-label={`${title} count`}>
+                <button
+                  class="stepper-button"
+                  type="button"
+                  data-activity={id}
+                  data-change="-1"
+                  aria-label={`Remove one ${title}`}
+                  disabled
+                >
+                  <span aria-hidden="true">−</span>
+                </button>
+                <output
+                  class="activity-count"
+                  data-count={id}
+                  aria-label={`${title} selected`}
+                  aria-live="polite"
+                >0</output>
+                <button
+                  class="stepper-button"
+                  type="button"
+                  data-activity={id}
+                  data-change="1"
+                  aria-label={`Add one ${title}`}
+                >
+                  <span aria-hidden="true">+</span>
+                </button>
+              </div>
+            </fieldset>
+          ))}
+        </div>
+        <div class="speed-results" aria-label="Recommended plan">
+          <div class="speed-result stk">
+            <span>Recommended download</span>
+            <output data-tier-down aria-live="polite">25 Mbps</output>
+          </div>
+          <div class="speed-result stk">
+            <span>Recommended upload</span>
+            <output data-tier-up aria-live="polite">25 Mbps</output>
+          </div>
+        </div>
+        <p class="speed-explanation" data-needs-explanation aria-live="polite">
+          Choose the activities that overlap. The calculator starts with a modest 25 Mbps down
+          and 5 Mbps up, then rounds each direction to a common plan tier.
+        </p>
+        <p class="calculator-disclaimer">
+          These are planning estimates, not service minimums. Local plan tiers may differ, and
+          upload capacity, Wi-Fi, and network congestion still matter.
+        </p>
+      </section>
+
+      <h2>Where do the activity rates come from?</h2>
+      <p>
+        Published recommendations describe particular services and quality settings, not a
+        universal requirement for every app. This calculator uses the following references and
+        labels its one chosen background-download allowance as an estimate.
+      </p>
+      <ul class="rate-sources">
+        {activities.map(({ id, explanation, sourceNote, extraSource }) => (
+          <li>
+            <strong>{ACTIVITY_RATES[id].label}:</strong> {explanation}{' '}
+            <a href={ACTIVITY_RATES[id].source}>{sourceNote}</a>
+            {extraSource && (
+              <>
+                {' '}
+                and <a href={extraSource.href}>{extraSource.label}</a>.
+              </>
+            )}
+          </li>
+        ))}
+      </ul>
+
+      <h2>What does 25% headroom do?</h2>
+      <p>
+        The selected services do not use exactly the same amount of data every second. Headroom
+        gives a little breathing space for changing video quality, another person opening a page,
+        and normal network overhead. It is a planning cushion, not a promise that the connection
+        will never slow down.
+      </p>
+      <p>
+        The activity rates are based on service recommendations where they exist. YouTube lists a
+        sustained 20 Mbps for 4K playback; Netflix lists 15 Mbps or higher for UHD and 5 Mbps or
+        higher for 1080p; Zoom lists 3.8 Mbps down and 3 Mbps up for a group 1080p call. A Remote
+        Play recommendation represents game streaming, not every multiplayer game. An active
+        download can use spare capacity, so its 25 Mbps allowance is a calculator choice rather
+        than a platform rule.
+      </p>
+      <p>
+        For a home-wide starting point, read{' '}
+        <a href="/what-is-a-good-internet-speed/">What is a good internet speed?</a>.
+        To learn why downloads can look different from a plan's Mbps label, see{' '}
+        <a href="/internet-speed-101/">Internet Speed 101</a> or use the{' '}
+        <a href="/mbps-to-mbs/">Mbps to MB/s converter</a>.
+      </p>
+
+      <h2>Frequently asked questions</h2>
+      <div class="faq">
+        {questions.map(({ question, answer }) => (
+          <section>
+            <h3>{question}</h3>
+            <p>{answer}</p>
+          </section>
+        ))}
+      </div>
+      <div class="story-cta">
+        <a class="go" href="/">Start a game</a>
+      </div>
+    </article>
+  </main>
+</Base>
+
+<script>
+  import '../scripts/speed-needs-client';
+</script>
+
+<style>
+  .speed-calculator {
+    margin: 24px 0;
+    padding: clamp(16px, 3vw, 28px);
+    background: var(--soft);
+  }
+
+  .activity-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .activity-card {
+    min-width: 0;
+    margin: 0;
+    padding: 14px;
+    background: var(--surface);
+  }
+
+  .activity-card legend {
+    max-width: calc(100% - 20px);
+    padding: 0 6px;
+    color: var(--ink);
+    font-family: "Bricolage Grotesque Variable", sans-serif;
+    font-size: 19px;
+    font-weight: 800;
+    line-height: 1.2;
+  }
+
+  .activity-card p {
+    min-height: 4.8em;
+    margin: 2px 0 14px;
+    font-size: 14px;
+  }
+
+  .activity-stepper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+  }
+
+  .stepper-button {
+    display: grid;
+    width: 44px;
+    height: 44px;
+    place-items: center;
+    border: 2.5px solid var(--ink);
+    border-radius: 50%;
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 25px;
+    font-weight: 900;
+    line-height: 1;
+  }
+
+  .stepper-button:focus-visible,
+  .converter-input:focus-visible,
+  .converter-select:focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: 3px;
+  }
+
+  .activity-count {
+    min-width: 46px;
+    color: var(--ink);
+    font-family: "Bricolage Grotesque Variable", sans-serif;
+    font-size: 26px;
+    font-weight: 900;
+    text-align: center;
+  }
+
+  .speed-results {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 20px;
+  }
+
+  .speed-result {
+    display: grid;
+    gap: 4px;
+    padding: 14px;
+    background: var(--surface);
+    text-align: center;
+  }
+
+  .speed-result span {
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 800;
+  }
+
+  .speed-result output {
+    color: var(--ink);
+    font-family: "Bricolage Grotesque Variable", sans-serif;
+    font-size: clamp(26px, 5vw, 38px);
+    font-weight: 900;
+  }
+
+  .speed-explanation {
+    margin: 16px 0 0;
+    color: var(--ink) !important;
+    font-weight: 800;
+  }
+
+  .calculator-disclaimer {
+    margin-bottom: 0;
+    font-size: 14px;
+  }
+
+  .rate-sources {
+    padding-left: 1.3rem;
+  }
+
+  .rate-sources li + li {
+    margin-top: 12px;
+  }
+
+  .rate-sources a {
+    font-weight: 800;
+  }
+
+  @media (max-width: 620px) {
+    .activity-grid,
+    .speed-results {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .activity-card p {
+      min-height: 0;
+    }
+
+    .speed-calculator {
+      padding: 14px;
+    }
+  }
+</style>
