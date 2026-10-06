@@ -50,7 +50,7 @@ For a local game, player names, guesses, settings, scores, and history are store
 
 Share result uses your device's own share sheet or clipboard. Nothing is sent to us.
 
-Developer mode turns the home page into a raw Cloudflare speed test diagnostics console. Add `?dev=1` to the home page URL to enable it. IP addresses are masked on screen by default, omitted from JSON exports, and not saved in local storage.
+Choose Dev in the Game / Dev switch at the top of the home screen to open the raw Cloudflare speed test diagnostics console. Add `?dev=1` to the home page URL to open it directly. IP addresses are masked on screen by default, omitted from JSON exports, and not saved in local storage.
 
 ## Play on separate phones
 

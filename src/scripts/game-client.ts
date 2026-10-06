@@ -38,6 +38,7 @@ import {
   sendRoomProgress,
 } from "./room-client";
 import { readRoomLocalSettings } from "./room-settings";
+import { burstConfetti } from "./confetti";
 import type { ClientAction, RoomView } from "../lib/room";
 import { sendStat } from "./stats-client";
 
@@ -107,6 +108,7 @@ let latestPing: number | undefined;
 let roomElapsedTimer = 0;
 let roomStartedAt = 0;
 let shareStatusTimer = 0;
+let hasAppliedRoomView = false;
 const isDevMode = () =>
   !roomMode && document.documentElement.dataset.dev === "1";
 const isMockMode = () =>
@@ -480,6 +482,7 @@ function syncControls() {
   const guessing = state.phase === "guessing";
   const testing = isTesting();
   const lockedGuess = state.players.some((player) => player.locked);
+  const waitingForGuess = roomMode && canRun && guessing && !lockedGuess;
   startButton.disabled =
     (!devMode && (!guessing || !lockedGuess)) || runInProgress;
   startButton.hidden =
@@ -489,10 +492,13 @@ function syncControls() {
   const waiting = $<HTMLParagraphElement>("[data-room-waiting]");
   waiting.hidden =
     !roomMode ||
-    (canRun && state.phase !== "results") ||
+    (canRun && state.phase !== "results" && !waitingForGuess) ||
     (host && state.phase === "results");
-  waiting.textContent =
-    state.phase === "results"
+  waiting.textContent = waitingForGuess
+    ? host
+      ? "Start unlocks once someone locks in a guess. Tap Guess on your phone, or add a player on this screen."
+      : "Start unlocks once someone locks in a guess."
+    : state.phase === "results"
       ? "Waiting for the host to continue."
       : state.phase === "testing"
         ? assignedTester
@@ -570,7 +576,7 @@ function renderChampion() {
     .join("");
   const confetti = $<HTMLDivElement>("[data-champion-confetti]");
   confetti.replaceChildren();
-  if (!reduceMotion) {
+  if (state.settings.confetti && !reduceMotion) {
     const pieces = themes[activeTheme].fx ?? ["🎉", "⭐", "🎈"];
     for (let index = 0; index < 20; index += 1) {
       const piece = document.createElement("span");
@@ -702,6 +708,12 @@ function setRemoteTesting(active: boolean) {
 
 function applyRoomView(view: RoomView) {
   const previousPhase = state.phase;
+  const isFirstRoomView = !hasAppliedRoomView;
+  const enteredChampion =
+    !isFirstRoomView &&
+    previousPhase !== "champion" &&
+    view.phase === "champion";
+  hasAppliedRoomView = true;
   const previousHistoryLength = state.history.length;
   state = {
     ...state,
@@ -748,6 +760,8 @@ function applyRoomView(view: RoomView) {
   }
   activeTheme = getResolvedTheme();
   render();
+  if (enteredChampion && state.settings.confetti && !reduceMotion)
+    burstConfetti(championDialog);
 }
 
 function applyRoomProgress(progress: {
@@ -988,6 +1002,7 @@ document.addEventListener("gts:settings-change", (event) => {
           ...state.settings,
           themeMode: nextSettings.themeMode,
           sound: nextSettings.sound,
+          confetti: nextSettings.confetti,
         }
       : nextSettings,
   };
@@ -1305,13 +1320,18 @@ nextButton.addEventListener("click", () => {
   if (roomMode) {
     if (isRoomHost()) store.send({ type: "next" });
   } else {
+    const previousPhase = state.phase;
     state = nextRound(state);
+    const enteredChampion =
+      previousPhase !== "champion" && state.phase === "champion";
     persist();
-    if (state.phase === "champion") {
+    if (enteredChampion) {
       if (!isMockMode()) sendStat({ kind: "game" });
       playCue("champion", activeTheme, state.settings.sound);
     }
     render();
+    if (enteredChampion && state.settings.confetti && !reduceMotion)
+      burstConfetti(championDialog);
   }
 });
 $<HTMLDivElement>(".gauge-card").append(nextButton);

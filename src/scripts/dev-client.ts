@@ -114,7 +114,7 @@ function renderConnection() {
   }
   if (!connection) {
     connectionContent.innerHTML =
-      "<p>Turn on Dev mode to check this connection.</p>";
+      "<p>Choose Dev in the Game / Dev switch at the top of the home screen to check this connection.</p>";
     return;
   }
   const ip = showIp ? connection.ip : maskIp(connection.ip);

@@ -281,7 +281,7 @@
 }
 
 .room-waiting {
-  margin: 0;
+  margin: 10px 0 0;
   color: var(--muted);
   font-size: 0.92rem;
   font-weight: 750;
@@ -369,8 +369,7 @@ html[data-room="1"] .dev-console {
   display: none !important;
 }
 
-.room-bar[hidden],
-html[data-room="1"] .dev-setting {
+.room-bar[hidden] {
   display: none !important;
 }
 
@@ -947,6 +946,61 @@ footer {
   margin: 0 0 14px;
   font-size: clamp(32px, 3.7vw, 48px);
   line-height: 0.98;
+}
+
+.mode-switch {
+  display: flex;
+  width: fit-content;
+  align-items: center;
+  gap: 3px;
+  margin: 0 0 16px;
+  padding: 4px;
+  border: 2.5px solid var(--ink);
+  border-radius: 999px;
+  background: var(--surface);
+  box-shadow: 4px 4px 0 var(--shadow);
+}
+
+.mode-switch button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 40px;
+  padding: 7px 14px;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink);
+  font:
+    800 14px/1 "Bricolage Grotesque Variable",
+    sans-serif;
+  cursor: pointer;
+}
+
+.mode-switch button[aria-checked="true"] {
+  border-color: var(--ink);
+  background: var(--accent);
+  box-shadow: 2px 2px 0 var(--shadow);
+  color: var(--on-accent);
+}
+
+.mode-switch button:focus-visible {
+  position: relative;
+  z-index: 1;
+  outline: 3px solid var(--ink);
+  outline-offset: 3px;
+}
+
+.mode-switch svg {
+  width: 17px;
+  height: 17px;
+}
+
+.mode-switch[hidden],
+html[data-room="1"] .mode-switch,
+html[data-tv="1"] .mode-switch {
+  display: none;
 }
 
 .intro h1 em {
@@ -2238,7 +2292,7 @@ dialog::backdrop {
   accent-color: var(--accent);
 }
 
-.dev-setting {
+.confetti-setting {
   grid-template-columns: 1fr auto;
   align-items: center;
   padding: 12px 14px;
@@ -2247,18 +2301,18 @@ dialog::backdrop {
   background: var(--bg);
 }
 
-.dev-setting span {
+.confetti-setting span {
   display: grid;
   gap: 3px;
 }
 
-.dev-setting small {
+.confetti-setting small {
   color: var(--muted);
   font-size: 12px;
   font-weight: 600;
 }
 
-.dev-setting input {
+.confetti-setting input {
   width: 22px;
   height: 22px;
   accent-color: var(--accent);
@@ -2329,6 +2383,59 @@ dialog::backdrop {
   top: -28px;
   animation: fx-fall 4.8s linear infinite;
   opacity: 0.58;
+}
+
+.confetti-burst {
+  position: fixed;
+  z-index: 2147483647;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  overflow: visible;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  pointer-events: none;
+}
+
+.confetti-piece {
+  position: absolute;
+  top: -2vh;
+  display: block;
+  background: var(--color, var(--accent));
+  animation: confetti-fall var(--duration, 3s) ease-out var(--delay, 0ms) both;
+  opacity: 0;
+}
+
+.confetti-piece[data-shape="circle"] {
+  border-radius: 50%;
+}
+
+.confetti-piece.is-emoji {
+  width: auto;
+  height: auto;
+  background: transparent;
+  line-height: 1;
+}
+
+@keyframes confetti-fall {
+  0% {
+    transform: translate3d(0, -8vh, 0) rotate(0deg);
+    opacity: 0;
+  }
+
+  8% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translate3d(var(--drift), 108vh, 0) rotate(var(--rotate));
+    opacity: 0;
+  }
 }
 
 .champion-title {
@@ -2636,6 +2743,11 @@ html[data-dev="1"] .dev-console {
 
   .intro {
     text-align: center;
+  }
+
+  .mode-switch {
+    margin-right: auto;
+    margin-left: auto;
   }
 
   .intro p {

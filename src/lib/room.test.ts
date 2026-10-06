@@ -104,8 +104,6 @@ describe("room codes", () => {
         settings: {
           rounds: 3,
           tieMode: "share",
-          themeMode: "auto",
-          sound: true,
         },
         round: 1,
         history: [],
@@ -113,6 +111,8 @@ describe("room codes", () => {
       },
     });
     const view = viewFor(room, hostId, true);
+    expect(room.game.settings).toEqual({ rounds: 3, tieMode: "share" });
+    expect(view.settings).toEqual({ rounds: 3, tieMode: "share" });
     expect(JSON.stringify(view)).not.toContain("secret-host-token");
     expect(JSON.stringify(view)).not.toContain("owner");
   });
@@ -479,7 +479,7 @@ describe("room actions and views", () => {
     const expectedState: GameState = {
       ...initialGameState(),
       players: room.game.players.map(({ owner: _owner, ...player }) => player),
-      settings: room.game.settings,
+      settings: { ...initialGameState().settings, ...room.game.settings },
       round: room.game.round,
       history: room.game.history,
       phase: room.game.phase,
