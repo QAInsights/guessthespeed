@@ -5,7 +5,15 @@ import { playCue } from "../lib/sound";
 const $ = <T extends Element>(selector: string): T =>
   document.querySelector(selector) as T;
 
-const themeSelect = $<HTMLSelectElement>("[data-theme-select]");
+const themePicker = $<HTMLDivElement>("[data-theme-picker]");
+const themeTrigger = $<HTMLButtonElement>("[data-theme-trigger]");
+const themeMenu = $<HTMLDivElement>("[data-theme-menu]");
+const themeList = $<HTMLDivElement>("[data-theme-list]");
+const themeLabel = $<HTMLSpanElement>("[data-theme-label]");
+const themeAutoHint = $<HTMLElement>("[data-theme-auto-hint]");
+const themeOptions = [
+  ...document.querySelectorAll<HTMLButtonElement>("[data-theme-option]"),
+];
 const soundButton = $<HTMLButtonElement>("[data-sound-toggle]");
 const soundOn = $<HTMLSpanElement>("[data-sound-on]");
 const soundOff = $<HTMLSpanElement>("[data-sound-off]");
@@ -61,9 +69,50 @@ function applyTheme(mode: GameSettings["themeMode"]) {
   }
 }
 
+function syncThemePicker() {
+  const mode = settings.themeMode;
+  themeOptions.forEach((option) => {
+    const selected = option.dataset.themeOption === mode;
+    option.setAttribute("aria-selected", String(selected));
+    option.tabIndex = selected ? 0 : -1;
+    if (option.dataset.themeOption === "auto")
+      option.dataset.theme = activeTheme;
+  });
+  themeLabel.textContent =
+    mode === "auto" ? "Auto (by date)" : themes[mode].label;
+  themeAutoHint.textContent = `Now: ${themes[activeTheme].label}`;
+  themeTrigger.disabled = testing;
+  if (testing) closeThemeMenu(false);
+}
+
+function focusThemeOption(option: HTMLButtonElement) {
+  themeOptions.forEach((candidate) => {
+    candidate.tabIndex = candidate === option ? 0 : -1;
+  });
+  option.focus();
+  option.scrollIntoView({ block: "nearest" });
+}
+
+function openThemeMenu(target: "selected" | "last" = "selected") {
+  if (themeTrigger.disabled) return;
+  themeMenu.hidden = false;
+  themeTrigger.setAttribute("aria-expanded", "true");
+  const selected =
+    themeOptions.find(
+      (option) => option.getAttribute("aria-selected") === "true",
+    ) ?? themeOptions[0];
+  focusThemeOption(target === "last" ? themeOptions.at(-1)! : selected);
+}
+
+function closeThemeMenu(returnFocus = true) {
+  if (themeMenu.hidden) return;
+  themeMenu.hidden = true;
+  themeTrigger.setAttribute("aria-expanded", "false");
+  if (returnFocus) themeTrigger.focus();
+}
+
 function syncControls() {
-  themeSelect.value = settings.themeMode;
-  themeSelect.disabled = testing;
+  syncThemePicker();
   soundButton.disabled = testing;
   settingsButton.disabled = testing;
   soundButton.setAttribute("aria-pressed", String(settings.sound));
@@ -101,9 +150,61 @@ function fillSettingsForm() {
     settings.sound;
 }
 
-themeSelect.addEventListener("change", () => {
-  const mode = themeSelect.value;
-  saveSettings({ themeMode: isThemeId(mode) ? mode : "auto" }, true);
+themeTrigger.addEventListener("click", () => {
+  if (themeMenu.hidden) openThemeMenu();
+  else closeThemeMenu();
+});
+
+themeTrigger.addEventListener("keydown", (event) => {
+  if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
+  event.preventDefault();
+  openThemeMenu(event.key === "ArrowUp" ? "last" : "selected");
+});
+
+themeOptions.forEach((option) => {
+  option.addEventListener("click", () => {
+    const mode = option.dataset.themeOption ?? "auto";
+    saveSettings({ themeMode: isThemeId(mode) ? mode : "auto" }, true);
+    closeThemeMenu();
+  });
+});
+
+themeMenu.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") {
+    event.preventDefault();
+    closeThemeMenu();
+    return;
+  }
+  if (event.key === "Tab") {
+    closeThemeMenu(false);
+    return;
+  }
+  const index = themeOptions.indexOf(
+    document.activeElement as HTMLButtonElement,
+  );
+  const columns = getComputedStyle(themeList)
+    .gridTemplateColumns.split(" ")
+    .filter(Boolean).length;
+  const steps: Record<string, number> = {
+    ArrowRight: 1,
+    ArrowLeft: -1,
+    ArrowDown: columns,
+    ArrowUp: -columns,
+  };
+  let next: number | null = null;
+  if (event.key in steps) next = index < 0 ? 0 : index + steps[event.key];
+  else if (event.key === "Home") next = 0;
+  else if (event.key === "End") next = themeOptions.length - 1;
+  if (next === null) return;
+  event.preventDefault();
+  focusThemeOption(
+    themeOptions[Math.min(Math.max(next, 0), themeOptions.length - 1)],
+  );
+});
+
+document.addEventListener("pointerdown", (event) => {
+  if (!themeMenu.hidden && !themePicker.contains(event.target as Node))
+    closeThemeMenu(false);
 });
 
 soundButton.addEventListener("click", () => {
@@ -160,6 +261,7 @@ window
   .addEventListener("change", () => {
     if (settings.themeMode !== "auto") return;
     applyTheme(settings.themeMode);
+    syncThemePicker();
     document.dispatchEvent(
       new CustomEvent<GameSettings>("gts:settings-change", {
         detail: settings,
