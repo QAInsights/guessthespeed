@@ -7,6 +7,7 @@ import {
   nextRound,
   removePlayer,
   saveGame,
+  updatePlayer,
   ROLES,
   type GameState,
   type GameSettings,
@@ -39,6 +40,7 @@ const escapeHtml = (value: string) =>
   );
 let state: GameState = loadGame();
 let activePlayerId: string | null = null;
+let editingPlayerId: string | null = null;
 let gaugeValue = 0;
 let gaugeTarget = 0;
 let gaugeReadoutValue: number | undefined;
@@ -51,6 +53,7 @@ const reduceMotion = window.matchMedia(
   "(prefers-reduced-motion: reduce)",
 ).matches;
 const guessDialog = $<HTMLDialogElement>("[data-guess-dialog]");
+const editDialog = $<HTMLDialogElement>("[data-edit-dialog]");
 const championDialog = $<HTMLDialogElement>("[data-champion-dialog]");
 const startButton = $<HTMLButtonElement>("[data-start-btn]");
 const errorNote = $<HTMLParagraphElement>("[data-error-note]");
@@ -193,6 +196,7 @@ function renderPlayerCard(player: Player, index: number) {
       ? `<div class="p-actions"><button type="button" class="locked-pill" data-guess="${escapeHtml(player.id)}" ${state.phase === "testing" ? "disabled" : ""}><span aria-hidden="true">🔒</span>Locked in <small>Change</small></button></div>`
       : `<div class="p-actions"><button type="button" class="guess-button" data-guess="${escapeHtml(player.id)}" ${state.phase === "testing" ? "disabled" : ""}>Guess</button></div>`;
   return `<article class="p-card ${winnerClass}" style="--card-index:${index}">
+    <button class="p-edit" type="button" data-edit="${escapeHtml(player.id)}" aria-label="Edit ${escapeHtml(player.name)}" ${state.phase === "testing" ? "disabled" : ""}><span aria-hidden="true">✎</span></button>
     <button class="p-rm" type="button" data-remove="${escapeHtml(player.id)}" aria-label="Remove ${escapeHtml(player.name)}" ${state.phase === "testing" ? "disabled" : ""}>×</button>
     <div class="p-head">${roleFor(player)}<div class="p-score"><b>${player.score}</b><span>${player.score === 1 ? "pt" : "pts"}</span></div></div>
     ${guessAction}
@@ -224,7 +228,10 @@ function renderPlayerTable(player: Player, index: number) {
     <td>${revealed ? (player.guess.up === null ? "No guess" : `${player.guess.up.toLocaleString()} Mbps`) : "Hidden"}</td>
     <td>${roundStatus}</td>
     <td class="p-score">${formatScoreLabel(player.score)}</td>
-    <td><button class="p-rm" type="button" data-remove="${escapeHtml(player.id)}" aria-label="Remove ${escapeHtml(player.name)}" ${state.phase === "testing" ? "disabled" : ""}>×</button></td>
+    <td><div class="p-table-actions">
+      <button class="p-edit" type="button" data-edit="${escapeHtml(player.id)}" aria-label="Edit ${escapeHtml(player.name)}" ${state.phase === "testing" ? "disabled" : ""}><span aria-hidden="true">✎</span></button>
+      <button class="p-rm" type="button" data-remove="${escapeHtml(player.id)}" aria-label="Remove ${escapeHtml(player.name)}" ${state.phase === "testing" ? "disabled" : ""}>×</button>
+    </div></td>
   </tr>`;
 }
 
@@ -240,7 +247,7 @@ function renderPlayers() {
       '<div class="p-empty"><span>🏁</span><p>Add the first player</p></div>';
   } else if (state.view === "table") {
     playerContainer.innerHTML = `<div class="p-table-wrap"><table class="p-table">
-      <thead><tr><th>#</th><th>Player</th><th>Download</th><th>Upload</th><th>Round status</th><th>Score</th><th><span class="sr">Remove</span></th></tr></thead>
+      <thead><tr><th>#</th><th>Player</th><th>Download</th><th>Upload</th><th>Round status</th><th>Score</th><th><span class="sr">Player actions</span></th></tr></thead>
       <tbody>${state.players.map(renderPlayerTable).join("")}</tbody>
     </table></div>`;
   } else {
@@ -252,6 +259,9 @@ function renderPlayers() {
       persist();
       render();
     });
+  });
+  $$<HTMLButtonElement>("[data-edit]").forEach((button) => {
+    button.addEventListener("click", () => openEdit(button.dataset.edit ?? ""));
   });
   $$<HTMLButtonElement>("[data-guess]").forEach((button) => {
     button.addEventListener("click", () =>
@@ -485,6 +495,23 @@ function openGuess(id: string) {
   (form.elements.namedItem("down") as HTMLInputElement).focus();
 }
 
+function openEdit(id: string) {
+  if (state.phase === "testing") return;
+  const player = state.players.find((candidate) => candidate.id === id);
+  if (!player) return;
+  editingPlayerId = player.id;
+  const form = $<HTMLFormElement>("[data-edit-form]");
+  (form.elements.namedItem("name") as HTMLInputElement).value = player.name;
+  const roleIndex = ROLES.findIndex(
+    (role) => role.emoji === player.emoji && role.role === player.role,
+  );
+  $$<HTMLInputElement>('input[name="emoji"]', form).forEach((input) => {
+    input.checked = Number(input.value) === Math.max(0, roleIndex);
+  });
+  if (!editDialog.open) editDialog.showModal();
+  (form.elements.namedItem("name") as HTMLInputElement).focus();
+}
+
 function setPhase(phase: Phase, bytes?: number) {
   document.documentElement.dataset.phase = phase;
   $<HTMLSpanElement>("[data-mode]").textContent =
@@ -617,6 +644,42 @@ document.addEventListener("gts:settings-change", (event) => {
 $<HTMLButtonElement>("[data-close-guess]").addEventListener("click", () =>
   guessDialog.close(),
 );
+$<HTMLButtonElement>("[data-close-edit]").addEventListener("click", () =>
+  editDialog.close(),
+);
+$<HTMLButtonElement>("[data-cancel-edit]").addEventListener("click", () =>
+  editDialog.close(),
+);
+editDialog.addEventListener("close", () => {
+  editingPlayerId = null;
+});
+$<HTMLFormElement>("[data-edit-form]").addEventListener("submit", (event) => {
+  event.preventDefault();
+  if (!editingPlayerId || state.phase === "testing") return;
+  const form = event.currentTarget as HTMLFormElement;
+  const name = (form.elements.namedItem("name") as HTMLInputElement).value;
+  if (!name.trim()) {
+    (form.elements.namedItem("name") as HTMLInputElement).focus();
+    return;
+  }
+  const selected = Number(
+    (
+      form.querySelector(
+        'input[name="emoji"]:checked',
+      ) as HTMLInputElement | null
+    )?.value ?? 0,
+  );
+  const role = ROLES[selected] ?? ROLES[0];
+  state = updatePlayer(state, editingPlayerId, {
+    name,
+    emoji: role.emoji,
+    role: role.role,
+  });
+  persist();
+  editingPlayerId = null;
+  editDialog.close();
+  render();
+});
 $<HTMLFormElement>("[data-guess-form]").addEventListener("submit", (event) => {
   event.preventDefault();
   if (!activePlayerId) return;

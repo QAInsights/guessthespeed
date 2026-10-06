@@ -110,6 +110,12 @@ const roleChoices = ROLES;
       </div>
       <p class="note stk"><strong>Why both numbers?</strong> Most home plans upload more slowly than they download. Guessing both makes the game extra interesting.</p>
     </section>
+
+    <aside class="story-teaser note stk" aria-labelledby="story-teaser-title">
+      <h2 id="story-teaser-title">Why this game exists</h2>
+      <p>It started with a speed test on our living-room TV and two kids who guess the number right every time. Dad loses on purpose. Mostly.</p>
+      <a href="/story/">Read our story</a>
+    </aside>
   </main>
 
   <dialog class="sticker-dialog" data-guess-dialog aria-labelledby="guess-title">
@@ -131,6 +137,36 @@ const roleChoices = ROLES;
         <p class="guess-hint">Your guesses stay hidden until the test is over.</p>
         <div class="dialog-actions">
           <button class="go" type="submit"><Icon name="ph:lock-key-fill" />Lock it in</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <dialog class="sticker-dialog" data-edit-dialog aria-labelledby="edit-title">
+    <div class="dialog-inner">
+      <div class="dialog-head">
+        <h2 id="edit-title" class="display">Edit player</h2>
+        <button class="dialog-close" type="button" data-close-edit aria-label="Close edit player"><Icon name="ph:x-bold" /></button>
+      </div>
+      <form class="dialog-form" data-edit-form>
+        <label class="dialog-field">Player name
+          <input class="dialog-input" name="name" type="text" maxlength="16" autocomplete="off" required />
+        </label>
+        <fieldset class="edit-role-fieldset">
+          <legend class="lbl">Pick a face</legend>
+          <div data-emoji-picker>
+            {roleChoices.map((choice, index) => (
+              <label title={choice.role}>
+                <input type="radio" name="emoji" value={index} />
+                <span>{choice.emoji}</span>
+                <small>{choice.role}</small>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+        <div class="dialog-actions">
+          <button class="guess-button" type="button" data-cancel-edit>Cancel</button>
+          <button class="go" type="submit">Save player</button>
         </div>
       </form>
     </div>
