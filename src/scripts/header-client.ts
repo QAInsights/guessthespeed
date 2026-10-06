@@ -441,6 +441,7 @@ document.addEventListener("gts:tv-change", syncModeSwitch);
 
 settingsForm.addEventListener("submit", (event) => {
   event.preventDefault();
+  const tvEnabled = tvModeInput.checked;
   const roundsValue = (
     settingsForm.elements.namedItem("rounds") as HTMLSelectElement
   ).value;
@@ -480,7 +481,7 @@ settingsForm.addEventListener("submit", (event) => {
   } else {
     saveSettings({ rounds, tieMode, themeMode, sound, confetti });
   }
-  setTVMode(tvModeInput.checked);
+  setTVMode(tvEnabled);
   settingsDialog.close();
 });
 
