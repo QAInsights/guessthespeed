@@ -12,13 +12,13 @@ describe("share results", () => {
     expect(
       buildShareText({
         players: [
-          { name: "Little Sis", score: 9 },
+          { name: "Little One", score: 9 },
           { name: "Big Sis", score: 6 },
           { name: "Dad", score: 1 },
         ],
       }),
     ).toBe(
-      `🏆 Little Sis won Guess the Speed!\n🥇 Little Sis 9 pts · 🥈 Big Sis 6 pts · 🥉 Dad 1 pt\nCan your family beat us? ${SHARE_URL}`,
+      `🏆 Little One won Guess the Speed!\n🥇 Little One 9 pts · 🥈 Big Sis 6 pts · 🥉 Dad 1 pt\nCan your family beat us? ${SHARE_URL}`,
     );
   });
 

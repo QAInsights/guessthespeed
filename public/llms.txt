@@ -5,6 +5,7 @@
 ## Key facts
 
 - The game is free and does not require accounts or use cookies.
+- A round takes about two minutes, so it also works as a quick filler game between board games, while dinner cooks, or before a movie.
 - It runs a real speed test in your browser against Cloudflare's network.
 - Play with one or more players on one screen; room-code games support up to 12 players.
 - Play together on one screen or use room codes on separate phones. The room server hides guesses from other players until the result is ready.
