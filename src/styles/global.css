@@ -299,6 +299,22 @@ h3,
   height: 21px;
 }
 
+.dev-badge {
+  height: 38px;
+  padding: 0 11px;
+  border: 2.5px solid var(--ink);
+  border-radius: 10px;
+  background: var(--accent);
+  box-shadow: 3px 3px 0 var(--shadow);
+  color: var(--on-accent);
+  font:
+    800 13px/1 ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
+  letter-spacing: 0.06em;
+}
+
 .theme-picker {
   position: relative;
   min-width: 0;
@@ -1641,6 +1657,32 @@ dialog::backdrop {
   accent-color: var(--accent);
 }
 
+.dev-setting {
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  padding: 12px 14px;
+  border: 2px solid var(--ink);
+  border-radius: 12px;
+  background: var(--bg);
+}
+
+.dev-setting span {
+  display: grid;
+  gap: 3px;
+}
+
+.dev-setting small {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.dev-setting input {
+  width: 22px;
+  height: 22px;
+  accent-color: var(--accent);
+}
+
 .guess-hint {
   margin: 0;
   color: var(--muted);
@@ -1765,6 +1807,198 @@ dialog::backdrop {
   display: none !important;
 }
 
+html[data-dev="1"] [data-game-title],
+html[data-dev="1"] [data-game-lede],
+html[data-dev="1"] [data-round-banner],
+html[data-dev="1"] [data-winner-banner],
+html[data-dev="1"] [data-next-round],
+html[data-dev="1"] [data-game-section],
+html[data-dev="1"] .how,
+html[data-dev="1"] .stats,
+html[data-dev="1"] [data-guess-dialog],
+html[data-dev="1"] [data-champion-dialog] {
+  display: none !important;
+}
+
+html[data-dev="1"] .dev-title,
+html[data-dev="1"] .dev-lede {
+  display: block !important;
+}
+
+html[data-dev="1"] .stage {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 560px);
+}
+
+.dev-console {
+  display: none;
+  margin: 0 0 36px;
+}
+
+html[data-dev="1"] .dev-console {
+  display: block;
+}
+
+.dev-console-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 10px 0 20px;
+}
+
+.dev-console-head h2 {
+  margin: 0 0 6px;
+  font-size: clamp(28px, 4vw, 40px);
+  line-height: 1;
+}
+
+.dev-console-head p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.dev-export {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.dev-export button {
+  min-height: 40px;
+  padding: 0 14px;
+  font-size: 15px;
+}
+
+.dev-panels {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 18px;
+}
+
+.dev-panel {
+  min-width: 0;
+  padding: 18px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.dev-panel h3 {
+  margin: 0 0 12px;
+  font-size: 20px;
+}
+
+.dev-panel p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.dev-panel-wide {
+  grid-column: 1 / -1;
+}
+
+.dev-kv {
+  display: grid;
+  grid-template-columns: minmax(110px, 0.8fr) minmax(0, 1.5fr);
+  gap: 5px 14px;
+  overflow-wrap: anywhere;
+}
+
+.dev-kv dt {
+  color: var(--muted);
+}
+
+.dev-kv dd {
+  min-width: 0;
+  margin: 0;
+  color: var(--ink);
+}
+
+.dev-data-table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+  background: var(--bg);
+  -webkit-overflow-scrolling: touch;
+}
+
+.dev-data-table {
+  width: 100%;
+  min-width: 970px;
+  border-collapse: collapse;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.dev-data-table.dev-table-compact {
+  min-width: 100%;
+}
+
+.dev-data-table th,
+.dev-data-table td {
+  padding: 7px 9px;
+  border-bottom: 1px solid var(--soft);
+  text-align: right;
+}
+
+.dev-data-table th:first-child,
+.dev-data-table td:first-child,
+.dev-data-table th:nth-child(2),
+.dev-data-table td:nth-child(2) {
+  text-align: left;
+}
+
+.dev-data-table th {
+  background: var(--surface);
+  color: var(--muted);
+}
+
+.dev-link {
+  color: var(--ink);
+  font: inherit;
+}
+
+.dev-sparkline,
+.dev-bars {
+  display: block;
+  width: 100%;
+  max-height: 90px;
+  margin: 10px 0;
+}
+
+.dev-highlight {
+  border-radius: 4px;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: 800;
+}
+
+.dev-subsection + .dev-subsection {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--soft);
+}
+
+.dev-ip-control {
+  margin-left: 8px;
+  padding: 2px 8px;
+  border: 1.5px solid var(--ink);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+
+.dev-privacy-note {
+  margin-top: 12px !important;
+  font-size: 11px;
+}
+
 @media (max-width: 980px) {
   .stage {
     grid-template-columns: minmax(0, 1fr);
@@ -1790,6 +2024,16 @@ dialog::backdrop {
 
   .how {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .dev-panels {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .dev-panel-wide {
+    grid-column: auto;
   }
 }
 

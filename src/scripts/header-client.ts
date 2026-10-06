@@ -21,6 +21,8 @@ const settingsButton = $<HTMLButtonElement>("[data-open-settings]");
 const settingsDialog = $<HTMLDialogElement>("[data-settings-dialog]");
 const closeSettingsButton = $<HTMLButtonElement>("[data-close-settings]");
 const settingsForm = $<HTMLFormElement>("[data-settings-form]");
+const devBadge = $<HTMLButtonElement>("[data-dev-badge]");
+const devModeInput = $<HTMLInputElement>('input[name="devMode"]');
 const fxLayer = $<HTMLDivElement>("[data-fx-layer]");
 const reduceMotion = window.matchMedia(
   "(prefers-reduced-motion: reduce)",
@@ -29,7 +31,23 @@ const reduceMotion = window.matchMedia(
 const initialGame = loadGame();
 let settings = initialGame.settings;
 let testing = initialGame.phase === "testing";
+let devMode = document.documentElement.dataset.dev === "1";
 let activeTheme: ThemeId = "light";
+devBadge.hidden = !devMode;
+
+function setDevMode(enabled: boolean) {
+  devMode = enabled;
+  if (enabled) document.documentElement.dataset.dev = "1";
+  else delete document.documentElement.dataset.dev;
+  devBadge.hidden = !enabled;
+  devModeInput.checked = enabled;
+  try {
+    localStorage.setItem("gts:dev", enabled ? "1" : "0");
+  } catch {}
+  document.dispatchEvent(
+    new CustomEvent<boolean>("gts:dev-change", { detail: enabled }),
+  );
+}
 
 function getResolvedTheme(mode: GameSettings["themeMode"]): ThemeId {
   if (mode !== "auto") return mode;
@@ -148,6 +166,7 @@ function fillSettingsForm() {
     settings.themeMode;
   (settingsForm.elements.namedItem("sound") as HTMLInputElement).checked =
     settings.sound;
+  devModeInput.checked = devMode;
 }
 
 themeTrigger.addEventListener("click", () => {
@@ -217,6 +236,7 @@ settingsButton.addEventListener("click", () => {
 });
 
 closeSettingsButton.addEventListener("click", () => settingsDialog.close());
+devBadge.addEventListener("click", () => setDevMode(false));
 
 settingsForm.addEventListener("submit", (event) => {
   event.preventDefault();
@@ -248,6 +268,7 @@ settingsForm.addEventListener("submit", (event) => {
     sound: (settingsForm.elements.namedItem("sound") as HTMLInputElement)
       .checked,
   });
+  setDevMode(devModeInput.checked);
   settingsDialog.close();
 });
 

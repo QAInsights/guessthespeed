@@ -1,4 +1,9 @@
-import SpeedTest from "@cloudflare/speedtest";
+import SpeedTest, {
+  type BandwidthPoint,
+  type MeasurementSummary,
+  type Scores,
+} from "@cloudflare/speedtest";
+import { countedSamples, percentile } from "./devdata";
 import { STALL_TIMEOUT_MS, type Phase } from "./progress";
 
 export type { Phase } from "./progress";
@@ -19,21 +24,56 @@ export interface SpeedResult {
   jitter: number | null;
 }
 
-const measurements = [
-  { type: "latency" as const, numPackets: 1 },
-  { type: "download" as const, bytes: 1e5, count: 1, bypassMinDuration: true },
-  { type: "latency" as const, numPackets: 20 },
-  { type: "download" as const, bytes: 1e5, count: 9 },
-  { type: "download" as const, bytes: 1e6, count: 8 },
-  { type: "download" as const, bytes: 1e7, count: 6 },
-  { type: "download" as const, bytes: 2.5e7, count: 4 },
-  { type: "download" as const, bytes: 1e8, count: 3 },
-  { type: "upload" as const, bytes: 1e5, count: 8 },
-  { type: "upload" as const, bytes: 1e6, count: 6 },
-  { type: "upload" as const, bytes: 1e7, count: 4 },
-  { type: "upload" as const, bytes: 2.5e7, count: 4 },
-  { type: "upload" as const, bytes: 5e7, count: 3 },
-];
+export type SerializableBandwidthPoint = Omit<BandwidthPoint, "measTime"> & {
+  measTime: string;
+};
+
+export interface SpeedDetails {
+  startedAt: number;
+  totalDurationMs?: number;
+  latencyPoints: number[];
+  download: SerializableBandwidthPoint[];
+  upload: SerializableBandwidthPoint[];
+  summary: MeasurementSummary;
+  scores?: Scores;
+  finalDownBps?: number;
+  finalUpBps?: number;
+}
+
+export interface SpeedTestOptions {
+  onDetails?: (details: SpeedDetails) => void;
+}
+
+export const SPEED_TEST_MEASUREMENTS = [
+  { type: "latency", numPackets: 1 },
+  { type: "download", bytes: 1e5, count: 1, bypassMinDuration: true },
+  { type: "latency", numPackets: 20 },
+  { type: "download", bytes: 1e5, count: 9 },
+  { type: "download", bytes: 1e6, count: 8 },
+  { type: "download", bytes: 1e7, count: 6 },
+  { type: "download", bytes: 2.5e7, count: 4 },
+  { type: "download", bytes: 1e8, count: 3 },
+  { type: "upload", bytes: 1e5, count: 8 },
+  { type: "upload", bytes: 1e6, count: 6 },
+  { type: "upload", bytes: 1e7, count: 4 },
+  { type: "upload", bytes: 2.5e7, count: 4 },
+  { type: "upload", bytes: 5e7, count: 3 },
+] as const;
+
+export const SPEED_TEST_CONFIG = {
+  downloadEndpoint: "https://speed.cloudflare.com/__down",
+  uploadEndpoint: "https://speed.cloudflare.com/__up",
+  latencyPercentile: 0.5,
+  bandwidthPercentile: 0.9,
+  bandwidthMinRequestDuration: 10,
+  bandwidthFinishRequestDuration: 1000,
+  stallTimeoutMs: STALL_TIMEOUT_MS,
+  libraryVersion: "1.14.1",
+};
+
+const measurements = SPEED_TEST_MEASUREMENTS.map((measurement) => ({
+  ...measurement,
+}));
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -64,16 +104,118 @@ const uploadSteps = [
 async function runMock(
   onUpdate: (update: LiveUpdate) => void,
   mode: "1" | "slow" | "stall",
+  onDetails: SpeedTestOptions["onDetails"],
+  startedAt: number,
 ): Promise<SpeedResult> {
   const ping = 9 + Math.random() * 27;
+  const latencyPoints = [
+    ping,
+    ping + Math.random() * 2,
+    ping - Math.random() * 1.5,
+    ping + Math.random() * 3,
+    ping + Math.random() * 1.2,
+  ];
+  const jitter =
+    latencyPoints.reduce((sum, value, index) => {
+      const previous = latencyPoints[index - 1] ?? value;
+      return index === 0 ? sum : sum + Math.abs(value - previous);
+    }, 0) /
+    (latencyPoints.length - 1);
+  const download: SerializableBandwidthPoint[] = [];
+  const upload: SerializableBandwidthPoint[] = [];
+  const down = 42 + Math.random() * 440;
+  const up = Math.max(8, down * (0.12 + Math.random() * 0.28));
+  const emitDetails = (finished = false) => {
+    const countedDown = countedSamples(
+      download,
+      SPEED_TEST_CONFIG.bandwidthMinRequestDuration,
+    );
+    const countedUp = countedSamples(
+      upload,
+      SPEED_TEST_CONFIG.bandwidthMinRequestDuration,
+    );
+    const finalDownBps = countedDown.length
+      ? percentile(
+          countedDown.map((point) => point.bps),
+          SPEED_TEST_CONFIG.bandwidthPercentile,
+        )
+      : undefined;
+    const finalUpBps = countedUp.length
+      ? percentile(
+          countedUp.map((point) => point.bps),
+          SPEED_TEST_CONFIG.bandwidthPercentile,
+        )
+      : undefined;
+    const summary: MeasurementSummary = {
+      ...(finalDownBps === undefined ? {} : { download: finalDownBps }),
+      ...(finalUpBps === undefined ? {} : { upload: finalUpBps }),
+      latency: percentile(latencyPoints, SPEED_TEST_CONFIG.latencyPercentile),
+      jitter,
+      ...(finished ? { totalDurationMs: Date.now() - startedAt } : {}),
+    };
+    const details: SpeedDetails = {
+      startedAt,
+      ...(finished ? { totalDurationMs: Date.now() - startedAt } : {}),
+      latencyPoints: [...latencyPoints],
+      download: [...download],
+      upload: [...upload],
+      summary,
+      ...(finalDownBps === undefined ? {} : { finalDownBps }),
+      ...(finalUpBps === undefined ? {} : { finalUpBps }),
+      ...(finished
+        ? {
+            scores: {
+              streaming: {
+                points: 3,
+                classificationIdx: 3,
+                classificationName: "good" as const,
+              },
+              gaming: {
+                points: 2,
+                classificationIdx: 2,
+                classificationName: "average" as const,
+              },
+              rtc: {
+                points: 3,
+                classificationIdx: 3,
+                classificationName: "good" as const,
+              },
+            },
+          }
+        : {}),
+    };
+    onDetails?.(details);
+  };
+
+  const addPoint = (
+    direction: "down" | "up",
+    bytes: number,
+    mbps: number,
+    index: number,
+  ) => {
+    const bps = mbps * 1e6 * (0.92 + Math.random() * 0.16);
+    const duration = Math.max(10, (bytes * 8 * 1000) / bps);
+    const points = direction === "down" ? download : upload;
+    points.push({
+      bytes,
+      bps,
+      duration,
+      ping: latencyPoints[index % latencyPoints.length],
+      measTime: new Date().toISOString(),
+      serverTime: index % 6 === 0 ? -1 : 3 + Math.random() * 8,
+      transferSize: bytes + 450,
+    });
+    emitDetails();
+  };
+
   onUpdate({
     phase: "ping",
     step: 1,
     steps: measurements.length,
     pingMs: ping,
   });
+  emitDetails();
   await delay(650);
-  const down = 42 + Math.random() * 440;
   let lastDownloadStep = -1;
   for (let i = 1; i <= 27; i += 1) {
     const stepIndex = Math.min(
@@ -99,9 +241,9 @@ async function runMock(
       bytes: current.bytes,
       mbps: down * (1 - Math.pow(1 - i / 27, 2)),
     });
+    addPoint("down", current.bytes, down * (1 - Math.pow(1 - i / 27, 2)), i);
     if (mode === "stall" && i === 4) await new Promise<SpeedResult>(() => {});
   }
-  const up = Math.max(8, down * (0.12 + Math.random() * 0.28));
   let lastUploadStep = -1;
   for (let i = 1; i <= 27; i += 1) {
     const stepIndex = Math.min(
@@ -126,16 +268,20 @@ async function runMock(
       bytes: current.bytes,
       mbps: up * (1 - Math.pow(1 - i / 27, 2)),
     });
+    addPoint("up", current.bytes, up * (1 - Math.pow(1 - i / 27, 2)), i);
   }
-  return { down, up, ping, jitter: 1 + Math.random() * 4 };
+  emitDetails(true);
+  return { down, up, ping, jitter };
 }
 
 export function runSpeedTest(
   onUpdate: (update: LiveUpdate) => void,
+  options: SpeedTestOptions = {},
 ): Promise<SpeedResult> {
   return new Promise((resolve, reject) => {
     let settled = false;
     let lastActivity = Date.now();
+    const startedAt = lastActivity;
     let test: SpeedTest | undefined;
     let watchdog: ReturnType<typeof setInterval>;
 
@@ -171,7 +317,7 @@ export function runSpeedTest(
         ? null
         : new URLSearchParams(window.location.search).get("mock");
     if (mockMode === "1" || mockMode === "slow" || mockMode === "stall") {
-      void runMock(emit, mockMode).then(
+      void runMock(emit, mockMode, options.onDetails, startedAt).then(
         (result) => settle(() => resolve(result)),
         (error: unknown) =>
           settle(() =>
@@ -187,6 +333,12 @@ export function runSpeedTest(
         measureDownloadLoadedLatency: false,
         measureUploadLoadedLatency: false,
         measurements,
+        latencyPercentile: SPEED_TEST_CONFIG.latencyPercentile,
+        bandwidthPercentile: SPEED_TEST_CONFIG.bandwidthPercentile,
+        bandwidthMinRequestDuration:
+          SPEED_TEST_CONFIG.bandwidthMinRequestDuration,
+        bandwidthFinishRequestDuration:
+          SPEED_TEST_CONFIG.bandwidthFinishRequestDuration,
       });
     } catch (error) {
       settle(() =>
@@ -226,6 +378,32 @@ export function runSpeedTest(
         const mbps = last ? last.bps / 1e6 : Number.NaN;
         if (Number.isFinite(mbps)) emit({ phase: "up", mbps });
       }
+      if (options.onDetails) {
+        const results = test!.results;
+        const serializePoint = (
+          point: BandwidthPoint,
+        ): SerializableBandwidthPoint => ({
+          ...point,
+          measTime: point.measTime.toISOString(),
+        });
+        options.onDetails({
+          startedAt,
+          ...(results.getTotalDurationMs() === undefined
+            ? {}
+            : { totalDurationMs: results.getTotalDurationMs() }),
+          latencyPoints: results.getUnloadedLatencyPoints(),
+          download: results.getDownloadBandwidthPoints().map(serializePoint),
+          upload: results.getUploadBandwidthPoints().map(serializePoint),
+          summary: results.getSummary(),
+          scores: results.getScores(),
+          ...(results.getDownloadBandwidth() === undefined
+            ? {}
+            : { finalDownBps: results.getDownloadBandwidth() }),
+          ...(results.getUploadBandwidth() === undefined
+            ? {}
+            : { finalUpBps: results.getUploadBandwidth() }),
+        });
+      }
     };
     test.onFinish = (results) => {
       if (settled) return;
@@ -243,6 +421,27 @@ export function runSpeedTest(
           reject(new Error("The speed test did not return complete results.")),
         );
         return;
+      }
+      if (options.onDetails) {
+        const serializePoint = (
+          point: BandwidthPoint,
+        ): SerializableBandwidthPoint => ({
+          ...point,
+          measTime: point.measTime.toISOString(),
+        });
+        options.onDetails({
+          startedAt,
+          ...(results.getTotalDurationMs() === undefined
+            ? {}
+            : { totalDurationMs: results.getTotalDurationMs() }),
+          latencyPoints: results.getUnloadedLatencyPoints(),
+          download: results.getDownloadBandwidthPoints().map(serializePoint),
+          upload: results.getUploadBandwidthPoints().map(serializePoint),
+          summary: results.getSummary(),
+          scores: results.getScores(),
+          finalDownBps: downloadBps,
+          finalUpBps: uploadBps,
+        });
       }
       settle(() =>
         resolve({

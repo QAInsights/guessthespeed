@@ -47,6 +47,8 @@ let runInProgress = false;
 let activeTheme: ThemeId = "light";
 let lastSpeedPhase: Phase | null = null;
 let latestPing: number | undefined;
+const isDevMode = () => document.documentElement.dataset.dev === "1";
+const isTesting = () => state.phase === "testing" || runInProgress;
 const reduceMotion = window.matchMedia(
   "(prefers-reduced-motion: reduce)",
 ).matches;
@@ -190,10 +192,10 @@ function renderPlayerCard(player: Player, index: number) {
         ${roundResult?.bonus ? `<span class="bonus-pill">Spot on! +${roundResult.bonus}</span>` : ""}
       </div>`
     : locked
-      ? `<div class="p-actions"><button type="button" class="locked-pill" data-guess="${escapeHtml(player.id)}" ${state.phase === "testing" ? "disabled" : ""}><span aria-hidden="true">🔒</span>Locked in <small>Change</small></button></div>`
-      : `<div class="p-actions"><button type="button" class="guess-button" data-guess="${escapeHtml(player.id)}" ${state.phase === "testing" ? "disabled" : ""}>Guess</button></div>`;
+      ? `<div class="p-actions"><button type="button" class="locked-pill" data-guess="${escapeHtml(player.id)}" ${isTesting() ? "disabled" : ""}><span aria-hidden="true">🔒</span>Locked in <small>Change</small></button></div>`
+      : `<div class="p-actions"><button type="button" class="guess-button" data-guess="${escapeHtml(player.id)}" ${isTesting() ? "disabled" : ""}>Guess</button></div>`;
   return `<article class="p-card ${winnerClass}" style="--card-index:${index}">
-    <button class="p-rm" type="button" data-remove="${escapeHtml(player.id)}" aria-label="Remove ${escapeHtml(player.name)}" ${state.phase === "testing" ? "disabled" : ""}>×</button>
+    <button class="p-rm" type="button" data-remove="${escapeHtml(player.id)}" aria-label="Remove ${escapeHtml(player.name)}" ${isTesting() ? "disabled" : ""}>×</button>
     <div class="p-head">${roleFor(player)}<div class="p-score"><b>${player.score}</b><span>${player.score === 1 ? "pt" : "pts"}</span></div></div>
     ${guessAction}
   </article>`;
@@ -215,8 +217,8 @@ function renderPlayerTable(player: Player, index: number) {
       ? "No guess"
       : `${(miss * 100).toFixed(1)}% miss${tooFar ? " (too far)" : ""}`
     : player.locked
-      ? `<button class="locked-pill" type="button" data-guess="${escapeHtml(player.id)}" ${state.phase !== "guessing" ? "disabled" : ""}>🔒 Locked in <small>Change</small></button>`
-      : `<button class="guess-button" type="button" data-guess="${escapeHtml(player.id)}" ${state.phase !== "guessing" ? "disabled" : ""}>Guess</button>`;
+      ? `<button class="locked-pill" type="button" data-guess="${escapeHtml(player.id)}" ${state.phase !== "guessing" || isTesting() ? "disabled" : ""}>🔒 Locked in <small>Change</small></button>`
+      : `<button class="guess-button" type="button" data-guess="${escapeHtml(player.id)}" ${state.phase !== "guessing" || isTesting() ? "disabled" : ""}>Guess</button>`;
   return `<tr class="${place === 1 && revealed ? "is-winner" : ""}" style="--card-index:${index}">
     <td class="p-pos">${medal}${index + 1}</td>
     <td><span class="p-emoji">${escapeHtml(player.emoji)}</span><span class="p-name">${escapeHtml(player.name)}</span><span class="p-role">${escapeHtml(player.role)}</span></td>
@@ -224,7 +226,7 @@ function renderPlayerTable(player: Player, index: number) {
     <td>${revealed ? (player.guess.up === null ? "No guess" : `${player.guess.up.toLocaleString()} Mbps`) : "Hidden"}</td>
     <td>${roundStatus}</td>
     <td class="p-score">${formatScoreLabel(player.score)}</td>
-    <td><button class="p-rm" type="button" data-remove="${escapeHtml(player.id)}" aria-label="Remove ${escapeHtml(player.name)}" ${state.phase === "testing" ? "disabled" : ""}>×</button></td>
+    <td><button class="p-rm" type="button" data-remove="${escapeHtml(player.id)}" aria-label="Remove ${escapeHtml(player.name)}" ${isTesting() ? "disabled" : ""}>×</button></td>
   </tr>`;
 }
 
@@ -356,40 +358,51 @@ function formatSpeed(value: number) {
 }
 
 function syncControls() {
+  const devMode = isDevMode();
   const guessing = state.phase === "guessing";
-  const testing = state.phase === "testing";
+  const testing = isTesting();
   startButton.disabled =
-    !guessing ||
-    !state.players.some((player) => player.locked) ||
+    (!devMode &&
+      (!guessing || !state.players.some((player) => player.locked))) ||
     runInProgress;
-  startButton.hidden = state.phase === "results";
-  $<HTMLSpanElement>("[data-start-label]").textContent =
-    state.phase === "testing"
+  startButton.hidden = !devMode && state.phase === "results";
+  $<HTMLSpanElement>("[data-start-label]").textContent = devMode
+    ? testing
+      ? "Testing..."
+      : "Run speed test"
+    : state.phase === "testing"
       ? "Testing..."
       : state.phase === "results" || state.phase === "champion"
         ? "Round complete"
         : state.players.some((player) => player.locked)
           ? "Start the speed test"
           : "Waiting for guesses";
-  $<HTMLSpanElement>("[data-phase-text]").textContent =
-    state.phase === "testing"
+  $<HTMLSpanElement>("[data-phase-text]").textContent = devMode
+    ? testing
+      ? "Pinging Cloudflare"
+      : "Ready when you are"
+    : state.phase === "testing"
       ? "Pinging Cloudflare"
       : state.phase === "results" || state.phase === "champion"
         ? "Results are in"
         : "Ready when you are";
-  $<HTMLButtonElement>("[data-reset]").disabled = state.phase === "testing";
-  $<HTMLInputElement>("#player-name").disabled = state.phase === "testing";
+  $<HTMLButtonElement>("[data-reset]").disabled = testing;
+  $<HTMLInputElement>("#player-name").disabled = testing;
   $$<HTMLInputElement>("[data-emoji-picker] input").forEach((input) => {
-    input.disabled = state.phase === "testing";
+    input.disabled = testing;
   });
   $<HTMLButtonElement>('[data-add-form] button[type="submit"]').disabled =
-    state.phase === "testing";
+    testing;
   document.dispatchEvent(
     new CustomEvent<boolean>("gts:testing-change", { detail: testing }),
   );
 }
 
 function renderChampion() {
+  if (isDevMode()) {
+    if (championDialog.open) championDialog.close();
+    return;
+  }
   if (state.phase !== "champion") {
     if (championDialog.open) championDialog.close();
     return;
@@ -504,18 +517,29 @@ function setProgress(step: number, steps: number) {
 }
 
 async function startTest() {
-  if (runInProgress || !state.players.some((player) => player.locked)) return;
+  const devRun = isDevMode();
+  if (
+    runInProgress ||
+    (!devRun && !state.players.some((player) => player.locked))
+  )
+    return;
   runInProgress = true;
   lastSpeedPhase = null;
-  latestPing = undefined;
   errorNote.hidden = true;
-  state = { ...state, phase: "testing" };
-  persist();
+  if (devRun) {
+    document.dispatchEvent(new CustomEvent("gts:dev-run-start"));
+  } else {
+    latestPing = undefined;
+    state = { ...state, phase: "testing" };
+    persist();
+  }
   playCue("start", activeTheme, state.settings.sound);
   render();
-  setResultText("ping", undefined);
-  setResultText("down", undefined);
-  setResultText("up", undefined);
+  if (!devRun) {
+    setResultText("ping", undefined);
+    setResultText("down", undefined);
+    setResultText("up", undefined);
+  }
   setGauge(0);
   setPhase("ping");
   let currentBytes: number | undefined;
@@ -538,56 +562,78 @@ async function startTest() {
     if (Date.now() - lastUpdateAt >= SLOW_HINT_MS) slowHint.hidden = false;
   }, 500);
   try {
-    const actual = await runSpeedTest((update) => {
-      lastUpdateAt = Date.now();
-      slowHint.hidden = true;
-      if (update.step !== undefined) {
-        if (lastSpeedPhase !== update.phase) {
-          lastSpeedPhase = update.phase;
-          playCue("phase", activeTheme, state.settings.sound);
-          if (update.phase === "up") setGauge(0);
+    const actual = await runSpeedTest(
+      (update) => {
+        lastUpdateAt = Date.now();
+        slowHint.hidden = true;
+        if (update.step !== undefined) {
+          if (lastSpeedPhase !== update.phase) {
+            lastSpeedPhase = update.phase;
+            playCue("phase", activeTheme, state.settings.sound);
+            if (update.phase === "up") setGauge(0);
+          }
+          if (update.bytes !== undefined) currentBytes = update.bytes;
+          else if (update.phase === "ping") currentBytes = undefined;
+          if (update.steps !== undefined) steps = update.steps;
+          setProgress(update.step, steps);
+          setPhase(update.phase, currentBytes);
         }
-        if (update.bytes !== undefined) currentBytes = update.bytes;
-        else if (update.phase === "ping") currentBytes = undefined;
-        if (update.steps !== undefined) steps = update.steps;
-        setProgress(update.step, steps);
-        setPhase(update.phase, currentBytes);
-      }
-      if (update.mbps !== undefined) setGauge(update.mbps);
-      if (update.pingMs !== undefined) {
-        setGauge(update.pingMs);
-        setResultText("ping", update.pingMs);
-      }
-      playCue(
-        "tick",
-        activeTheme,
-        state.settings.sound,
-        gaugePosition(update.mbps ?? update.pingMs ?? 0),
-      );
-    });
+        if (update.mbps !== undefined) setGauge(update.mbps);
+        if (update.pingMs !== undefined) {
+          setGauge(update.pingMs);
+          if (!devRun) setResultText("ping", update.pingMs);
+        }
+        playCue(
+          "tick",
+          activeTheme,
+          state.settings.sound,
+          gaugePosition(update.mbps ?? update.pingMs ?? 0),
+        );
+      },
+      devRun
+        ? {
+            onDetails: (details) =>
+              document.dispatchEvent(
+                new CustomEvent("gts:dev-details", { detail: details }),
+              ),
+          }
+        : undefined,
+    );
     setProgress(steps, steps);
-    latestPing = actual.ping;
-    setResultText("down", actual.down);
-    setResultText("up", actual.up);
-    setResultText("ping", actual.ping);
     setGauge(actual.down, actual.down);
-    const result = applyResult(state, actual);
-    state = result.state;
-    persist();
-    document.documentElement.dataset.phase = "done";
-    $<HTMLSpanElement>("[data-mode]").textContent = "Download";
-    $<HTMLSpanElement>("[data-unit]").textContent = "Mbps";
-    playCue("reveal", activeTheme, state.settings.sound);
+    if (devRun) {
+      document.documentElement.dataset.phase = state.history.length
+        ? "done"
+        : "idle";
+      $<HTMLSpanElement>("[data-mode]").textContent = "Download";
+      $<HTMLSpanElement>("[data-unit]").textContent = "Mbps";
+    } else {
+      latestPing = actual.ping;
+      setResultText("down", actual.down);
+      setResultText("up", actual.up);
+      setResultText("ping", actual.ping);
+      const result = applyResult(state, actual);
+      state = result.state;
+      persist();
+      document.documentElement.dataset.phase = "done";
+      $<HTMLSpanElement>("[data-mode]").textContent = "Download";
+      $<HTMLSpanElement>("[data-unit]").textContent = "Mbps";
+      playCue("reveal", activeTheme, state.settings.sound);
+    }
     render();
   } catch (error) {
-    state = { ...state, phase: "guessing" };
-    persist();
+    if (!devRun) {
+      state = { ...state, phase: "guessing" };
+      persist();
+    }
     errorNote.textContent =
       error instanceof StalledError
         ? "The test stalled with no data for 45 seconds. Check your connection and press Start to try again."
         : "The speed test hiccuped. Try again?";
     errorNote.hidden = false;
-    document.documentElement.dataset.phase = "idle";
+    document.documentElement.dataset.phase = state.history.length
+      ? "done"
+      : "idle";
     setGauge(0);
     $<HTMLSpanElement>("[data-mode]").textContent = "Download";
     $<HTMLSpanElement>("[data-unit]").textContent = "Mbps";
@@ -602,6 +648,7 @@ async function startTest() {
     progressBar.hidden = true;
     runInProgress = false;
     syncControls();
+    if (devRun && !isDevMode()) render();
   }
 }
 
@@ -611,6 +658,14 @@ document.addEventListener("gts:settings-change", (event) => {
     settings: (event as CustomEvent<GameSettings>).detail,
   };
   activeTheme = getResolvedTheme();
+  render();
+});
+
+document.addEventListener("gts:dev-change", (event) => {
+  if ((event as CustomEvent<boolean>).detail) {
+    if (guessDialog.open) guessDialog.close();
+    if (championDialog.open) championDialog.close();
+  }
   render();
 });
 
@@ -709,7 +764,7 @@ $<HTMLButtonElement>("[data-close-champion]").addEventListener("click", () =>
   championDialog.close(),
 );
 championDialog.addEventListener("close", () => {
-  if (state.phase === "champion")
+  if (state.phase === "champion" && !isDevMode())
     $<HTMLButtonElement>("[data-open-settings]").focus();
 });
 const nextButton = document.createElement("button");
