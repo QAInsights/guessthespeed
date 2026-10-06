@@ -54,6 +54,17 @@ const appSchema = {
   <head>
     <meta charset="utf-8" />
     <script is:inline>
+      const devParam = new URLSearchParams(window.location.search).get("dev");
+      let devEnabled = devParam === "1";
+      try {
+        if (devParam === "1" || devParam === "0")
+          localStorage.setItem("gts:dev", devParam);
+        if (devParam === null)
+          devEnabled = localStorage.getItem("gts:dev") === "1";
+      } catch {}
+      if (devEnabled) document.documentElement.dataset.dev = "1";
+    </script>
+    <script is:inline>
       try {
         const themeMode = JSON.parse(localStorage.getItem("gts:v1") ?? "null")
           ?.settings?.themeMode;
@@ -143,6 +154,7 @@ const appSchema = {
         <a class="ctrl icon-btn how-link" href="/how-to-play/" aria-label="How to play">
           <Icon name="ph:question-fill" />
         </a>
+        <button class="dev-badge" type="button" data-dev-badge hidden aria-label="Turn off developer mode">DEV</button>
         <button class="ctrl icon-btn" type="button" data-open-settings aria-label="Open settings">
           <Icon name="ph:gear-six-fill" />
         </button>
@@ -189,6 +201,10 @@ const appSchema = {
             </select>
           </label>
           <label class="dialog-field sound-setting"><span>Sound</span><input type="checkbox" name="sound" /></label>
+          <label class="dialog-field dev-setting">
+            <span>Developer mode<small>Show raw speed test data. Hides the game.</small></span>
+            <input type="checkbox" name="devMode" />
+          </label>
           <div class="dialog-actions">
             <button class="go" type="submit">Save settings</button>
           </div>

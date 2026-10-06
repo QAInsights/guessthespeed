@@ -46,6 +46,8 @@ When dates overlap, priority is Diwali, Holi, Easter, Thanksgiving, Pongal, Hall
 
 Player names, guesses, settings, scores, and history are stored in local storage on the current device. There are no accounts. The speed test sends measurements to Cloudflare, which collects aggregated, anonymous results to understand internet connection quality. Optional Cloudflare Web Analytics uses a cookieless beacon and only loads when the site owner configures its public token.
 
+Developer mode turns the home page into a raw Cloudflare speed test diagnostics console. Add `?dev=1` to the home page URL to enable it. IP addresses are masked on screen by default, omitted from JSON exports, and not saved in local storage.
+
 ## Pages
 
 - Home game: https://guessthespeed.com/

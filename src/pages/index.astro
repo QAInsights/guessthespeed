@@ -10,9 +10,11 @@ const roleChoices = ROLES;
   <main class="wrap game-main">
     <section class="stage" aria-label="Speed test game">
       <div class="intro">
-        <div class="round"><Icon name="ph:flag-checkered-fill" /><span data-round-label>Round 1 of 3</span></div>
-        <h1 class="display">Guess the Wi-Fi. <em>Beat the family.</em></h1>
-        <p>Guess the download and upload. Run a real speed test. Closest guesses score!</p>
+        <div class="round" data-round-banner><Icon name="ph:flag-checkered-fill" /><span data-round-label>Round 1 of 3</span></div>
+        <h1 class="display" data-game-title>Guess the Wi-Fi. <em>Beat the family.</em></h1>
+        <h1 class="display dev-title" data-dev-title hidden>Dev mode</h1>
+        <p data-game-lede>Guess the download and upload. Run a real speed test. Closest guesses score!</p>
+        <p class="dev-lede" data-dev-lede hidden>Raw Cloudflare speed test data. No game, no scores.</p>
       </div>
 
       <div class="gauge-card stk">
@@ -59,7 +61,51 @@ const roleChoices = ROLES;
       </div>
     </section>
 
-    <section aria-labelledby="players-heading">
+    <section class="dev-console" aria-labelledby="dev-console-title">
+      <div class="dev-console-head">
+        <div>
+          <h2 class="display" id="dev-console-title">Speed test diagnostics</h2>
+          <p>Live measurements from this browser. Only the latest run is kept in memory.</p>
+        </div>
+        <div class="dev-export">
+          <button class="guess-button" type="button" data-copy-json>Copy JSON</button>
+          <button class="guess-button" type="button" data-download-json>Download JSON</button>
+          <span data-copy-status aria-live="polite"></span>
+        </div>
+      </div>
+      <div class="dev-panels">
+        <article class="dev-panel stk" data-panel="connection">
+          <h3>Connection</h3>
+          <div data-connection-content><p>Turn on Dev mode to check this connection.</p></div>
+        </article>
+        <article class="dev-panel stk" data-panel="summary">
+          <h3>Summary</h3>
+          <div data-summary-content><p>Run a speed test to see results.</p></div>
+        </article>
+        <article class="dev-panel stk" data-panel="latency">
+          <h3>Latency</h3>
+          <div data-latency-content><p>Latency samples will appear here.</p></div>
+        </article>
+        <article class="dev-panel stk dev-panel-wide" data-panel="requests">
+          <h3>Requests</h3>
+          <div data-requests-content><p>Bandwidth requests will appear here.</p></div>
+        </article>
+        <article class="dev-panel stk dev-panel-wide" data-panel="percentile">
+          <h3>How the number was picked</h3>
+          <div data-percentile-content><p>Counted samples and the final percentile will appear here.</p></div>
+        </article>
+        <article class="dev-panel stk" data-panel="config">
+          <h3>Test plan and config</h3>
+          <div data-config-content></div>
+        </article>
+        <article class="dev-panel stk" data-panel="browser">
+          <h3>Browser</h3>
+          <div data-browser-content></div>
+        </article>
+      </div>
+    </section>
+
+    <section aria-labelledby="players-heading" data-game-section>
       <div class="sec-head">
         <h2 id="players-heading" class="display">Who’s playing?</h2>
         <div class="section-actions">
@@ -187,5 +233,6 @@ const roleChoices = ROLES;
 
   <script>
     import '../scripts/game-client';
+    import '../scripts/dev-client';
   </script>
 </Base>
