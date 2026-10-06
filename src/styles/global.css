@@ -1790,8 +1790,10 @@ footer {
 
 .foot-groups {
   display: grid;
-  grid-template-columns: minmax(0, 1.25fr) minmax(190px, 0.85fr);
-  gap: 28px;
+  grid-template-columns:
+    minmax(0, 1.25fr)
+    repeat(2, minmax(0, 0.85fr));
+  gap: 20px;
 }
 
 .foot-group {
@@ -1810,7 +1812,8 @@ footer {
   gap: 8px;
 }
 
-.foot-group[aria-label="Guide"] .foot-links {
+.foot-group[aria-label="Guide"] .foot-links,
+.foot-group[aria-label="Play ideas"] .foot-links {
   grid-template-columns: minmax(0, 1fr);
 }
 
@@ -1831,7 +1834,8 @@ footer {
   text-decoration: none;
 }
 
-.foot-group[aria-label="Guide"] .foot-links a {
+.foot-group[aria-label="Guide"] .foot-links a,
+.foot-group[aria-label="Play ideas"] .foot-links a {
   white-space: nowrap;
 }
 
@@ -1846,7 +1850,8 @@ footer {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .foot-group[aria-label="Guide"] .foot-links {
+  .foot-group[aria-label="Guide"] .foot-links,
+  .foot-group[aria-label="Play ideas"] .foot-links {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

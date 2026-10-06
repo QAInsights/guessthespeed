@@ -71,6 +71,12 @@ Internet speed 101 defines bits, bytes, Mbps, MB/s, download, upload, ping, and 
 
 Our story explains how living-room speed tests, two kids who love guessing, and a dad who loses on purpose inspired a family game. Naveen built the site to keep guesses private, carry scores across rounds, and wrap a real speed test in game night. Read it at https://guessthespeed.com/story/.
 
+## Game and lesson pages
+
+- [Speed test game](https://guessthespeed.com/speed-test-game/) explains the family speed guessing game, its real browser test, scoring, room codes, and optional house rules.
+- [Family game night ideas](https://guessthespeed.com/family-game-night-ideas/) offers nine low-prep Wi-Fi activities, including room hunts, paper logs, download-time math, and a parents-versus-kids tournament.
+- [Internet speed lesson for kids](https://guessthespeed.com/internet-speed-lesson-for-kids/) is a 30-minute activity for ages 8 to 14, with a lesson plan, percent-error example, worksheet, answer key, extensions, and classroom privacy notes.
+
 ## Credits
 
 Made by NaveenKumar for game night with his kids. The site uses Cloudflare Speedtest, self-hosted Bricolage Grotesque and Figtree fonts, and Phosphor icons. More projects: [QAInsights](https://qainsights.com), [dosa.dev](https://dosa.dev), [ai.dosa.dev](https://ai.dosa.dev), [iamspeed.dev](https://iamspeed.dev). Support: [Buy me a coffee](https://buymeacoffee.com/qainsights). Code: [GitHub](https://github.com/QAInsights/guessthespeed).

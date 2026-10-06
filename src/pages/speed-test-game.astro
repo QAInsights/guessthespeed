@@ -1,0 +1,253 @@
+---
+import Base from "../layouts/Base.astro";
+
+const questions = [
+  {
+    question: "Is there a game where you guess internet speed?",
+    answer:
+      "Yes. Guess the Speed is a free browser game where players predict download and upload speed, run a real test against Cloudflare’s network, and compare their guesses.",
+  },
+  {
+    question: "Is the speed test game free?",
+    answer:
+      "Yes. Guess the Speed is free to play in a modern browser, with no account, app install, or game cookies required.",
+  },
+  {
+    question: "How many people can play?",
+    answer:
+      "A room-code game supports up to 12 players. For a local game, add players to one shared screen and pass the device around.",
+  },
+  {
+    question: "Can kids play?",
+    answer:
+      "Yes. Kids can make simple download and upload estimates, lock them in, and see how close they were when the real test finishes. An adult can host and explain the numbers.",
+  },
+  {
+    question: "Does it work on a smart TV?",
+    answer:
+      "It may work in a smart TV browser that supports modern JavaScript, but there is no dedicated TV app. A laptop or phone connected to a larger screen is often easier to use.",
+  },
+  {
+    question: "Do you store our guesses?",
+    answer:
+      "Local game guesses stay in that browser’s storage on the device. Room games temporarily store names, faces, guesses, and scores on Cloudflare, then delete the room after six hours without activity.",
+  },
+];
+
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: questions.map(({ question, answer }) => ({
+    "@type": "Question",
+    name: question,
+    acceptedAnswer: { "@type": "Answer", text: answer },
+  })),
+};
+---
+
+<Base
+  title="Speed Test Game: Guess Your Internet Speed with Family and Friends"
+  description="Turn a real Cloudflare speed test into a free family game. Guess download and upload speed together, then see who came closest."
+  breadcrumb="Speed test game"
+>
+  <Fragment slot="head">
+    <script
+      type="application/ld+json"
+      set:html={JSON.stringify(faqSchema)}
+    ></script>
+  </Fragment>
+  <main class="wrap content-page">
+    <h1>The speed test guessing game</h1>
+    <p class="lede">
+      Guess the download and upload speed before a real test reveals the
+      numbers. Guess the Speed turns a familiar internet check into a quick
+      family game, with points for the closest estimates. Play on one screen or
+      use a room code to bring separate phones together.
+    </p>
+    <article class="content-card stk">
+      <h2>What is a speed test game?</h2>
+      <p>
+        A speed test game gives the numbers a little suspense. Before the test
+        starts, each player estimates how fast the connection will download data
+        and upload it. Everyone locks in a guess, the browser runs the test, and
+        the group compares those predictions with the measured result. You do
+        not need to know the router password or understand every network
+        setting. A reasonable hunch is enough to play.
+      </p>
+      <p>
+        I built Guess the Speed from the tiny ritual that used to happen around
+        our television: somebody asked whether the Wi-Fi was fast today, and
+        somebody else wanted to guess first. Once there are guesses to compare,
+        the needle moving across the gauge feels less like a utility screen and
+        more like the reveal in a game show. My kids call me Appa, and I still
+        hear that question before a test sometimes: “How fast will it go this
+        time?”
+      </p>
+      <p>
+        The game measures both download and upload speed. Download is data
+        coming to your device; upload is data going back out. Those numbers are
+        usually different, which means there are two chances to surprise the
+        family.
+      </p>
+
+      <h2>How to play in about 60 seconds</h2>
+      <p>
+        If everyone is ready to make a guess, a round is easy to explain. The
+        speed test itself usually takes under 40 seconds, although a big group
+        may need a little longer to enter guesses.
+      </p>
+      <ol>
+        <li>
+          <strong>Choose the players.</strong> On one device, add the people
+          playing and pass the screen around. For separate phones, create a room
+          and share its code or QR.
+        </li>
+        <li>
+          <strong>Guess two numbers.</strong> Each player estimates download and
+          upload speed in Mbps. Use what you know about your plan, the room you
+          are in, and how busy the home feels.
+        </li>
+        <li>
+          <strong>Lock the guess.</strong> Once everyone is ready, start the
+          real test. Room guesses are hidden by the server from other players
+          until the result is ready.
+        </li>
+        <li>
+          <strong>Watch and compare.</strong> The game tests against
+          Cloudflare’s network, then calculates how close each player was and
+          adds the round points.
+        </li>
+        <li>
+          <strong>Play another round.</strong> The default game has three
+          rounds, and the host can choose other round lengths or endless mode in
+          the settings.
+        </li>
+      </ol>
+      <p>
+        The basic rules are on the <a href="/how-to-play/">How to play page</a>{" "}
+        if your group wants to settle ties before the first guess.
+      </p>
+
+      <h2>Why guessing your Wi-Fi speed is weirdly fun</h2>
+      <p>
+        We tend to treat internet speed as a number that appears after the fact.
+        Guessing first changes that. Suddenly someone notices that the game
+        console is downloading an update, a video is streaming in the next room,
+        or the laptop is farther from the router than usual. The estimate
+        becomes a small prediction about the home everyone shares.
+      </p>
+      <p>
+        The best part is that confidence and accuracy are not the same thing. A
+        player can announce “definitely 500” and then discover the result is
+        much lower. Someone else may quietly pick a modest number and land much
+        closer. The game gives everyone a reason to watch the gauge and ask why
+        the result moved, without turning the evening into a lecture about
+        networking.
+      </p>
+      <p>
+        The rules also make a very wrong guess less of a disaster. First,
+        second, and third place award 3, 2, and 1 points, but place points
+        require an average miss of 50 percent or less. A guess within 5 percent
+        on download or upload earns one spot-on bonus point for that speed. A
+        player can earn a bonus even when the overall average is outside the
+        place-point cutoff.
+      </p>
+
+      <h2>One TV or everyone’s phone</h2>
+      <p>
+        For a living-room round, put one browser on a laptop or a screen
+        everyone can see. Players take turns entering and locking their
+        estimates on that device. The local game keeps its roster and scores in
+        the browser on that device, so there is no account to create.
+      </p>
+      <p>
+        When the family is spread around the room, create a room code instead.
+        Each person joins from a phone, and the room server keeps other players’
+        guesses hidden until the result. The host can choose which device runs
+        the speed test. If a phone is assigned, that phone sends the live test
+        progress while the host and other players watch the shared gauge. Room
+        games support up to 12 players, use no accounts or game cookies, and are
+        removed after six hours without activity.
+      </p>
+      <p>
+        If your group wants a longer walkthrough, read{" "}
+        <a href="/how-to-play/">the complete game rules</a>. For the difference
+        between Mbps, MB/s, ping, and upload speed, the{" "}
+        <a href="/internet-speed-101/">Internet Speed 101 guide</a> has friendly
+        examples. You can also browse{" "}
+        <a href="/family-game-night-ideas/">family game night ideas</a> or use
+        the <a href="/internet-speed-lesson-for-kids/">classroom lesson plan</a>
+        .
+      </p>
+
+      <h2>House rules to make it harder</h2>
+      <p>
+        The built-in game is about download and upload guesses. Once everyone
+        knows the basics, you can add a side challenge with a pencil and paper.
+        These are house rules, not settings inside the app, so agree on them
+        before the test.
+      </p>
+      <ul>
+        <li>
+          <strong>Room-hopping round.</strong> Run a round in the living room,
+          then move to a different room for the next one. Keep the same device
+          if you can, and compare how walls and distance seem to affect the
+          result. Walk, do not run, and keep the router where it belongs.
+        </li>
+        <li>
+          <strong>Guess the ping.</strong> Before pressing Start, write down a
+          ping prediction in milliseconds. The game does not ask players to
+          enter a ping guess, so compare your notes with the displayed result
+          and award a house point to the closest prediction.
+        </li>
+        <li>
+          <strong>Closest without going over.</strong> Say out loud that a
+          download guess only counts if it is at or below the actual download.
+          The app does not have this alternate scoring switch, so keep the usual
+          score and track this challenge on paper.
+        </li>
+        <li>
+          <strong>Teams.</strong> Pair a grown-up with a child, or make a
+          parents-versus-kids round. The scoreboard still scores individual
+          players; add each team’s points by hand after the result.
+        </li>
+      </ul>
+
+      <h2>Is it a real speed test?</h2>
+      <p>
+        Yes. The game runs a real speed test in the browser against Cloudflare’s
+        network. It measures ping, download speed, and upload speed, then uses
+        the download and upload results to score the guesses. It is not a
+        pretend number generator or a quiz with a fixed answer. Wi-Fi, other
+        active devices, the test device, and the route to the network can all
+        affect what the test measures. That variation is part of the
+        conversation, not a promise that every test will match an internet
+        plan’s advertised maximum.
+      </p>
+      <p>
+        For a classroom version of the same idea, try the{" "}
+        <a href="/internet-speed-lesson-for-kids/">
+          30-minute internet speed lesson
+        </a>
+        . For a low-prep evening at home, the{" "}
+        <a href="/family-game-night-ideas/">game night idea list</a>{" "}
+        has room hunts, paper challenges, and a download-time guessing game.
+      </p>
+
+      <h2>Frequently asked questions</h2>
+      <div class="faq">
+        {questions.map(({ question, answer }) => (
+          <section>
+            <h3>{question}</h3>
+            <p>{answer}</p>
+          </section>
+        ))}
+      </div>
+      <div class="story-cta">
+        <a class="go" href="/">
+          Start a game
+        </a>
+      </div>
+    </article>
+  </main>
+</Base>
