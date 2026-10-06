@@ -105,6 +105,21 @@ function createId(prefix: string): string {
   return `${prefix}-${randomId}`;
 }
 
+function createNewClassButton(): HTMLButtonElement {
+  const button = document.createElement("button");
+  button.className = "new-class-card";
+  button.type = "button";
+  button.setAttribute("aria-label", "Create a new class");
+  const plus = document.createElement("span");
+  plus.setAttribute("aria-hidden", "true");
+  plus.textContent = "+";
+  const label = document.createElement("strong");
+  label.textContent = "New class";
+  button.append(plus, label);
+  button.addEventListener("click", createClass);
+  return button;
+}
+
 function renderClassList() {
   classList.replaceChildren();
   classCount.textContent = `${classroomData.classes.length} ${
@@ -112,11 +127,40 @@ function renderClassList() {
   }`;
 
   if (!classroomData.classes.length) {
-    const empty = document.createElement("p");
+    const empty = document.createElement("section");
     empty.className = "empty-classes";
-    empty.textContent =
-      "Your class list is ready when you are. Add a class to start building a roster.";
+    empty.setAttribute("aria-labelledby", "empty-class-title");
+
+    const face = document.createElement("span");
+    face.className = "empty-class-face";
+    face.setAttribute("aria-hidden", "true");
+    face.textContent = "🎒";
+
+    const copy = document.createElement("div");
+    copy.className = "empty-class-copy";
+    const title = document.createElement("h3");
+    title.id = "empty-class-title";
+    title.textContent = "Add your first class";
+    const steps = document.createElement("ol");
+    steps.className = "empty-class-steps";
+    for (const [index, label] of [
+      "Name it",
+      "Paste the list",
+      "Press start",
+    ].entries()) {
+      const step = document.createElement("li");
+      const number = document.createElement("b");
+      number.textContent = String(index + 1);
+      const text = document.createElement("span");
+      text.textContent = label;
+      step.append(number, text);
+      steps.append(step);
+    }
+    copy.append(title, steps);
+
+    empty.append(face, copy, createNewClassButton());
     classList.append(empty);
+    return;
   }
 
   classroomData.classes.forEach((classroom) => {
@@ -148,18 +192,7 @@ function renderClassList() {
     classList.append(card);
   });
 
-  const newClass = document.createElement("button");
-  newClass.className = "new-class-card";
-  newClass.type = "button";
-  newClass.setAttribute("aria-label", "Create a new class");
-  const plus = document.createElement("span");
-  plus.setAttribute("aria-hidden", "true");
-  plus.textContent = "+";
-  const label = document.createElement("strong");
-  label.textContent = "New class";
-  newClass.append(plus, label);
-  newClass.addEventListener("click", createClass);
-  classList.append(newClass);
+  classList.append(createNewClassButton());
 }
 
 function renderEmojiPicker(

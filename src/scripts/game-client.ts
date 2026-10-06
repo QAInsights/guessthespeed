@@ -142,6 +142,7 @@ const classroomBanner = $<HTMLElement>("[data-classroom-banner]");
 const classroomChip = $<HTMLElement>("[data-classroom-chip]");
 const classroomRoomNote = $<HTMLElement>("[data-classroom-room-note]");
 const roomEntry = $<HTMLElement>("[data-room-entry]");
+const classroomTeaser = $<HTMLElement>(".classroom-teaser");
 const endClassButton = $<HTMLButtonElement>("[data-end-class]");
 let tvAddExpanded = false;
 
@@ -189,6 +190,7 @@ function configureClassroomMode() {
     classroomSession.mode === "teams" ? "Team game" : "Spotlight"
   }`;
   roomEntry.hidden = true;
+  classroomTeaser.hidden = true;
   classroomRoomNote.hidden = false;
   endClassButton.addEventListener("click", endClass);
 }

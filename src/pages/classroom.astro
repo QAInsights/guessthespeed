@@ -50,16 +50,32 @@ const faqSchema = {
   </Fragment>
 
   <main class="wrap content-page classroom-page">
-    <span class="round-banner">A teacher tool for a shared screen</span>
     <header class="classroom-hero">
-      <h1>Classroom mode</h1>
-      <p class="lede">
-        Turn your students' speed guesses into a quick, lively class game.
-      </p>
-      <p class="privacy-sticker stk">
-        <span aria-hidden="true">🔒</span>
-        <strong>Your class list never leaves this device.</strong>
-      </p>
+      <div class="classroom-hero-copy">
+        <span class="round-banner">Classroom mode</span>
+        <h1 class="display">Your class vs. <em>the Wi-Fi.</em></h1>
+        <p class="lede">
+          Turn your students' speed guesses into a quick, lively class game.
+        </p>
+        <p class="privacy-sticker stk">
+          <span aria-hidden="true">🔒</span>
+          <strong>Your class list never leaves this device.</strong>
+        </p>
+      </div>
+      <div class="classroom-team-stickers" aria-label="Example team scores">
+        <article class="classroom-team-sticker classroom-team-sticker-rockets">
+          <span class="classroom-team-name"><span aria-hidden="true">🚀</span> Rockets</span>
+          <strong>12<small>pts</small></strong>
+        </article>
+        <article class="classroom-team-sticker classroom-team-sticker-lightning">
+          <span class="classroom-team-name"><span aria-hidden="true">⚡</span> Lightning</span>
+          <strong>9<small>pts</small></strong>
+        </article>
+        <article class="classroom-team-sticker classroom-team-sticker-dolphins">
+          <span class="classroom-team-name"><span aria-hidden="true">🐬</span> Dolphins</span>
+          <strong>7<small>pts</small></strong>
+        </article>
+      </div>
     </header>
 
     <section class="classroom-tool" aria-labelledby="class-picker-title">
@@ -428,11 +444,97 @@ const faqSchema = {
   }
 
   .classroom-hero h1 {
-    max-width: 14ch;
+    max-width: 13ch;
+    margin: 0 0 14px;
+    font-size: clamp(42px, 6vw, 68px);
+    line-height: 0.96;
+  }
+
+  .classroom-hero h1 em {
+    display: inline;
+    padding: 0 8px;
+    border-radius: 8px;
+    background: var(--accent);
+    box-decoration-break: clone;
+    color: var(--on-accent);
+    font-style: normal;
+    -webkit-box-decoration-break: clone;
   }
 
   .classroom-hero .lede {
     margin-bottom: 16px;
+  }
+
+  .classroom-team-stickers {
+    display: none;
+  }
+
+  .classroom-team-sticker {
+    display: flex;
+    min-height: 78px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 17px;
+    border: 2.5px solid var(--ink);
+    border-radius: 18px;
+    background: var(--surface);
+    box-shadow: 5px 5px 0 var(--shadow);
+  }
+
+  .classroom-team-sticker-rockets {
+    background: #fff1b8;
+    transform: rotate(-5deg) translateX(-8px);
+  }
+
+  .classroom-team-sticker-lightning {
+    background: #e3f5fa;
+    transform: rotate(3deg) translateX(18px);
+  }
+
+  .classroom-team-sticker-dolphins {
+    background: #f3e9ff;
+    transform: rotate(-2deg) translateX(2px);
+  }
+
+  .classroom-team-name {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 1.2rem;
+    font-weight: 900;
+  }
+
+  .classroom-team-name span {
+    font-size: 1.65rem;
+  }
+
+  .classroom-team-sticker > strong {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    font-size: 1.8rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .classroom-team-sticker small {
+    font-size: 0.75rem;
+    font-weight: 850;
+  }
+
+  @media (min-width: 900px) {
+    .classroom-hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(300px, 0.72fr);
+      align-items: center;
+      gap: 44px;
+    }
+
+    .classroom-team-stickers {
+      display: grid;
+      gap: 14px;
+      padding: 14px 12px;
+    }
   }
 
   .privacy-sticker {
@@ -602,14 +704,90 @@ const faqSchema = {
   }
 
   .class-picker :global(.empty-classes) {
+    display: grid;
     grid-column: 1 / -1;
     margin: 0;
-    padding: 18px;
-    border: 2px dashed var(--ink);
-    border-radius: 16px;
-    color: var(--muted);
-    font-weight: 700;
-    text-align: center;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 22px;
+    padding: 22px 24px;
+    border: 2.5px solid var(--ink);
+    border-radius: 22px;
+    background: linear-gradient(115deg, #fff5ce, var(--surface) 56%);
+    box-shadow: 5px 5px 0 var(--shadow);
+  }
+
+  .class-picker :global(.empty-class-face) {
+    display: grid;
+    width: 76px;
+    height: 76px;
+    place-items: center;
+    border: 2.5px solid var(--ink);
+    border-radius: 22px;
+    background: #fff;
+    box-shadow: 3px 3px 0 var(--shadow);
+    font-size: 3rem;
+    transform: rotate(-7deg);
+  }
+
+  .class-picker :global(.empty-class-copy) {
+    min-width: 0;
+  }
+
+  .class-picker :global(.empty-class-copy h3) {
+    margin: 0;
+    font-size: clamp(23px, 3vw, 32px);
+  }
+
+  .class-picker :global(.empty-class-steps) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    margin: 12px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .class-picker :global(.empty-class-steps li) {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.92rem;
+    font-weight: 800;
+  }
+
+  .class-picker :global(.empty-class-steps b) {
+    display: grid;
+    width: 27px;
+    height: 27px;
+    flex: none;
+    place-items: center;
+    border: 1.5px solid var(--ink);
+    border-radius: 50%;
+    background: #ffdb66;
+    font-size: 0.78rem;
+  }
+
+  .class-picker :global(.empty-classes .new-class-card) {
+    min-height: 58px;
+    justify-content: center;
+    border-style: solid;
+    background: var(--accent);
+    box-shadow: 4px 4px 0 var(--shadow);
+    color: var(--on-accent);
+    font-size: 1.05rem;
+    font-weight: 900;
+    transform: rotate(1deg);
+  }
+
+  .class-picker :global(.empty-classes .new-class-card span) {
+    border-color: var(--on-accent);
+    background: transparent;
+  }
+
+  .class-picker :global(.empty-classes .new-class-card:hover) {
+    transform: translate(-2px, -2px) rotate(0);
+    box-shadow: 7px 7px 0 var(--shadow);
   }
 
   .classroom-toast {
@@ -947,27 +1125,35 @@ const faqSchema = {
   }
 
   .team-preview :global(.team-card ul) {
-    display: grid;
-    gap: 5px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
     margin: 0;
     padding: 0;
     list-style: none;
   }
 
+  .team-preview :global(.team-card li) {
+    min-width: 0;
+    max-width: 100%;
+  }
+
   .team-preview :global(.team-member-button) {
     display: flex;
-    width: 100%;
-    min-height: 48px;
+    width: auto;
+    max-width: 100%;
+    min-height: 44px;
     align-items: center;
     gap: 6px;
-    padding: 5px 7px;
+    padding: 6px 9px;
     border: 1px solid rgb(44 39 34 / 28%);
-    border-radius: 9px;
+    border-radius: 999px;
     background: rgb(255 255 255 / 76%);
     color: var(--ink);
     font-size: 0.82rem;
     font-weight: 750;
     text-align: left;
+    white-space: nowrap;
   }
 
   .team-preview :global(.team-member-button span) {
@@ -975,6 +1161,7 @@ const faqSchema = {
   }
 
   .team-preview :global(.team-member-button strong) {
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -1289,6 +1476,36 @@ const faqSchema = {
     .class-picker :global(.class-card),
     .class-picker :global(.new-class-card) {
       min-height: 92px;
+    }
+
+    .class-picker :global(.empty-classes) {
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 12px;
+      padding: 16px;
+    }
+
+    .class-picker :global(.empty-class-face) {
+      width: 58px;
+      height: 58px;
+      border-radius: 17px;
+      font-size: 2.3rem;
+    }
+
+    .class-picker :global(.empty-class-copy h3) {
+      font-size: 23px;
+    }
+
+    .class-picker :global(.empty-class-steps) {
+      gap: 7px 10px;
+      margin-top: 8px;
+    }
+
+    .class-picker :global(.empty-class-steps li) {
+      font-size: 0.82rem;
+    }
+
+    .class-picker :global(.empty-classes .new-class-card) {
+      grid-column: 1 / -1;
     }
 
     .panel-heading {

@@ -187,10 +187,6 @@ const homeSchema: Record<string, unknown>[] = [
       </div>
     </section>
 
-    <p class="classroom-room-note stk" data-classroom-room-note hidden>
-      Rooms are off in Classroom mode, so student names stay on this device.
-    </p>
-
     <section aria-labelledby="players-heading" data-game-section>
       <aside
         class="classroom-session-banner stk"
@@ -198,7 +194,12 @@ const homeSchema: Record<string, unknown>[] = [
         aria-label="Classroom game"
         hidden
       >
-        <p class="classroom-session-chip" data-classroom-chip aria-live="polite"></p>
+        <div class="classroom-session-copy">
+          <p class="classroom-session-chip" data-classroom-chip aria-live="polite"></p>
+          <p class="classroom-session-note" data-classroom-room-note hidden>
+            Rooms are off in Classroom mode, so student names stay on this device.
+          </p>
+        </div>
         <div class="classroom-session-actions">
           <a class="guess-button" href="/classroom/">Class menu</a>
           <button class="ghost classroom-end-button" type="button" data-end-class>
