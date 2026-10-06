@@ -7,7 +7,12 @@ const articleSchema = {
   headline: 'How a living-room speed test became a family game',
   description:
     'It started on a lazy evening with a TV, a speed test app and two kids who would not stop guessing. This is how that little ritual turned into guessthespeed.com.',
-  author: { '@id': 'https://guessthespeed.com/#author' },
+  author: {
+    '@type': 'Person',
+    '@id': 'https://guessthespeed.com/#author',
+    name: 'NaveenKumar Namachivayam',
+    url: 'https://qainsights.com',
+  },
   publisher: {
     '@type': 'Organization',
     name: 'Guess the Speed',
