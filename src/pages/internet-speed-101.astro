@@ -5,7 +5,7 @@ const questions = [
   {
     question: 'What does Mbps mean?',
     answer:
-      'Mbps means megabits per second, the unit used to sell internet speed. MB/s means megabytes per second, a unit download managers may show. Eight bits make one byte.',
+      'Mbps means megabits per second, the unit internet plans use for speed. MB/s means megabytes per second, a unit a download manager may show. Eight bits make one byte, like eight slices make a pizza.',
   },
   {
     question: 'How fast is a 100 Mbps connection in MB/s?',
@@ -15,12 +15,12 @@ const questions = [
   {
     question: 'How much internet speed does a household need?',
     answer:
-      'It depends on what everyone does at once. Add up the approximate needs of each stream or device. The US FCC broadband benchmark is 100 Mbps down and 20 Mbps up, set in 2024.',
+      'It depends on what everyone does at once. One 4K movie at about 25 Mbps, two HD streams at about 5 Mbps each, and one HD video call at about 4 Mbps add up to about 39 Mbps down. A 100 Mbps plan has headroom, while 25 Mbps would struggle. The US FCC broadband benchmark is 100 Mbps down and 20 Mbps up, set in 2024.',
   },
   {
     question: 'Does upload speed matter?',
     answer:
-      'Yes. Upload speed helps with video calls, live streaming, cloud backups, and sending big files.',
+      'Yes. Upload speed helps with video calls, live streaming, cloud backups, and sending big files. Most plans have less upload because homes historically used the internet mostly to download, so cable networks give most capacity to the download direction.',
   },
   {
     question: 'What is a good ping for games and calls?',
@@ -30,7 +30,7 @@ const questions = [
   {
     question: 'How can I make a better speed guess?',
     answer:
-      'Know your plan, think about who else is streaming, notice whether you are using a phone or laptop, and consider which room you are in.',
+      'Play speed detective: check your plan, count who else may be streaming, notice whether you are using a phone or laptop, and think about which room you are in. Use those clues to make your download and upload guesses.',
   },
 ];
 
@@ -56,19 +56,20 @@ const faqSchema = {
     <span class="round-banner">Speed school</span>
     <h1>Internet speed 101</h1>
     <p class="lede">
-      Bits, bytes, ping, and Wi-Fi can sound like a lot. Here is a friendly guide to what those
-      numbers mean and how they show up in everyday life.
+      Speed labels stop looking like secret code once you know a few simple ideas. Let’s turn
+      bits, bytes, ping, and Wi-Fi into friendly clues for your next Guess the Speed round.
     </p>
     <article class="content-card stk">
       <h2>Bits, bytes, and the numbers on a plan</h2>
       <p>
-        Eight bits make one byte. Internet plans are sold in megabits per second (Mbps), while
-        download managers often show megabytes per second (MB/s). Divide Mbps by 8 to estimate
-        MB/s, so 100 Mbps is about 12.5 MB/s.
+        Eight bits make one byte. Picture a byte as a pizza cut into eight slices: each slice
+        stands for one bit, and all eight slices make the byte. Internet plans use megabits per
+        second (Mbps), while a download manager may show megabytes per second (MB/s). Divide Mbps
+        by 8 to estimate MB/s, so 100 Mbps is about 12.5 MB/s.
       </p>
       <p>
-        Speeds can also be written in kbps, Mbps, or Gbps. In decimal units, 1 Mbps is 1,000 kbps
-        and 1 Gbps is 1,000 Mbps.
+        You may also see kbps, Mbps, or Gbps. The prefixes tell you the scale: in decimal units,
+        1 Mbps is 1,000 kbps and 1 Gbps is 1,000 Mbps.
       </p>
       <div class="guide-table-wrap" role="region" aria-label="Internet speed and estimated five gigabyte download times" tabindex="0">
         <table class="guide-table">
@@ -86,32 +87,45 @@ const faqSchema = {
             <tr><th scope="row">50 Mbps</th><td>6.25 MB/s</td><td>About 13 min</td></tr>
             <tr><th scope="row">100 Mbps</th><td>12.5 MB/s</td><td>About 7 min</td></tr>
             <tr><th scope="row">300 Mbps</th><td>37.5 MB/s</td><td>About 2 min</td></tr>
-            <tr><th scope="row">500 Mbps</th><td>62.5 MB/s</td><td>About 1 min</td></tr>
-            <tr><th scope="row">1,000 Mbps</th><td>125 MB/s</td><td>About 1 min</td></tr>
+            <tr><th scope="row">500 Mbps</th><td>62.5 MB/s</td><td>About 1 min 20 sec</td></tr>
+            <tr><th scope="row">1,000 Mbps</th><td>125 MB/s</td><td>About 40 sec</td></tr>
           </tbody>
         </table>
       </div>
       <p class="guide-table-note">
-        The estimate uses 1 GB = 8,000 megabits (decimal units) and 5 × 8,000 ÷ Mbps seconds,
-        rounded to the nearest minute. Real downloads can take longer.
+        The estimate uses decimal units (1 GB = 8,000 megabits) and exactly 5 × 8,000 / Mbps
+        seconds, rounded to the nearest minute, or to seconds for fast lines. Real downloads can
+        take longer.
+      </p>
+
+      <h2>Bandwidth and latency: lanes versus trip time</h2>
+      <p>
+        Picture a highway carrying data. Bandwidth is like the number of lanes: it describes how
+        much room there is for traffic. Latency is like the time one trip takes from start to
+        finish. A speed test reports both download speed and ping because a wide road and a quick
+        trip are different clues.
       </p>
 
       <h2>Download versus upload</h2>
       <p>
         Download is data coming to your device. Upload is data going from your device to the
-        internet. Most home plans are asymmetric, so download is much faster than upload. Cable
-        plans are often 10:1 or more; fiber is often symmetric, with similar speeds both ways.
+        internet. Most home plans are asymmetric, meaning the two directions are not equal.
+        Historically, homes mostly downloaded, so cable networks give most capacity to the
+        download direction. Cable plans are often 10:1 or more, while fiber is often symmetric,
+        with similar speeds both ways.
       </p>
       <p>
-        Upload matters for video calls, live streaming, cloud backups, and sending big files.
-        Those activities need your device to send data out, not just bring it in.
+        Upload is not an afterthought. It matters for video calls, live streaming, cloud backups,
+        and sending big files. Each of those asks your device to send data out, not just bring it
+        in.
       </p>
 
       <h2>Ping and jitter</h2>
       <p>
         Ping, also called latency, is the round-trip time for a small request, measured in
         milliseconds (ms). Lower ping means a quicker response. Jitter is the average change
-        between consecutive ping measurements.
+        between consecutive ping measurements, so it helps describe how steady those times are.
+        For games and calls, a quick response can matter more than a huge download number.
       </p>
       <div class="guide-table-wrap" role="region" aria-label="Ping rules of thumb" tabindex="0">
         <table class="guide-table">
@@ -131,9 +145,12 @@ const faqSchema = {
 
       <h2>How much speed do you need?</h2>
       <p>
-        These approximate figures are per stream or device. A useful household tip is to add up
-        what everyone might do at the same time. The US FCC broadband benchmark is 100 Mbps
-        download and 20 Mbps upload, set in 2024.
+        These are approximate figures per stream or device. Try this household math: one 4K movie
+        at about 25 Mbps, two HD streams at about 5 Mbps each, and one HD video call at about
+        4 Mbps use about 39 Mbps of download speed together. A 100 Mbps plan leaves headroom for
+        that mix, while 25 Mbps would struggle. The US FCC broadband benchmark is 100 Mbps down
+        and 20 Mbps up, set in 2024. Add up what everyone does at once to get a useful starting
+        guess for your home.
       </p>
       <div class="guide-table-wrap" role="region" aria-label="Approximate internet speed needs by activity" tabindex="0">
         <table class="guide-table">
@@ -154,16 +171,22 @@ const faqSchema = {
       <h2>Wi-Fi versus a cable</h2>
       <p>
         Wi-Fi speed can change with distance, walls, older devices, and neighbours' networks.
-        Wi-Fi uses bands such as 2.4 GHz, 5 GHz, and 6 GHz. A cable usually gives a clearer look
-        at the real speed your plan can deliver.
+        The 2.4 GHz band reaches farther, but it is slower and more crowded. The 5 GHz and 6 GHz
+        bands are faster over shorter distances. A cable usually gives a clearer look at the real
+        speed your plan can deliver.
       </p>
 
       <h2>Tips for a better guess</h2>
+      <p>
+        Get your clues before game night’s speed test. Think like a friendly speed detective:
+        gather what you know, make a smart estimate, then see how close the family gets.
+      </p>
       <ul>
-        <li>Know the speed listed on your internet plan.</li>
-        <li>Think about who else might be streaming at the same time.</li>
-        <li>Notice whether you are using a phone or a laptop.</li>
-        <li>Consider which room you are in and how strong the Wi-Fi feels there.</li>
+        <li>Check the speed listed on your internet plan for your first clue.</li>
+        <li>Count who else might be streaming at the same time.</li>
+        <li>Notice whether you are testing on a phone or a laptop.</li>
+        <li>Think about the room you are in and how strong the Wi-Fi feels there.</li>
+        <li>Make separate download and upload guesses, then lock them in before the reveal.</li>
       </ul>
 
       <h2>A tiny internet glossary</h2>

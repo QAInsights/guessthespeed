@@ -15,12 +15,12 @@ const questions = [
   {
     question: 'Why does the test use larger files?',
     answer:
-      'Download sizes ramp from 100 kB to 1 MB, 10 MB, 25 MB, and 100 MB. Upload sizes ramp from 100 kB to 50 MB. The engine skips larger sizes once requests take about one second.',
+      'Small files can finish before a fast connection gets up to speed, so the test ramps through larger sizes. Downloads go from 100 kB to 1 MB, 10 MB, 25 MB, and 100 MB. Uploads go from 100 kB to 50 MB. The engine skips larger sizes once requests take about one second.',
   },
   {
     question: 'Does the test measure loaded latency or packet loss?',
     answer:
-      'No. Loaded latency and packet loss are not measured, which keeps a round quick, roughly 20 to 40 seconds.',
+      'No. Loaded latency and packet loss are not measured, so a round is usually under 40 seconds.',
   },
   {
     question: 'Why can two tests show different numbers?',
@@ -56,8 +56,9 @@ const faqSchema = {
     <span class="round-banner">Under the hood</span>
     <h1>How does the real speed test work?</h1>
     <p class="lede">
-      A real connection check runs right in your browser. It measures ping, download, and upload,
-      then turns your guesses into points.
+      A tiny file can finish before a fast connection gets up to speed, making that line look
+      slower than it is. This test ramps through larger files, checks both directions, and turns
+      your guesses into points.
     </p>
     <article class="content-card stk">
       <h2>A real test in your browser</h2>
@@ -65,6 +66,30 @@ const faqSchema = {
         The test runs in your browser against Cloudflare's global network, using
         <code>speed.cloudflare.com/__down</code> for downloads and
         <code>speed.cloudflare.com/__up</code> for uploads. No app or install is needed.
+      </p>
+
+      <h2>What happens in the first 20 seconds after Start?</h2>
+      <p>
+        Press Start and follow the three cues. The exact timing can vary, but the test moves
+        through these steps in order:
+      </p>
+      <ol>
+        <li>
+          <strong>Ping first.</strong> The ping pod shows the round-trip time while the test checks
+          small requests.
+        </li>
+        <li>
+          <strong>Download next.</strong> Download requests begin, and the gauge needle follows
+          the download speed.
+        </li>
+        <li>
+          <strong>Upload after that.</strong> The test switches to upload requests, and the gauge
+          shows upload speed.
+        </li>
+      </ol>
+      <p>
+        Watching the pod and needle makes the measurement easier to follow. The whole round is
+        usually under 40 seconds.
       </p>
 
       <h2>Ping and jitter</h2>
@@ -77,21 +102,23 @@ const faqSchema = {
       <p>
         Download files grow from 100 kB through 1 MB, 10 MB, and 25 MB up to 100 MB. Uploads use
         the same ramp from 100 kB up to 50 MB. When requests take about one second, the engine
-        skips bigger files in that direction. Slow connections do not wait forever, and fast
-        connections still get pushed.
+        skips bigger files in that direction. Small downloads can finish before a fast connection
+        gets up to speed, so increasing the file size helps avoid measuring too low. Slow
+        connections do not wait forever, and fast connections still get pushed.
       </p>
 
       <h2>How the final speed is chosen</h2>
       <p>
         The final speed is the 90th percentile of the timed requests, and only requests longer
-        than 10 ms count. That reflects what the line sustains near its best, not one lucky or
-        unlucky burst.
+        than 10 ms count. A simple average can be pulled down by slower requests, while choosing
+        only the single best one could reward one lucky burst. The 90th percentile sits near the
+        strong end of the results without letting one request decide the score.
       </p>
 
       <h2>A quick round, not a network deep dive</h2>
       <p>
-        Loaded latency and packet loss are not measured, which keeps a round quick, roughly 20 to
-        40 seconds.
+        Loaded latency and packet loss are not measured, which keeps a round quick. It is usually
+        under 40 seconds from start to finish.
       </p>
 
       <h2>Why does the gauge move that way?</h2>
