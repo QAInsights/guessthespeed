@@ -38,7 +38,7 @@ export const DEFAULT_PLAYERS: ReadonlyArray<
   { id: "p-mom", name: "Mom", emoji: "👩", role: "Mom" },
   { id: "p-dad", name: "Dad", emoji: "👨", role: "Dad" },
   { id: "p-big-sis", name: "Big Sis", emoji: "👧", role: "Sister" },
-  { id: "p-little-sis", name: "Little Sis", emoji: "👧", role: "Sister" },
+  { id: "p-little-sis", name: "Little One", emoji: "👧", role: "Sister" },
 ];
 
 export interface GameSettings {

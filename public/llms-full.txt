@@ -1,6 +1,6 @@
 # Guess the Speed: Full Game Guide
 
-Guess the Speed is a family game-night app. Players privately guess download and upload speed, run a real speed test, and score points for the closest estimates. The game runs in a browser with no account.
+Guess the Speed is a family game-night app. Players privately guess download and upload speed, run a real speed test, and score points for the closest estimates. The game runs in a browser with no account. A round takes about two minutes, so it also works as a quick filler game between longer games.
 
 ## How to play
 
