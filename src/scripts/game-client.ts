@@ -80,6 +80,7 @@ let gaugeTarget = 0;
 let gaugeReadoutValue: number | undefined;
 let animationFrame = 0;
 let runInProgress = false;
+let interruptedRoomTestRecoveryRequested = false;
 let activeTheme: ThemeId = "light";
 let lastSpeedPhase: Phase | null = null;
 let lastRoomProgressPhase: Phase | null = null;
@@ -917,7 +918,20 @@ document.addEventListener("gts:settings-change", (event) => {
 });
 
 document.addEventListener("gts:room-state", (event) => {
-  if (roomMode) applyRoomView((event as CustomEvent<RoomView>).detail);
+  if (!roomMode) return;
+  const view = (event as CustomEvent<RoomView>).detail;
+  const recoverInterruptedTest =
+    view.isHost &&
+    view.phase === "testing" &&
+    !runInProgress &&
+    !interruptedRoomTestRecoveryRequested;
+  applyRoomView(view);
+  if (!recoverInterruptedTest) return;
+  interruptedRoomTestRecoveryRequested = true;
+  errorNote.textContent =
+    "The last test was interrupted. Press Start to run it again.";
+  errorNote.hidden = false;
+  store.send({ type: "abort" });
 });
 
 document.addEventListener("gts:room-progress", (event) => {

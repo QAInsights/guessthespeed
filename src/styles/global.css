@@ -1474,23 +1474,27 @@ footer {
   font-weight: 700;
 }
 
-[data-emoji-picker] {
+[data-emoji-picker],
+[data-room-emoji-picker] {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
 }
 
-[data-emoji-picker] label {
+[data-emoji-picker] label,
+[data-room-emoji-picker] label {
   cursor: pointer;
   text-align: center;
 }
 
-[data-emoji-picker] input {
+[data-emoji-picker] input,
+[data-room-emoji-picker] input {
   position: absolute;
   opacity: 0;
 }
 
-[data-emoji-picker] span {
+[data-emoji-picker] span,
+[data-room-emoji-picker] span {
   display: grid;
   width: 42px;
   height: 42px;
@@ -1501,20 +1505,23 @@ footer {
   transition: transform 0.1s;
 }
 
-[data-emoji-picker] small {
+[data-emoji-picker] small,
+[data-room-emoji-picker] small {
   display: block;
   color: var(--muted);
   font-size: 10px;
   font-weight: 800;
 }
 
-[data-emoji-picker] input:checked + span {
+[data-emoji-picker] input:checked + span,
+[data-room-emoji-picker] input:checked + span {
   transform: rotate(-6deg) scale(1.05);
   border-color: var(--ink);
   background: var(--accent);
 }
 
-[data-emoji-picker] input:focus-visible + span {
+[data-emoji-picker] input:focus-visible + span,
+[data-room-emoji-picker] input:focus-visible + span {
   outline: 3px solid var(--accent);
 }
 

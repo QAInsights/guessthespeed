@@ -97,7 +97,9 @@ function roomLink(): string {
 
 function roomPageUrl(code: string): string {
   const query = new URLSearchParams();
-  if (params.get("mock") === "1") query.set("mock", "1");
+  const mockMode = params.get("mock");
+  if (mockMode === "1" || mockMode === "slow" || mockMode === "stall")
+    query.set("mock", mockMode);
   query.set("room", code);
   return `/?${query.toString()}`;
 }
