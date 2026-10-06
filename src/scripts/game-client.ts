@@ -6,7 +6,9 @@ import {
   lockGuess,
   newGame,
   nextRound,
+  pendingGuessers,
   removePlayer,
+  startAnywayMessage,
   unlockGuess,
   saveGame,
   STORAGE_KEY,
@@ -124,6 +126,11 @@ const reduceMotion = window.matchMedia(
   "(prefers-reduced-motion: reduce)",
 ).matches;
 const guessDialog = $<HTMLDialogElement>("[data-guess-dialog]");
+const startConfirmDialog = $<HTMLDialogElement>("[data-start-confirm-dialog]");
+const startConfirmMessage = $<HTMLParagraphElement>(
+  "[data-start-confirm-message]",
+);
+const startAnywayButton = $<HTMLButtonElement>("[data-start-anyway]");
 const editDialog = $<HTMLDialogElement>("[data-edit-dialog]");
 const championDialog = $<HTMLDialogElement>("[data-champion-dialog]");
 const shareButton = $<HTMLButtonElement>("[data-share-result]");
@@ -511,6 +518,13 @@ function formatSpeed(value: number) {
 }
 
 function syncControls() {
+  if (
+    startConfirmDialog.open &&
+    (isDevMode() ||
+      state.phase !== "guessing" ||
+      pendingGuessers(state.players).length === 0)
+  )
+    startConfirmDialog.close();
   const devMode = isDevMode();
   const host = isRoomHost();
   const canRun = !roomMode || canRunRoomTest();
@@ -1196,10 +1210,29 @@ $<HTMLFormElement>("[data-guess-form]").addEventListener("submit", (event) => {
   render();
 });
 
-$<HTMLButtonElement>("[data-start-btn]").addEventListener(
-  "click",
-  () => void startTest(),
+startButton.addEventListener("click", () => {
+  const message =
+    !isDevMode() && state.phase === "guessing"
+      ? startAnywayMessage(state.players)
+      : null;
+  if (!message) {
+    void startTest();
+    return;
+  }
+  startConfirmMessage.textContent = message;
+  startConfirmDialog.showModal();
+  startAnywayButton.focus();
+});
+startAnywayButton.addEventListener("click", () => {
+  startConfirmDialog.close();
+  void startTest();
+});
+$<HTMLButtonElement>("[data-wait-for-them]").addEventListener("click", () =>
+  startConfirmDialog.close(),
 );
+startConfirmDialog.addEventListener("click", (event) => {
+  if (event.target === startConfirmDialog) startConfirmDialog.close();
+});
 tvAddToggle.addEventListener("click", () => {
   tvAddExpanded = !tvAddExpanded;
   syncTVAddForm();

@@ -32,6 +32,32 @@ export interface Player {
   locked: boolean;
 }
 
+export function pendingGuessers(players: Player[]): Player[] {
+  return players.filter((player) => !player.locked);
+}
+
+export function startAnywayMessage(players: Player[]): string | null {
+  const pending = pendingGuessers(players);
+  if (!pending.length || pending.length === players.length) return null;
+
+  const names =
+    pending.length > 4
+      ? `${pending
+          .slice(0, 3)
+          .map((player) => player.name)
+          .join(", ")} and ${pending.length - 3} more`
+      : pending.length === 1
+        ? pending[0].name
+        : `${pending
+            .slice(0, -1)
+            .map((player) => player.name)
+            .join(", ")} and ${pending.at(-1)!.name}`;
+
+  return `${pending.length} of ${players.length} ${
+    pending.length === 1 ? "hasn't" : "haven't"
+  } guessed yet: ${names}.`;
+}
+
 export const DEFAULT_PLAYERS: ReadonlyArray<
   Pick<Player, "id" | "name" | "emoji" | "role">
 > = [
