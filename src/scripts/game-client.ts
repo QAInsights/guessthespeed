@@ -588,6 +588,7 @@ async function startTest() {
         : "The speed test hiccuped. Try again?";
     errorNote.hidden = false;
     document.documentElement.dataset.phase = "idle";
+    setGauge(0);
     $<HTMLSpanElement>("[data-mode]").textContent = "Download";
     $<HTMLSpanElement>("[data-unit]").textContent = "Mbps";
     render();
