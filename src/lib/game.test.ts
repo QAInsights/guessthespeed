@@ -40,6 +40,12 @@ describe("game state", () => {
         locked: false,
       })),
     );
+    expect(first.players.map((player) => player.name)).toEqual([
+      "Mom",
+      "Dad",
+      "Big Sis",
+      "Little One",
+    ]);
     expect(first.players).not.toBe(second.players);
     expect(first.players[0]).not.toBe(second.players[0]);
     expect(first.players[0].guess).not.toBe(second.players[0].guess);
@@ -67,6 +73,21 @@ describe("game state", () => {
       loadGame(memoryStorage(JSON.stringify(intentionallyEmpty))).players,
     ).toEqual([]);
     expect(loadGame(memoryStorage("{bad json")).players).toHaveLength(4);
+  });
+
+  it("preserves saved names when the default family names change", () => {
+    const saved = initialGameState();
+    saved.players[2].name = "Priya";
+    saved.players[3].name = "Little Sis";
+
+    const loaded = loadGame(memoryStorage(JSON.stringify(saved)));
+
+    expect(loaded.players.map((player) => player.name)).toEqual([
+      "Mom",
+      "Dad",
+      "Priya",
+      "Little Sis",
+    ]);
   });
 
   it("updates a player while preserving score, lock, and guess", () => {
