@@ -134,6 +134,140 @@
   gap: 9px;
 }
 
+.room-tester-picker {
+  position: relative;
+  min-width: 0;
+}
+
+.room-tester-trigger {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+}
+
+.room-tester-trigger > span {
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.room-tester-trigger > strong {
+  max-width: 150px;
+  overflow: hidden;
+  font-size: 0.84rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.room-tester-trigger > svg {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  transition: transform 0.15s ease;
+}
+
+.room-tester-trigger[aria-expanded="true"] > svg {
+  transform: rotate(180deg);
+}
+
+.room-tester-menu {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 9px);
+  left: 0;
+  display: grid;
+  width: min(330px, calc(100vw - 36px));
+  max-height: min(60vh, 380px);
+  padding: 10px;
+  border: 2.5px solid var(--ink);
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: 5px 5px 0 var(--shadow);
+  gap: 7px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.room-tester-menu[hidden] {
+  display: none;
+}
+
+.room-tester-option {
+  display: flex;
+  min-width: 0;
+  min-height: 48px;
+  align-items: center;
+  padding: 8px 10px;
+  border: 2px solid var(--ink);
+  border-radius: 12px;
+  background: var(--bg);
+  box-shadow: 2px 2px 0 var(--shadow);
+  color: var(--ink);
+  cursor: pointer;
+  font: inherit;
+  gap: 10px;
+  text-align: left;
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease;
+}
+
+.room-tester-option:hover {
+  box-shadow: 4px 4px 0 var(--shadow);
+  transform: translate(-1px, -1px);
+}
+
+.room-tester-option:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.room-tester-option[aria-selected="true"] {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.room-tester-option-face {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  border: 2px solid var(--ink);
+  border-radius: 9px;
+  background: var(--surface);
+  font-size: 19px;
+  place-items: center;
+}
+
+.room-tester-option-name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-weight: 850;
+}
+
+.room-tester-chip {
+  display: inline-flex;
+  max-width: 100%;
+  min-height: 40px;
+  align-items: center;
+  padding: 8px 12px;
+  border: 1.5px dashed var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 0.82rem;
+  font-weight: 850;
+  overflow-wrap: anywhere;
+}
+
+.room-stop-test {
+  border-color: #9b3229;
+  background: #ffe9e5;
+  color: #7e211a;
+}
+
 .room-connection {
   padding: 7px 11px;
   border: 1px solid rgb(37 98 64 / 28%);
@@ -263,6 +397,15 @@ html[data-room="1"] .dev-setting {
 
   .room-bar-actions {
     justify-content: flex-start;
+  }
+
+  .room-tester-trigger {
+    max-width: calc(100vw - 72px);
+    flex-wrap: wrap;
+  }
+
+  .room-tester-menu {
+    width: min(330px, calc(100vw - 36px));
   }
 }
 :root {

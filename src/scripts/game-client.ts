@@ -15,11 +15,22 @@ import {
   type GameSettings,
   type Player,
 } from "../lib/game";
-import { runSpeedTest, StalledError, type Phase } from "../lib/speedtest";
+import {
+  runSpeedTest,
+  SpeedTestCancelledError,
+  StalledError,
+  type Phase,
+} from "../lib/speedtest";
 import { phaseText, SLOW_HINT_MS } from "../lib/progress";
 import { themes, themeForDate, type ThemeId } from "../lib/themes";
 import { playCue } from "../lib/sound";
-import { isRoomMode, sendRoomAction, sendRoomProgress } from "./room-client";
+import {
+  canRunRoomTest,
+  getRoomView,
+  isRoomMode,
+  sendRoomAction,
+  sendRoomProgress,
+} from "./room-client";
 import { readRoomLocalSettings } from "./room-settings";
 import type { ClientAction, RoomView } from "../lib/room";
 
@@ -80,6 +91,7 @@ let gaugeTarget = 0;
 let gaugeReadoutValue: number | undefined;
 let animationFrame = 0;
 let runInProgress = false;
+let activeRoomTestController: AbortController | null = null;
 let interruptedRoomTestRecoveryRequested = false;
 let activeTheme: ThemeId = "light";
 let lastSpeedPhase: Phase | null = null;
@@ -437,23 +449,36 @@ function formatSpeed(value: number) {
 function syncControls() {
   const devMode = isDevMode();
   const host = isRoomHost();
+  const canRun = !roomMode || canRunRoomTest();
+  const roomView = roomMode ? getRoomView() : null;
+  const assignedTester =
+    roomView?.testerId === null || roomView?.testerId === undefined
+      ? undefined
+      : roomView.players.find((player) => player.id === roomView.testerId);
   const guessing = state.phase === "guessing";
   const testing = isTesting();
   const lockedGuess = state.players.some((player) => player.locked);
   startButton.disabled =
     (!devMode && (!guessing || !lockedGuess)) || runInProgress;
   startButton.hidden =
-    (roomMode && !host) ||
+    (roomMode && !canRun) ||
     (!devMode && state.phase === "results") ||
     (roomMode && state.phase === "champion");
   const waiting = $<HTMLParagraphElement>("[data-room-waiting]");
-  waiting.hidden = !roomMode || host;
+  waiting.hidden =
+    !roomMode ||
+    (canRun && state.phase !== "results") ||
+    (host && state.phase === "results");
   waiting.textContent =
-    state.phase === "testing"
-      ? "The host is running the speed test."
-      : state.phase === "results"
-        ? "Waiting for the host to continue."
-        : "Waiting for the host to start the test.";
+    state.phase === "results"
+      ? "Waiting for the host to continue."
+      : state.phase === "testing"
+        ? assignedTester
+          ? `${assignedTester.name} is running the speed test.`
+          : "The host is running the speed test."
+        : assignedTester
+          ? `Waiting for ${assignedTester.name} to start the test.`
+          : "Waiting for the host to start the test.";
   const resetButton = $<HTMLButtonElement>("[data-reset]");
   resetButton.textContent = roomMode ? "New game" : "Reset scores";
   resetButton.hidden = roomMode && !host;
@@ -629,7 +654,7 @@ function setProgress(step: number, steps: number) {
 }
 
 function setRemoteTesting(active: boolean) {
-  if (!roomMode || isRoomHost()) return;
+  if (!roomMode || canRunRoomTest()) return;
   if (active) {
     if (!runInProgress) {
       runInProgress = true;
@@ -673,13 +698,24 @@ function applyRoomView(view: RoomView) {
     history: view.history,
     isRoomHost: view.isHost,
   };
+  if (
+    previousPhase === "testing" &&
+    view.phase === "guessing" &&
+    view.canRunTest &&
+    runInProgress
+  )
+    activeRoomTestController?.abort();
   if (view.phase === "testing") {
-    if (previousPhase !== "testing" && !view.isHost)
+    if (previousPhase !== "testing" && !view.canRunTest)
       playCue("start", activeTheme, state.settings.sound);
     setRemoteTesting(true);
   } else {
     setRemoteTesting(false);
-    if (previousPhase === "testing" && view.phase === "results" && !view.isHost)
+    if (
+      previousPhase === "testing" &&
+      view.phase === "results" &&
+      !view.canRunTest
+    )
       playCue("reveal", activeTheme, state.settings.sound);
     if (previousPhase !== "champion" && view.phase === "champion")
       playCue("champion", activeTheme, state.settings.sound);
@@ -704,7 +740,7 @@ function applyRoomProgress(progress: {
   steps?: number;
   bytes?: number;
 }) {
-  if (!roomMode || isRoomHost() || state.phase !== "testing") return;
+  if (!roomMode || canRunRoomTest() || state.phase !== "testing") return;
   if (lastRoomProgressPhase !== progress.phase) {
     lastRoomProgressPhase = progress.phase;
     playCue("phase", activeTheme, state.settings.sound);
@@ -726,13 +762,15 @@ function applyRoomProgress(progress: {
 
 async function startTest() {
   const devRun = isDevMode();
-  if (roomMode && (!isRoomHost() || state.phase !== "guessing")) return;
+  if (roomMode && (!canRunRoomTest() || state.phase !== "guessing")) return;
   if (
     runInProgress ||
     (!devRun && !state.players.some((player) => player.locked))
   )
     return;
+  const roomRunController = roomMode ? new AbortController() : null;
   if (roomMode && !store.send({ type: "start" })) return;
+  if (roomRunController) activeRoomTestController = roomRunController;
   runInProgress = true;
   lastSpeedPhase = null;
   errorNote.hidden = true;
@@ -825,7 +863,9 @@ async function startTest() {
                 new CustomEvent("gts:dev-details", { detail: details }),
               ),
           }
-        : undefined,
+        : roomRunController
+          ? { signal: roomRunController.signal }
+          : undefined,
     );
     setProgress(steps, steps);
     setGauge(actual.down, actual.down);
@@ -869,6 +909,17 @@ async function startTest() {
     }
     render();
   } catch (error) {
+    if (roomMode && error instanceof SpeedTestCancelledError) {
+      errorNote.hidden = true;
+      document.documentElement.dataset.phase = state.history.length
+        ? "done"
+        : "idle";
+      setGauge(0);
+      $<HTMLSpanElement>("[data-mode]").textContent = "Download";
+      $<HTMLSpanElement>("[data-unit]").textContent = "Mbps";
+      render();
+      return;
+    }
     if (roomMode) {
       store.send({ type: "abort" });
     } else if (!devRun) {
@@ -888,6 +939,8 @@ async function startTest() {
     $<HTMLSpanElement>("[data-unit]").textContent = "Mbps";
     render();
   } finally {
+    if (roomRunController && activeRoomTestController === roomRunController)
+      activeRoomTestController = null;
     window.clearInterval(elapsedTimer);
     window.clearInterval(slowHintTimer);
     liveDot.classList.remove("is-live");
@@ -896,8 +949,11 @@ async function startTest() {
     slowHint.hidden = true;
     progressBar.hidden = true;
     runInProgress = false;
-    syncControls();
-    if (devRun && !isDevMode()) render();
+    if (roomMode) render();
+    else {
+      syncControls();
+      if (devRun && !isDevMode()) render();
+    }
   }
 }
 
@@ -921,7 +977,7 @@ document.addEventListener("gts:room-state", (event) => {
   if (!roomMode) return;
   const view = (event as CustomEvent<RoomView>).detail;
   const recoverInterruptedTest =
-    view.isHost &&
+    view.canRunTest &&
     view.phase === "testing" &&
     !runInProgress &&
     !interruptedRoomTestRecoveryRequested;

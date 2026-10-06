@@ -25,6 +25,7 @@ export interface RoomPlayer extends Player {
 export interface Room {
   code: string;
   hostToken: string;
+  testerId: string | null;
   game: Omit<GameState, "players" | "view"> & { players: RoomPlayer[] };
   updatedAt: number;
 }
@@ -36,6 +37,7 @@ export type ClientAction =
   | { type: "unlock"; id: string }
   | { type: "remove"; id: string }
   | { type: "settings"; rounds: GameSettings["rounds"]; tieMode: TieMode }
+  | { type: "setTester"; id: string | null }
   | { type: "start" }
   | { type: "result"; down: number; up: number; ping?: number }
   | { type: "abort" }
@@ -48,6 +50,8 @@ export interface RoomView extends Omit<
 > {
   code: string;
   isHost: boolean;
+  testerId: string | null;
+  canRunTest: boolean;
   players: (Player & { mine: boolean })[];
   settings: Pick<GameSettings, "rounds" | "tieMode">;
   view: GameState["view"];
@@ -83,6 +87,7 @@ export function createRoom(code: string, hostToken: string, now: number): Room {
   return {
     code: normalized,
     hostToken,
+    testerId: null,
     game: {
       players: [],
       settings: {
@@ -196,7 +201,16 @@ export function applyAction(
         return { error: "You can only remove your own player." };
       if (game.phase === "testing")
         return { error: "Players cannot be removed during a test." };
-      return updateRoomGame(room, removePlayer(game, player.id), now);
+      const updated = updateRoomGame(room, removePlayer(game, player.id), now);
+      return {
+        room: {
+          ...updated.room,
+          testerId:
+            (room.testerId ?? null) === player.id
+              ? null
+              : (room.testerId ?? null),
+        },
+      };
     }
     case "settings": {
       if (!isHost) return { error: "Only the host can change settings." };
@@ -217,8 +231,26 @@ export function applyAction(
         now,
       );
     }
+    case "setTester": {
+      if (!isHost) return { error: "Only the host can choose the tester." };
+      if (game.phase === "testing")
+        return { error: "The tester cannot change during a test." };
+      if (
+        action.id !== null &&
+        !room.game.players.some((player) => player.id === action.id)
+      )
+        return { error: "The selected tester is not in this room." };
+      return {
+        room: {
+          ...room,
+          testerId: action.id as string | null,
+          updatedAt: now,
+        },
+      };
+    }
     case "start": {
-      if (!isHost) return { error: "Only the host can start the test." };
+      if (!canRunTest(room, clientId, isHost))
+        return { error: "Only the assigned tester can start the test." };
       if (game.phase !== "guessing")
         return { error: "The game is not ready to start." };
       if (!game.players.some((player) => player.locked))
@@ -226,7 +258,8 @@ export function applyAction(
       return updateRoomGame(room, { ...game, phase: "testing" }, now);
     }
     case "result": {
-      if (!isHost) return { error: "Only the host can submit the result." };
+      if (!canRunTest(room, clientId, isHost))
+        return { error: "Only the assigned tester can submit the result." };
       if (game.phase !== "testing")
         return { error: "There is no test in progress." };
       if (!validSpeed(action.down) || !validSpeed(action.up))
@@ -241,7 +274,8 @@ export function applyAction(
       return updateRoomGame(room, result.state, now);
     }
     case "abort": {
-      if (!isHost) return { error: "Only the host can stop the test." };
+      if (!canRunTest(room, clientId, isHost) && !isHost)
+        return { error: "Only the tester or host can stop the test." };
       if (game.phase !== "testing")
         return { error: "There is no test in progress." };
       return updateRoomGame(room, { ...game, phase: "guessing" }, now);
@@ -275,6 +309,8 @@ export function viewFor(
   return {
     code: room.code,
     isHost,
+    testerId: room.testerId ?? null,
+    canRunTest: canRunTest(room, clientId, isHost),
     players: room.game.players.map(({ owner, ...player }) => ({
       ...player,
       guess:
@@ -296,6 +332,17 @@ export function viewFor(
     phase: room.game.phase,
     view: "grid",
   };
+}
+
+export function canRunTest(
+  room: Room,
+  clientId: string,
+  isHost: boolean,
+): boolean {
+  const testerId = room.testerId ?? null;
+  if (testerId === null) return isHost;
+  const tester = room.game.players.find((player) => player.id === testerId);
+  return tester ? tester.owner === clientId : isHost;
 }
 
 function toGameState(game: Room["game"]): GameState {
@@ -323,6 +370,7 @@ function updateRoomGame(
   return {
     room: {
       ...room,
+      testerId: room.testerId ?? null,
       updatedAt: now,
       game: {
         players: game.players.map((player) => ({
