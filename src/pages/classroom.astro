@@ -1,5 +1,6 @@
 ---
 import Base from "../layouts/Base.astro";
+import { Icon } from "astro-icon/components";
 
 const description =
   "A free internet speed game for teachers. Build a private class roster, make balanced teams or spotlight students, then guess a real speed test together on one shared screen.";
@@ -388,7 +389,7 @@ const faqSchema = {
           type="button"
           data-close-student
           aria-label="Close student editor"
-        >×</button>
+        ><Icon name="ph:x-bold" /></button>
       </div>
       <form class="dialog-form" data-student-form>
         <label class="dialog-field">
@@ -477,10 +478,11 @@ const faqSchema = {
     justify-content: space-between;
     gap: 16px;
     padding: 12px 17px;
-    border: 2.5px solid var(--ink);
+    border: 2.5px solid var(--on-pastel);
     border-radius: 18px;
     background: var(--surface);
     box-shadow: 5px 5px 0 var(--shadow);
+    color: var(--on-pastel);
   }
 
   .classroom-team-sticker-rockets {
@@ -545,9 +547,10 @@ const faqSchema = {
     gap: 10px;
     margin: 0;
     padding: 10px 18px;
+    border-color: var(--on-pastel);
     background: #e8f7cf;
     box-shadow: 4px 4px 0 var(--shadow);
-    color: #1f4e24;
+    color: var(--on-pastel);
     font-size: 1rem;
     transform: rotate(-1deg);
   }
@@ -589,7 +592,7 @@ const faqSchema = {
   .classroom-kicker {
     display: inline-block;
     margin-bottom: 5px;
-    color: var(--accent-dark, #a43d12);
+    color: var(--muted);
     font-family: var(--mono, ui-monospace, monospace);
     font-size: 0.72rem;
     font-weight: 900;
@@ -601,10 +604,11 @@ const faqSchema = {
   .play-ready {
     flex: none;
     padding: 8px 12px;
-    border: 2px solid var(--ink);
+    border: 2px solid var(--on-pastel);
     border-radius: 999px;
     background: #fff2b8;
     box-shadow: 2px 2px 0 var(--shadow);
+    color: var(--on-pastel);
     font-size: 0.82rem;
     font-weight: 900;
   }
@@ -650,9 +654,15 @@ const faqSchema = {
   }
 
   .class-picker :global(.class-card[aria-pressed="true"]) {
+    border-color: var(--on-pastel);
     background: #fff1b3;
-    outline: 3px solid #ebad24;
+    color: var(--on-pastel);
+    outline: 3px solid var(--on-pastel);
     outline-offset: 2px;
+  }
+
+  .class-picker :global(.class-card[aria-pressed="true"] .class-card-copy small) {
+    color: var(--on-pastel);
   }
 
   .class-picker :global(.class-card-face) {
@@ -661,7 +671,7 @@ const faqSchema = {
     height: 56px;
     flex: none;
     place-items: center;
-    border: 2px solid var(--ink);
+    border: 2px solid var(--on-pastel);
     border-radius: 16px;
     background: #fff;
     font-size: 1.9rem;
@@ -687,7 +697,9 @@ const faqSchema = {
   .class-picker :global(.new-class-card) {
     justify-content: center;
     border-style: dashed;
+    border-color: var(--on-pastel);
     background: #fff9e8;
+    color: var(--on-pastel);
     font-size: 1.2rem;
     font-weight: 900;
     text-align: center;
@@ -698,9 +710,10 @@ const faqSchema = {
     width: 40px;
     height: 40px;
     place-items: center;
-    border: 2px solid var(--ink);
+    border: 2px solid var(--on-accent);
     border-radius: 50%;
     background: var(--accent);
+    color: var(--on-accent);
     font-size: 1.7rem;
   }
 
@@ -712,10 +725,11 @@ const faqSchema = {
     align-items: center;
     gap: 22px;
     padding: 22px 24px;
-    border: 2.5px solid var(--ink);
+    border: 2.5px solid var(--on-pastel);
     border-radius: 22px;
-    background: linear-gradient(115deg, #fff5ce, var(--surface) 56%);
+    background: linear-gradient(115deg, #fff5ce, #fffdf6 56%);
     box-shadow: 5px 5px 0 var(--shadow);
+    color: var(--on-pastel);
   }
 
   .class-picker :global(.empty-class-face) {
@@ -723,7 +737,7 @@ const faqSchema = {
     width: 76px;
     height: 76px;
     place-items: center;
-    border: 2.5px solid var(--ink);
+    border: 2.5px solid var(--on-pastel);
     border-radius: 22px;
     background: #fff;
     box-shadow: 3px 3px 0 var(--shadow);
@@ -763,9 +777,10 @@ const faqSchema = {
     height: 27px;
     flex: none;
     place-items: center;
-    border: 1.5px solid var(--ink);
+    border: 1.5px solid var(--on-pastel);
     border-radius: 50%;
     background: #ffdb66;
+    color: var(--on-pastel);
     font-size: 0.78rem;
   }
 
@@ -773,6 +788,7 @@ const faqSchema = {
     min-height: 58px;
     justify-content: center;
     border-style: solid;
+    border-color: var(--on-accent);
     background: var(--accent);
     box-shadow: 4px 4px 0 var(--shadow);
     color: var(--on-accent);
@@ -794,14 +810,14 @@ const faqSchema = {
   .classroom-toast {
     min-height: 0;
     margin: 0;
-    color: var(--ink);
+    color: var(--on-pastel);
     font-weight: 800;
   }
 
   .classroom-toast:not(:empty) {
     margin: 0 0 14px;
     padding: 12px 16px;
-    border: 2px solid var(--ink);
+    border: 2px solid var(--on-pastel);
     border-radius: 14px;
     background: #e8f7cf;
     box-shadow: 3px 3px 0 var(--shadow);
@@ -889,6 +905,7 @@ const faqSchema = {
   }
 
   .emoji-picker :global(.emoji-choice[aria-pressed="true"]) {
+    border-color: var(--on-pastel);
     background: #fff0ad;
     box-shadow: 2px 2px 0 var(--shadow);
   }
@@ -917,11 +934,11 @@ const faqSchema = {
     min-height: 50px;
     justify-self: start;
     padding: 9px 18px;
-    border: 2.5px solid var(--ink);
+    border: 2.5px solid var(--on-pastel);
     border-radius: 999px;
     background: #fff1b8;
     box-shadow: 3px 3px 0 var(--shadow);
-    color: var(--ink);
+    color: var(--on-pastel);
     font: 850 1rem "Bricolage Grotesque Variable", sans-serif;
   }
 
@@ -1003,7 +1020,7 @@ const faqSchema = {
   }
 
   .danger-button {
-    color: #8c1d18;
+    color: var(--danger-ink);
   }
 
   .play-panel {
@@ -1041,7 +1058,9 @@ const faqSchema = {
   }
 
   .mode-card:has(input:checked) {
+    border-color: var(--on-pastel);
     background: #fff1b8;
+    color: var(--on-pastel);
     box-shadow: 4px 4px 0 var(--shadow);
   }
 
@@ -1050,7 +1069,7 @@ const faqSchema = {
     height: 21px;
     grid-row: 1;
     grid-column: 1;
-    accent-color: var(--accent-dark, #a43d12);
+    accent-color: var(--on-pastel);
   }
 
   .mode-card-icon {
@@ -1070,6 +1089,10 @@ const faqSchema = {
     color: var(--muted);
     font-size: 0.79rem;
     line-height: 1.3;
+  }
+
+  .mode-card:has(input:checked) small {
+    color: var(--on-pastel);
   }
 
   .team-setup,
@@ -1101,10 +1124,11 @@ const faqSchema = {
   .team-preview :global(.team-card) {
     min-width: 0;
     padding: 12px;
-    border: 2px solid var(--ink);
+    border: 2px solid var(--on-pastel);
     border-radius: 15px;
     background: #fff5ce;
     box-shadow: 3px 3px 0 var(--shadow);
+    color: var(--on-pastel);
   }
 
   .team-preview :global(.team-card:nth-child(3n + 2)) {
@@ -1150,7 +1174,7 @@ const faqSchema = {
     border: 1px solid rgb(44 39 34 / 28%);
     border-radius: 999px;
     background: rgb(255 255 255 / 76%);
-    color: var(--ink);
+    color: var(--on-pastel);
     font-size: 0.82rem;
     font-weight: 750;
     text-align: left;
@@ -1169,7 +1193,7 @@ const faqSchema = {
   }
 
   .team-preview :global(.team-member-button:hover) {
-    border-color: var(--ink);
+    border-color: var(--on-pastel);
     background: #fff;
   }
 
@@ -1183,7 +1207,7 @@ const faqSchema = {
     padding: 13px;
     border: 2px dashed var(--ink);
     border-radius: 15px;
-    background: rgb(255 255 255 / 48%);
+    background: var(--surface);
   }
 
   .classroom-page :global(.preview-placeholder) {
@@ -1198,10 +1222,11 @@ const faqSchema = {
     align-items: center;
     gap: 8px;
     padding: 9px 14px;
-    border: 2px solid var(--ink);
+    border: 2px solid var(--on-pastel);
     border-radius: 15px;
     background: #fff0ac;
     box-shadow: 3px 3px 0 var(--shadow);
+    color: var(--on-pastel);
     font-weight: 850;
   }
 
@@ -1255,7 +1280,7 @@ const faqSchema = {
     padding: 8px 4px;
     border: 0;
     background: transparent;
-    color: var(--accent-dark, #a43d12);
+    color: var(--ink);
     font-weight: 850;
     text-decoration: underline;
     text-underline-offset: 3px;
@@ -1279,7 +1304,7 @@ const faqSchema = {
 
   .game-note {
     margin: 12px 0 0;
-    color: #8c1d18;
+    color: var(--danger-ink);
     font-weight: 800;
   }
 
@@ -1374,10 +1399,10 @@ const faqSchema = {
     width: 36px;
     height: 36px;
     place-items: center;
-    border: 2px solid var(--ink);
+    border: 2px solid var(--on-pastel);
     border-radius: 50%;
     background: #ffdb66;
-    color: var(--ink);
+    color: var(--on-pastel);
     content: counter(classroom-step);
     font-weight: 950;
   }
@@ -1393,11 +1418,14 @@ const faqSchema = {
     gap: 12px;
     margin: 20px 0;
     padding: 15px 18px;
+    border-radius: 14px;
     background: #e3f5fa;
+    color: var(--on-pastel);
   }
 
   .projector-tip strong {
     flex: none;
+    color: var(--on-pastel);
   }
 
   .classroom-explainer a {
@@ -1445,7 +1473,7 @@ const faqSchema = {
   .dialog-error {
     min-height: 0;
     margin: 0;
-    color: #a42b21;
+    color: var(--danger-ink);
     font-weight: 800;
   }
 

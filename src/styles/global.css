@@ -40,7 +40,7 @@
 .room-kicker {
   display: inline-block;
   margin-bottom: 5px;
-  color: var(--accent-dark, #a43d12);
+  color: var(--muted);
   font-family: var(--mono, ui-monospace, monospace);
   font-size: 0.74rem;
   font-weight: 900;
@@ -87,7 +87,7 @@
 .room-entry-error,
 .room-join-error {
   margin: 0;
-  color: #a42b21;
+  color: var(--danger-ink);
   font-weight: 800;
 }
 
@@ -266,7 +266,7 @@
 .room-stop-test {
   border-color: #9b3229;
   background: #ffe9e5;
-  color: #7e211a;
+  color: var(--on-pastel);
 }
 
 .room-connection {
@@ -274,7 +274,7 @@
   border: 1px solid rgb(37 98 64 / 28%);
   border-radius: 999px;
   background: #e6f7e9;
-  color: #21623d;
+  color: var(--on-pastel);
   font-size: 0.83rem;
   font-weight: 850;
   white-space: nowrap;
@@ -415,6 +415,8 @@ html[data-room="1"] .dev-console {
   --muted: #565b66;
   --accent: #ff5a36;
   --on-accent: #16171b;
+  --on-pastel: #17171c;
+  --danger-ink: #8c1d18;
   --soft: #dfe3ea;
   --shadow: #16171b;
   --r: 14px;
@@ -428,6 +430,7 @@ html[data-room="1"] .dev-console {
   --muted: #b8bdc6;
   --accent: #ff6b4a;
   --on-accent: #141518;
+  --danger-ink: #ffaaa3;
   --soft: #2a2d33;
   --shadow: #000000c0;
   color-scheme: dark;
@@ -440,6 +443,7 @@ html[data-room="1"] .dev-console {
   --muted: #d4c6df;
   --accent: #ff8a1f;
   --on-accent: #1c1526;
+  --danger-ink: #ffaaa3;
   --soft: #3a2c4b;
   --shadow: #0b0710;
   color-scheme: dark;
@@ -452,6 +456,7 @@ html[data-room="1"] .dev-console {
   --muted: #f0d9c9;
   --accent: #ffbd38;
   --on-accent: #2b0e22;
+  --danger-ink: #ffaaa3;
   --soft: #561f44;
   --shadow: #12040d;
   color-scheme: dark;
@@ -476,6 +481,7 @@ html[data-room="1"] .dev-console {
   --muted: #c4d1df;
   --accent: #92dcff;
   --on-accent: #132432;
+  --danger-ink: #ffaaa3;
   --soft: #364b62;
   --shadow: #0b121c;
   color-scheme: dark;
@@ -488,6 +494,7 @@ html[data-room="1"] .dev-console {
   --muted: #c2d7cb;
   --accent: #c6322b;
   --on-accent: #fff;
+  --danger-ink: #ffaaa3;
   --soft: #21503f;
   --shadow: #06140f;
   color-scheme: dark;
@@ -500,6 +507,7 @@ html[data-room="1"] .dev-console {
   --muted: #d3cdea;
   --accent: #ffd166;
   --on-accent: #24152b;
+  --danger-ink: #ffaaa3;
   --soft: #393354;
   --shadow: #0b0817;
   color-scheme: dark;
@@ -1569,8 +1577,9 @@ html[data-dev="1"] .intro .play-stat {
 }
 
 .locked-pill {
+  border-color: var(--on-pastel);
   background: #d7f4d5;
-  color: #173e19;
+  color: var(--on-pastel);
 }
 
 .points-pill,
@@ -2258,6 +2267,7 @@ dialog::backdrop {
 
 .dialog-head {
   display: flex;
+  width: 100%;
   align-items: start;
   justify-content: space-between;
   gap: 12px;
@@ -2265,21 +2275,40 @@ dialog::backdrop {
 }
 
 .dialog-head h2 {
+  min-width: 0;
+  flex: 1;
   margin: 0;
   font-size: clamp(26px, 5vw, 34px);
 }
 
 .dialog-close {
   display: grid;
-  width: 38px;
-  height: 38px;
+  width: 44px;
+  height: 44px;
   flex: none;
   place-items: center;
-  border: 2px solid var(--ink);
-  border-radius: 50%;
+  border: 2.5px solid var(--ink);
+  border-radius: 12px;
   background: var(--surface);
+  box-shadow: 3px 3px 0 var(--shadow);
+  color: var(--ink);
   font-size: 20px;
   font-weight: 900;
+  text-decoration: none;
+}
+
+.dialog-close:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 var(--shadow);
+}
+
+.dialog-close:focus {
+  outline: none;
+}
+
+.dialog-close:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
 }
 
 .dialog-close svg {
@@ -2401,32 +2430,6 @@ dialog::backdrop {
 }
 
 .confetti-setting input {
-  width: 22px;
-  height: 22px;
-  accent-color: var(--accent);
-}
-
-.tv-setting {
-  grid-template-columns: 1fr auto;
-  align-items: center;
-  padding: 12px 14px;
-  border: 2px solid var(--ink);
-  border-radius: 12px;
-  background: var(--bg);
-}
-
-.tv-setting span {
-  display: grid;
-  gap: 3px;
-}
-
-.tv-setting small {
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.tv-setting input {
   width: 22px;
   height: 22px;
   accent-color: var(--accent);

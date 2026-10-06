@@ -31,7 +31,6 @@ const modeSwitch = document.querySelector<HTMLDivElement>("[data-mode-switch]");
 const modeOptions = Array.from(
   modeSwitch?.querySelectorAll<HTMLButtonElement>("[data-mode-option]") ?? [],
 );
-const tvModeInput = $<HTMLInputElement>('input[name="tvMode"]');
 const fxLayer = $<HTMLDivElement>("[data-fx-layer]");
 const reduceMotion = window.matchMedia(
   "(prefers-reduced-motion: reduce)",
@@ -110,7 +109,6 @@ function syncFullscreenControl() {
 
 function syncTVControls() {
   tvButton.setAttribute("aria-pressed", String(tvMode));
-  tvModeInput.checked = tvMode;
   syncFullscreenControl();
 }
 
@@ -322,7 +320,6 @@ function fillSettingsForm() {
     settings.sound;
   (settingsForm.elements.namedItem("confetti") as HTMLInputElement).checked =
     settings.confetti;
-  tvModeInput.checked = tvMode;
 }
 
 themeTrigger.addEventListener("click", () => {
@@ -444,7 +441,6 @@ document.addEventListener("gts:tv-change", syncModeSwitch);
 
 settingsForm.addEventListener("submit", (event) => {
   event.preventDefault();
-  const tvEnabled = tvModeInput.checked;
   const roundsValue = (
     settingsForm.elements.namedItem("rounds") as HTMLSelectElement
   ).value;
@@ -484,7 +480,6 @@ settingsForm.addEventListener("submit", (event) => {
   } else {
     saveSettings({ rounds, tieMode, themeMode, sound, confetti });
   }
-  setTVMode(tvEnabled);
   settingsDialog.close();
 });
 
