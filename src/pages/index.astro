@@ -299,6 +299,20 @@ const homeSchema: Record<string, unknown>[] = [
     </div>
   </dialog>
 
+  <dialog class="sticker-dialog" data-start-confirm-dialog aria-labelledby="start-confirm-title">
+    <div class="dialog-inner">
+      <div class="dialog-head">
+        <h2 id="start-confirm-title" class="display">Start anyway?</h2>
+      </div>
+      <p class="start-confirm-message" data-start-confirm-message></p>
+      <p class="start-confirm-note">They'll sit this round out with 0 points.</p>
+      <div class="dialog-actions">
+        <button class="go" type="button" data-start-anyway>Start anyway</button>
+        <button class="guess-button" type="button" data-wait-for-them>Wait for them</button>
+      </div>
+    </div>
+  </dialog>
+
   <dialog class="sticker-dialog room-join-dialog" data-room-join-dialog aria-labelledby="room-join-title">
     <div class="dialog-inner">
       <div class="dialog-head">

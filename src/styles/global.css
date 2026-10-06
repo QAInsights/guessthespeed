@@ -2327,6 +2327,36 @@ dialog::backdrop {
   font-size: 18px;
 }
 
+[data-start-confirm-dialog] .dialog-inner {
+  display: grid;
+  gap: 10px;
+}
+
+[data-start-confirm-dialog] .dialog-head {
+  margin-bottom: 4px;
+}
+
+.start-confirm-message {
+  margin: 0;
+  font-size: clamp(18px, 2.2vw, 23px);
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+.start-confirm-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+[data-start-confirm-dialog] .dialog-actions .guess-button {
+  min-height: 48px;
+  padding: 0 18px;
+  font-size: 18px;
+}
+
 .edit-role-fieldset {
   min-width: 0;
   margin: 0;
@@ -3518,5 +3548,34 @@ html[data-dev="1"] .dev-console {
   body.tv-cursor-hidden,
   body.tv-cursor-hidden * {
     cursor: none !important;
+  }
+
+  html[data-tv="1"] [data-start-confirm-dialog] {
+    width: min(76vw, 840px);
+  }
+
+  html[data-tv="1"] [data-start-confirm-dialog] .dialog-inner {
+    gap: 16px;
+    padding: clamp(36px, 3vw, 52px);
+  }
+
+  html[data-tv="1"] [data-start-confirm-dialog] .dialog-head h2 {
+    font-size: clamp(42px, 3.2vw, 56px);
+  }
+
+  html[data-tv="1"] .start-confirm-message {
+    font-size: clamp(26px, 2vw, 34px);
+  }
+
+  html[data-tv="1"] .start-confirm-note {
+    font-size: clamp(21px, 1.5vw, 27px);
+  }
+
+  html[data-tv="1"] [data-start-confirm-dialog] .dialog-actions .go,
+  html[data-tv="1"] [data-start-confirm-dialog] .dialog-actions .guess-button {
+    min-height: 68px;
+    padding-right: 30px;
+    padding-left: 30px;
+    font-size: clamp(22px, 1.6vw, 29px);
   }
 }

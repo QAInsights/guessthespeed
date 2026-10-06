@@ -8,7 +8,9 @@ import {
   lockGuess,
   newGame,
   nextRound,
+  pendingGuessers,
   saveGame,
+  startAnywayMessage,
   type GameState,
   type StorageLike,
   updatePlayer,
@@ -27,6 +29,84 @@ function memoryStorage(
     },
   };
 }
+
+function playersWithLocks(names: string[], lockedNames: string[]) {
+  const defaults = initialGameState().players;
+  return names.map((name, index) => ({
+    ...defaults[index % defaults.length],
+    id: `p-${index}`,
+    name,
+    locked: lockedNames.includes(name),
+  }));
+}
+
+describe("start confirmation helpers", () => {
+  it("returns pending players in their original order", () => {
+    const players = playersWithLocks(["Mom", "Dad", "Big Sis"], ["Mom"]);
+
+    expect(pendingGuessers(players)).toEqual([players[1], players[2]]);
+  });
+
+  it("uses singular grammar for one pending player", () => {
+    const players = playersWithLocks(
+      ["Mom", "Dad", "Big Sis", "Little One"],
+      ["Mom", "Big Sis", "Little One"],
+    );
+
+    expect(startAnywayMessage(players)).toBe("1 of 4 hasn't guessed yet: Dad.");
+  });
+
+  it("joins two pending player names with and", () => {
+    const players = playersWithLocks(
+      ["Mom", "Dad", "Big Sis", "Little One"],
+      ["Mom", "Big Sis"],
+    );
+
+    expect(startAnywayMessage(players)).toBe(
+      "2 of 4 haven't guessed yet: Dad and Little One.",
+    );
+  });
+
+  it("joins three pending player names in order", () => {
+    const players = playersWithLocks(
+      ["Mom", "Dad", "Big Sis", "Little One", "Cousin"],
+      ["Big Sis", "Cousin"],
+    );
+
+    expect(startAnywayMessage(players)).toBe(
+      "3 of 5 haven't guessed yet: Mom, Dad and Little One.",
+    );
+  });
+
+  it("lists the first three names and the remaining count", () => {
+    const players = playersWithLocks(
+      ["A", "B", "C", "D", "E", "F", "G", "H"],
+      ["G", "H"],
+    );
+
+    expect(startAnywayMessage(players)).toBe(
+      "6 of 8 haven't guessed yet: A, B, C and 3 more.",
+    );
+  });
+
+  it("returns null when nobody is pending", () => {
+    const players = playersWithLocks(
+      ["Mom", "Dad", "Big Sis", "Little One"],
+      ["Mom", "Dad", "Big Sis", "Little One"],
+    );
+
+    expect(startAnywayMessage(players)).toBeNull();
+  });
+
+  it("returns null when nobody is locked", () => {
+    const players = playersWithLocks(
+      ["Mom", "Dad", "Big Sis", "Little One"],
+      [],
+    );
+
+    expect(startAnywayMessage(players)).toBeNull();
+  });
+});
 
 describe("game state", () => {
   it("starts with a fresh unlocked default family and adds players with a 16-character name limit", () => {
