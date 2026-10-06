@@ -3,12 +3,17 @@ import { isThemeMode, type GameSettings } from "../lib/game";
 export interface RoomLocalSettings {
   themeMode: GameSettings["themeMode"];
   sound: boolean;
+  confetti: boolean;
 }
 
 const STORAGE_KEY = "gts:room-settings";
 
 export function readRoomLocalSettings(): RoomLocalSettings {
-  const defaults: RoomLocalSettings = { themeMode: "auto", sound: true };
+  const defaults: RoomLocalSettings = {
+    themeMode: "auto",
+    sound: true,
+    confetti: true,
+  };
   try {
     const saved: unknown = JSON.parse(
       localStorage.getItem(STORAGE_KEY) ?? "null",
@@ -20,6 +25,10 @@ export function readRoomLocalSettings(): RoomLocalSettings {
           ? saved.themeMode
           : defaults.themeMode,
       sound: typeof saved.sound === "boolean" ? saved.sound : defaults.sound,
+      confetti:
+        typeof saved.confetti === "boolean"
+          ? saved.confetti
+          : defaults.confetti,
     };
   } catch {
     return defaults;

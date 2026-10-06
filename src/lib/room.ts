@@ -1,6 +1,7 @@
 import {
   addPlayer,
   applyResult,
+  initialGameState,
   lockGuess,
   newGame,
   nextRound,
@@ -26,7 +27,10 @@ export interface Room {
   code: string;
   hostToken: string;
   testerId: string | null;
-  game: Omit<GameState, "players" | "view"> & { players: RoomPlayer[] };
+  game: Omit<GameState, "players" | "settings" | "view"> & {
+    players: RoomPlayer[];
+    settings: Pick<GameSettings, "rounds" | "tieMode">;
+  };
   updatedAt: number;
 }
 
@@ -93,8 +97,6 @@ export function createRoom(code: string, hostToken: string, now: number): Room {
       settings: {
         rounds: 3,
         tieMode: "share",
-        themeMode: "auto",
-        sound: true,
       },
       round: 1,
       history: [],
@@ -351,7 +353,10 @@ function toGameState(game: Room["game"]): GameState {
       ...player,
       guess: { ...player.guess },
     })),
-    settings: { ...game.settings },
+    settings: {
+      ...initialGameState().settings,
+      ...game.settings,
+    },
     round: game.round,
     history: game.history,
     phase: game.phase,
@@ -377,7 +382,10 @@ function updateRoomGame(
           ...player,
           owner: owners.get(player.id) ?? "",
         })),
-        settings: { ...game.settings },
+        settings: {
+          rounds: game.settings.rounds,
+          tieMode: game.settings.tieMode,
+        },
         round: game.round,
         history: game.history,
         phase: game.phase,

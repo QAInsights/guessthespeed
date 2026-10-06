@@ -75,6 +75,31 @@ describe("game state", () => {
     expect(loadGame(memoryStorage("{bad json")).players).toHaveLength(4);
   });
 
+  it("defaults confetti on for old or invalid saved settings", () => {
+    const saved = initialGameState();
+    const legacySettings = { ...saved.settings };
+    delete (legacySettings as Partial<typeof saved.settings>).confetti;
+    const legacySave = { ...saved, settings: legacySettings };
+    const invalidSave = {
+      ...saved,
+      settings: { ...saved.settings, confetti: "off" },
+    };
+    const disabledSave = {
+      ...saved,
+      settings: { ...saved.settings, confetti: false },
+    };
+
+    expect(
+      loadGame(memoryStorage(JSON.stringify(legacySave))).settings.confetti,
+    ).toBe(true);
+    expect(
+      loadGame(memoryStorage(JSON.stringify(invalidSave))).settings.confetti,
+    ).toBe(true);
+    expect(
+      loadGame(memoryStorage(JSON.stringify(disabledSave))).settings.confetti,
+    ).toBe(false);
+  });
+
   it("preserves saved names when the default family names change", () => {
     const saved = initialGameState();
     saved.players[2].name = "Priya";
@@ -89,7 +114,6 @@ describe("game state", () => {
       "Little Sis",
     ]);
   });
-
   it("updates a player while preserving score, lock, and guess", () => {
     const state = initialGameState();
     state.players[0].score = 5;

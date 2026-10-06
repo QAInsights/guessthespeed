@@ -26,7 +26,10 @@ const settingsDialog = $<HTMLDialogElement>("[data-settings-dialog]");
 const closeSettingsButton = $<HTMLButtonElement>("[data-close-settings]");
 const settingsForm = $<HTMLFormElement>("[data-settings-form]");
 const devBadge = $<HTMLButtonElement>("[data-dev-badge]");
-const devModeInput = $<HTMLInputElement>('input[name="devMode"]');
+const modeSwitch = document.querySelector<HTMLDivElement>("[data-mode-switch]");
+const modeOptions = Array.from(
+  modeSwitch?.querySelectorAll<HTMLButtonElement>("[data-mode-option]") ?? [],
+);
 const tvModeInput = $<HTMLInputElement>('input[name="tvMode"]');
 const fxLayer = $<HTMLDivElement>("[data-fx-layer]");
 const reduceMotion = window.matchMedia(
@@ -65,13 +68,24 @@ let wakeLockRequest = 0;
 let cursorHideTimer = 0;
 const coarsePointer = window.matchMedia("(pointer: coarse)").matches;
 
+function syncModeSwitch() {
+  if (!modeSwitch) return;
+  modeSwitch.hidden = roomMode || tvMode;
+  const selectedMode = devMode ? "dev" : "game";
+  modeOptions.forEach((option) => {
+    const selected = option.dataset.modeOption === selectedMode;
+    option.setAttribute("aria-checked", String(selected));
+    option.tabIndex = selected ? 0 : -1;
+  });
+}
+
 function setDevMode(enabled: boolean) {
   if (roomMode) return;
   devMode = enabled;
   if (enabled) document.documentElement.dataset.dev = "1";
   else delete document.documentElement.dataset.dev;
   devBadge.hidden = !enabled;
-  devModeInput.checked = enabled;
+  syncModeSwitch();
   try {
     localStorage.setItem("gts:dev", enabled ? "1" : "0");
   } catch {}
@@ -261,7 +275,6 @@ function syncControls() {
   roundsControl.disabled = roomMode && (!roomHost || testing);
   tieControl.disabled = roomMode && (!roomHost || testing);
   $<HTMLElement>("[data-room-settings-note]").hidden = !roomMode || roomHost;
-  $<HTMLElement>(".dev-setting").hidden = roomMode;
   soundButton.setAttribute("aria-pressed", String(settings.sound));
   soundButton.setAttribute(
     "aria-label",
@@ -277,6 +290,7 @@ function saveSettings(patch: Partial<GameSettings>, playSound = false) {
     saveRoomLocalSettings({
       themeMode: settings.themeMode,
       sound: settings.sound,
+      confetti: settings.confetti,
     });
   } else {
     const currentGame = loadGame();
@@ -303,7 +317,8 @@ function fillSettingsForm() {
     settings.themeMode;
   (settingsForm.elements.namedItem("sound") as HTMLInputElement).checked =
     settings.sound;
-  devModeInput.checked = devMode;
+  (settingsForm.elements.namedItem("confetti") as HTMLInputElement).checked =
+    settings.confetti;
   tvModeInput.checked = tvMode;
 }
 
@@ -386,6 +401,44 @@ settingsButton.addEventListener("click", () => {
 closeSettingsButton.addEventListener("click", () => settingsDialog.close());
 devBadge.addEventListener("click", () => setDevMode(false));
 
+modeOptions.forEach((option) => {
+  option.addEventListener("click", () => {
+    setDevMode(option.dataset.modeOption === "dev");
+  });
+});
+
+modeSwitch?.addEventListener("keydown", (event) => {
+  if (
+    !["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key) ||
+    !modeOptions.length
+  )
+    return;
+  event.preventDefault();
+  const focusedIndex = modeOptions.indexOf(event.target as HTMLButtonElement);
+  const selectedIndex = modeOptions.findIndex(
+    (option) => option.getAttribute("aria-checked") === "true",
+  );
+  const currentIndex = focusedIndex >= 0 ? focusedIndex : selectedIndex;
+  const nextIndex =
+    event.key === "Home"
+      ? 0
+      : event.key === "End"
+        ? modeOptions.length - 1
+        : event.key === "ArrowRight"
+          ? (currentIndex + 1) % modeOptions.length
+          : (currentIndex - 1 + modeOptions.length) % modeOptions.length;
+  const option = modeOptions[nextIndex];
+  setDevMode(option.dataset.modeOption === "dev");
+  option.focus();
+});
+
+document.addEventListener("gts:dev-change", (event) => {
+  devMode = (event as CustomEvent<boolean>).detail;
+  syncModeSwitch();
+});
+
+document.addEventListener("gts:tv-change", syncModeSwitch);
+
 settingsForm.addEventListener("submit", (event) => {
   event.preventDefault();
   const roundsValue = (
@@ -413,6 +466,9 @@ settingsForm.addEventListener("submit", (event) => {
         : currentSettings.themeMode;
   const sound = (settingsForm.elements.namedItem("sound") as HTMLInputElement)
     .checked;
+  const confetti = (
+    settingsForm.elements.namedItem("confetti") as HTMLInputElement
+  ).checked;
   if (roomMode) {
     if (roomHost)
       document.dispatchEvent(
@@ -420,10 +476,9 @@ settingsForm.addEventListener("submit", (event) => {
           detail: { rounds, tieMode },
         }),
       );
-    saveSettings({ themeMode, sound });
+    saveSettings({ themeMode, sound, confetti });
   } else {
-    saveSettings({ rounds, tieMode, themeMode, sound });
-    setDevMode(devModeInput.checked);
+    saveSettings({ rounds, tieMode, themeMode, sound, confetti });
   }
   setTVMode(tvModeInput.checked);
   settingsDialog.close();
@@ -464,6 +519,7 @@ window
   });
 
 applyTheme(settings.themeMode);
+syncModeSwitch();
 syncControls();
 if (tvMode) {
   void acquireScreenWakeLock();

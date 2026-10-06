@@ -46,6 +46,7 @@ export interface GameSettings {
   tieMode: TieMode;
   themeMode: "auto" | ThemeId;
   sound: boolean;
+  confetti: boolean;
 }
 
 export interface RoundActual extends Actual {
@@ -77,7 +78,13 @@ export function initialGameState(): GameState {
       guess: { down: null, up: null },
       locked: false,
     })),
-    settings: { rounds: 3, tieMode: "share", themeMode: "auto", sound: true },
+    settings: {
+      rounds: 3,
+      tieMode: "share",
+      themeMode: "auto",
+      sound: true,
+      confetti: true,
+    },
     round: 1,
     history: [],
     phase: "guessing",
@@ -251,7 +258,16 @@ export function loadGame(storage?: StorageLike): GameState {
     if (!target) return initialGameState();
     const parsed: unknown = JSON.parse(target.getItem(STORAGE_KEY) ?? "null");
     if (!isGameState(parsed)) return initialGameState();
-    return parsed;
+    return {
+      ...parsed,
+      settings: {
+        ...parsed.settings,
+        confetti:
+          typeof parsed.settings.confetti === "boolean"
+            ? parsed.settings.confetti
+            : true,
+      },
+    };
   } catch {
     return initialGameState();
   }
