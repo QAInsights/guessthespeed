@@ -9,6 +9,8 @@ Guess the Speed is a family game-night app. Players privately guess download and
 3. Start the test. The app measures unloaded latency, download speed, and upload speed using the Cloudflare speed test engine.
 4. Compare guesses, award points, and continue through the selected rounds.
 
+On a living-room screen, TV mode enlarges the gauge and game text on wide displays, including in room games. The champion screen can share the winner, podium, and latest speed-test result using the device’s share sheet or clipboard.
+
 ## Scoring and worked example
 
 For each metric, miss is the absolute difference between the guess and actual result divided by the actual result. A missing metric counts as a 100 percent miss. The round miss is the average of download and upload miss. Misses are compared after rounding to four decimal places.
@@ -45,6 +47,8 @@ When dates overlap, priority is Diwali, Holi, Easter, Thanksgiving, Pongal, Hall
 ## Privacy
 
 For a local game, player names, guesses, settings, scores, and history are stored in local storage on the current device. Multiplayer rooms temporarily share the game state on Cloudflare. There are no accounts or game cookies. The speed test sends measurements to Cloudflare, which collects aggregated, anonymous results to understand internet connection quality. Optional Cloudflare Web Analytics uses a cookieless beacon and only loads when the site owner configures its public token.
+
+Share result uses your device's own share sheet or clipboard. Nothing is sent to us.
 
 Developer mode turns the home page into a raw Cloudflare speed test diagnostics console. Add `?dev=1` to the home page URL to enable it. IP addresses are masked on screen by default, omitted from JSON exports, and not saved in local storage.
 

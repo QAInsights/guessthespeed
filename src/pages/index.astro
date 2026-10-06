@@ -353,7 +353,9 @@ const homeSchema: Record<string, unknown>[] = [
       <div class="podium" data-podium></div>
       <div class="champion-actions">
         <button class="go" type="button" data-play-again><Icon name="ph:arrow-counter-clockwise-bold" />Play again</button>
+        <button class="guess-button" type="button" data-share-result><Icon name="ph:share-network-bold" />Share result</button>
         <button class="guess-button" type="button" data-close-champion>Close</button>
+        <p class="share-status" data-share-status aria-live="polite"></p>
       </div>
     </div>
   </dialog>

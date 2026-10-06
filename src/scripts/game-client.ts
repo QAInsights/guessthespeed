@@ -25,6 +25,12 @@ import { phaseText, SLOW_HINT_MS } from "../lib/progress";
 import { themes, themeForDate, type ThemeId } from "../lib/themes";
 import { playCue } from "../lib/sound";
 import {
+  buildPodiumEntries,
+  buildSharePayload,
+  buildShareText,
+  joinNames,
+} from "../lib/share";
+import {
   canRunRoomTest,
   getRoomView,
   isRoomMode,
@@ -99,6 +105,7 @@ let lastRoomProgressPhase: Phase | null = null;
 let latestPing: number | undefined;
 let roomElapsedTimer = 0;
 let roomStartedAt = 0;
+let shareStatusTimer = 0;
 const isDevMode = () =>
   !roomMode && document.documentElement.dataset.dev === "1";
 const isTesting = () => state.phase === "testing" || runInProgress;
@@ -110,6 +117,8 @@ const reduceMotion = window.matchMedia(
 const guessDialog = $<HTMLDialogElement>("[data-guess-dialog]");
 const editDialog = $<HTMLDialogElement>("[data-edit-dialog]");
 const championDialog = $<HTMLDialogElement>("[data-champion-dialog]");
+const shareButton = $<HTMLButtonElement>("[data-share-result]");
+const shareStatus = $<HTMLParagraphElement>("[data-share-status]");
 const startButton = $<HTMLButtonElement>("[data-start-btn]");
 const errorNote = $<HTMLParagraphElement>("[data-error-note]");
 const playerContainer = $<HTMLDivElement>("[data-players]");
@@ -357,11 +366,6 @@ function currentRoundLabel() {
     : `Round ${state.round} of ${state.settings.rounds}`;
 }
 
-function joinNames(names: string[]) {
-  if (names.length < 2) return names[0] ?? "";
-  return `${names.slice(0, -1).join(", ")} and ${names.at(-1)}`;
-}
-
 function formatPointAward(points: number) {
   return `+${points} ${points === 1 ? "point" : "points"}`;
 }
@@ -534,16 +538,12 @@ function renderChampion() {
       : champions.length
         ? `${champions[0].name} is this game night’s speed champion!`
         : "Thanks for playing together!";
-  const medals = ["🥇", "🥈", "🥉"];
-  let podiumPlace = 0;
-  $<HTMLDivElement>("[data-podium]").innerHTML = sorted
-    .slice(0, 3)
-    .map((player, index) => {
-      if (index === 0 || player.score !== sorted[index - 1].score)
-        podiumPlace = index + 1;
-      const medal = medals[podiumPlace - 1] ?? "⭐";
+  $<HTMLDivElement>("[data-podium]").innerHTML = buildPodiumEntries(
+    state.players,
+  )
+    .map(({ player, place, medal }) => {
       return `
-    <div class="podium-step ${podiumPlace === 1 ? "is-champion" : ""}" data-place="${podiumPlace}">
+    <div class="podium-step ${place === 1 ? "is-champion" : ""}" data-place="${place}">
       <span class="podium-medal">${medal}</span>
       <span class="podium-name">${escapeHtml(player.name)}</span>
       <span class="podium-score">${formatScoreLabel(player.score)}</span>
@@ -1209,6 +1209,55 @@ $<HTMLButtonElement>("[data-play-again]").addEventListener("click", () => {
 $<HTMLButtonElement>("[data-close-champion]").addEventListener("click", () =>
   championDialog.close(),
 );
+
+function setShareStatus(message: string) {
+  shareStatus.textContent = message;
+  window.clearTimeout(shareStatusTimer);
+  if (message) {
+    shareStatusTimer = window.setTimeout(() => {
+      shareStatus.textContent = "";
+    }, 4000);
+  }
+}
+
+async function shareResult() {
+  const input = {
+    players: state.players.map(({ name, score }) => ({ name, score })),
+    lastActual: state.history.at(-1)?.actual ?? null,
+  };
+  const fullText = buildShareText(input);
+  const payload = buildSharePayload(input);
+  if (typeof navigator.share === "function") {
+    try {
+      await navigator.share({
+        title: "Guess the Speed",
+        text: payload.text,
+        url: payload.url,
+      });
+      setShareStatus("");
+      return;
+    } catch (error) {
+      if (
+        typeof error === "object" &&
+        error !== null &&
+        "name" in error &&
+        error.name === "AbortError"
+      )
+        return;
+    }
+  }
+  try {
+    await navigator.clipboard.writeText(fullText);
+    setShareStatus("Copied! Paste it in your family chat.");
+  } catch {
+    setShareStatus("Could not share from this browser.");
+  }
+}
+
+shareButton.addEventListener("click", () => {
+  void shareResult();
+});
+
 championDialog.addEventListener("close", () => {
   if (state.phase === "champion" && !isDevMode())
     $<HTMLButtonElement>("[data-open-settings]").focus();

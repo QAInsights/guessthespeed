@@ -19,12 +19,15 @@ const themeOptions = [
 const soundButton = $<HTMLButtonElement>("[data-sound-toggle]");
 const soundOn = $<HTMLSpanElement>("[data-sound-on]");
 const soundOff = $<HTMLSpanElement>("[data-sound-off]");
+const tvButton = $<HTMLButtonElement>("[data-tv-toggle]");
+const fullscreenButton = $<HTMLButtonElement>("[data-fullscreen]");
 const settingsButton = $<HTMLButtonElement>("[data-open-settings]");
 const settingsDialog = $<HTMLDialogElement>("[data-settings-dialog]");
 const closeSettingsButton = $<HTMLButtonElement>("[data-close-settings]");
 const settingsForm = $<HTMLFormElement>("[data-settings-form]");
 const devBadge = $<HTMLButtonElement>("[data-dev-badge]");
 const devModeInput = $<HTMLInputElement>('input[name="devMode"]');
+const tvModeInput = $<HTMLInputElement>('input[name="tvMode"]');
 const fxLayer = $<HTMLDivElement>("[data-fx-layer]");
 const reduceMotion = window.matchMedia(
   "(prefers-reduced-motion: reduce)",
@@ -42,8 +45,25 @@ let settings: GameSettings = roomMode
   : initialGame!.settings;
 let testing = initialGame?.phase === "testing";
 let devMode = !roomMode && document.documentElement.dataset.dev === "1";
+let tvMode = document.documentElement.dataset.tv === "1";
 let activeTheme: ThemeId = "light";
 devBadge.hidden = !devMode;
+const homePage = window.location.pathname === "/";
+type WakeLockSentinelLike = {
+  release(): Promise<void>;
+  addEventListener?(
+    type: "release",
+    listener: () => void,
+    options?: AddEventListenerOptions,
+  ): void;
+};
+type WakeLockApi = {
+  request(type: "screen"): Promise<WakeLockSentinelLike>;
+};
+let screenWakeLock: WakeLockSentinelLike | null = null;
+let wakeLockRequest = 0;
+let cursorHideTimer = 0;
+const coarsePointer = window.matchMedia("(pointer: coarse)").matches;
 
 function setDevMode(enabled: boolean) {
   if (roomMode) return;
@@ -58,6 +78,93 @@ function setDevMode(enabled: boolean) {
   document.dispatchEvent(
     new CustomEvent<boolean>("gts:dev-change", { detail: enabled }),
   );
+}
+
+function syncFullscreenControl() {
+  fullscreenButton.hidden = !tvMode || !homePage || !document.fullscreenEnabled;
+  const active = Boolean(document.fullscreenElement);
+  fullscreenButton.setAttribute("aria-pressed", String(active));
+  fullscreenButton.setAttribute(
+    "aria-label",
+    active ? "Exit full screen" : "Full screen",
+  );
+  fullscreenButton.title = active ? "Exit full screen" : "Full screen";
+}
+
+function syncTVControls() {
+  tvButton.setAttribute("aria-pressed", String(tvMode));
+  tvModeInput.checked = tvMode;
+  syncFullscreenControl();
+}
+
+function releaseScreenWakeLock() {
+  wakeLockRequest += 1;
+  const current = screenWakeLock;
+  screenWakeLock = null;
+  if (current) void current.release().catch(() => {});
+}
+
+async function acquireScreenWakeLock() {
+  if (!tvMode || !homePage) {
+    releaseScreenWakeLock();
+    return;
+  }
+  if (screenWakeLock) return;
+  const requestId = ++wakeLockRequest;
+  try {
+    const wakeLock = (navigator as Navigator & { wakeLock?: WakeLockApi })
+      .wakeLock;
+    const current = await wakeLock?.request("screen");
+    if (!current) return;
+    if (requestId !== wakeLockRequest || !tvMode || !homePage) {
+      await current.release().catch(() => {});
+      return;
+    }
+    screenWakeLock = current;
+    current.addEventListener?.("release", () => {
+      if (screenWakeLock === current) screenWakeLock = null;
+    });
+  } catch {}
+}
+
+function showCursorAndScheduleHide() {
+  window.clearTimeout(cursorHideTimer);
+  document.body.classList.remove("tv-cursor-hidden");
+  if (!tvMode || !homePage || coarsePointer) return;
+  cursorHideTimer = window.setTimeout(() => {
+    document.body.classList.add("tv-cursor-hidden");
+  }, 3000);
+}
+
+function setTVMode(enabled: boolean) {
+  tvMode = enabled;
+  document.documentElement.dataset.tv = enabled ? "1" : "0";
+  try {
+    localStorage.setItem("gts:tv", enabled ? "1" : "0");
+  } catch {}
+  syncTVControls();
+  document.dispatchEvent(
+    new CustomEvent<boolean>("gts:tv-change", { detail: enabled }),
+  );
+  if (enabled) {
+    void acquireScreenWakeLock();
+    showCursorAndScheduleHide();
+  } else {
+    releaseScreenWakeLock();
+    window.clearTimeout(cursorHideTimer);
+    document.body.classList.remove("tv-cursor-hidden");
+    if (document.fullscreenElement)
+      void document.exitFullscreen().catch(() => {});
+  }
+}
+
+async function toggleFullscreen() {
+  if (!tvMode || !homePage || !document.fullscreenEnabled) return;
+  try {
+    if (document.fullscreenElement) await document.exitFullscreen();
+    else await document.documentElement.requestFullscreen();
+  } catch {}
+  syncFullscreenControl();
 }
 
 function getResolvedTheme(mode: GameSettings["themeMode"]): ThemeId {
@@ -142,6 +249,7 @@ function closeThemeMenu(returnFocus = true) {
 
 function syncControls() {
   syncThemePicker();
+  syncTVControls();
   soundButton.disabled = testing;
   settingsButton.disabled = testing;
   const roundsControl = settingsForm.elements.namedItem(
@@ -196,6 +304,7 @@ function fillSettingsForm() {
   (settingsForm.elements.namedItem("sound") as HTMLInputElement).checked =
     settings.sound;
   devModeInput.checked = devMode;
+  tvModeInput.checked = tvMode;
 }
 
 themeTrigger.addEventListener("click", () => {
@@ -259,6 +368,16 @@ soundButton.addEventListener("click", () => {
   saveSettings({ sound: !settings.sound }, true);
 });
 
+tvButton.addEventListener("click", () => setTVMode(!tvMode));
+fullscreenButton.addEventListener("click", () => {
+  void toggleFullscreen();
+});
+document.addEventListener("fullscreenchange", syncFullscreenControl);
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") void acquireScreenWakeLock();
+});
+window.addEventListener("mousemove", showCursorAndScheduleHide);
+
 settingsButton.addEventListener("click", () => {
   fillSettingsForm();
   settingsDialog.showModal();
@@ -306,6 +425,7 @@ settingsForm.addEventListener("submit", (event) => {
     saveSettings({ rounds, tieMode, themeMode, sound });
     setDevMode(devModeInput.checked);
   }
+  setTVMode(tvModeInput.checked);
   settingsDialog.close();
 });
 
@@ -345,3 +465,7 @@ window
 
 applyTheme(settings.themeMode);
 syncControls();
+if (tvMode) {
+  void acquireScreenWakeLock();
+  showCursorAndScheduleHide();
+}

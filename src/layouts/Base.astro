@@ -88,7 +88,11 @@ const graphSchema = { '@context': 'https://schema.org', '@graph': graph };
 ---
 
 <!doctype html>
-<html lang="en" data-theme="light">
+<html
+  lang="en"
+  data-theme="light"
+  data-home={Astro.url.pathname === '/' ? '1' : undefined}
+>
   <head>
     <meta charset="utf-8" />
     <script is:inline>
@@ -104,6 +108,14 @@ const graphSchema = { '@context': 'https://schema.org', '@graph': graph };
       } catch {}
       if (!roomQueryMode && devEnabled)
         document.documentElement.dataset.dev = "1";
+      const tvParam = new URLSearchParams(window.location.search).get("tv");
+      let tvEnabled = tvParam === "1";
+      try {
+        if (tvParam === "1" || tvParam === "0")
+          localStorage.setItem("gts:tv", tvParam);
+        else tvEnabled = localStorage.getItem("gts:tv") === "1";
+      } catch {}
+      document.documentElement.dataset.tv = tvEnabled ? "1" : "0";
     </script>
     <script is:inline>
       try {
@@ -199,6 +211,12 @@ const graphSchema = { '@context': 'https://schema.org', '@graph': graph };
           <span data-sound-on><Icon name="ph:speaker-high-fill" /></span>
           <span data-sound-off hidden><Icon name="ph:speaker-slash-fill" /></span>
         </button>
+        <button class="ctrl icon-btn" type="button" data-tv-toggle aria-label="TV mode" title="TV mode: big screen layout" aria-pressed="false">
+          <Icon name="ph:television-simple-bold" />
+        </button>
+        <button class="ctrl icon-btn" type="button" data-fullscreen aria-label="Full screen" title="Full screen" aria-pressed="false" hidden>
+          <Icon name="ph:corners-out-bold" />
+        </button>
         <a class="ctrl icon-btn how-link" href="/how-to-play/" aria-label="How to play">
           <Icon name="ph:question-fill" />
         </a>
@@ -249,6 +267,10 @@ const graphSchema = { '@context': 'https://schema.org', '@graph': graph };
             </select>
           </label>
           <label class="dialog-field sound-setting"><span>Sound</span><input type="checkbox" name="sound" /></label>
+          <label class="dialog-field tv-setting">
+            <span>TV mode<small>Bigger gauge and text for the living-room screen.</small></span>
+            <input type="checkbox" name="tvMode" />
+          </label>
           <label class="dialog-field dev-setting">
             <span>Developer mode<small>Show raw speed test data. Hides the game.</small></span>
             <input type="checkbox" name="devMode" />

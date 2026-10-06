@@ -2204,6 +2204,32 @@ dialog::backdrop {
   accent-color: var(--accent);
 }
 
+.tv-setting {
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  padding: 12px 14px;
+  border: 2px solid var(--ink);
+  border-radius: 12px;
+  background: var(--bg);
+}
+
+.tv-setting span {
+  display: grid;
+  gap: 3px;
+}
+
+.tv-setting small {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.tv-setting input {
+  width: 22px;
+  height: 22px;
+  accent-color: var(--accent);
+}
+
 .guess-hint {
   margin: 0;
   color: var(--muted);
@@ -2322,6 +2348,19 @@ dialog::backdrop {
   min-height: 48px;
   padding: 0 20px;
   font-size: 18px;
+}
+
+.champion-actions .share-status {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.champion-actions .share-status:empty {
+  display: none;
 }
 
 [hidden] {
@@ -2797,5 +2836,231 @@ html[data-dev="1"] .dev-console {
 
   .champion-confetti {
     display: none;
+  }
+}
+
+@media (min-width: 900px) {
+  html[data-tv="1"][data-home="1"] .wrap {
+    max-width: 1680px;
+  }
+
+  html[data-tv="1"][data-home="1"] .game-main {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(350px, 0.9fr);
+    align-content: start;
+    align-items: start;
+    gap: 12px clamp(24px, 3vw, 48px);
+  }
+
+  html[data-tv="1"][data-home="1"] .stage {
+    grid-column: 1;
+    grid-row: 1;
+    grid-template-columns: minmax(180px, 0.55fr) minmax(0, 1.45fr);
+    grid-template-rows: auto auto;
+    align-content: start;
+    align-items: center;
+    gap: 16px 20px;
+    padding: 0 0 20px;
+  }
+
+  html[data-tv="1"][data-home="1"] .intro {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  html[data-tv="1"][data-home="1"] .intro h1 {
+    margin-bottom: 18px;
+    font-size: clamp(42px, 5vw, 68px);
+  }
+
+  html[data-tv="1"][data-home="1"] .intro p {
+    font-size: 20px;
+    line-height: 1.4;
+  }
+
+  html[data-tv="1"][data-home="1"] .round {
+    gap: 9px;
+    margin-bottom: 18px;
+    padding: 8px 15px;
+    font-size: 18px;
+  }
+
+  html[data-tv="1"][data-home="1"] .gauge-card {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    align-self: center;
+    padding: clamp(16px, 1.8vw, 28px);
+  }
+
+  html[data-tv="1"][data-home="1"] .gauge {
+    max-width: 640px;
+  }
+
+  html[data-tv="1"][data-home="1"] .readout .mode {
+    font-size: 16px;
+  }
+
+  html[data-tv="1"][data-home="1"] .readout .num {
+    font-size: clamp(80px, 6vw, 96px);
+  }
+
+  html[data-tv="1"][data-home="1"] .readout .unit {
+    font-size: 18px;
+  }
+
+  html[data-tv="1"][data-home="1"] .phase {
+    font-size: clamp(18px, 1.5vw, 22px);
+  }
+
+  html[data-tv="1"][data-home="1"] .test-progress {
+    height: 20px;
+  }
+
+  html[data-tv="1"][data-home="1"] .go {
+    min-height: 72px;
+    padding: 0 38px;
+    font-size: clamp(24px, 2vw, 30px);
+  }
+
+  html[data-tv="1"][data-home="1"] .stats {
+    grid-column: 1;
+    grid-row: 2;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+    align-self: start;
+  }
+
+  html[data-tv="1"][data-home="1"] .stat {
+    padding: 16px 18px;
+  }
+
+  html[data-tv="1"][data-home="1"] .stat span {
+    font-size: 17px;
+  }
+
+  html[data-tv="1"][data-home="1"] .room-bar:not([hidden]) {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    margin: 0 0 8px;
+  }
+
+  html[data-tv="1"][data-home="1"][data-room="1"] .stage,
+  html[data-tv="1"][data-home="1"][data-room="1"] [data-game-section] {
+    grid-row: 2;
+  }
+
+  html[data-tv="1"][data-home="1"] [data-game-section] {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: start;
+  }
+
+  html[data-tv="1"][data-home="1"] .sec-head {
+    margin: 0 0 18px;
+  }
+
+  html[data-tv="1"][data-home="1"] .sec-head h2 {
+    font-size: clamp(34px, 3vw, 44px);
+  }
+
+  html[data-tv="1"][data-home="1"] [data-players] {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 22px;
+  }
+
+  html[data-tv="1"][data-home="1"] .add {
+    grid-template-columns: minmax(180px, 260px) minmax(0, 1fr);
+  }
+
+  html[data-tv="1"][data-home="1"] .add .go {
+    grid-column: 1 / -1;
+  }
+
+  html[data-tv="1"][data-home="1"] .p-card {
+    padding: 20px;
+  }
+
+  html[data-tv="1"][data-home="1"] .p-head {
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+
+  html[data-tv="1"][data-home="1"] .p-emoji {
+    font-size: 54px;
+  }
+
+  html[data-tv="1"][data-home="1"] .p-name {
+    font-size: 30px;
+  }
+
+  html[data-tv="1"][data-home="1"] .p-role {
+    font-size: 16px;
+  }
+
+  html[data-tv="1"][data-home="1"] .p-score b {
+    font-size: 48px;
+  }
+
+  html[data-tv="1"][data-home="1"] .dev-console,
+  html[data-tv="1"][data-home="1"] .room-entry,
+  html[data-tv="1"][data-home="1"] .how,
+  html[data-tv="1"][data-home="1"] .story-teaser {
+    grid-column: 1 / -1;
+  }
+
+  html[data-tv="1"][data-home="1"] .how,
+  html[data-tv="1"][data-home="1"] .story-teaser,
+  html[data-tv="1"][data-home="1"] footer {
+    display: none !important;
+  }
+
+  html[data-tv="1"][data-home="1"] .game-main {
+    padding-bottom: 0;
+  }
+
+  body.tv-cursor-hidden,
+  body.tv-cursor-hidden * {
+    cursor: none !important;
+  }
+}
+
+@media (min-width: 900px) and (max-width: 1400px) {
+  html[data-tv="1"][data-home="1"] .gauge-card {
+    align-self: start;
+    padding: 8px 16px;
+  }
+
+  html[data-tv="1"][data-home="1"] .gauge {
+    max-width: 480px;
+  }
+
+  html[data-tv="1"][data-home="1"] [data-players] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  html[data-tv="1"][data-home="1"] .p-card {
+    padding: 14px;
+  }
+
+  html[data-tv="1"][data-home="1"] .p-head {
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  html[data-tv="1"][data-home="1"] .p-emoji {
+    font-size: 44px;
+  }
+
+  html[data-tv="1"][data-home="1"] .p-name {
+    font-size: 24px;
+  }
+
+  html[data-tv="1"][data-home="1"] .p-role {
+    font-size: 14px;
+  }
+
+  html[data-tv="1"][data-home="1"] .p-score b {
+    font-size: 40px;
   }
 }
