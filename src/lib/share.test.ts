@@ -160,6 +160,21 @@ describe("share results", () => {
     expect(`${payload.text} ${payload.url}`).toBe(fullText);
   });
 
+  it("uses team-specific prompts and result wording for team rooms", () => {
+    expect(
+      buildShareText({
+        players: [{ name: "Ada", score: 3 }],
+        lastActual: { down: 1234.5, up: 8.25 },
+        audience: "team",
+      }),
+    ).toContain(
+      "Last round's Wi-Fi hit 1,234.5 Mbps down and 8.3 Mbps up.\nCan your team beat us?",
+    );
+    expect(buildShareText({ players: [], audience: "team" })).toContain(
+      "Can your team beat us?",
+    );
+  });
+
   it("does not use an em dash in share text", () => {
     expect(
       buildShareText({

@@ -1,6 +1,7 @@
 export interface ShareInput {
   players: { name: string; score: number }[];
   lastActual?: { down: number; up: number } | null;
+  audience?: "family" | "team";
 }
 
 export const SHARE_URL = "https://guessthespeed.com/";
@@ -39,9 +40,11 @@ function formatMbps(value: number) {
 
 export function buildSharePayload(input: ShareInput) {
   const sorted = [...input.players].sort((a, b) => b.score - a.score);
+  const team = input.audience === "team";
+  const prompt = team ? "Can your team beat us?" : "Can your family beat us?";
   if (!sorted.length || sorted.every((player) => player.score === 0)) {
     return {
-      text: "We just played Guess the Speed! Can your family beat us?",
+      text: `We just played Guess the Speed! ${prompt}`,
       url: SHARE_URL,
     };
   }
@@ -60,10 +63,12 @@ export function buildSharePayload(input: ShareInput) {
   const lines = [winnerLine, podiumLine];
   if (input.lastActual) {
     lines.push(
-      `Our internet hit ${formatMbps(input.lastActual.down)} Mbps down and ${formatMbps(input.lastActual.up)} Mbps up.`,
+      team
+        ? `Last round's Wi-Fi hit ${formatMbps(input.lastActual.down)} Mbps down and ${formatMbps(input.lastActual.up)} Mbps up.`
+        : `Our internet hit ${formatMbps(input.lastActual.down)} Mbps down and ${formatMbps(input.lastActual.up)} Mbps up.`,
     );
   }
-  lines.push("Can your family beat us?");
+  lines.push(prompt);
   return { text: lines.join("\n"), url: SHARE_URL };
 }
 

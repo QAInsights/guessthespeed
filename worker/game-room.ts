@@ -165,12 +165,18 @@ export class GameRoom extends DurableObject<Env> {
     const lockedGuesses = room.game.players.filter(
       (player) => player.locked,
     ).length;
+    const onlineOwners = new Set<string>();
+    for (const onlineSocket of this.ctx.getWebSockets()) {
+      const onlineAttachment = getAttachment(onlineSocket);
+      if (onlineAttachment) onlineOwners.add(onlineAttachment.clientId);
+    }
     const result = applyAction(
       room,
       attachment.clientId,
       attachment.isHost,
       parsed,
       Date.now(),
+      { onlineOwners },
     );
     if ("error" in result) {
       sendError(socket, result.error);
@@ -272,9 +278,15 @@ export class GameRoom extends DurableObject<Env> {
         { error: "Invalid initialization." },
         { status: 400 },
       );
+    const kind = input.kind === undefined ? "family" : input.kind;
+    if (kind !== "family" && kind !== "team")
+      return Response.json(
+        { error: "Invalid initialization." },
+        { status: 400 },
+      );
     let room: Room;
     try {
-      room = createRoom(input.code, input.hostToken, input.now);
+      room = createRoom(input.code, input.hostToken, input.now, kind);
     } catch {
       return Response.json({ error: "Invalid room code." }, { status: 400 });
     }

@@ -688,8 +688,12 @@ function syncControls() {
           ? `${assignedTester.name} is running the speed test.`
           : "The host is running the speed test."
         : assignedTester
-          ? `Waiting for ${assignedTester.name} to start the test.`
-          : "Waiting for the host to start the test.";
+          ? document.documentElement.dataset.roomKind === "team"
+            ? `Waiting for ${assignedTester.name} to start their test.`
+            : `Waiting for ${assignedTester.name} to start the test.`
+          : document.documentElement.dataset.roomKind === "team"
+            ? "Waiting for the host to start their test."
+            : "Waiting for the host to start the test.";
   const resetButton = $<HTMLButtonElement>("[data-reset]");
   resetButton.textContent = roomMode ? "New game" : "Reset scores";
   resetButton.hidden = roomMode && !host;
@@ -740,11 +744,20 @@ function renderChampion() {
     return;
   }
   $<HTMLButtonElement>("[data-play-again]").hidden = roomMode && !isRoomHost();
+  const teamRoom = document.documentElement.dataset.roomKind === "team";
+  $<HTMLHeadingElement>("[data-champion-title]").textContent = teamRoom
+    ? "Best Wi-Fi guesser on the team!"
+    : "Game night champion!";
   const sorted = [...state.players].sort((a, b) => b.score - a.score);
   const topScore = sorted[0]?.score ?? 0;
   const champions = sorted.filter((player) => player.score === topScore);
-  $<HTMLParagraphElement>("[data-champion-message]").textContent =
-    champions.length > 1
+  $<HTMLParagraphElement>("[data-champion-message]").textContent = teamRoom
+    ? champions.length > 1
+      ? `${joinNames(champions.map((player) => player.name))} are the team's speed champions!`
+      : champions.length
+        ? `${champions[0].name} is the team's speed champion!`
+        : "Thanks for playing together!"
+    : champions.length > 1
       ? `${joinNames(champions.map((player) => player.name))} tie for the win!`
       : champions.length
         ? `${champions[0].name} is this game night’s speed champion!`
@@ -782,6 +795,10 @@ function renderChampion() {
 }
 
 function render() {
+  const teamRoom = document.documentElement.dataset.roomKind === "team";
+  $<HTMLElement>("[data-game-team-headline]").textContent = teamRoom
+    ? "Beat the team."
+    : "Beat the family.";
   renderPlayers();
   renderWinner();
   $<HTMLSpanElement>("[data-round-label]").textContent = currentRoundLabel();
@@ -1563,9 +1580,12 @@ function setShareStatus(message: string) {
 }
 
 async function shareResult() {
+  const audience: "family" | "team" =
+    document.documentElement.dataset.roomKind === "team" ? "team" : "family";
   const input = {
     players: state.players.map(({ name, score }) => ({ name, score })),
     lastActual: state.history.at(-1)?.actual ?? null,
+    audience,
   };
   const fullText = buildShareText(input);
   const payload = buildSharePayload(input);
@@ -1590,7 +1610,11 @@ async function shareResult() {
   }
   try {
     await navigator.clipboard.writeText(fullText);
-    setShareStatus("Copied! Paste it in your family chat.");
+    setShareStatus(
+      audience === "team"
+        ? "Copied! Paste it in your team chat."
+        : "Copied! Paste it in your family chat.",
+    );
   } catch {
     setShareStatus("Could not share from this browser.");
   }

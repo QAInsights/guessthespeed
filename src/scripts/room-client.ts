@@ -251,7 +251,30 @@ function setupRoomPicker(input: {
   });
 }
 
+function updateRoomFacePicker(kind: RoomView["kind"] | undefined): void {
+  const teamRoom = kind === "team";
+  const familyFaces = queryOptional<HTMLElement>(
+    '[data-room-face-set="family"]',
+  );
+  const teamFaces = queryOptional<HTMLElement>('[data-room-face-set="team"]');
+  if (!familyFaces || !teamFaces) return;
+  familyFaces.hidden = teamRoom;
+  teamFaces.hidden = !teamRoom;
+  const activeFaces = teamRoom ? teamFaces : familyFaces;
+  if (!activeFaces.querySelector<HTMLInputElement>("input:checked")) {
+    const firstFace = activeFaces.querySelector<HTMLInputElement>(
+      'input[name="emoji"]',
+    );
+    if (firstFace) firstFace.checked = true;
+  }
+}
+
 function updateRoomTesterControls(view: RoomView): void {
+  const teamRoom = view.kind === "team";
+  if (teamRoom) document.documentElement.dataset.roomKind = "team";
+  else delete document.documentElement.dataset.roomKind;
+  updateRoomFacePicker(view.kind);
+
   const picker = queryOptional<HTMLDivElement>("[data-room-tester-control]");
   const trigger = queryOptional<HTMLButtonElement>(
     "[data-room-tester-trigger]",
@@ -263,9 +286,20 @@ function updateRoomTesterControls(view: RoomView): void {
   if (!picker || !trigger || !value || !menu || !chip || !stopButton) return;
 
   picker.hidden = !view.isHost;
-  chip.hidden = view.isHost;
+  chip.hidden = view.isHost && !teamRoom;
   stopButton.hidden =
     !view.isHost || view.canRunTest || view.phase !== "testing";
+  const rotateControl = queryOptional<HTMLElement>(
+    "[data-room-rotate-control]",
+  );
+  const rotateToggle = queryOptional<HTMLInputElement>(
+    "[data-room-rotate-toggle]",
+  );
+  if (rotateControl) rotateControl.hidden = !teamRoom || !view.isHost;
+  if (rotateToggle) {
+    rotateToggle.checked = view.rotateTester;
+    rotateToggle.disabled = view.phase === "testing";
+  }
   if (view.phase === "testing")
     closeRoomPickerMenu(
       "[data-room-tester-trigger]",
@@ -327,6 +361,11 @@ function updateRoomTesterControls(view: RoomView): void {
         return button;
       }),
     );
+  }
+  if (teamRoom) {
+    chip.textContent = tester
+      ? `This round: guess ${tester.emoji} ${tester.name}'s Wi-Fi`
+      : "This round: guess the host screen's Wi-Fi";
   } else if (view.canRunTest) {
     chip.textContent = "Your phone runs the test";
   } else if (!tester) {
@@ -612,8 +651,10 @@ async function joinWithCode(form: HTMLFormElement): Promise<void> {
   }
 }
 
-async function createRoom(): Promise<void> {
-  const button = queryOptional<HTMLButtonElement>("[data-create-room]");
+async function createRoom(kind: "family" | "team" = "family"): Promise<void> {
+  const selector =
+    kind === "team" ? "[data-create-team-room]" : "[data-create-room]";
+  const button = queryOptional<HTMLButtonElement>(selector);
   const error = queryOptional<HTMLElement>("[data-room-entry-error]");
   if (button) {
     button.disabled = true;
@@ -621,7 +662,11 @@ async function createRoom(): Promise<void> {
   }
   if (error) error.hidden = true;
   try {
-    const response = await fetch("/api/rooms", { method: "POST" });
+    const response = await fetch("/api/rooms", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ kind }),
+    });
     const body: unknown = await response.json();
     if (
       !response.ok ||
@@ -642,7 +687,8 @@ async function createRoom(): Promise<void> {
     }
     if (button) {
       button.disabled = false;
-      button.textContent = "Create a room";
+      button.textContent =
+        kind === "team" ? "Start a team room" : "Create a room";
     }
   }
 }
@@ -653,6 +699,11 @@ function isRoomView(value: unknown): value is RoomView {
     typeof value.code === "string" &&
     typeof value.isHost === "boolean" &&
     (value.testerId === null || typeof value.testerId === "string") &&
+    (value.kind === undefined ||
+      value.kind === "family" ||
+      value.kind === "team") &&
+    (value.rotateTester === undefined ||
+      typeof value.rotateTester === "boolean") &&
     typeof value.canRunTest === "boolean" &&
     Array.isArray(value.players) &&
     value.players.every(
@@ -726,6 +777,12 @@ if (isRoom) {
     )
       hostDialog?.close();
   });
+  queryOptional<HTMLInputElement>(
+    "[data-room-rotate-toggle]",
+  )?.addEventListener("change", (event) => {
+    const input = event.currentTarget as HTMLInputElement;
+    sendRoomAction({ type: "rotate", on: input.checked });
+  });
   queryOptional<HTMLButtonElement>("[data-room-stop-test]")?.addEventListener(
     "click",
     () => {
@@ -769,10 +826,13 @@ if (isRoom) {
         form.querySelector<HTMLInputElement>('input[name="emoji"]:checked')
           ?.value ?? 0,
       );
+      const activeFaces = form.querySelector<HTMLElement>(
+        `[data-room-face-set="${latestView?.kind === "team" ? "team" : "family"}"]`,
+      );
       const roles = Array.from(
-        document.querySelectorAll<HTMLInputElement>(
-          "[data-room-emoji-picker] input[name='emoji']",
-        ),
+        activeFaces?.querySelectorAll<HTMLInputElement>(
+          'input[name="emoji"]',
+        ) ?? [],
       );
       const roleChoice = roles[selected]?.closest("label");
       const roleName =
@@ -811,7 +871,11 @@ if (isRoom) {
 } else if (!classroomSessionActive) {
   queryOptional<HTMLButtonElement>("[data-create-room]")?.addEventListener(
     "click",
-    () => void createRoom(),
+    () => void createRoom("family"),
+  );
+  queryOptional<HTMLButtonElement>("[data-create-team-room]")?.addEventListener(
+    "click",
+    () => void createRoom("team"),
   );
   queryOptional<HTMLFormElement>("[data-home-join-form]")?.addEventListener(
     "submit",

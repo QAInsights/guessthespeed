@@ -25,6 +25,7 @@
 - [Household speed calculator](https://guessthespeed.com/how-much-internet-speed-do-i-need/)
 - [Mbps to MB/s converter and download time](https://guessthespeed.com/mbps-to-mbs/)
 - [Speed test game](https://guessthespeed.com/speed-test-game/)
+- [Team icebreaker](https://guessthespeed.com/work/) is a free five-minute remote meeting game where teammates guess speed before the test rotates between their devices.
 - [Family game night ideas](https://guessthespeed.com/family-game-night-ideas/)
 - [Classroom Mode](https://guessthespeed.com/classroom/)
 - [Internet speed lesson for kids](https://guessthespeed.com/internet-speed-lesson-for-kids/)

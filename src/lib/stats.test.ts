@@ -10,6 +10,7 @@ import {
   type PlayTotals,
 } from "./stats";
 import type { PlayerRoundScore } from "./scoring";
+import { createRoom } from "./room";
 
 function totals(
   overrides: Partial<Omit<PlayTotals, "modes">> & {
@@ -239,6 +240,14 @@ describe("roundStatEvent", () => {
     expect(
       roundStatEvent([score({ miss: 1.8 })], { down: 25, up: 10 }, "room", 1),
     ).toMatchObject({ mode: "room", closestMiss: 100 });
+  });
+
+  it("keeps team-room rounds in the shared room stats bucket", () => {
+    const teamRoom = createRoom("BCDFGH", "token", 0, "team");
+    expect(teamRoom.kind).toBe("team");
+    expect(
+      roundStatEvent([score({ miss: 0.1 })], { down: 100, up: 20 }, "room", 1),
+    ).toMatchObject({ kind: "round", mode: "room" });
   });
 
   it("omits closest miss when all player misses are null", () => {

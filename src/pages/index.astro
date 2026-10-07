@@ -3,8 +3,10 @@ import { Icon } from 'astro-icon/components';
 import Base from '../layouts/Base.astro';
 import { ROLES } from '../lib/game';
 import { MAX_NAME_LENGTH } from '../lib/limits';
+import { TEAM_FACES } from '../lib/team';
 
 const roleChoices = ROLES;
+const teamFaceChoices = TEAM_FACES;
 const homeTitle = 'Guess the Speed | The Internet Speed Guessing Game for Families';
 const homeDescription =
   "A free family game and two-minute filler: everyone guesses the Wi-Fi download and upload speed, then a real speed test reveals who came closest. Play on one screen or on everyone's phone.";
@@ -79,7 +81,7 @@ const overheard: { face: string; quote: string; who: string; note: string }[] = 
     <section class="stage" aria-label="Speed test game">
       <div class="intro">
         <div class="round" data-round-banner><Icon name="ph:flag-checkered-fill" /><span data-round-label>Round 1 of 3</span></div>
-        <h1 class="display" data-game-title>Guess the <span class="wifi-nowrap">Wi-Fi</span>. <em>Beat the family.</em></h1>
+        <h1 class="display" data-game-title>Guess the <span class="wifi-nowrap">Wi-Fi</span>. <em data-game-team-headline>Beat the family.</em></h1>
         <h2 class="display dev-title" data-dev-title hidden>Dev mode</h2>
         <p data-game-lede>Guess the download and upload. Run a real speed test. Closest guesses score!</p>
         <p class="dev-lede" data-dev-lede hidden>Raw Cloudflare speed test data. No game, no scores.</p>
@@ -173,6 +175,11 @@ const overheard: { face: string; quote: string; who: string; note: string }[] = 
           <div class="room-picker-menu" id="room-host-menu" data-room-host-menu role="listbox" aria-label="Choose a new host" hidden></div>
         </div>
         <span class="room-tester-chip" data-room-tester-chip hidden></span>
+        <label class="room-rotate-toggle" data-room-rotate-control hidden>
+          <input type="checkbox" role="switch" data-room-rotate-toggle />
+          <span class="room-rotate-track" aria-hidden="true"></span>
+          <span>Rotate each round</span>
+        </label>
         <button class="guess-button room-stop-test" type="button" data-room-stop-test hidden>Stop test</button>
         <button class="guess-button" type="button" data-show-room-qr>Show QR</button>
         <button class="guess-button" type="button" data-copy-room-link>Copy link</button>
@@ -230,6 +237,7 @@ const overheard: { face: string; quote: string; who: string; note: string }[] = 
         <span class="room-kicker">A room for everyone</span>
         <h2 class="display" id="room-entry-title">Play on everyone’s phone</h2>
         <p>Keep every guess on its owner’s screen until the real speed test is done.</p>
+        <p class="room-work-link"><a href="/work/">Remote team? Try Work mode</a></p>
       </div>
       <div class="room-entry-actions">
         <button class="go" type="button" data-create-room>Create a room</button>
@@ -398,13 +406,24 @@ const overheard: { face: string; quote: string; who: string; note: string }[] = 
         <fieldset class="edit-role-fieldset">
           <legend class="lbl">Pick your face</legend>
           <div data-room-emoji-picker>
-            {roleChoices.map((choice, index) => (
-              <label title={choice.role}>
-                <input type="radio" name="emoji" value={index} checked={index === 0} />
-                <span>{choice.emoji}</span>
-                <small>{choice.role}</small>
-              </label>
-            ))}
+            <div data-room-face-set="family">
+              {roleChoices.map((choice, index) => (
+                <label title={choice.role}>
+                  <input type="radio" name="emoji" value={index} checked={index === 0} />
+                  <span>{choice.emoji}</span>
+                  <small>{choice.role}</small>
+                </label>
+              ))}
+            </div>
+            <div data-room-face-set="team" hidden>
+              {teamFaceChoices.map((choice, index) => (
+                <label title={choice.role}>
+                  <input type="radio" name="emoji" value={index} />
+                  <span>{choice.emoji}</span>
+                  <small>{choice.role}</small>
+                </label>
+              ))}
+            </div>
           </div>
         </fieldset>
         <p class="room-join-error" data-room-join-error role="status" hidden></p>
@@ -486,7 +505,7 @@ const overheard: { face: string; quote: string; who: string; note: string }[] = 
     <div class="dialog-inner">
       <div class="champion-confetti" data-champion-confetti aria-hidden="true"></div>
       <div class="dialog-head">
-        <h2 id="champion-title" class="champion-title display">Game night champion!</h2>
+        <h2 id="champion-title" class="champion-title display" data-champion-title>Game night champion!</h2>
         <button class="dialog-close" type="button" data-close-champion aria-label="Close champion results"><Icon name="ph:x-bold" /></button>
       </div>
       <p class="champion-intro" data-champion-message></p>

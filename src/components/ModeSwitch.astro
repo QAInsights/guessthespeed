@@ -2,7 +2,7 @@
 import { Icon } from "astro-icon/components";
 
 interface Props {
-  current: "game" | "classroom";
+  current: "game" | "classroom" | "work";
 }
 
 const { current } = Astro.props;
@@ -42,5 +42,12 @@ const { current } = Astro.props;
     data-mode-option="classroom"
   >
     <Icon name="ph:chalkboard-teacher-bold" aria-hidden="true" />Classroom
+  </a>
+  <a
+    href="/work/"
+    aria-current={current === "work" ? "page" : undefined}
+    data-mode-option="work"
+  >
+    <Icon name="ph:briefcase-bold" aria-hidden="true" />Work
   </a>
 </nav>
