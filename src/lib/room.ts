@@ -45,6 +45,7 @@ export type ClientAction =
   | { type: "remove"; id: string }
   | { type: "settings"; rounds: GameSettings["rounds"]; tieMode: TieMode }
   | { type: "setTester"; id: string | null }
+  | { type: "transferHost"; id: string }
   | { type: "start" }
   | { type: "result"; down: number; up: number; ping?: number }
   | { type: "abort" }
@@ -128,6 +129,58 @@ export function createRoom(code: string, hostToken: string, now: number): Room {
       phase: "guessing",
     },
     updatedAt: now,
+  };
+}
+
+export function parseTransferHostAction(
+  action: unknown,
+): Extract<ClientAction, { type: "transferHost" }> | null {
+  return isRecord(action) &&
+    action.type === "transferHost" &&
+    typeof action.id === "string"
+    ? { type: "transferHost", id: action.id }
+    : null;
+}
+
+export function transferHost(
+  room: Room,
+  opts: {
+    isHost: boolean;
+    clientId: string;
+    playerId: string;
+    targetOnline: boolean;
+    newHostToken: string;
+    now: number;
+  },
+):
+  | { ok: true; room: Room; newHostClientId: string }
+  | { ok: false; error: string } {
+  if (!opts.isHost)
+    return { ok: false, error: "Only the host can hand over host." };
+  if (room.game.phase === "testing")
+    return {
+      ok: false,
+      error: "Wait for the test to finish before handing over host.",
+    };
+  const player = room.game.players.find(
+    (candidate) => candidate.id === opts.playerId,
+  );
+  if (!player) return { ok: false, error: "That player has left the room." };
+  if (!opts.targetOnline)
+    return {
+      ok: false,
+      error: "That player's phone is offline. Try again when it reconnects.",
+    };
+  if (player.owner === opts.clientId)
+    return { ok: false, error: "Pick a player on another device." };
+  return {
+    ok: true,
+    room: {
+      ...room,
+      hostToken: opts.newHostToken,
+      updatedAt: opts.now,
+    },
+    newHostClientId: player.owner,
   };
 }
 
