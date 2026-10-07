@@ -96,6 +96,7 @@ Our story explains how living-room speed tests, two kids who love guessing, and 
 ## Game and lesson pages
 
 - [Speed test game](https://guessthespeed.com/speed-test-game/) explains the family speed guessing game, its real browser test, scoring, room codes, and optional house rules.
+- [Team icebreaker](https://guessthespeed.com/work/) is a free five-minute remote meeting game with private guesses and a speed test that rotates between teammates' devices.
 - [Family game night ideas](https://guessthespeed.com/family-game-night-ideas/) offers nine low-prep Wi-Fi activities, including room hunts, paper logs, download-time math, and a parents-versus-kids tournament.
 - [Classroom Mode](https://guessthespeed.com/classroom/) is a free, local-only teacher tool for managing class rosters, balanced teams, and Spotlight rounds on one shared device.
 - [Internet speed lesson for kids](https://guessthespeed.com/internet-speed-lesson-for-kids/) is a 30-minute activity for ages 8 to 14, with a lesson plan, percent-error example, worksheet, answer key, extensions, and classroom privacy notes.

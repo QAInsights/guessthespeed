@@ -1,4 +1,8 @@
-import { generateRoomCode, normalizeRoomCode } from "../src/lib/room";
+import {
+  generateRoomCode,
+  normalizeRoomCode,
+  type RoomKind,
+} from "../src/lib/room";
 import { parseStatEvent } from "../src/lib/stats";
 import type { Env } from "./types";
 import {
@@ -8,6 +12,7 @@ import {
 } from "./http";
 import { GameRoom } from "./game-room";
 import { PlayStats } from "./play-stats";
+import { parseRoomKind } from "./room-kind";
 
 export { GameRoom, PlayStats };
 
@@ -25,7 +30,7 @@ export default {
     if (url.pathname === "/api/stats") return handleStats(request, env);
     if (url.pathname === "/api" || url.pathname.startsWith("/api/")) {
       if (url.pathname === "/api/rooms" && request.method === "POST")
-        return createRoom(env);
+        return createRoom(request, env);
 
       const match = url.pathname.match(/^\/api\/rooms\/([^/]+)(\/ws)?$/);
       if (!match || request.method !== "GET")
@@ -129,7 +134,14 @@ async function handleStats(request: Request, env: Env): Promise<Response> {
   return jsonResponse({ error: "Method not allowed." }, 405);
 }
 
-async function createRoom(env: Env): Promise<Response> {
+async function createRoom(request: Request, env: Env): Promise<Response> {
+  if (declaredBodyTooLarge(request.headers.get("content-length"), 64))
+    return jsonResponse({ error: "Request body is too large." }, 413);
+  const body = await request.text();
+  if (utf8LengthExceeds(body, 64))
+    return jsonResponse({ error: "Request body is too large." }, 413);
+  const kind: RoomKind = parseRoomKind(body);
+
   for (let attempt = 0; attempt < 5; attempt += 1) {
     const random = new Uint32Array(1);
     const code = generateRoomCode(() => {
@@ -141,7 +153,7 @@ async function createRoom(env: Env): Promise<Response> {
     const response = await stub.fetch("https://room.internal/init", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ code, hostToken, now: Date.now() }),
+      body: JSON.stringify({ code, hostToken, now: Date.now(), kind }),
     });
     if (response.status === 201) return jsonResponse({ code, hostToken }, 201);
     if (response.status !== 409)

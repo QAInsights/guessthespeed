@@ -8,6 +8,7 @@ import {
   generateRoomCode,
   interruptedTestStep,
   MAX_PLAYERS,
+  nextTesterId,
   normalizeRoomCode,
   parseTransferHostAction,
   ROOM_ALPHABET,
@@ -18,6 +19,7 @@ import {
   type Room,
   type RoomPlayer,
 } from "./room";
+import { TEAM_FACES } from "./team";
 
 const hostId = "host-client";
 const firstId = "player-one";
@@ -148,8 +150,9 @@ function act(
   isHost: boolean,
   action: unknown,
   now = room.updatedAt + 1,
+  opts?: { onlineOwners?: ReadonlySet<string> },
 ): Room {
-  const result = applyAction(room, clientId, isHost, action, now);
+  const result = applyAction(room, clientId, isHost, action, now, opts);
   if ("error" in result) throw new Error(result.error);
   return result.room;
 }
@@ -374,6 +377,205 @@ describe("room codes", () => {
     expect(view.settings).toEqual({ rounds: 3, tieMode: "share" });
     expect(JSON.stringify(view)).not.toContain("secret-host-token");
     expect(JSON.stringify(view)).not.toContain("owner");
+  });
+});
+
+describe("team rooms", () => {
+  it("defaults legacy rooms to family and creates team rooms with rotation", () => {
+    expect(createRoom("BCDFGH", "token", 0)).toMatchObject({
+      kind: "family",
+      rotateTester: false,
+    });
+    expect(createRoom("BCDFGH", "token", 0, "team")).toMatchObject({
+      kind: "team",
+      rotateTester: true,
+    });
+  });
+
+  it("returns the next distinct online owner in join order", () => {
+    const room = joinedRoom();
+    const host = playerByOwner(room, hostId);
+    const first = playerByOwner(room, firstId);
+    const second = playerByOwner(room, secondId);
+    const duplicateHost = { ...host, id: "another-host-player" };
+    const players = [
+      { ...host, id: "empty-owner-player", owner: "" },
+      host,
+      duplicateHost,
+      first,
+      second,
+    ];
+    const onlineOwners = new Set([hostId, firstId, secondId]);
+
+    expect(nextTesterId(players, null, onlineOwners)).toBe(host.id);
+    expect(nextTesterId(players, duplicateHost.id, onlineOwners)).toBe(
+      first.id,
+    );
+    expect(nextTesterId(players, second.id, onlineOwners)).toBe(host.id);
+    expect(nextTesterId(players, "missing", onlineOwners)).toBe(host.id);
+    expect(nextTesterId(players, first.id, new Set([firstId]))).toBe(first.id);
+    expect(nextTesterId(players, null, new Set())).toBeNull();
+  });
+
+  it("rotates from the host player's device through teammates and back", () => {
+    let room = createRoom("BCDFGH", "token", 0, "team");
+    room = addPlayer(room, hostId, true, "H");
+    room = addPlayer(room, firstId, false, "A");
+    room = addPlayer(room, secondId, false, "B");
+    room = act(room, hostId, true, {
+      type: "settings",
+      rounds: 5,
+      tieMode: "share",
+    });
+    const hostPlayer = playerByOwner(room, hostId);
+    const playerA = playerByOwner(room, firstId);
+    const playerB = playerByOwner(room, secondId);
+
+    room = withGuess(room, hostId, 100, 20);
+    room = act(room, hostId, true, { type: "start" });
+    room = act(room, hostId, true, { type: "result", down: 100, up: 20 });
+    room = act(room, hostId, true, { type: "next" });
+    expect(room.testerId).toBe(playerA.id);
+
+    room = withGuess(room, firstId, 100, 20);
+    room = act(room, firstId, false, { type: "start" });
+    room = act(room, firstId, false, { type: "result", down: 100, up: 20 });
+    room = act(room, hostId, true, { type: "next" });
+    expect(room.testerId).toBe(playerB.id);
+
+    room = withGuess(room, secondId, 100, 20);
+    room = act(room, secondId, false, { type: "start" });
+    room = act(room, secondId, false, { type: "result", down: 100, up: 20 });
+    room = act(room, hostId, true, { type: "next" });
+    expect(room.testerId).toBe(hostPlayer.id);
+  });
+
+  it("starts with the first teammate when the host has no player", () => {
+    let room = createRoom("BCDFGH", "token", 0, "team");
+    room = addPlayer(room, firstId, false, "A");
+    room = addPlayer(room, secondId, false, "B");
+
+    expect(
+      nextTesterId(
+        room.game.players,
+        null,
+        new Set([hostId, firstId, secondId]),
+        hostId,
+      ),
+    ).toBe(playerByOwner(room, firstId).id);
+  });
+
+  it("accepts each team face, including ZWJ emoji sequences", () => {
+    let room = createRoom("BCDFGH", "token", 0, "team");
+    TEAM_FACES.forEach((face, index) => {
+      const result = applyAction(
+        room,
+        `team-player-${index}`,
+        false,
+        {
+          type: "join",
+          name: face.role,
+          emoji: face.emoji,
+          role: face.role,
+        },
+        index + 1,
+      );
+      expect(result).toHaveProperty("room");
+      if ("room" in result) room = result.room;
+    });
+    expect(room.game.players.map((player) => player.emoji)).toEqual(
+      TEAM_FACES.map((face) => face.emoji),
+    );
+  });
+
+  it("rotates team testers after non-champion rounds and skips offline owners", () => {
+    let room = createRoom("BCDFGH", "token", 0, "team");
+    room = addPlayer(room, firstId, false, "A");
+    room = addPlayer(room, secondId, false, "B");
+    room = withGuess(room, firstId, 100, 20);
+    room = act(room, hostId, true, { type: "start" });
+    room = act(room, hostId, true, {
+      type: "result",
+      down: 100,
+      up: 20,
+    });
+    room = act(room, hostId, true, { type: "next" });
+    const playerA = playerByOwner(room, firstId);
+    const playerB = playerByOwner(room, secondId);
+    expect(room.testerId).toBe(playerA.id);
+
+    room = withGuess(room, firstId, 100, 20);
+    room = act(room, firstId, false, { type: "start" });
+    room = act(room, firstId, false, {
+      type: "result",
+      down: 100,
+      up: 20,
+    });
+    room = act(room, hostId, true, { type: "next" }, undefined, {
+      onlineOwners: new Set([firstId]),
+    });
+    expect(room.testerId).toBe(playerA.id);
+    expect(room.testerId).not.toBe(playerB.id);
+  });
+
+  it("does not rotate at champion or when rotation is off, and restricts the toggle", () => {
+    let room = createRoom("BCDFGH", "token", 0, "team");
+    room = addPlayer(room, firstId, false, "A");
+    room = withGuess(room, firstId, 100, 20);
+    expect(
+      applyAction(room, firstId, false, { type: "rotate", on: false }, 2),
+    ).toEqual({ error: "Only the host can change rotation." });
+    room = act(room, hostId, true, { type: "rotate", on: false });
+    room = act(room, hostId, true, { type: "start" });
+    expect(
+      applyAction(room, hostId, true, { type: "rotate", on: true }, 4),
+    ).toEqual({ error: "Rotation cannot change during a test." });
+    room = act(room, hostId, true, {
+      type: "result",
+      down: 100,
+      up: 20,
+    });
+    room = act(room, hostId, true, { type: "next" });
+    expect(room.testerId).toBeNull();
+    expect(room.rotateTester).toBe(false);
+  });
+
+  it("does not rotate when advancing to champion or starting a new game", () => {
+    let room = createRoom("BCDFGH", "token", 0, "team");
+    room = addPlayer(room, firstId, false, "A");
+    room = act(room, hostId, true, {
+      type: "settings",
+      rounds: 1,
+      tieMode: "share",
+    });
+    room = withGuess(room, firstId, 100, 20);
+    room = act(room, hostId, true, { type: "start" });
+    room = act(room, hostId, true, {
+      type: "result",
+      down: 100,
+      up: 20,
+    });
+    room = act(room, hostId, true, { type: "next" });
+    expect(room.game.phase).toBe("champion");
+    expect(room.testerId).toBeNull();
+    room = act(room, hostId, true, { type: "newGame" });
+    expect(room.testerId).toBeNull();
+    expect(room.rotateTester).toBe(true);
+  });
+
+  it("exposes team room metadata while treating legacy records as family", () => {
+    const teamRoom = createRoom("BCDFGH", "token", 0, "team");
+    expect(viewFor(teamRoom, hostId, true)).toMatchObject({
+      kind: "team",
+      rotateTester: true,
+    });
+    const legacyRoom = { ...teamRoom };
+    Reflect.deleteProperty(legacyRoom, "kind");
+    Reflect.deleteProperty(legacyRoom, "rotateTester");
+    expect(viewFor(legacyRoom, hostId, true)).toMatchObject({
+      kind: "family",
+      rotateTester: false,
+    });
   });
 });
 

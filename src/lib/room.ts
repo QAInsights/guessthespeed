@@ -22,6 +22,8 @@ export const MAX_PLAYERS = 12;
 export const ROOM_HISTORY_MAX = 50;
 export const ROOM_TTL_MS = 6 * 60 * 60 * 1000;
 
+export type RoomKind = "family" | "team";
+
 export interface RoomPlayer extends Player {
   owner: string;
 }
@@ -30,6 +32,8 @@ export interface Room {
   code: string;
   hostToken: string;
   testerId: string | null;
+  kind?: RoomKind;
+  rotateTester?: boolean;
   game: Omit<GameState, "players" | "settings" | "view"> & {
     players: RoomPlayer[];
     settings: Pick<GameSettings, "rounds" | "tieMode">;
@@ -45,6 +49,7 @@ export type ClientAction =
   | { type: "remove"; id: string }
   | { type: "settings"; rounds: GameSettings["rounds"]; tieMode: TieMode }
   | { type: "setTester"; id: string | null }
+  | { type: "rotate"; on: boolean }
   | { type: "transferHost"; id: string }
   | { type: "start" }
   | { type: "result"; down: number; up: number; ping?: number }
@@ -59,6 +64,8 @@ export interface RoomView extends Omit<
   code: string;
   isHost: boolean;
   testerId: string | null;
+  kind: RoomKind;
+  rotateTester: boolean;
   canRunTest: boolean;
   players: (Player & { mine: boolean })[];
   settings: Pick<GameSettings, "rounds" | "tieMode">;
@@ -111,13 +118,20 @@ export function normalizeRoomCode(input: string): string | null {
     : null;
 }
 
-export function createRoom(code: string, hostToken: string, now: number): Room {
+export function createRoom(
+  code: string,
+  hostToken: string,
+  now: number,
+  kind: RoomKind = "family",
+): Room {
   const normalized = normalizeRoomCode(code);
   if (!normalized) throw new Error("Invalid room code");
   return {
     code: normalized,
     hostToken,
     testerId: null,
+    kind,
+    rotateTester: kind === "team",
     game: {
       players: [],
       settings: {
@@ -190,6 +204,7 @@ export function applyAction(
   isHost: boolean,
   action: unknown,
   now: number,
+  opts?: { onlineOwners?: ReadonlySet<string> },
 ): { room: Room } | { error: string } {
   if (!isRecord(action) || typeof action.type !== "string")
     return { error: "Invalid action." };
@@ -330,6 +345,20 @@ export function applyAction(
         },
       };
     }
+    case "rotate": {
+      if (!isHost) return { error: "Only the host can change rotation." };
+      if (game.phase === "testing")
+        return { error: "Rotation cannot change during a test." };
+      if (typeof action.on !== "boolean")
+        return { error: "Invalid rotation setting." };
+      return {
+        room: {
+          ...room,
+          rotateTester: action.on,
+          updatedAt: now,
+        },
+      };
+    }
     case "start": {
       if (!canRunTest(room, clientId, isHost))
         return { error: "Only the assigned tester can start the test." };
@@ -373,7 +402,25 @@ export function applyAction(
       if (!isHost) return { error: "Only the host can advance the round." };
       if (game.phase !== "results")
         return { error: "The current round has no result yet." };
-      return updateRoomGame(room, nextRound(game), now);
+      const next = nextRound(game);
+      const updated = updateRoomGame(room, next, now).room;
+      if ((room.rotateTester ?? false) && next.phase === "guessing") {
+        const onlineOwners =
+          opts?.onlineOwners ??
+          new Set(room.game.players.map((player) => player.owner));
+        return {
+          room: {
+            ...updated,
+            testerId: nextTesterId(
+              room.game.players,
+              room.testerId ?? null,
+              onlineOwners,
+              clientId,
+            ),
+          },
+        };
+      }
+      return { room: updated };
     }
     case "newGame": {
       if (!isHost) return { error: "Only the host can start a new game." };
@@ -399,6 +446,8 @@ export function viewFor(
     code: room.code,
     isHost,
     testerId: room.testerId ?? null,
+    kind: room.kind ?? "family",
+    rotateTester: room.rotateTester ?? false,
     canRunTest: canRunTest(room, clientId, isHost),
     players: room.game.players.map(({ owner, ...player }) => ({
       ...player,
@@ -421,6 +470,37 @@ export function viewFor(
     phase: room.game.phase,
     view: "grid",
   };
+}
+
+export function nextTesterId(
+  players: readonly RoomPlayer[],
+  currentTesterId: string | null,
+  onlineOwners: ReadonlySet<string>,
+  hostClientId?: string,
+): string | null {
+  const candidates: RoomPlayer[] = [];
+  const seenOwners = new Set<string>();
+  for (const player of players) {
+    if (
+      player.owner === "" ||
+      !onlineOwners.has(player.owner) ||
+      seenOwners.has(player.owner)
+    )
+      continue;
+    seenOwners.add(player.owner);
+    candidates.push(player);
+  }
+  if (!candidates.length) return null;
+
+  const tester =
+    currentTesterId === null
+      ? undefined
+      : players.find((player) => player.id === currentTesterId);
+  const currentOwner = tester?.owner ?? hostClientId;
+  const currentIndex = candidates.findIndex(
+    (player) => player.owner === currentOwner,
+  );
+  return candidates[(currentIndex + 1) % candidates.length]?.id ?? null;
 }
 
 export function canRunTest(

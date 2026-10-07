@@ -29,6 +29,15 @@ const closeSettingsButton = $<HTMLButtonElement>("[data-close-settings]");
 const settingsForm = $<HTMLFormElement>("[data-settings-form]");
 const devBadge = $<HTMLButtonElement>("[data-dev-badge]");
 const modeSwitch = document.querySelector<HTMLElement>("[data-mode-switch]");
+const teamRoomButton = document.querySelector<HTMLButtonElement>(
+  "[data-create-team-room]",
+);
+const teamRoomJoinForm = document.querySelector<HTMLFormElement>(
+  "[data-work-join-form]",
+);
+const teamRoomClassroomNote = document.querySelector<HTMLElement>(
+  "[data-work-classroom-note]",
+);
 const modeOptions = Array.from(
   modeSwitch?.querySelectorAll<HTMLElement>("[data-mode-option]") ?? [],
 );
@@ -72,6 +81,8 @@ let wakeLockRequest = 0;
 let cursorHideTimer = 0;
 const coarsePointer = window.matchMedia("(pointer: coarse)").matches;
 const tvLayoutQuery = window.matchMedia("(min-width: 900px)");
+const classroomPage = window.location.pathname === "/classroom/";
+const workPage = window.location.pathname === "/work/";
 
 function syncAudioUnlock() {
   if (settings.sound) {
@@ -87,17 +98,23 @@ function syncModeSwitch() {
   if (modeSwitch) {
     classroomMode = loadSession() !== null;
     modeSwitch.hidden = roomMode || (tvMode && tvLayoutQuery.matches);
-    const selectedMode = devMode ? "dev" : "game";
+    const selectedMode = classroomMode
+      ? "classroom"
+      : devMode
+        ? "dev"
+        : homePage
+          ? "game"
+          : workPage
+            ? "work"
+            : classroomPage
+              ? "classroom"
+              : "";
     modeOptions.forEach((option) => {
       const optionMode = option.dataset.modeOption;
       const selected = !classroomMode && optionMode === selectedMode;
-      const activeClassroom =
-        optionMode === "classroom" && (!homePage || classroomMode);
-      option.classList.toggle(
-        "is-disabled",
-        classroomMode && optionMode !== "classroom",
-      );
-      if (classroomMode && optionMode !== "classroom") {
+      const blockedByClassroom = classroomMode && optionMode !== "classroom";
+      option.classList.toggle("is-disabled", blockedByClassroom);
+      if (blockedByClassroom) {
         option.setAttribute("aria-disabled", "true");
         option.setAttribute("title", "End class to switch modes");
       } else {
@@ -106,14 +123,39 @@ function syncModeSwitch() {
       }
       if (option instanceof HTMLButtonElement)
         option.setAttribute("aria-pressed", String(selected));
-      if (activeClassroom) option.setAttribute("aria-current", "page");
+      if (selectedMode === optionMode && !(option instanceof HTMLButtonElement))
+        option.setAttribute("aria-current", "page");
       else option.removeAttribute("aria-current");
     });
+  }
+  if (teamRoomButton) {
+    teamRoomButton.disabled = classroomMode;
+    teamRoomJoinForm
+      ?.querySelectorAll<HTMLInputElement | HTMLButtonElement>("input, button")
+      .forEach((control) => {
+        control.disabled = classroomMode;
+      });
+    if (teamRoomClassroomNote) teamRoomClassroomNote.hidden = !classroomMode;
   }
   syncDevBadge();
 }
 
 tvLayoutQuery.addEventListener("change", syncModeSwitch);
+modeSwitch?.addEventListener("click", (event) => {
+  const target = event.target;
+  if (!(target instanceof Element)) return;
+  const option = target.closest<HTMLElement>("[data-mode-option]");
+  if (classroomMode && option?.dataset.modeOption !== "classroom") {
+    event.preventDefault();
+    return;
+  }
+  if (
+    devMode &&
+    (option?.dataset.modeOption === "classroom" ||
+      option?.dataset.modeOption === "work")
+  )
+    setDevMode(false);
+});
 
 function syncDevBadge() {
   devBadge.hidden = !devBadgeVisible({
