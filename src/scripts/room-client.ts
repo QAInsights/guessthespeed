@@ -28,6 +28,8 @@ let latestView: RoomView | null = null;
 let ended = false;
 let reconnectAttempt = 0;
 let reconnectTimer = 0;
+let hostAnnouncementTimer = 0;
+let pendingHostPlayerId: string | null = null;
 let memoryClientId: string | null = null;
 
 function createUuid(): string {
@@ -124,37 +126,129 @@ function showRoomError(message: string): void {
 }
 
 function setConnectionStatus(status: string): void {
+  if (hostAnnouncementTimer && status === "Connected") return;
+  if (hostAnnouncementTimer && status !== "You're the host now") {
+    window.clearTimeout(hostAnnouncementTimer);
+    hostAnnouncementTimer = 0;
+  }
   const target = queryOptional<HTMLElement>("[data-room-connection]");
   if (target) target.textContent = status;
 }
 
-function roomTesterOptions(): HTMLButtonElement[] {
+function announceNewHost(): void {
+  if (hostAnnouncementTimer) window.clearTimeout(hostAnnouncementTimer);
+  hostAnnouncementTimer = 0;
+  setConnectionStatus("You're the host now");
+  hostAnnouncementTimer = window.setTimeout(() => {
+    hostAnnouncementTimer = 0;
+    if (latestView?.isHost) setConnectionStatus("Connected");
+  }, 4000);
+}
+
+function roomPickerOptions(menu: HTMLElement): HTMLButtonElement[] {
   return Array.from(
-    document.querySelectorAll<HTMLButtonElement>(
-      "[data-room-tester-menu] [role='option']",
-    ),
+    menu.querySelectorAll<HTMLButtonElement>("[role='option']"),
   );
 }
 
-function closeRoomTesterMenu(returnFocus = false): void {
-  const trigger = queryOptional<HTMLButtonElement>(
-    "[data-room-tester-trigger]",
-  );
-  const menu = queryOptional<HTMLDivElement>("[data-room-tester-menu]");
+function closeRoomPickerMenu(
+  triggerSelector: string,
+  menuSelector: string,
+  returnFocus = false,
+): void {
+  const trigger = queryOptional<HTMLButtonElement>(triggerSelector);
+  const menu = queryOptional<HTMLDivElement>(menuSelector);
   if (!trigger || !menu || menu.hidden) return;
   menu.hidden = true;
   trigger.setAttribute("aria-expanded", "false");
   if (returnFocus && !trigger.disabled) trigger.focus();
 }
 
-function focusRoomTesterOption(index: number): void {
-  const options = roomTesterOptions();
+function focusRoomPickerOption(menu: HTMLElement, index: number): void {
+  const options = roomPickerOptions(menu);
   if (!options.length) return;
   const option = options[(index + options.length) % options.length];
   options.forEach((item) => {
     item.tabIndex = item === option ? 0 : -1;
   });
   option.focus();
+}
+
+function setupRoomPicker(input: {
+  controlSelector: string;
+  triggerSelector: string;
+  menuSelector: string;
+  selectedIndex: (options: HTMLButtonElement[]) => number;
+}): void {
+  const control = queryOptional<HTMLElement>(input.controlSelector);
+  const trigger = queryOptional<HTMLButtonElement>(input.triggerSelector);
+  const menu = queryOptional<HTMLDivElement>(input.menuSelector);
+  if (!control || !trigger || !menu) return;
+  const options = () => roomPickerOptions(menu);
+  const open = (selectedIndex: number) => {
+    const currentOptions = options();
+    if (trigger.disabled || control.hidden || !currentOptions.length) return;
+    menu.hidden = false;
+    trigger.setAttribute("aria-expanded", "true");
+    focusRoomPickerOption(
+      menu,
+      Math.max(0, Math.min(currentOptions.length - 1, selectedIndex)),
+    );
+  };
+
+  trigger.addEventListener("click", () => {
+    if (trigger.disabled || control.hidden) return;
+    if (!menu.hidden) {
+      closeRoomPickerMenu(input.triggerSelector, input.menuSelector);
+      return;
+    }
+    open(input.selectedIndex(options()));
+  });
+  trigger.addEventListener("keydown", (event) => {
+    if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) return;
+    event.preventDefault();
+    if (trigger.disabled || control.hidden) return;
+    const currentOptions = options();
+    if (!currentOptions.length) return;
+    const index =
+      event.key === "Home"
+        ? 0
+        : event.key === "End"
+          ? currentOptions.length - 1
+          : input.selectedIndex(currentOptions);
+    open(index);
+  });
+  menu.addEventListener("keydown", (event) => {
+    const currentOptions = options();
+    const activeIndex = currentOptions.indexOf(
+      document.activeElement as HTMLButtonElement,
+    );
+    if (event.key === "Escape") {
+      event.preventDefault();
+      closeRoomPickerMenu(input.triggerSelector, input.menuSelector, true);
+    } else if (event.key === "Tab") {
+      closeRoomPickerMenu(input.triggerSelector, input.menuSelector);
+    } else if (event.key === "ArrowDown") {
+      event.preventDefault();
+      focusRoomPickerOption(menu, activeIndex + 1);
+    } else if (event.key === "ArrowUp") {
+      event.preventDefault();
+      focusRoomPickerOption(menu, activeIndex - 1);
+    } else if (event.key === "Home") {
+      event.preventDefault();
+      focusRoomPickerOption(menu, 0);
+    } else if (event.key === "End") {
+      event.preventDefault();
+      focusRoomPickerOption(menu, currentOptions.length - 1);
+    } else if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      currentOptions[activeIndex]?.click();
+    }
+  });
+  document.addEventListener("pointerdown", (event) => {
+    if (!menu.hidden && !control.contains(event.target as Node))
+      closeRoomPickerMenu(input.triggerSelector, input.menuSelector);
+  });
 }
 
 function updateRoomTesterControls(view: RoomView): void {
@@ -172,7 +266,11 @@ function updateRoomTesterControls(view: RoomView): void {
   chip.hidden = view.isHost;
   stopButton.hidden =
     !view.isHost || view.canRunTest || view.phase !== "testing";
-  if (view.phase === "testing") closeRoomTesterMenu();
+  if (view.phase === "testing")
+    closeRoomPickerMenu(
+      "[data-room-tester-trigger]",
+      "[data-room-tester-menu]",
+    );
   trigger.disabled = view.phase === "testing";
 
   const tester =
@@ -199,18 +297,18 @@ function updateRoomTesterControls(view: RoomView): void {
       ...options.map((option) => {
         const button = document.createElement("button");
         button.type = "button";
-        button.className = "room-tester-option";
+        button.className = "room-picker-option";
         button.setAttribute("role", "option");
         button.dataset.testerId = option.id ?? "";
         const selected = (view.testerId ?? "") === (option.id ?? "");
         button.setAttribute("aria-selected", String(selected));
         button.tabIndex = selected ? 0 : -1;
         const face = document.createElement("span");
-        face.className = "room-tester-option-face";
+        face.className = "room-picker-option-face";
         face.setAttribute("aria-hidden", "true");
         face.textContent = option.emoji;
         const name = document.createElement("span");
-        name.className = "room-tester-option-name";
+        name.className = "room-picker-option-name";
         name.textContent = option.name;
         button.append(face, name);
         button.addEventListener("click", () => {
@@ -220,7 +318,11 @@ function updateRoomTesterControls(view: RoomView): void {
               id: option.id,
             })
           )
-            closeRoomTesterMenu(true);
+            closeRoomPickerMenu(
+              "[data-room-tester-trigger]",
+              "[data-room-tester-menu]",
+              true,
+            );
         });
         return button;
       }),
@@ -228,10 +330,68 @@ function updateRoomTesterControls(view: RoomView): void {
   } else if (view.canRunTest) {
     chip.textContent = "Your phone runs the test";
   } else if (!tester) {
-    chip.textContent = "Test runs on: This screen (host)";
+    chip.textContent = "Test runs on: The host's screen";
   } else {
     chip.textContent = `Test runs on: ${tester.emoji} ${tester.name}`;
   }
+}
+
+function showHostTransferDialog(player: RoomView["players"][number]): void {
+  const dialog = queryOptional<HTMLDialogElement>("[data-room-host-dialog]");
+  const message = queryOptional<HTMLElement>("[data-room-host-message]");
+  const cancelButton = queryOptional<HTMLButtonElement>(
+    "[data-cancel-host-transfer]",
+  );
+  if (!dialog || !message || !cancelButton) return;
+  pendingHostPlayerId = player.id;
+  message.textContent = `Make ${player.name}'s phone the host? This screen loses host controls.`;
+  if (!dialog.open) dialog.showModal();
+  cancelButton.focus();
+}
+
+function updateRoomHostControls(view: RoomView): void {
+  const picker = queryOptional<HTMLElement>("[data-room-host-control]");
+  const trigger = queryOptional<HTMLButtonElement>("[data-room-host-trigger]");
+  const value = queryOptional<HTMLElement>("[data-room-host-value]");
+  const menu = queryOptional<HTMLDivElement>("[data-room-host-menu]");
+  if (!picker || !trigger || !value || !menu) return;
+  const eligiblePlayers = view.players.filter((player) => !player.mine);
+  const canTransfer =
+    view.isHost && view.phase !== "testing" && eligiblePlayers.length > 0;
+  picker.hidden = !canTransfer;
+  trigger.disabled = !canTransfer;
+  value.textContent = "Choose a player";
+  if (!canTransfer) {
+    closeRoomPickerMenu("[data-room-host-trigger]", "[data-room-host-menu]");
+    return;
+  }
+  menu.replaceChildren(
+    ...eligiblePlayers.map((player, index) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "room-picker-option";
+      button.setAttribute("role", "option");
+      button.dataset.hostPlayerId = player.id;
+      button.setAttribute("aria-selected", "false");
+      button.tabIndex = index === 0 ? 0 : -1;
+      const face = document.createElement("span");
+      face.className = "room-picker-option-face";
+      face.setAttribute("aria-hidden", "true");
+      face.textContent = player.emoji;
+      const name = document.createElement("span");
+      name.className = "room-picker-option-name";
+      name.textContent = player.name;
+      button.append(face, name);
+      button.addEventListener("click", () => {
+        closeRoomPickerMenu(
+          "[data-room-host-trigger]",
+          "[data-room-host-menu]",
+        );
+        showHostTransferDialog(player);
+      });
+      return button;
+    }),
+  );
 }
 
 function showEndedRoom(): void {
@@ -307,10 +467,34 @@ function connect(): void {
       return;
     }
     if (!isRecord(message)) return;
+    if (
+      message.type === "host" &&
+      typeof message.hostToken === "string" &&
+      message.hostToken.length <= 128
+    ) {
+      if (roomCode) {
+        try {
+          localStorage.setItem(`gts:host:${roomCode}`, message.hostToken);
+        } catch {
+          // The host can still use this connection if storage is unavailable.
+        }
+      }
+      announceNewHost();
+      return;
+    }
     if (message.type === "state" && isRoomView(message.view)) {
       reconnectAttempt = 0;
       latestView = message.view;
+      if (!latestView.isHost && roomCode) {
+        try {
+          if (localStorage.getItem(`gts:host:${roomCode}`) !== null)
+            localStorage.removeItem(`gts:host:${roomCode}`);
+        } catch {
+          // A stale token does not affect this connection's room state.
+        }
+      }
       updateRoomTesterControls(latestView);
+      updateRoomHostControls(latestView);
       setConnectionStatus("Connected");
       if (
         !latestView.isHost &&
@@ -498,79 +682,49 @@ if (isRoom) {
   const code = queryOptional<HTMLElement>("[data-room-code]");
   if (bar) bar.hidden = false;
   if (code) code.textContent = roomCode?.split("").join(" ") ?? rawCode;
-  const testerTrigger = queryOptional<HTMLButtonElement>(
-    "[data-room-tester-trigger]",
-  );
-  const testerMenu = queryOptional<HTMLDivElement>("[data-room-tester-menu]");
-  testerTrigger?.addEventListener("click", () => {
-    if (!testerMenu || testerTrigger.disabled) return;
-    if (!testerMenu.hidden) {
-      closeRoomTesterMenu();
-      return;
-    }
-    const options = roomTesterOptions();
-    const selectedIndex = options.findIndex(
-      (option) =>
-        (option.dataset.testerId ?? "") === (latestView?.testerId ?? ""),
-    );
-    testerMenu.hidden = false;
-    testerTrigger.setAttribute("aria-expanded", "true");
-    focusRoomTesterOption(Math.max(0, selectedIndex));
-  });
-  testerTrigger?.addEventListener("keydown", (event) => {
-    if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) return;
-    event.preventDefault();
-    if (!testerMenu || testerTrigger.disabled) return;
-    const options = roomTesterOptions();
-    if (!options.length) return;
-    testerMenu.hidden = false;
-    testerTrigger.setAttribute("aria-expanded", "true");
-    if (event.key === "Home") focusRoomTesterOption(0);
-    else if (event.key === "End") focusRoomTesterOption(options.length - 1);
-    else {
-      const selectedIndex = options.findIndex(
+  setupRoomPicker({
+    controlSelector: "[data-room-tester-control]",
+    triggerSelector: "[data-room-tester-trigger]",
+    menuSelector: "[data-room-tester-menu]",
+    selectedIndex: (options) =>
+      options.findIndex(
         (option) =>
           (option.dataset.testerId ?? "") === (latestView?.testerId ?? ""),
-      );
-      focusRoomTesterOption(Math.max(0, selectedIndex));
-    }
+      ),
   });
-  testerMenu?.addEventListener("keydown", (event) => {
-    const options = roomTesterOptions();
-    const activeIndex = options.indexOf(
-      document.activeElement as HTMLButtonElement,
+  setupRoomPicker({
+    controlSelector: "[data-room-host-control]",
+    triggerSelector: "[data-room-host-trigger]",
+    menuSelector: "[data-room-host-menu]",
+    selectedIndex: () => 0,
+  });
+  const hostDialog = queryOptional<HTMLDialogElement>(
+    "[data-room-host-dialog]",
+  );
+  hostDialog?.addEventListener("close", () => {
+    pendingHostPlayerId = null;
+    const trigger = queryOptional<HTMLButtonElement>(
+      "[data-room-host-trigger]",
     );
-    if (event.key === "Escape") {
-      event.preventDefault();
-      closeRoomTesterMenu(true);
-    } else if (event.key === "Tab") {
-      closeRoomTesterMenu();
-    } else if (event.key === "ArrowDown") {
-      event.preventDefault();
-      focusRoomTesterOption(activeIndex + 1);
-    } else if (event.key === "ArrowUp") {
-      event.preventDefault();
-      focusRoomTesterOption(activeIndex - 1);
-    } else if (event.key === "Home") {
-      event.preventDefault();
-      focusRoomTesterOption(0);
-    } else if (event.key === "End") {
-      event.preventDefault();
-      focusRoomTesterOption(options.length - 1);
-    } else if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
-      options[activeIndex]?.click();
-    }
+    if (trigger && !trigger.disabled && !trigger.hidden) trigger.focus();
   });
-  document.addEventListener("pointerdown", (event) => {
-    const picker = queryOptional<HTMLElement>("[data-room-tester-control]");
+  queryOptional<HTMLButtonElement>(
+    "[data-cancel-host-transfer]",
+  )?.addEventListener("click", () => hostDialog?.close());
+  queryOptional<HTMLButtonElement>(
+    "[data-close-host-transfer]",
+  )?.addEventListener("click", () => hostDialog?.close());
+  queryOptional<HTMLButtonElement>(
+    "[data-confirm-host-transfer]",
+  )?.addEventListener("click", () => {
     if (
-      testerMenu &&
-      !testerMenu.hidden &&
-      picker &&
-      !picker.contains(event.target as Node)
+      pendingHostPlayerId !== null &&
+      sendRoomAction({
+        type: "transferHost",
+        id: pendingHostPlayerId,
+      })
     )
-      closeRoomTesterMenu();
+      hostDialog?.close();
   });
   queryOptional<HTMLButtonElement>("[data-room-stop-test]")?.addEventListener(
     "click",

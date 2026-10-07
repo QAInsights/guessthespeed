@@ -3,7 +3,9 @@ import {
   applyAction,
   canRunTest,
   createRoom,
+  parseTransferHostAction,
   ROOM_TTL_MS,
+  transferHost,
   viewFor,
   type Room,
 } from "../src/lib/room";
@@ -102,6 +104,61 @@ export class GameRoom extends DurableObject<Env> {
     if (!room) {
       sendError(socket, "This room has ended.");
       socket.close(1000, "Room ended");
+      return;
+    }
+    if (parsed.type === "transferHost") {
+      const action = parseTransferHostAction(parsed);
+      if (!action) {
+        sendError(socket, "Invalid action.");
+        this.sendState(socket, room, attachment);
+        return;
+      }
+      const targetPlayer = room.game.players.find(
+        (player) => player.id === action.id,
+      );
+      const targetOnline =
+        targetPlayer !== undefined &&
+        this.ctx
+          .getWebSockets()
+          .some(
+            (target) => getAttachment(target)?.clientId === targetPlayer.owner,
+          );
+      const hostToken = crypto.randomUUID();
+      const result = transferHost(room, {
+        isHost: attachment.isHost,
+        clientId: attachment.clientId,
+        playerId: action.id,
+        targetOnline,
+        newHostToken: hostToken,
+        now: Date.now(),
+      });
+      if (!result.ok) {
+        sendError(socket, result.error);
+        this.sendState(socket, room, attachment);
+        return;
+      }
+      await this.ctx.storage.put(ROOM_KEY, result.room);
+      const next = alarmToSchedule(
+        await this.ctx.storage.getAlarm(),
+        result.room.updatedAt + ROOM_TTL_MS,
+      );
+      if (next !== null) await this.ctx.storage.setAlarm(next);
+      const hostMessage = JSON.stringify({ type: "host", hostToken });
+      for (const target of this.ctx.getWebSockets()) {
+        const targetAttachment = getAttachment(target);
+        if (!targetAttachment) continue;
+        const isHost = targetAttachment.clientId === result.newHostClientId;
+        try {
+          target.serializeAttachment({
+            ...targetAttachment,
+            isHost,
+          });
+          if (isHost) target.send(hostMessage);
+        } catch {
+          continue;
+        }
+      }
+      this.broadcastState(result.room);
       return;
     }
     const previousPhase = room.game.phase;
