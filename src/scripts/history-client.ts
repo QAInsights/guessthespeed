@@ -5,6 +5,7 @@ import {
   parseHistory,
   type SpeedSample,
 } from "../lib/history";
+import { loadPlan } from "../lib/plan";
 
 const card = document.querySelector<HTMLElement>("[data-history-card]");
 const chart = document.querySelector<SVGSVGElement>("[data-history-chart]");
@@ -39,9 +40,14 @@ function renderChart(samples: SpeedSample[]) {
   const previous = samples.at(-2)!;
   const latestDown = Math.round(latest.down);
   const previousDown = Math.round(previous.down);
+  const planDown = loadPlan().down;
+  const formattedPlan =
+    planDown === null
+      ? null
+      : planDown.toLocaleString(undefined, { maximumFractionDigits: 0 });
   chart.setAttribute(
     "aria-label",
-    `Download speed history. Latest: ${latestDown} Mbps. Previous: ${previousDown} Mbps.`,
+    `Download speed history. Latest: ${latestDown} Mbps. Previous: ${previousDown} Mbps.${formattedPlan === null ? "" : ` Plan: ${formattedPlan} Mbps.`}`,
   );
   chart.replaceChildren();
 
@@ -50,7 +56,10 @@ function renderChart(samples: SpeedSample[]) {
   const left = 28;
   const right = 28;
   const maximumHeight = 112;
-  const maximumDown = Math.max(...samples.map((sample) => sample.down));
+  const maximumDown = Math.max(
+    ...samples.map((sample) => sample.down),
+    planDown ?? 0,
+  );
   const step = (width - left - right) / samples.length;
   const barWidth = Math.min(36, step * 0.62);
   const axis = document.createElementNS(svgNamespace, "line");
@@ -96,6 +105,25 @@ function renderChart(samples: SpeedSample[]) {
     chart.append(group);
   });
 
+  if (planDown !== null && formattedPlan !== null) {
+    const y = baseline - (planDown / maximumDown) * maximumHeight;
+    const line = document.createElementNS(svgNamespace, "line");
+    line.setAttribute("class", "wifi-history-plan-line");
+    line.setAttribute("x1", String(left));
+    line.setAttribute("x2", String(width - right));
+    line.setAttribute("y1", y.toFixed(1));
+    line.setAttribute("y2", y.toFixed(1));
+    chart.append(line);
+
+    const label = document.createElementNS(svgNamespace, "text");
+    label.setAttribute("class", "wifi-history-plan-label");
+    label.setAttribute("x", String(width - right));
+    label.setAttribute("y", String(Math.max(14, y - 6)));
+    label.setAttribute("text-anchor", "end");
+    label.textContent = `Plan ${formattedPlan}`;
+    chart.append(label);
+  }
+
   if (summary && comparison) {
     summary.textContent =
       comparison.direction === "same"
@@ -138,4 +166,5 @@ clearButton?.addEventListener("click", () => {
 
 document.addEventListener("gts:dev-change", renderHistoryCard);
 document.addEventListener("gts:tv-change", renderHistoryCard);
+document.addEventListener("gts:plan-change", renderHistoryCard);
 renderHistoryCard();

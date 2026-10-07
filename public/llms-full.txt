@@ -52,6 +52,8 @@ When movable festival windows overlap, the theme whose festival date is closest 
 
 For a local game, player names, guesses, settings, scores, and history are stored in local storage on the current device. Classroom Mode also keeps class rosters in that browser's local storage. It does not create a room or send student names to the server. Clearing site data deletes a roster; exporting a class file moves it to wherever the file is saved or shared. Multiplayer rooms temporarily share the game state on Cloudflare. There are no accounts or game cookies. The speed test sends measurements to Cloudflare, which collects aggregated, anonymous results to understand internet connection quality. Optional Cloudflare Web Analytics uses a cookieless beacon and only loads when the site owner configures its public token. A public play counter stores only aggregate totals for completed real rounds, games reaching the champion phase, and locked guesses; it stores no IP addresses, device IDs, timestamps per event, names, guesses, or speeds.
 
+If you add your internet plan in Settings, it stays in this browser and is never sent to us.
+
 Share result uses your device's own share sheet or clipboard. Nothing is sent to us.
 
 Choose Dev in the Game / Dev switch at the top of the home screen to open the raw Cloudflare speed test diagnostics console. Add `?dev=1` to the home page URL to open it directly. IP addresses are masked on screen by default, omitted from JSON exports, and not saved in local storage.
@@ -71,6 +73,7 @@ Room game data, including player names, face choices, guesses, and scores, is st
 - How it works: https://guessthespeed.com/how-it-works/
 - Internet speed 101: https://guessthespeed.com/internet-speed-101/
 - Good internet speed guide: https://guessthespeed.com/what-is-a-good-internet-speed/
+- Internet plan quick check: https://guessthespeed.com/am-i-getting-the-speed-i-pay-for/
 - Household speed calculator: https://guessthespeed.com/how-much-internet-speed-do-i-need/
 - Mbps to MB/s converter and download-time calculator: https://guessthespeed.com/mbps-to-mbs/
 - Privacy: https://guessthespeed.com/privacy/
@@ -84,6 +87,7 @@ Internet speed 101 defines bits, bytes, Mbps, MB/s, download, upload, ping, and 
 ## Internet speed guides and calculators
 
 - [What is a good internet speed?](https://guessthespeed.com/what-is-a-good-internet-speed/) explains sourced download, upload, streaming, video-call, Remote Play, and latency recommendations, with household starting ranges and advice for diagnosing a lower speed test.
+- [Am I getting the internet speed I pay for?](https://guessthespeed.com/am-i-getting-the-speed-i-pay-for/) compares a measured download result with a plan, offers a browser-only quick checker, and explains fair testing and when to discuss a repeated gap with a provider. Its percentage colors are Guess the Speed's own rule of thumb.
 - [Household speed calculator](https://guessthespeed.com/how-much-internet-speed-do-i-need/) adds estimated download and upload rates for simultaneous 4K and HD streams, HD calls, game streaming, downloads, and connected devices, then adds 25% headroom and rounds to a common tier. Its active-download allowance is explicitly a planning assumption.
 - [Mbps to MB/s converter and download-time calculator](https://guessthespeed.com/mbps-to-mbs/) converts between Mbps, MB/s, and Gbps, and estimates decimal file download times at full rate and 90% efficiency.
 

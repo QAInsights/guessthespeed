@@ -133,10 +133,28 @@ const overheard: { face: string; quote: string; who: string; note: string }[] = 
         <span><kbd>F</kbd> full screen</span>
       </p>
 
-      <div class="stats" aria-label="Latest speed test results">
-        <div class="stat stk"><span><Icon name="ph:timer-fill" />Ping</span><div><b data-result="ping">-</b><small>ms</small></div></div>
-        <div class="stat stk"><span><Icon name="ph:arrow-down-fill" />Download</span><div><b data-result="down">-</b><small>Mbps</small></div></div>
-        <div class="stat stk"><span><Icon name="ph:arrow-up-fill" />Upload</span><div><b data-result="up">-</b><small>Mbps</small></div></div>
+      <div class="stats-column">
+        <div class="stats" aria-label="Latest speed test results">
+          <div class="stat stk"><span><Icon name="ph:timer-fill" />Ping</span><div><b data-result="ping">-</b><small>ms</small></div></div>
+          <div class="stat stk">
+            <span><Icon name="ph:arrow-down-fill" />Download</span>
+            <div class="stat-result">
+              <div><b data-result="down">-</b><small>Mbps</small></div>
+              <a class="plan-chip" data-plan-chip="down" href="/what-is-a-good-internet-speed/#less-than-plan" hidden></a>
+            </div>
+          </div>
+          <div class="stat stk">
+            <span><Icon name="ph:arrow-up-fill" />Upload</span>
+            <div class="stat-result">
+              <div><b data-result="up">-</b><small>Mbps</small></div>
+              <a class="plan-chip" data-plan-chip="up" href="/what-is-a-good-internet-speed/#less-than-plan" hidden></a>
+            </div>
+          </div>
+        </div>
+        <button class="plan-nudge" data-plan-nudge type="button" hidden>
+          <Icon name="ph:plus-bold" aria-hidden="true" />
+          Add your plan to see how close you get
+        </button>
       </div>
       <span class="sr" data-reveal-announcement aria-live="polite" aria-atomic="true"></span>
       <article class="wifi-history-card stk" data-history-card hidden aria-labelledby="wifi-history-title">
