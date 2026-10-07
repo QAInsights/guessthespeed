@@ -10,6 +10,7 @@
     "preview": "astro preview",
     "check": "astro check && tsc -p worker",
     "test": "vitest run",
+    "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
@@ -26,9 +27,13 @@
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
     "@cloudflare/workers-types": "^5.20261006.1",
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.12.0",
+    "eslint-plugin-astro": "^3.2.1",
+    "globals": "^17.13.0",
     "prettier": "^3.9.9",
-    "puppeteer-core": "^25.12.0",
     "typescript": "^6.0.3",
+    "typescript-eslint": "^8.71.1",
     "vitest": "^5.0.3",
     "wrangler": "^4.147.0"
   }

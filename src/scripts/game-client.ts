@@ -53,6 +53,9 @@ import { roundStatEvent } from "../lib/stats";
 import { sendStat } from "./stats-client";
 import { recordSpeedSample } from "./history-client";
 import { describeTarget, isOverlayOpen, shortcutAction } from "./shortcuts";
+import { escapeHtml } from "../lib/html";
+import { $, $$ } from "./dom";
+import { emptyPlayerMarkup } from "./player-empty-state";
 
 type ClientPlayer = Player & { mine?: boolean };
 type ClientGameState = Omit<GameState, "players"> & {
@@ -68,6 +71,7 @@ interface GameStore {
 const classroomSession = loadSession();
 const classroomMode = classroomSession !== null;
 const roomMode = isRoomMode();
+let roomStateReceived = false;
 const localStore: GameStore = {
   persist: (current) => saveGame(current),
   send: () => false,
@@ -77,26 +81,6 @@ const roomStore: GameStore = {
   send: (action) => sendRoomAction(action),
 };
 const store = roomMode ? roomStore : localStore;
-const $ = <T extends Element>(
-  selector: string,
-  root: ParentNode = document,
-): T => root.querySelector(selector) as T;
-const $$ = <T extends Element>(
-  selector: string,
-  root: ParentNode = document,
-): T[] => Array.from(root.querySelectorAll(selector)) as T[];
-const escapeHtml = (value: unknown) =>
-  String(value ?? "").replace(
-    /[&<>"']/g,
-    (char) =>
-      ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#39;",
-      })[char]!,
-  );
 const emptyRoomGame = initialGameState();
 let state: ClientGameState = roomMode
   ? {
@@ -395,8 +379,7 @@ function renderPlayers() {
     );
   });
   if (!state.players.length) {
-    playerContainer.innerHTML =
-      '<div class="p-empty"><span>🏁</span><p>Add the first player</p></div>';
+    playerContainer.innerHTML = emptyPlayerMarkup(roomMode, roomStateReceived);
   } else if (state.view === "table") {
     playerContainer.innerHTML = `<div class="p-table-wrap"><table class="p-table">
       <thead><tr><th>#</th><th>Player</th><th>Download</th><th>Upload</th><th>Round status</th><th>Score</th><th><span class="sr">Player actions</span></th></tr></thead>
@@ -1109,6 +1092,7 @@ document.addEventListener("gts:settings-change", (event) => {
 document.addEventListener("gts:room-state", (event) => {
   if (!roomMode) return;
   const view = (event as CustomEvent<RoomView>).detail;
+  roomStateReceived = true;
   const recovery = interruptedTestStep({
     phase: view.phase,
     canRunTest: view.canRunTest,

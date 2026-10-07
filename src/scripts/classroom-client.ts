@@ -26,9 +26,7 @@ import {
   type Team,
 } from "../lib/classroom";
 import { initialGameState, loadGame, saveGame, STORAGE_KEY } from "../lib/game";
-
-const $ = <T extends Element>(selector: string): T =>
-  document.querySelector(selector) as T;
+import { $ } from "./dom";
 
 const classList = $<HTMLDivElement>("[data-class-list]");
 const classCount = $<HTMLElement>("[data-class-count]");

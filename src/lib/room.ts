@@ -12,6 +12,8 @@ import {
   type GameState,
   type Player,
 } from "./game";
+import { isRecord } from "./guards";
+import { MAX_NAME_LENGTH, MAX_SPEED_MBPS } from "./limits";
 import type { TieMode } from "./scoring";
 
 export const ROOM_ALPHABET = "BCDFGHJKMNPQRSTVWXZ";
@@ -200,7 +202,9 @@ export function applyAction(
       if (game.phase !== "guessing")
         return { error: "Guesses are closed for this round." };
       if (!validSpeed(action.down) || !validSpeed(action.up))
-        return { error: "Enter speeds between 0 and 100000 Mbps." };
+        return {
+          error: `Enter speeds between 0 and ${MAX_SPEED_MBPS} Mbps.`,
+        };
       return updateRoomGame(
         room,
         lockGuess(game, player.id, {
@@ -293,7 +297,9 @@ export function applyAction(
       )
         return { error: "The speed test returned no result." };
       if (!validSpeed(action.down) || !validSpeed(action.up))
-        return { error: "Enter speeds between 0 and 100000 Mbps." };
+        return {
+          error: `Enter speeds between 0 and ${MAX_SPEED_MBPS} Mbps.`,
+        };
       if (action.ping !== undefined && !validSpeed(action.ping))
         return { error: "Enter a valid ping." };
       const result = applyResult(game, {
@@ -377,10 +383,13 @@ export function canRunTest(
 
 function toGameState(game: Room["game"]): GameState {
   return {
-    players: game.players.map(({ owner: _owner, ...player }) => ({
-      ...player,
-      guess: { ...player.guess },
-    })),
+    players: game.players.map(({ owner, ...player }) => {
+      void owner;
+      return {
+        ...player,
+        guess: { ...player.guess },
+      };
+    }),
     settings: {
       ...initialGameState().settings,
       ...game.settings,
@@ -433,14 +442,10 @@ function createPlayerId(): string {
   return `rp-${Math.random().toString(36).slice(2, 10)}${playerSequence.toString(36)}`;
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
 function validName(value: unknown): string | null {
   if (typeof value !== "string") return null;
   const name = value.trim();
-  return name.length > 0 && name.length <= 16 ? name : null;
+  return name.length > 0 && name.length <= MAX_NAME_LENGTH ? name : null;
 }
 
 function shortString(value: unknown): string | null {
@@ -452,7 +457,7 @@ function validSpeed(value: unknown): value is number {
     typeof value === "number" &&
     Number.isFinite(value) &&
     value >= 0 &&
-    value <= 100_000
+    value <= MAX_SPEED_MBPS
   );
 }
 

@@ -144,6 +144,25 @@ describe("game state", () => {
     );
   });
 
+  it("normalizes invalid optional numbers to null when locking a guess", () => {
+    const state = initialGameState();
+    const locked = lockGuess(state, "p-mom", {
+      down: Number.POSITIVE_INFINITY,
+      up: -1,
+    });
+
+    expect(locked.players[0].guess).toEqual({ down: null, up: null });
+  });
+
+  it("rejects saved state with a negative optional number", () => {
+    const invalidState = initialGameState();
+    invalidState.players[0].guess.down = -1;
+
+    expect(loadGame(memoryStorage(JSON.stringify(invalidState)))).toEqual(
+      initialGameState(),
+    );
+  });
+
   it("loads defaults only when storage has no valid state", () => {
     expect(loadGame(memoryStorage()).players).toHaveLength(4);
     const intentionallyEmpty = {

@@ -50,7 +50,7 @@ export const ACTIVITY_RATES = {
 
 export type ActivityId = keyof typeof ACTIVITY_RATES;
 
-export const PLAN_TIERS = [25, 50, 100, 200, 300, 500, 1000, 2000] as const;
+const PLAN_TIERS = [25, 50, 100, 200, 300, 500, 1000, 2000] as const;
 
 const clampCount = (count: number): number =>
   Number.isFinite(count) ? Math.min(12, Math.max(0, Math.floor(count))) : 0;

@@ -89,16 +89,15 @@ const delay = (ms: number, signal?: AbortSignal) =>
       reject(new SpeedTestCancelledError());
       return;
     }
-    let timer: ReturnType<typeof setTimeout>;
+    const timer = setTimeout(() => {
+      signal?.removeEventListener("abort", onAbort);
+      resolve();
+    }, ms);
     const onAbort = () => {
       clearTimeout(timer);
       signal?.removeEventListener("abort", onAbort);
       reject(new SpeedTestCancelledError());
     };
-    timer = setTimeout(() => {
-      signal?.removeEventListener("abort", onAbort);
-      resolve();
-    }, ms);
     signal?.addEventListener("abort", onAbort, { once: true });
   });
 
@@ -323,13 +322,10 @@ export function runSpeedTest(
     let lastActivity = Date.now();
     const startedAt = lastActivity;
     let test: SpeedTest | undefined;
-    let watchdog: ReturnType<typeof setInterval>;
-
-    const clearWatchdog = () => clearInterval(watchdog);
     const settle = (callback: () => void) => {
       if (settled) return;
       settled = true;
-      clearWatchdog();
+      clearInterval(watchdog);
       options.signal?.removeEventListener("abort", abort);
       callback();
     };
@@ -350,7 +346,7 @@ export function runSpeedTest(
       onUpdate(update);
     };
 
-    watchdog = setInterval(() => {
+    const watchdog = setInterval(() => {
       if (settled || Date.now() - lastActivity < STALL_TIMEOUT_MS) return;
       settle(() => {
         try {

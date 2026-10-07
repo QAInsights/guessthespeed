@@ -299,6 +299,66 @@ describe("classroom storage and backups", () => {
     ).toBe(null);
   });
 
+  it("keeps sanitized export output byte-identical for duplicate and long students", () => {
+    const fixture: ClassroomData = {
+      version: 1,
+      classes: [
+        makeClassroom(
+          [
+            { id: "same-id", name: "Alex", emoji: STUDENT_FACES[0] },
+            { id: "same-id", name: "Blair", emoji: STUDENT_FACES[1] },
+            { id: "unique-id", name: "Alex", emoji: STUDENT_FACES[2] },
+            {
+              id: "long-id",
+              name: "ABCDEFGHIJKLMNOPQRST",
+              emoji: STUDENT_FACES[3],
+            },
+          ],
+          {
+            id: "class-gold",
+            name: "Review Class",
+            createdAt: 1760000000000,
+            spotlightPlayed: [
+              "same-id",
+              "unique-id",
+              "long-id",
+              "missing",
+              "same-id",
+            ],
+          },
+        ),
+      ],
+    };
+
+    expect(exportClassroom(fixture)).toBe(`{
+  "version": 1,
+  "classes": [
+    {
+      "id": "class-gold",
+      "name": "Review Class",
+      "emoji": "🏫",
+      "students": [
+        {
+          "id": "same-id",
+          "name": "Alex",
+          "emoji": "🦊"
+        },
+        {
+          "id": "long-id",
+          "name": "ABCDEFGHIJKLMNOP",
+          "emoji": "🦁"
+        }
+      ],
+      "spotlightPlayed": [
+        "same-id",
+        "long-id"
+      ],
+      "createdAt": 1760000000000
+    }
+  ]
+}`);
+  });
+
   it("merges imports by class id or normalized name without duplicating students", () => {
     const existing = makeData([
       makeClassroom([{ id: "ada", name: "Ada", emoji: "🦊" }]),

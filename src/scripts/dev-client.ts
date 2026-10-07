@@ -12,21 +12,8 @@ import {
   type SerializableBandwidthPoint,
   type SpeedDetails,
 } from "../lib/speedtest";
-
-const $ = <T extends Element>(selector: string): T =>
-  document.querySelector(selector) as T;
-const escapeHtml = (value: unknown) =>
-  String(value).replace(
-    /[&<>"']/g,
-    (char) =>
-      ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#39;",
-      })[char]!,
-  );
+import { escapeHtml } from "../lib/html";
+import { $ } from "./dom";
 
 type BrowserDetails = Record<string, string | number | boolean>;
 type Direction = "download" | "upload";

@@ -6,9 +6,7 @@ import type { RoomView } from "../lib/room";
 import { loadSession } from "../lib/classroom";
 import { describeTarget, isOverlayOpen, shortcutAction } from "./shortcuts";
 import { devBadgeVisible } from "./mode-ui";
-
-const $ = <T extends Element>(selector: string): T =>
-  document.querySelector(selector) as T;
+import { $ } from "./dom";
 
 const themePicker = $<HTMLDivElement>("[data-theme-picker]");
 const themeTrigger = $<HTMLButtonElement>("[data-theme-trigger]");
@@ -394,9 +392,12 @@ themeMenu.addEventListener("keydown", (event) => {
   const index = themeOptions.indexOf(
     document.activeElement as HTMLButtonElement,
   );
-  const columns = getComputedStyle(themeList)
-    .gridTemplateColumns.split(" ")
-    .filter(Boolean).length;
+  const columns =
+    event.key === "ArrowDown" || event.key === "ArrowUp"
+      ? getComputedStyle(themeList)
+          .gridTemplateColumns.split(" ")
+          .filter(Boolean).length
+      : 1;
   const steps: Record<string, number> = {
     ArrowRight: 1,
     ArrowLeft: -1,

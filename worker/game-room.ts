@@ -7,11 +7,12 @@ import {
   viewFor,
   type Room,
 } from "../src/lib/room";
+import { isRecord } from "../src/lib/guards";
 import { roundStatEvent, type StatEvent } from "../src/lib/stats";
-import { MAX_ROOM_CONNECTIONS, roomHasCapacity } from "./room-capacity";
+import { alarmToSchedule } from "./alarm";
+import { utf8LengthExceeds } from "./http";
+import { roomHasCapacity } from "./room-capacity";
 import type { Env } from "./types";
-
-export { MAX_ROOM_CONNECTIONS, roomHasCapacity } from "./room-capacity";
 
 interface SocketAttachment {
   clientId: string;
@@ -52,7 +53,11 @@ export class GameRoom extends DurableObject<Env> {
     socket: WebSocket,
     message: string | ArrayBuffer,
   ): Promise<void> {
-    if (messageByteLength(message) > MAX_MESSAGE_BYTES) {
+    if (
+      typeof message === "string"
+        ? utf8LengthExceeds(message, MAX_MESSAGE_BYTES)
+        : message.byteLength > MAX_MESSAGE_BYTES
+    ) {
       socket.close(1009, "Message too large");
       return;
     }
@@ -116,7 +121,11 @@ export class GameRoom extends DurableObject<Env> {
       return;
     }
     await this.ctx.storage.put(ROOM_KEY, result.room);
-    await this.ctx.storage.setAlarm(result.room.updatedAt + ROOM_TTL_MS);
+    const next = alarmToSchedule(
+      await this.ctx.storage.getAlarm(),
+      result.room.updatedAt + ROOM_TTL_MS,
+    );
+    if (next !== null) await this.ctx.storage.setAlarm(next);
     this.broadcastState(result.room);
     if (
       parsed.type === "result" &&
@@ -213,7 +222,11 @@ export class GameRoom extends DurableObject<Env> {
       return Response.json({ error: "Invalid room code." }, { status: 400 });
     }
     await this.ctx.storage.put(ROOM_KEY, room);
-    await this.ctx.storage.setAlarm(room.updatedAt + ROOM_TTL_MS);
+    const next = alarmToSchedule(
+      await this.ctx.storage.getAlarm(),
+      room.updatedAt + ROOM_TTL_MS,
+    );
+    if (next !== null) await this.ctx.storage.setAlarm(next);
     return Response.json({ exists: true }, { status: 201 });
   }
 
@@ -366,14 +379,4 @@ function sendError(socket: WebSocket, message: string): void {
   } catch {
     return;
   }
-}
-
-function messageByteLength(message: string | ArrayBuffer): number {
-  return typeof message === "string"
-    ? new TextEncoder().encode(message).byteLength
-    : message.byteLength;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
 }

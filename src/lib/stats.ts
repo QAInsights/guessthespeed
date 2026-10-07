@@ -41,7 +41,7 @@ export const EMPTY_TOTALS: PlayTotals = Object.freeze({
 // Caps one round's pull on the public average.
 export const STAT_DOWN_CAP = 2500;
 
-export const STAT_DISPLAY_MIN_ROUNDS = 1;
+const STAT_DISPLAY_MIN_ROUNDS = 1;
 
 const roundToTenth = (value: number) => Math.round(value * 10) / 10;
 
