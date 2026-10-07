@@ -53,6 +53,13 @@ import {
 import { roundStatEvent } from "../lib/stats";
 import { sendStat } from "./stats-client";
 import { recordSpeedSample } from "./history-client";
+import {
+  formatPlanChip,
+  hasPlan,
+  loadPlan,
+  planPercent,
+  planTone,
+} from "../lib/plan";
 import { describeTarget, isOverlayOpen, shortcutAction } from "./shortcuts";
 import { escapeHtml } from "../lib/html";
 import { $, $$ } from "./dom";
@@ -143,6 +150,8 @@ const shareButton = $<HTMLButtonElement>("[data-share-result]");
 const shareStatus = $<HTMLParagraphElement>("[data-share-status]");
 const addForm = $<HTMLFormElement>("[data-add-form]");
 const tvAddToggle = $<HTMLButtonElement>("[data-tv-add-toggle]");
+const planChips = $$<HTMLAnchorElement>("[data-plan-chip]");
+const planNudge = $<HTMLButtonElement>("[data-plan-nudge]");
 const startButton = $<HTMLButtonElement>("[data-start-btn]");
 const errorNote = $<HTMLParagraphElement>("[data-error-note]");
 const playerContainer = $<HTMLDivElement>("[data-players]");
@@ -538,6 +547,42 @@ function setResultText(key: string, value: number | undefined) {
   });
 }
 
+function updatePlanComparisons() {
+  const plan = loadPlan();
+  const actual = isRevealed() ? state.history.at(-1)?.actual : undefined;
+  for (const chip of planChips) {
+    const direction = chip.dataset.planChip === "up" ? "up" : "down";
+    const planned = plan[direction];
+    const pct = planPercent(actual?.[direction], planned);
+    if (pct === null || planned === null) {
+      chip.hidden = true;
+      chip.textContent = "";
+      chip.classList.remove("plan-chip-good", "plan-chip-ok", "plan-chip-low");
+      continue;
+    }
+    chip.textContent = formatPlanChip(pct, planned);
+    chip.classList.remove("plan-chip-good", "plan-chip-ok", "plan-chip-low");
+    chip.classList.add(`plan-chip-${planTone(pct)}`);
+    chip.hidden = false;
+  }
+  planNudge.hidden =
+    !isRevealed() ||
+    hasPlan(plan) ||
+    document.documentElement.dataset.tv === "1" ||
+    isDevMode() ||
+    loadSession() !== null;
+}
+
+planNudge.addEventListener("click", () => {
+  $<HTMLButtonElement>("[data-open-settings]").click();
+  $<HTMLInputElement>("#planDown").focus();
+});
+
+document.addEventListener("gts:plan-change", updatePlanComparisons);
+document.addEventListener("gts:tv-change", updatePlanComparisons);
+document.addEventListener("gts:dev-change", updatePlanComparisons);
+document.addEventListener("gts:classroom-change", updatePlanComparisons);
+
 function formatSpeed(value: number) {
   return value >= 100
     ? value.toLocaleString(undefined, { maximumFractionDigits: 1 })
@@ -791,6 +836,7 @@ function render() {
   if (state.phase === "testing")
     document.documentElement.dataset.phase = "down";
   setResults();
+  updatePlanComparisons();
   syncControls();
   $<HTMLFormElement>("[data-add-form]")
     .querySelectorAll('input[type="radio"]')

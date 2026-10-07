@@ -1549,6 +1549,19 @@ html[data-revealing="1"] .gauge-needle {
   opacity: 0.35;
 }
 
+.wifi-history-plan-line {
+  stroke: var(--ink);
+  stroke-dasharray: 8 6;
+  stroke-width: 2.5;
+}
+
+.wifi-history-plan-label {
+  fill: var(--ink);
+  font-family: "Bricolage Grotesque Variable", sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+}
+
 .wifi-history-bar {
   fill: var(--soft);
   stroke: var(--ink);
@@ -1657,6 +1670,68 @@ html[data-revealing="1"] .gauge-needle {
   margin-left: 4px;
   color: var(--muted);
   font-weight: 700;
+}
+
+.stat-result {
+  display: grid;
+  justify-items: end;
+  gap: 6px;
+}
+
+.stat-result > div {
+  white-space: nowrap;
+}
+
+.plan-chip {
+  display: inline-flex;
+  max-width: min(220px, 44vw);
+  justify-content: center;
+  padding: 4px 8px;
+  border: 2px solid var(--on-pastel);
+  border-radius: 999px;
+  color: var(--on-pastel);
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1.15;
+  text-align: center;
+  text-decoration: none;
+}
+
+.plan-chip[hidden] {
+  display: none;
+}
+
+.plan-chip-good {
+  background: #b9edc8;
+}
+
+.plan-chip-ok {
+  background: #ffe08a;
+}
+
+.plan-chip-low {
+  background: #ffc5bd;
+}
+
+.plan-nudge {
+  display: block;
+  max-width: 100%;
+  margin: 4px auto 0;
+  padding: 6px 10px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.plan-nudge[hidden] {
+  display: none;
 }
 
 .winner {
@@ -3145,6 +3220,29 @@ dialog::backdrop {
   gap: 16px;
 }
 
+.dialog-plan-group {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  margin: 0;
+  padding: 12px;
+  border: 2px solid var(--ink);
+  border-radius: 12px;
+}
+
+.dialog-plan-group legend {
+  padding: 0 6px;
+  font-weight: 900;
+}
+
+.dialog-plan-hint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
 .dialog-field {
   display: grid;
   gap: 6px;
@@ -4194,6 +4292,16 @@ html[data-dev="1"] .dev-console {
     justify-content: center;
     gap: 4px;
     padding: 8px 5px;
+  }
+
+  html[data-tv="1"][data-home="1"] .stat-result {
+    justify-items: center;
+  }
+
+  html[data-tv="1"][data-home="1"] .plan-chip {
+    max-width: 30vw;
+    padding: 7px 14px;
+    font-size: clamp(14px, 1.2cqi, 20px);
   }
 
   html[data-tv="1"][data-home="1"] .stat span {

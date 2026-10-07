@@ -4,6 +4,7 @@ import { isThemeId, themes, themeForDate, type ThemeId } from "../lib/themes";
 import { playCue, unlockAudio } from "../lib/sound";
 import type { RoomView } from "../lib/room";
 import { loadSession } from "../lib/classroom";
+import { loadPlan, savePlan, type InternetPlan } from "../lib/plan";
 import { describeTarget, isOverlayOpen, shortcutAction } from "./shortcuts";
 import { devBadgeVisible } from "./mode-ui";
 import { $ } from "./dom";
@@ -358,6 +359,11 @@ function fillSettingsForm() {
   if (!roomMode) settings = loadGame().settings;
   applyTheme(settings.themeMode);
   syncControls();
+  const plan = loadPlan();
+  (settingsForm.elements.namedItem("planDown") as HTMLInputElement).value =
+    plan.down === null ? "" : String(plan.down);
+  (settingsForm.elements.namedItem("planUp") as HTMLInputElement).value =
+    plan.up === null ? "" : String(plan.up);
   (settingsForm.elements.namedItem("rounds") as HTMLSelectElement).value =
     String(settings.rounds);
   (settingsForm.elements.namedItem("tieMode") as HTMLSelectElement).value =
@@ -488,6 +494,23 @@ document.addEventListener("gts:classroom-change", syncModeSwitch);
 
 settingsForm.addEventListener("submit", (event) => {
   event.preventDefault();
+  const planDownValue = (
+    settingsForm.elements.namedItem("planDown") as HTMLInputElement
+  ).value;
+  const planUpValue = (
+    settingsForm.elements.namedItem("planUp") as HTMLInputElement
+  ).value;
+  const parsePlanInput = (value: string): number | null => {
+    if (!value.trim()) return null;
+    const parsed = Number(value);
+    return Number.isFinite(parsed) && parsed >= 1 && parsed <= 10000
+      ? parsed
+      : null;
+  };
+  const plan: InternetPlan = {
+    down: parsePlanInput(planDownValue),
+    up: parsePlanInput(planUpValue),
+  };
   const roundsValue = (
     settingsForm.elements.namedItem("rounds") as HTMLSelectElement
   ).value;
@@ -537,6 +560,10 @@ settingsForm.addEventListener("submit", (event) => {
       animatedBorders,
     });
   }
+  savePlan(plan);
+  document.dispatchEvent(
+    new CustomEvent<InternetPlan>("gts:plan-change", { detail: plan }),
+  );
   settingsDialog.close();
 });
 

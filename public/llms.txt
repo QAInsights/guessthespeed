@@ -12,6 +12,7 @@
 - Classroom Mode lets teachers organize classes and teams on one shared device; student rosters stay in that browser.
 - Place scoring awards 3 points for first, 2 for second, and 1 for third. Each download or upload guess within 5% earns one spot-on bonus point, while place points require an average miss of 50% or less.
 - Single-device game data stays in that browser. Multiplayer rooms are deleted after six hours without activity.
+- Optional internet plan comparisons stay in this browser and are never sent to us.
 
 ## Pages
 
@@ -22,6 +23,7 @@
 - [How it works](https://guessthespeed.com/how-it-works/)
 - [Internet speed 101](https://guessthespeed.com/internet-speed-101/)
 - [What is a good internet speed?](https://guessthespeed.com/what-is-a-good-internet-speed/)
+- [Am I getting the internet speed I pay for?](https://guessthespeed.com/am-i-getting-the-speed-i-pay-for/)
 - [Household speed calculator](https://guessthespeed.com/how-much-internet-speed-do-i-need/)
 - [Mbps to MB/s converter and download time](https://guessthespeed.com/mbps-to-mbs/)
 - [Speed test game](https://guessthespeed.com/speed-test-game/)
