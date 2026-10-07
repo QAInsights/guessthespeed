@@ -2269,7 +2269,7 @@ html:not([data-aurora="0"]) .is-winner.has-aurora {
 
 .story-teaser {
   max-width: 540px;
-  margin: 30px 0 0 auto;
+  margin: 36px auto 0;
   padding: 18px;
   color: var(--muted);
   font-size: 15px;
@@ -2294,9 +2294,173 @@ html:not([data-aurora="0"]) .is-winner.has-aurora {
   text-underline-offset: 3px;
 }
 
+.overheard {
+  min-width: 0;
+  margin: 56px 0 0;
+}
+
+.overheard-head {
+  margin-bottom: 20px;
+}
+
+.overheard-kicker {
+  display: inline-block;
+  margin-bottom: 8px;
+  padding: 5px 10px;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 2px 2px 0 var(--shadow);
+  color: var(--on-accent);
+  font-family: var(--mono, ui-monospace, monospace);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.overheard-head h2 {
+  margin: 0 0 10px;
+  font-size: clamp(28px, 3.4vw, 40px);
+  line-height: 1;
+}
+
+.overheard-head p {
+  max-width: 52ch;
+  margin: 0;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.overheard-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: 18px;
+  padding: 6px 8px 10px;
+}
+
+.quote-card {
+  position: relative;
+  min-width: 0;
+  margin: 0;
+  padding: 20px 18px 16px;
+}
+
+.quote-card::before {
+  position: absolute;
+  top: -0.38em;
+  left: 10px;
+  color: var(--accent);
+  content: "“";
+  font:
+    800 64px/1 "Bricolage Grotesque Variable",
+    sans-serif;
+  pointer-events: none;
+}
+
+.quote-card blockquote {
+  margin: 0;
+}
+
+.quote-card blockquote p {
+  margin: 0;
+  padding-top: 15px;
+  color: var(--ink);
+  font:
+    800 clamp(20px, 2vw, 22px) / 1.15 "Bricolage Grotesque Variable",
+    sans-serif;
+  letter-spacing: -0.025em;
+}
+
+.quote-card figcaption {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  margin-top: 14px;
+}
+
+.quote-face {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  place-items: center;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  background: var(--bg);
+  font-size: 19px;
+}
+
+.quote-card figcaption > span:last-child {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.quote-card figcaption b {
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.quote-card figcaption small {
+  display: block;
+  color: var(--muted);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.quote-card:nth-child(4n + 1) {
+  background: color-mix(in srgb, var(--aurora-1) 14%, var(--surface));
+  transform: rotate(-1.4deg);
+}
+
+.quote-card:nth-child(4n + 2) {
+  background: color-mix(in srgb, var(--aurora-2) 14%, var(--surface));
+  transform: rotate(1deg);
+}
+
+.quote-card:nth-child(4n + 3) {
+  background: color-mix(in srgb, var(--aurora-3) 14%, var(--surface));
+  transform: rotate(-0.6deg);
+}
+
+.quote-card:nth-child(4n + 4) {
+  background: color-mix(in srgb, var(--aurora-4) 14%, var(--surface));
+  transform: rotate(1.3deg);
+}
+
+@media (min-width: 640px) {
+  .overheard-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1100px) {
+  .overheard-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .quote-card {
+    transition:
+      translate 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  .quote-card:hover {
+    translate: -2px -2px;
+    box-shadow: 7px 7px 0 var(--shadow);
+  }
+}
+
 .classroom-teaser {
   max-width: 540px;
-  margin: 22px auto 0 0;
+  margin: 22px auto 0;
   padding: 15px 18px;
   border: 2.5px solid var(--ink);
   border-radius: var(--r);
@@ -3048,6 +3212,7 @@ html[data-dev="1"] [data-winner-banner],
 html[data-dev="1"] [data-next-round],
 html[data-dev="1"] [data-game-section],
 html[data-dev="1"] .how,
+html[data-dev="1"] .overheard,
 html[data-dev="1"] .story-teaser,
 html[data-dev="1"] .room-entry,
 html[data-dev="1"] .stats,
@@ -3965,12 +4130,14 @@ html[data-dev="1"] .dev-console {
   html[data-tv="1"][data-home="1"] .dev-console,
   html[data-tv="1"][data-home="1"] .room-entry,
   html[data-tv="1"][data-home="1"] .how,
+  html[data-tv="1"][data-home="1"] .overheard,
   html[data-tv="1"][data-home="1"] .story-teaser,
   html[data-tv="1"][data-home="1"] .classroom-teaser {
     grid-column: 1 / -1;
   }
 
   html[data-tv="1"][data-home="1"] .how,
+  html[data-tv="1"][data-home="1"] .overheard,
   html[data-tv="1"][data-home="1"] .story-teaser,
   html[data-tv="1"][data-home="1"] .classroom-teaser,
   html[data-tv="1"][data-home="1"] .room-entry,
