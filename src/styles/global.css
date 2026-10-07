@@ -1325,6 +1325,121 @@ html[data-dev="1"] .intro .play-stat {
   gap: 14px;
 }
 
+.wifi-history-card {
+  grid-column: 1 / -1;
+  align-self: start;
+  width: 100%;
+  min-width: 0;
+  margin: 4px 0 8px;
+  padding: clamp(14px, 2vw, 24px);
+  transform: rotate(-0.35deg);
+}
+
+.wifi-history-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.wifi-history-head h2 {
+  margin: 0;
+  font-size: clamp(25px, 3vw, 34px);
+}
+
+.wifi-history-summary {
+  flex: none;
+  margin: 0;
+  padding: 6px 11px;
+  border: 2px solid var(--ink);
+  border-radius: 8px;
+  background: var(--accent);
+  box-shadow: 3px 3px 0 var(--shadow);
+  color: var(--on-accent);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.wifi-history-chart {
+  display: block;
+  width: 100%;
+  max-width: 680px;
+  margin: 8px auto 0;
+  overflow: visible;
+}
+
+.wifi-history-axis {
+  stroke: var(--ink);
+  stroke-width: 2;
+  opacity: 0.35;
+}
+
+.wifi-history-bar {
+  fill: var(--soft);
+  stroke: var(--ink);
+  stroke-width: 2;
+}
+
+.wifi-history-bar.is-latest {
+  fill: var(--accent);
+}
+
+.wifi-history-value {
+  display: none;
+  fill: var(--ink);
+  font-family: "Bricolage Grotesque Variable", sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.wifi-history-value.is-latest {
+  display: block;
+}
+
+.wifi-history-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.wifi-history-clear {
+  padding: 2px 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.wifi-history-clear:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 3px;
+}
+
+@media (min-width: 600px) {
+  .wifi-history-value {
+    display: block;
+  }
+}
+
+@media (max-width: 600px) {
+  .wifi-history-head {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .wifi-history-summary {
+    font-size: 13px;
+  }
+}
+
 .stat {
   display: flex;
   align-items: baseline;
