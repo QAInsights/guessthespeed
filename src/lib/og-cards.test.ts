@@ -2,7 +2,7 @@ import { createRequire } from "node:module";
 import { readdirSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { getIconData } from "@iconify/utils";
-import { ogCards, ogImagePath, ogSlug } from "./og-cards";
+import { ogCardFor, ogCards, ogImagePath, ogSlug } from "./og-cards";
 
 const require = createRequire(import.meta.url);
 const phIconSet = require("@iconify-json/ph/icons.json") as Parameters<
@@ -36,6 +36,13 @@ describe("OG cards", () => {
 
   it("falls back to the home card for unknown paths", () => {
     expect(ogImagePath("/not-a-page/")).toBe("/og/home.png");
+  });
+
+  it("normalizes paths when selecting a card", () => {
+    const statsCard = ogCards.find((card) => card.path === "/stats/");
+
+    expect(ogCardFor("/stats")).toEqual(statsCard);
+    expect(ogCardFor("/stats/")).toEqual(statsCard);
   });
 
   it("contains no em dashes in card copy", () => {

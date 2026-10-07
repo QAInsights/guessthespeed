@@ -1,3 +1,6 @@
+// Regenerate in a local fonttools + brotli venv:
+// fonttools varLib.instancer node_modules/@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-standard-normal.woff2 wght=800 opsz=96 wdth=80 -o /tmp/gts-bricolage.woff2 \
+//   && fonttools ttLib.woff2 decompress /tmp/gts-bricolage.woff2 -o src/assets/og/bricolage-grotesque-display-800.ttf
 import { readFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import { join } from "node:path";
@@ -42,10 +45,7 @@ let fontDataPromise: Promise<FontData[]> | undefined;
 function loadFonts(): Promise<FontData[]> {
   fontDataPromise ??= Promise.all([
     readFile(
-      join(
-        process.cwd(),
-        "node_modules/@fontsource/bricolage-grotesque/files/bricolage-grotesque-latin-800-normal.woff",
-      ),
+      join(process.cwd(), "src/assets/og/bricolage-grotesque-display-800.ttf"),
     ),
     readFile(
       join(
@@ -125,7 +125,9 @@ export async function renderOgCard(card: OgCard): Promise<Buffer> {
     fontFamily: "Bricolage Grotesque",
     fontSize: size,
     fontWeight: 800,
-    lineHeight: 1.02,
+    letterSpacing: -size * 0.025,
+    lineHeight: 1.1,
+    paddingTop: 6,
     whiteSpace: "nowrap",
   };
   const tree = node(
@@ -141,26 +143,29 @@ export async function renderOgCard(card: OgCard): Promise<Buffer> {
     node(
       "div",
       {
-        alignItems: "center",
+        alignItems: "stretch",
         backgroundColor: "#ffffff",
         border: `4px solid ${ink}`,
         borderRadius: 28,
         boxShadow: `18px 18px 0 ${ink}`,
         display: "flex",
-        gap: 28,
+        flexDirection: "column",
+        gap: 24,
         height: 510,
+        justifyContent: "space-between",
         padding: "42px 52px",
         width: 1080,
       },
       node(
         "div",
         {
-          alignItems: "flex-start",
+          alignItems: "center",
           display: "flex",
-          flexDirection: "column",
-          height: "100%",
+          flex: "1 1 auto",
+          gap: 28,
           justifyContent: "space-between",
-          width: 680,
+          minHeight: 0,
+          width: "100%",
         },
         node(
           "div",
@@ -168,7 +173,9 @@ export async function renderOgCard(card: OgCard): Promise<Buffer> {
             alignItems: "flex-start",
             display: "flex",
             flexDirection: "column",
-            width: "100%",
+            height: "100%",
+            justifyContent: "space-between",
+            width: 680,
           },
           node(
             "div",
@@ -233,7 +240,7 @@ export async function renderOgCard(card: OgCard): Promise<Buffer> {
                 ...headingStyle,
                 backgroundColor: accent,
                 borderRadius: 12,
-                padding: "0 12px 4px",
+                padding: "6px 12px 8px",
               },
               card.line2,
             ),
@@ -248,7 +255,8 @@ export async function renderOgCard(card: OgCard): Promise<Buffer> {
               fontWeight: 400,
               lineHeight: 1.2,
               marginTop: 20,
-              width: "100%",
+              textWrap: card.path === "/" ? "wrap" : "balance",
+              width: card.path === "/" ? 500 : "100%",
             },
             card.subtitle,
           ),
@@ -257,41 +265,63 @@ export async function renderOgCard(card: OgCard): Promise<Buffer> {
           "div",
           {
             alignItems: "center",
-            color: ink,
             display: "flex",
-            fontFamily: "Figtree",
-            fontSize: 15,
-            fontWeight: 700,
-            justifyContent: "space-between",
-            width: "100%",
+            flex: "0 0 260px",
+            height: 260,
+            justifyContent: "center",
+            position: "relative",
+            width: 260,
           },
-          node("span", {}, "guessthespeed.com"),
-          node("span", {}, "Made for family game night"),
+          node("div", {
+            backgroundColor: ink,
+            borderRadius: 28,
+            height: 260,
+            left: 14,
+            position: "absolute",
+            top: 14,
+            transform: "rotate(-4deg)",
+            width: 260,
+          }),
+          node(
+            "div",
+            {
+              alignItems: "center",
+              backgroundColor: accent,
+              border: `4px solid ${ink}`,
+              borderRadius: 28,
+              color: ink,
+              display: "flex",
+              height: 260,
+              justifyContent: "center",
+              position: "relative",
+              transform: "rotate(-4deg)",
+              width: 260,
+            },
+            h("img", {
+              src: iconSrc,
+              style: {
+                height: 156,
+                objectFit: "contain",
+                width: 156,
+              },
+            }),
+          ),
         ),
       ),
       node(
         "div",
         {
           alignItems: "center",
-          backgroundColor: accent,
-          border: `4px solid ${ink}`,
-          borderRadius: 28,
-          boxShadow: `14px 14px 0 ${ink}`,
+          color: ink,
           display: "flex",
-          flex: "0 0 260px",
-          height: 260,
-          justifyContent: "center",
-          transform: "rotate(-4deg)",
-          width: 260,
+          fontFamily: "Figtree",
+          fontSize: 15,
+          fontWeight: 700,
+          justifyContent: "space-between",
+          width: "100%",
         },
-        h("img", {
-          src: iconSrc,
-          style: {
-            height: 156,
-            objectFit: "contain",
-            width: 156,
-          },
-        }),
+        node("span", {}, "guessthespeed.com"),
+        node("span", {}, "Made for family game night"),
       ),
     ),
   );

@@ -8,7 +8,7 @@ import '../styles/global.css';
 import Footer from '../components/Footer.astro';
 import HousePromo from '../components/HousePromo.astro';
 import ModeSwitch from '../components/ModeSwitch.astro';
-import { ogCards, ogImagePath } from '../lib/og-cards';
+import { ogCardFor, ogImagePath } from '../lib/og-cards';
 import { themes, type ThemeId } from '../lib/themes';
 
 interface Props {
@@ -29,8 +29,7 @@ const {
   noindex = false,
 } = Astro.props;
 const canonical = new URL(Astro.url.pathname, 'https://guessthespeed.com').toString();
-const ogCard =
-  ogCards.find((card) => card.path === Astro.url.pathname) ?? ogCards[0]!;
+const ogCard = ogCardFor(Astro.url.pathname);
 const ogImageAlt = `${ogCard.line1} ${ogCard.line2}`;
 const ogImageUrl = `https://guessthespeed.com${ogImagePath(Astro.url.pathname)}`;
 const beaconToken = import.meta.env.PUBLIC_CF_BEACON_TOKEN;

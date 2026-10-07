@@ -163,11 +163,12 @@ export function ogSlug(pathname: string): string {
   return slug || "home";
 }
 
+export function ogCardFor(pathname: string): OgCard {
+  const path = pathname.replace(/^\/+|\/+$/g, "");
+  const normalizedPath = path ? `/${path}/` : "/";
+  return ogCards.find((card) => card.path === normalizedPath) ?? ogCards[0]!;
+}
+
 export function ogImagePath(pathname: string): string {
-  const normalizedPath = `/${pathname.replace(/^\/+|\/+$/g, "")}/`.replace(
-    /^\/\/$/,
-    "/",
-  );
-  const card = ogCards.find((entry) => entry.path === normalizedPath);
-  return `/og/${ogSlug(card?.path ?? "/")}.png`;
+  return `/og/${ogSlug(ogCardFor(pathname).path)}.png`;
 }
