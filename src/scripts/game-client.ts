@@ -119,7 +119,8 @@ const isDevMode = () =>
   !roomMode && !classroomMode && document.documentElement.dataset.dev === "1";
 const isMockMode = () =>
   new URLSearchParams(window.location.search).has("mock");
-const isTesting = () => state.phase === "testing" || runInProgress;
+const isTesting = () =>
+  state.phase === "testing" || runInProgress || revealPending;
 const isMine = (player: ClientPlayer) => !roomMode || player.mine === true;
 const isRoomHost = () => !roomMode || state.isRoomHost === true;
 const isRevealed = () =>
@@ -246,7 +247,8 @@ function renderGauge() {
   gauge.style.setProperty("--p", progress.toFixed(4));
   gauge.style.setProperty("--rotation", `${-120 + 240 * progress}deg`);
   const live = $<HTMLSpanElement>("[data-live]");
-  live.textContent = formatSpeed(gaugeReadoutValue ?? gaugeValue);
+  if (!revealPending)
+    live.textContent = formatSpeed(gaugeReadoutValue ?? gaugeValue);
 }
 
 function gaugePosition(value: number): number {
@@ -602,6 +604,11 @@ async function playGaugeReveal(
 
     if (animationFrame) cancelAnimationFrame(animationFrame);
     animationFrame = 0;
+    gaugeValue = 0;
+    gaugeTarget = 0;
+    gaugeReadoutValue = 0;
+    gauge.style.setProperty("--p", "0");
+    gauge.style.setProperty("--rotation", "-120deg");
     live.classList.remove("is-revealed", "is-suspense");
     live.setAttribute("aria-hidden", "true");
     results.forEach((element) => element.setAttribute("aria-hidden", "true"));
@@ -857,7 +864,7 @@ function setProgress(step: number, steps: number) {
 }
 
 function setRemoteTesting(active: boolean) {
-  if (!roomMode || canRunRoomTest()) return;
+  if (!roomMode || (active && canRunRoomTest())) return;
   if (active) {
     if (!runInProgress) {
       runInProgress = true;
@@ -1050,6 +1057,7 @@ async function startTest() {
   const slowHintTimer = window.setInterval(() => {
     if (Date.now() - lastUpdateAt >= SLOW_HINT_MS) slowHint.hidden = false;
   }, 500);
+  let revealDown: number | null = null;
   try {
     const actual = await runSpeedTest(
       (update) => {
@@ -1162,19 +1170,9 @@ async function startTest() {
       $<HTMLSpanElement>("[data-mode]").textContent = "Download";
       $<HTMLSpanElement>("[data-unit]").textContent = "Mbps";
       revealPending = true;
+      revealDown = actual.down;
     }
     render();
-    if (!devRun && !roomMode && revealPending) {
-      const controller = new AbortController();
-      activeRevealController = controller;
-      await playGaugeReveal(actual.down, controller.signal);
-      if (activeRevealController === controller) {
-        activeRevealController = null;
-        revealPending = false;
-        playCue("reveal", activeTheme, state.settings.sound);
-        render();
-      }
-    }
   } catch (error) {
     if (roomMode && error instanceof SpeedTestCancelledError) {
       errorNote.hidden = true;
@@ -1220,6 +1218,17 @@ async function startTest() {
     else {
       syncControls();
       if (devRun && !isDevMode()) render();
+    }
+  }
+  if (revealDown !== null) {
+    const controller = new AbortController();
+    activeRevealController = controller;
+    await playGaugeReveal(revealDown, controller.signal);
+    if (activeRevealController === controller) {
+      activeRevealController = null;
+      revealPending = false;
+      playCue("reveal", activeTheme, state.settings.sound);
+      render();
     }
   }
 }
@@ -1638,6 +1647,10 @@ document.addEventListener("keydown", (event) => {
     target: describeTarget(event.target),
     overlayOpen: isOverlayOpen(document),
   });
+  if (revealPending && action) {
+    event.preventDefault();
+    return;
+  }
   let button: HTMLButtonElement | null = null;
   if (action === "primary") {
     if (isVisibleButton(nextButton)) button = nextButton;
