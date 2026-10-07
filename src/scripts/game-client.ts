@@ -47,6 +47,7 @@ import type { ClientAction, RoomView } from "../lib/room";
 import { roundStatEvent } from "../lib/stats";
 import { sendStat } from "./stats-client";
 import { recordSpeedSample } from "./history-client";
+import { describeTarget, isOverlayOpen, shortcutAction } from "./shortcuts";
 
 type ClientPlayer = Player & { mine?: boolean };
 type ClientGameState = Omit<GameState, "players"> & {
@@ -1427,6 +1428,38 @@ nextButton.addEventListener("click", () => {
   }
 });
 $<HTMLDivElement>(".gauge-card").append(nextButton);
+
+function isVisibleButton(button: HTMLButtonElement): boolean {
+  return (
+    !button.hidden &&
+    button.isConnected &&
+    button.getClientRects().length > 0 &&
+    getComputedStyle(button).visibility !== "hidden"
+  );
+}
+
+document.addEventListener("keydown", (event) => {
+  const action = shortcutAction({
+    key: event.key,
+    ctrlKey: event.ctrlKey,
+    metaKey: event.metaKey,
+    altKey: event.altKey,
+    repeat: event.repeat,
+    target: describeTarget(event.target),
+    overlayOpen: isOverlayOpen(document),
+  });
+  let button: HTMLButtonElement | null = null;
+  if (action === "primary") {
+    if (isVisibleButton(nextButton)) button = nextButton;
+    else if (!startButton.disabled && isVisibleButton(startButton))
+      button = startButton;
+  } else if (action === "next" && isVisibleButton(nextButton)) {
+    button = nextButton;
+  }
+  if (!button) return;
+  event.preventDefault();
+  button.click();
+});
 
 initializeGauge();
 activeTheme = getResolvedTheme();

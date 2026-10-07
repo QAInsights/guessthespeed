@@ -561,6 +561,56 @@ html[data-room="1"] .dev-console {
   color-scheme: light;
 }
 
+[data-theme="eidfitr"] {
+  --bg: #102b3a;
+  --surface: #183747;
+  --ink: #f4f1e7;
+  --muted: #c6d5d7;
+  --accent: #e8be63;
+  --on-accent: #172832;
+  --danger-ink: #ffaaa3;
+  --soft: #274654;
+  --shadow: #06151e;
+  color-scheme: dark;
+}
+
+[data-theme="eidadha"] {
+  --bg: #eadfc6;
+  --surface: #fff8e9;
+  --ink: #173f2d;
+  --muted: #4b5f4e;
+  --accent: #14613e;
+  --on-accent: #fffdf4;
+  --soft: #d8c9a8;
+  --shadow: #183526;
+  color-scheme: light;
+}
+
+[data-theme="lunarnewyear"] {
+  --bg: #3b1018;
+  --surface: #521821;
+  --ink: #fff1d1;
+  --muted: #e5c7bd;
+  --accent: #f2c45c;
+  --on-accent: #341016;
+  --danger-ink: #ffaaa3;
+  --soft: #682530;
+  --shadow: #20090e;
+  color-scheme: dark;
+}
+
+[data-theme="stpatricks"] {
+  --bg: #e5f4e8;
+  --surface: #f8fff8;
+  --ink: #143a25;
+  --muted: #42654f;
+  --accent: #177245;
+  --on-accent: #fff;
+  --soft: #cce9d2;
+  --shadow: #183b25;
+  color-scheme: light;
+}
+
 *,
 *::before,
 *::after {
@@ -834,7 +884,7 @@ h3,
 
 .theme-grid {
   display: grid;
-  max-height: min(62vh, 440px);
+  max-height: min(72vh, 640px);
   padding: 2px 6px 6px 2px;
   gap: 8px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -3107,7 +3157,7 @@ html[data-dev="1"] .dev-console {
   .theme-menu {
     right: auto;
     left: 0;
-    width: calc(100vw - 28px);
+    width: calc(100vw - 30px);
     transform-origin: top left;
   }
 
@@ -3291,7 +3341,39 @@ html[data-dev="1"] .dev-console {
   }
 }
 
+.tv-shortcut-hint {
+  display: none;
+}
+
 @media (min-width: 900px) {
+  html[data-tv="1"][data-home="1"] .tv-shortcut-hint {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(7px, 0.8vw, 14px);
+    margin: 0;
+    color: var(--ink);
+    font-size: clamp(12px, 1vw, 17px);
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .tv-shortcut-hint kbd {
+    display: inline-flex;
+    min-width: 2em;
+    align-items: center;
+    justify-content: center;
+    margin-right: 4px;
+    padding: 2px 7px;
+    border: 2px solid var(--ink);
+    border-radius: 7px;
+    background: var(--bg);
+    box-shadow: 2px 2px 0 var(--shadow);
+    color: var(--ink);
+    font: inherit;
+    transform: rotate(-2deg);
+  }
+
   html[data-tv="1"][data-home="1"] .wrap {
     max-width: none;
     padding-right: clamp(20px, 2vw, 38px);

@@ -10,7 +10,11 @@ export type ThemeId =
   | "pongal"
   | "valentines"
   | "holi"
-  | "easter";
+  | "easter"
+  | "eidfitr"
+  | "eidadha"
+  | "lunarnewyear"
+  | "stpatricks";
 
 export interface SoundPalette {
   wave: OscillatorType;
@@ -117,9 +121,54 @@ export const themes: Record<ThemeId, Theme> = {
     fx: ["🐣", "🥚", "🌷"],
     sound: { wave: "triangle", scale: [0, 2, 5, 9], base: 440, decay: 0.13 },
   },
+  eidfitr: {
+    id: "eidfitr",
+    label: "Eid al-Fitr",
+    scheme: "dark",
+    fx: ["🌙", "⭐", "✨", "🕌"],
+    sound: { wave: "sine", scale: [0, 1, 4, 5, 7], base: 440, decay: 0.16 },
+  },
+  eidadha: {
+    id: "eidadha",
+    label: "Eid al-Adha",
+    scheme: "light",
+    fx: ["🌙", "🕌", "🐑", "✨"],
+    sound: {
+      wave: "triangle",
+      scale: [0, 1, 4, 5, 7],
+      base: 392,
+      decay: 0.15,
+    },
+  },
+  lunarnewyear: {
+    id: "lunarnewyear",
+    label: "Lunar New Year",
+    scheme: "dark",
+    fx: ["🏮", "🧧", "🎆", "🐉"],
+    sound: {
+      wave: "square",
+      scale: [0, 2, 4, 7, 9],
+      base: 494,
+      decay: 0.1,
+    },
+  },
+  stpatricks: {
+    id: "stpatricks",
+    label: "St. Patrick’s Day",
+    scheme: "light",
+    fx: ["☘️", "🍀", "🌈"],
+    sound: {
+      wave: "triangle",
+      scale: [0, 2, 4, 7, 9],
+      base: 587,
+      decay: 0.11,
+    },
+  },
 };
 
-const lookupDays: Record<"diwali" | "holi", Record<number, string>> = {
+type LookupTheme = "diwali" | "holi" | "eidfitr" | "eidadha" | "lunarnewyear";
+
+const lookupDays: Record<LookupTheme, Record<number, string>> = {
   diwali: {
     2026: "2026-11-08",
     2027: "2027-10-29",
@@ -133,6 +182,27 @@ const lookupDays: Record<"diwali" | "holi", Record<number, string>> = {
     2028: "2028-03-11",
     2029: "2029-03-01",
     2030: "2030-03-20",
+  },
+  eidfitr: {
+    2026: "2026-03-20",
+    2027: "2027-03-09",
+    2028: "2028-02-26",
+    2029: "2029-02-14",
+    2030: "2030-02-04",
+  },
+  eidadha: {
+    2026: "2026-05-27",
+    2027: "2027-05-16",
+    2028: "2028-05-05",
+    2029: "2029-04-24",
+    2030: "2030-04-13",
+  },
+  lunarnewyear: {
+    2026: "2026-02-17",
+    2027: "2027-02-06",
+    2028: "2028-01-26",
+    2029: "2029-02-13",
+    2030: "2030-02-03",
   },
 };
 
@@ -180,7 +250,7 @@ function thanksgiving(year: number): Date {
   return new Date(year, 10, firstThursday + 21);
 }
 
-function lookupDate(theme: "diwali" | "holi", year: number): Date | null {
+function lookupDate(theme: LookupTheme, year: number): Date | null {
   const day = lookupDays[theme][year];
   return day ? new Date(`${day}T12:00:00`) : null;
 }
@@ -189,15 +259,57 @@ export function themeForDate(date: Date): ThemeId | null {
   const year = date.getFullYear();
   const month = date.getMonth() + 1;
   const day = date.getDate();
-  const diwali = lookupDate("diwali", year);
-  const holi = lookupDate("holi", year);
-  if (diwali && inWindow(date, diwali, 3, 2)) return "diwali";
-  if (holi && inWindow(date, holi, 3, 1)) return "holi";
-  if (inWindow(date, easterSunday(year), 6, 1)) return "easter";
+  const movableFestivals = [
+    {
+      theme: "diwali",
+      center: lookupDate("diwali", year),
+      before: 3,
+      after: 2,
+    },
+    {
+      theme: "holi",
+      center: lookupDate("holi", year),
+      before: 3,
+      after: 1,
+    },
+    { theme: "easter", center: easterSunday(year), before: 6, after: 1 },
+    {
+      theme: "eidfitr",
+      center: lookupDate("eidfitr", year),
+      before: 1,
+      after: 2,
+    },
+    {
+      theme: "eidadha",
+      center: lookupDate("eidadha", year),
+      before: 1,
+      after: 3,
+    },
+    {
+      theme: "lunarnewyear",
+      center: lookupDate("lunarnewyear", year),
+      before: 2,
+      after: 5,
+    },
+  ] as const;
+  let selectedFestival: { theme: ThemeId; distance: number } | null = null;
+  for (const festival of movableFestivals) {
+    if (
+      !festival.center ||
+      !inWindow(date, festival.center, festival.before, festival.after)
+    )
+      continue;
+    const distance = Math.abs(utcDay(date) - utcDay(festival.center));
+    if (!selectedFestival || distance < selectedFestival.distance)
+      selectedFestival = { theme: festival.theme, distance };
+  }
+  if (selectedFestival) return selectedFestival.theme;
+
   if (inWindow(date, thanksgiving(year), 6, 1)) return "thanksgiving";
   if (month === 1 && day >= 13 && day <= 17) return "pongal";
   if (month === 10 && day >= 15 && day <= 31) return "halloween";
   if (month === 2 && day >= 7 && day <= 14) return "valentines";
+  if (month === 3 && day >= 15 && day <= 17) return "stpatricks";
   if ((month === 12 && day >= 27) || (month === 1 && day <= 2))
     return "newyear";
   if (month === 12 && day >= 1 && day <= 26) return "christmas";
