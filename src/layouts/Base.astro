@@ -39,6 +39,10 @@ const themeHints: Record<ThemeId, { emoji: string; hint: string }> = {
   valentines: { emoji: '💌', hint: 'Feb 7 to 14' },
   holi: { emoji: '🎨', hint: 'Around Holi' },
   easter: { emoji: '🐣', hint: 'Easter week' },
+  eidfitr: { emoji: '🌙', hint: 'Around Eid al-Fitr' },
+  eidadha: { emoji: '🕌', hint: 'Around Eid al-Adha' },
+  lunarnewyear: { emoji: '🏮', hint: 'Around Lunar New Year' },
+  stpatricks: { emoji: '☘️', hint: 'Mar 15 to 17' },
 };
 const themeChoices = (Object.keys(themeHints) as ThemeId[]).map((id) => ({
   id,
@@ -163,6 +167,10 @@ const graphSchema = { '@context': 'https://schema.org', '@graph': graph };
           "valentines",
           "holi",
           "easter",
+          "eidfitr",
+          "eidadha",
+          "lunarnewyear",
+          "stpatricks",
         ];
         if (explicitThemes.includes(themeMode))
           document.documentElement.dataset.theme = themeMode;
@@ -292,6 +300,10 @@ const graphSchema = { '@context': 'https://schema.org', '@graph': graph };
               <option value="valentines">Valentine’s Day</option>
               <option value="holi">Holi</option>
               <option value="easter">Easter</option>
+              <option value="eidfitr">Eid al-Fitr</option>
+              <option value="eidadha">Eid al-Adha</option>
+              <option value="lunarnewyear">Lunar New Year</option>
+              <option value="stpatricks">St. Patrick’s Day</option>
             </select>
           </label>
           <label class="dialog-field sound-setting"><span>Sound</span><input type="checkbox" name="sound" /></label>

@@ -561,6 +561,56 @@ html[data-room="1"] .dev-console {
   color-scheme: light;
 }
 
+[data-theme="eidfitr"] {
+  --bg: #102b3a;
+  --surface: #183747;
+  --ink: #f4f1e7;
+  --muted: #c6d5d7;
+  --accent: #e8be63;
+  --on-accent: #172832;
+  --danger-ink: #ffaaa3;
+  --soft: #274654;
+  --shadow: #06151e;
+  color-scheme: dark;
+}
+
+[data-theme="eidadha"] {
+  --bg: #eadfc6;
+  --surface: #fff8e9;
+  --ink: #173f2d;
+  --muted: #4b5f4e;
+  --accent: #14613e;
+  --on-accent: #fffdf4;
+  --soft: #d8c9a8;
+  --shadow: #183526;
+  color-scheme: light;
+}
+
+[data-theme="lunarnewyear"] {
+  --bg: #3b1018;
+  --surface: #521821;
+  --ink: #fff1d1;
+  --muted: #e5c7bd;
+  --accent: #f2c45c;
+  --on-accent: #341016;
+  --danger-ink: #ffaaa3;
+  --soft: #682530;
+  --shadow: #20090e;
+  color-scheme: dark;
+}
+
+[data-theme="stpatricks"] {
+  --bg: #e5f4e8;
+  --surface: #f8fff8;
+  --ink: #143a25;
+  --muted: #42654f;
+  --accent: #177245;
+  --on-accent: #fff;
+  --soft: #cce9d2;
+  --shadow: #183b25;
+  color-scheme: light;
+}
+
 *,
 *::before,
 *::after {
@@ -834,7 +884,7 @@ h3,
 
 .theme-grid {
   display: grid;
-  max-height: min(62vh, 440px);
+  max-height: min(72vh, 640px);
   padding: 2px 6px 6px 2px;
   gap: 8px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2992,7 +3042,7 @@ html[data-dev="1"] .dev-console {
   .theme-menu {
     right: auto;
     left: 0;
-    width: calc(100vw - 28px);
+    width: calc(100vw - 30px);
     transform-origin: top left;
   }
 
