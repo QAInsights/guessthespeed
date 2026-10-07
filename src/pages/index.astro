@@ -129,13 +129,21 @@ const homeSchema: Record<string, unknown>[] = [
         <strong data-room-code></strong>
       </div>
       <div class="room-bar-actions">
-        <div class="room-tester-picker" data-room-tester-control hidden>
-          <button class="guess-button room-tester-trigger" type="button" data-room-tester-trigger aria-label="Who runs the test?" aria-haspopup="listbox" aria-expanded="false" aria-controls="room-tester-menu">
+        <div class="room-picker" data-room-tester-control hidden>
+          <button class="guess-button room-picker-trigger" type="button" data-room-tester-trigger aria-label="Who runs the test?" aria-haspopup="listbox" aria-expanded="false" aria-controls="room-tester-menu">
             <span>Who runs the test?</span>
             <strong data-room-tester-value>This screen</strong>
             <Icon name="ph:caret-down-bold" aria-hidden="true" />
           </button>
-          <div class="room-tester-menu" id="room-tester-menu" data-room-tester-menu role="listbox" aria-label="Who runs the test?" hidden></div>
+          <div class="room-picker-menu" id="room-tester-menu" data-room-tester-menu role="listbox" aria-label="Who runs the test?" hidden></div>
+        </div>
+        <div class="room-picker" data-room-host-control hidden>
+          <button class="guess-button room-picker-trigger" type="button" data-room-host-trigger aria-label="Hand over host" aria-haspopup="listbox" aria-expanded="false" aria-controls="room-host-menu">
+            <span>Hand over host</span>
+            <strong data-room-host-value>Choose a player</strong>
+            <Icon name="ph:caret-down-bold" aria-hidden="true" />
+          </button>
+          <div class="room-picker-menu" id="room-host-menu" data-room-host-menu role="listbox" aria-label="Choose a new host" hidden></div>
         </div>
         <span class="room-tester-chip" data-room-tester-chip hidden></span>
         <button class="guess-button room-stop-test" type="button" data-room-stop-test hidden>Stop test</button>
@@ -361,6 +369,19 @@ const homeSchema: Record<string, unknown>[] = [
           <button class="go" type="submit"><Icon name="ph:user-plus-fill" />Join game</button>
         </div>
       </form>
+    </div>
+  </dialog>
+
+  <dialog class="sticker-dialog" data-room-host-dialog aria-labelledby="room-host-title">
+    <div class="dialog-inner">
+      <div class="dialog-head">
+        <h2 id="room-host-title" class="display">Hand over host?</h2>
+      </div>
+      <p data-room-host-message></p>
+      <div class="dialog-actions">
+        <button class="go" type="button" data-confirm-host-transfer>Hand over</button>
+        <button class="guess-button" type="button" data-cancel-host-transfer>Cancel</button>
+      </div>
     </div>
   </dialog>
 

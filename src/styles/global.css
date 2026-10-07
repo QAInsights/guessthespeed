@@ -135,12 +135,12 @@
   gap: 9px;
 }
 
-.room-tester-picker {
+.room-picker {
   position: relative;
   min-width: 0;
 }
 
-.room-tester-trigger {
+.room-picker-trigger {
   display: inline-flex;
   min-height: 42px;
   align-items: center;
@@ -148,13 +148,13 @@
   text-align: left;
 }
 
-.room-tester-trigger > span {
+.room-picker-trigger > span {
   color: var(--muted);
   font-size: 0.76rem;
   font-weight: 800;
 }
 
-.room-tester-trigger > strong {
+.room-picker-trigger > strong {
   max-width: 150px;
   overflow: hidden;
   font-size: 0.84rem;
@@ -162,18 +162,18 @@
   white-space: nowrap;
 }
 
-.room-tester-trigger > svg {
+.room-picker-trigger > svg {
   width: 14px;
   height: 14px;
   flex: none;
   transition: transform 0.15s ease;
 }
 
-.room-tester-trigger[aria-expanded="true"] > svg {
+.room-picker-trigger[aria-expanded="true"] > svg {
   transform: rotate(180deg);
 }
 
-.room-tester-menu {
+.room-picker-menu {
   position: absolute;
   z-index: 21;
   top: calc(100% + 9px);
@@ -191,11 +191,11 @@
   overscroll-behavior: contain;
 }
 
-.room-tester-menu[hidden] {
+.room-picker-menu[hidden] {
   display: none;
 }
 
-.room-tester-option {
+.room-picker-option {
   display: flex;
   min-width: 0;
   min-height: 48px;
@@ -215,22 +215,22 @@
     box-shadow 0.12s ease;
 }
 
-.room-tester-option:hover {
+.room-picker-option:hover {
   box-shadow: 4px 4px 0 var(--shadow);
   transform: translate(-1px, -1px);
 }
 
-.room-tester-option:focus-visible {
+.room-picker-option:focus-visible {
   outline: 3px solid var(--ink);
   outline-offset: 2px;
 }
 
-.room-tester-option[aria-selected="true"] {
+.room-picker-option[aria-selected="true"] {
   background: var(--accent);
   color: var(--on-accent);
 }
 
-.room-tester-option-face {
+.room-picker-option-face {
   display: grid;
   width: 32px;
   height: 32px;
@@ -242,7 +242,7 @@
   place-items: center;
 }
 
-.room-tester-option-name {
+.room-picker-option-name {
   min-width: 0;
   overflow-wrap: anywhere;
   font-weight: 850;
@@ -399,12 +399,12 @@ html[data-room="1"] .dev-console {
     justify-content: flex-start;
   }
 
-  .room-tester-trigger {
+  .room-picker-trigger {
     max-width: calc(100vw - 72px);
     flex-wrap: wrap;
   }
 
-  .room-tester-menu {
+  .room-picker-menu {
     width: min(330px, calc(100vw - 36px));
   }
 }

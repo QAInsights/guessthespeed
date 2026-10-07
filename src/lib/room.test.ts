@@ -9,9 +9,11 @@ import {
   interruptedTestStep,
   MAX_PLAYERS,
   normalizeRoomCode,
+  parseTransferHostAction,
   ROOM_ALPHABET,
   ROOM_CODE_LENGTH,
   ROOM_HISTORY_MAX,
+  transferHost,
   viewFor,
   type Room,
   type RoomPlayer,
@@ -160,6 +162,23 @@ function joinedRoom(): Room {
   return room;
 }
 
+function roomWithResultsAndTester(): Room {
+  let room = joinedRoom();
+  const tester = playerByOwner(room, firstId);
+  room = withGuess(room, firstId, 50, 15);
+  room = act(room, hostId, true, {
+    type: "setTester",
+    id: tester.id,
+  });
+  room = act(room, firstId, false, { type: "start" });
+  return act(room, firstId, false, {
+    type: "result",
+    down: 100,
+    up: 20,
+    ping: 8,
+  });
+}
+
 function playerByOwner(room: Room, owner: string): RoomPlayer {
   const player = room.game.players.find(
     (candidate) => candidate.owner === owner,
@@ -167,6 +186,124 @@ function playerByOwner(room: Room, owner: string): RoomPlayer {
   if (!player) throw new Error(`No player owned by ${owner}`);
   return player;
 }
+
+describe("host transfer", () => {
+  const options = {
+    isHost: true,
+    clientId: hostId,
+    playerId: "missing-player",
+    newHostToken: "new-host-token",
+    now: 900,
+  };
+
+  it("parses transferHost actions only when the target id is a string", () => {
+    expect(
+      parseTransferHostAction({ type: "transferHost", id: "phone-player" }),
+    ).toEqual({ type: "transferHost", id: "phone-player" });
+    expect(
+      parseTransferHostAction({ type: "transferHost", id: 42 }),
+    ).toBeNull();
+    expect(parseTransferHostAction({ type: "transferHost" })).toBeNull();
+    expect(parseTransferHostAction({ type: "start" })).toBeNull();
+    expect(parseTransferHostAction(null)).toBeNull();
+  });
+
+  it("checks the host, phase, target, and device in the specified order", () => {
+    const room = joinedRoom();
+    const testingRoom = {
+      ...room,
+      game: { ...room.game, phase: "testing" as const },
+    };
+
+    expect(
+      transferHost(testingRoom, {
+        ...options,
+        isHost: false,
+      }),
+    ).toEqual({
+      ok: false,
+      error: "Only the host can hand over host.",
+    });
+    expect(
+      transferHost(testingRoom, {
+        ...options,
+        playerId: "missing-player",
+      }),
+    ).toEqual({
+      ok: false,
+      error: "Wait for the test to finish before handing over host.",
+    });
+    expect(transferHost(room, options)).toEqual({
+      ok: false,
+      error: "That player has left the room.",
+    });
+    expect(
+      transferHost(room, {
+        ...options,
+        playerId: playerByOwner(room, hostId).id,
+      }),
+    ).toEqual({
+      ok: false,
+      error: "Pick a player on another device.",
+    });
+  });
+
+  it("changes only the host token and timestamp while preserving game state", () => {
+    const room = roomWithResultsAndTester();
+    const target = playerByOwner(room, firstId);
+    const result = transferHost(room, {
+      ...options,
+      playerId: target.id,
+    });
+
+    expect(result).toMatchObject({
+      ok: true,
+      newHostClientId: firstId,
+      room: {
+        hostToken: "new-host-token",
+        updatedAt: 900,
+        testerId: target.id,
+      },
+    });
+    if (!result.ok) throw new Error(result.error);
+    expect(result.room.game).toEqual(room.game);
+    expect(result.room.game.players).toEqual(room.game.players);
+    expect(result.room.game.history).toEqual(room.game.history);
+    expect(result.room.game.settings).toEqual(room.game.settings);
+    expect(result.room.game.phase).toBe(room.game.phase);
+    expect(room.hostToken).toBe("secret-host-token");
+    expect(room.updatedAt).not.toBe(result.room.updatedAt);
+  });
+
+  it("keeps a null tester assignment null", () => {
+    const room = joinedRoom();
+    const result = transferHost(room, {
+      ...options,
+      playerId: playerByOwner(room, firstId).id,
+    });
+
+    expect(result).toMatchObject({
+      ok: true,
+      room: { testerId: null },
+    });
+  });
+
+  it("does not let applyAction handle a transfer action", () => {
+    const room = joinedRoom();
+    expect(
+      applyAction(
+        room,
+        hostId,
+        true,
+        {
+          type: "transferHost",
+          id: playerByOwner(room, firstId).id,
+        },
+        900,
+      ),
+    ).toEqual({ error: "Unknown action." });
+  });
+});
 
 function withGuess(room: Room, clientId: string, down: number, up: number) {
   const player = playerByOwner(room, clientId);
