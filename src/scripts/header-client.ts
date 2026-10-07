@@ -113,17 +113,10 @@ function syncModeSwitch() {
       const optionMode = option.dataset.modeOption;
       const selected = !classroomMode && optionMode === selectedMode;
       const blockedByClassroom = classroomMode && optionMode !== "classroom";
-      const blockedByDev = devMode && optionMode === "work";
-      option.classList.toggle(
-        "is-disabled",
-        blockedByClassroom || blockedByDev,
-      );
+      option.classList.toggle("is-disabled", blockedByClassroom);
       if (blockedByClassroom) {
         option.setAttribute("aria-disabled", "true");
         option.setAttribute("title", "End class to switch modes");
-      } else if (blockedByDev) {
-        option.setAttribute("aria-disabled", "true");
-        option.setAttribute("title", "Exit Dev mode to switch modes");
       } else {
         option.removeAttribute("aria-disabled");
         option.removeAttribute("title");
@@ -152,11 +145,16 @@ modeSwitch?.addEventListener("click", (event) => {
   const target = event.target;
   if (!(target instanceof Element)) return;
   const option = target.closest<HTMLElement>("[data-mode-option]");
-  if (
-    (classroomMode && option?.dataset.modeOption !== "classroom") ||
-    (devMode && option?.dataset.modeOption === "work")
-  )
+  if (classroomMode && option?.dataset.modeOption !== "classroom") {
     event.preventDefault();
+    return;
+  }
+  if (
+    devMode &&
+    (option?.dataset.modeOption === "classroom" ||
+      option?.dataset.modeOption === "work")
+  )
+    setDevMode(false);
 });
 
 function syncDevBadge() {

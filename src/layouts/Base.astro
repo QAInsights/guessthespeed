@@ -140,16 +140,33 @@ const graphSchema = { '@context': 'https://schema.org', '@graph': graph };
           session.startedAt >= 0;
       } catch {}
       const roomQueryMode = roomQueryRequested && !classroomSessionActive;
+      const leavesDevMode =
+        /^\/(?:classroom|work)\/?$/.test(window.location.pathname);
       if (roomQueryMode) document.documentElement.dataset.room = "1";
       const devParam = new URLSearchParams(window.location.search).get("dev");
       let devEnabled = devParam === "1";
       try {
-        if (!roomQueryMode && !classroomSessionActive && (devParam === "1" || devParam === "0"))
+        if (leavesDevMode) localStorage.setItem("gts:dev", "0");
+        else if (
+          !roomQueryMode &&
+          !classroomSessionActive &&
+          (devParam === "1" || devParam === "0")
+        )
           localStorage.setItem("gts:dev", devParam);
-        if (!roomQueryMode && !classroomSessionActive && devParam === null)
+        if (
+          !leavesDevMode &&
+          !roomQueryMode &&
+          !classroomSessionActive &&
+          devParam === null
+        )
           devEnabled = localStorage.getItem("gts:dev") === "1";
       } catch {}
-      if (!roomQueryMode && !classroomSessionActive && devEnabled)
+      if (
+        !leavesDevMode &&
+        !roomQueryMode &&
+        !classroomSessionActive &&
+        devEnabled
+      )
         document.documentElement.dataset.dev = "1";
       const tvParam = new URLSearchParams(window.location.search).get("tv");
       let tvEnabled = tvParam === "1";
