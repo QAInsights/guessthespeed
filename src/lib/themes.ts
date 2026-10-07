@@ -212,10 +212,6 @@ function utcDay(date: Date): number {
   );
 }
 
-function dateAtNoon(day: number): Date {
-  return new Date(day * 86_400_000 + 12 * 60 * 60 * 1000);
-}
-
 function inWindow(
   date: Date,
   center: Date,
