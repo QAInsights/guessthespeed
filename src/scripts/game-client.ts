@@ -56,6 +56,11 @@ import { describeTarget, isOverlayOpen, shortcutAction } from "./shortcuts";
 import { escapeHtml } from "../lib/html";
 import { $, $$ } from "./dom";
 import { emptyPlayerMarkup } from "./player-empty-state";
+import {
+  REVEAL_SUSPENSE_MS,
+  REVEAL_SWING_MS,
+  revealProgress,
+} from "./gauge-reveal";
 
 type ClientPlayer = Player & { mine?: boolean };
 type ClientGameState = Omit<GameState, "players"> & {
@@ -97,6 +102,8 @@ let gaugeTarget = 0;
 let gaugeReadoutValue: number | undefined;
 let animationFrame = 0;
 let runInProgress = false;
+let revealPending = false;
+let activeRevealController: AbortController | null = null;
 let activeRoomTestController: AbortController | null = null;
 let interruptedRoomTestRecoveryRequested = false;
 let pendingRoomResult: Extract<ClientAction, { type: "result" }> | null = null;
@@ -115,6 +122,8 @@ const isMockMode = () =>
 const isTesting = () => state.phase === "testing" || runInProgress;
 const isMine = (player: ClientPlayer) => !roomMode || player.mine === true;
 const isRoomHost = () => !roomMode || state.isRoomHost === true;
+const isRevealed = () =>
+  (state.phase === "results" || state.phase === "champion") && !revealPending;
 const reduceMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 let reduceMotion = reduceMotionQuery.matches;
 reduceMotionQuery.addEventListener("change", (event) => {
@@ -295,7 +304,11 @@ function renderPlayerCard(player: ClientPlayer, index: number) {
   const roundResult = state.history
     .at(-1)
     ?.scores.find((score) => score.id === player.id);
-  const revealed = state.phase === "results" || state.phase === "champion";
+  const revealed = isRevealed();
+  const displayedScore =
+    revealPending && roundResult
+      ? player.score - roundResult.total
+      : player.score;
   const miss = roundResult?.miss;
   const tooFar =
     miss !== null && miss !== undefined && roundResult?.place === null;
@@ -330,7 +343,7 @@ function renderPlayerCard(player: ClientPlayer, index: number) {
   return `<article class="p-card ${winnerClass}" style="--card-index:${index}">
     ${mine ? `<button class="p-edit" type="button" data-edit="${escapeHtml(player.id)}" aria-label="Edit ${escapeHtml(player.name)}" ${isTesting() ? "disabled" : ""}><span aria-hidden="true">✎</span></button>` : ""}
     ${canRemove ? `<button class="p-rm" type="button" data-remove="${escapeHtml(player.id)}" aria-label="Remove ${escapeHtml(player.name)}" ${isTesting() ? "disabled" : ""}>×</button>` : ""}
-    <div class="p-head">${roleFor(player)}<div class="p-score"><b>${player.score}</b><span>${player.score === 1 ? "pt" : "pts"}</span></div></div>
+    <div class="p-head">${roleFor(player)}<div class="p-score"><b>${displayedScore}</b><span>${displayedScore === 1 ? "pt" : "pts"}</span></div></div>
     ${guessAction}
   </article>`;
 }
@@ -339,15 +352,26 @@ function renderPlayerTable(player: ClientPlayer, index: number) {
   const roundResult = state.history
     .at(-1)
     ?.scores.find((score) => score.id === player.id);
-  const revealed = state.phase === "results" || state.phase === "champion";
+  const revealed = isRevealed();
+  const displayedScore =
+    revealPending && roundResult
+      ? player.score - roundResult.total
+      : player.score;
   const place = roundResult?.place;
   const miss = roundResult?.miss;
   const tooFar =
     miss !== null && miss !== undefined && roundResult?.place === null;
   const mine = isMine(player);
   const canRemove = !roomMode || isRoomHost() || mine;
-  const medal =
-    place === 1 ? "🥇" : place === 2 ? "🥈" : place === 3 ? "🥉" : " ";
+  const medal = revealed
+    ? place === 1
+      ? "🥇"
+      : place === 2
+        ? "🥈"
+        : place === 3
+          ? "🥉"
+          : " "
+    : " ";
   const roundStatus = revealed
     ? miss === null || miss === undefined
       ? "No guess"
@@ -363,7 +387,7 @@ function renderPlayerTable(player: ClientPlayer, index: number) {
     <td>${revealed ? (player.guess.down === null ? "No guess" : `${player.guess.down.toLocaleString()} Mbps`) : "Hidden"}</td>
     <td>${revealed ? (player.guess.up === null ? "No guess" : `${player.guess.up.toLocaleString()} Mbps`) : "Hidden"}</td>
     <td>${roundStatus}</td>
-    <td class="p-score">${formatScoreLabel(player.score)}</td>
+    <td class="p-score">${formatScoreLabel(displayedScore)}</td>
     <td><div class="p-table-actions">
       ${mine ? `<button class="p-edit" type="button" data-edit="${escapeHtml(player.id)}" aria-label="Edit ${escapeHtml(player.name)}" ${isTesting() ? "disabled" : ""}><span aria-hidden="true">✎</span></button>` : ""}
       ${canRemove ? `<button class="p-rm" type="button" data-remove="${escapeHtml(player.id)}" aria-label="Remove ${escapeHtml(player.name)}" ${isTesting() ? "disabled" : ""}>×</button>` : ""}
@@ -438,7 +462,7 @@ function formatScoreLabel(points: number) {
 
 function renderWinner() {
   const banner = $<HTMLDivElement>("[data-winner-banner]");
-  if (state.phase !== "results" && state.phase !== "champion") {
+  if (!isRevealed()) {
     banner.hidden = true;
     return;
   }
@@ -494,6 +518,11 @@ function renderWinner() {
 }
 
 function setResults() {
+  if (
+    !isRevealed() &&
+    (state.phase === "results" || state.phase === "champion")
+  )
+    return;
   const last = state.history.at(-1)?.actual;
   setResultText("ping", last?.ping ?? latestPing);
   setResultText("down", last?.down);
@@ -510,6 +539,101 @@ function formatSpeed(value: number) {
   return value >= 100
     ? value.toLocaleString(undefined, { maximumFractionDigits: 1 })
     : value.toFixed(1);
+}
+
+async function playGaugeReveal(
+  down: number,
+  signal: AbortSignal,
+): Promise<void> {
+  const live = $<HTMLSpanElement>("[data-live]");
+  const mode = $<HTMLSpanElement>("[data-mode]");
+  const unit = $<HTMLSpanElement>("[data-unit]");
+  const results = $$<HTMLElement>("[data-result]");
+  const announcement = $<HTMLElement>("[data-reveal-announcement]");
+  const gauge = $<HTMLElement>("[data-gauge]");
+  const finalSpeed = formatSpeed(down);
+  mode.textContent = "Download";
+  unit.textContent = "Mbps";
+
+  return new Promise((resolve) => {
+    let frame = 0;
+    let suspenseTimer = 0;
+    let settled = false;
+
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      if (frame) cancelAnimationFrame(frame);
+      window.clearTimeout(suspenseTimer);
+      signal.removeEventListener("abort", finish);
+      live.classList.remove("is-suspense");
+      gaugeValue = down;
+      gaugeTarget = down;
+      gaugeReadoutValue = down;
+      renderGauge();
+      live.textContent = finalSpeed;
+      live.style.removeProperty("width");
+      live.removeAttribute("aria-hidden");
+      results.forEach((element) => element.removeAttribute("aria-hidden"));
+      const actual = state.history.at(-1)?.actual;
+      setResultText("ping", actual?.ping ?? latestPing);
+      setResultText("down", actual?.down);
+      setResultText("up", actual?.up);
+      document.documentElement.removeAttribute("data-revealing");
+      if (!reduceMotion && !signal.aborted) {
+        live.classList.remove("is-revealed");
+        live.addEventListener(
+          "animationend",
+          () => live.classList.remove("is-revealed"),
+          { once: true },
+        );
+        live.classList.add("is-revealed");
+      }
+      if (!signal.aborted && state.phase === "results" && actual?.down === down)
+        announcement.textContent = `Download speed: ${finalSpeed} Mbps.`;
+      resolve();
+    };
+
+    signal.addEventListener("abort", finish, { once: true });
+    if (signal.aborted || reduceMotion) {
+      finish();
+      return;
+    }
+
+    if (animationFrame) cancelAnimationFrame(animationFrame);
+    animationFrame = 0;
+    live.classList.remove("is-revealed", "is-suspense");
+    live.setAttribute("aria-hidden", "true");
+    results.forEach((element) => element.setAttribute("aria-hidden", "true"));
+    announcement.textContent = "";
+    document.documentElement.dataset.revealing = "1";
+
+    live.textContent = finalSpeed;
+    const numberWidth = live.getBoundingClientRect().width;
+    if (numberWidth > 0) live.style.width = `${numberWidth}px`;
+    live.textContent = "?";
+    results.forEach((element) => {
+      element.textContent = "?";
+    });
+
+    const target = gaugePosition(down);
+    const startedAt = performance.now();
+    const updateGauge = (now: number) => {
+      if (settled) return;
+      const elapsed = now - startedAt;
+      const progress = revealProgress(elapsed, target);
+      gauge.style.setProperty("--p", progress.toFixed(4));
+      gauge.style.setProperty("--rotation", `${-120 + 240 * progress}deg`);
+      if (elapsed < REVEAL_SWING_MS) {
+        frame = requestAnimationFrame(updateGauge);
+        return;
+      }
+      frame = 0;
+      live.classList.add("is-suspense");
+      suspenseTimer = window.setTimeout(finish, REVEAL_SUSPENSE_MS);
+    };
+    frame = requestAnimationFrame(updateGauge);
+  });
 }
 
 function syncControls() {
@@ -535,19 +659,21 @@ function syncControls() {
   startButton.disabled =
     (!devMode && (!guessing || !lockedGuess)) || runInProgress;
   startButton.hidden =
-    (roomMode && !canRun) ||
-    (!devMode && state.phase === "results") ||
-    (roomMode && state.phase === "champion");
+    !revealPending &&
+    ((roomMode && !canRun) ||
+      (!devMode && isRevealed() && state.phase === "results") ||
+      (roomMode && isRevealed() && state.phase === "champion"));
   const waiting = $<HTMLParagraphElement>("[data-room-waiting]");
   waiting.hidden =
     !roomMode ||
-    (canRun && state.phase !== "results" && !waitingForGuess) ||
-    (host && state.phase === "results");
+    revealPending ||
+    (canRun && !isRevealed() && !waitingForGuess) ||
+    (host && isRevealed() && state.phase === "results");
   waiting.textContent = waitingForGuess
     ? host
       ? "Start unlocks once someone locks in a guess. Tap Guess on your phone, or add a player on this screen."
       : "Start unlocks once someone locks in a guess."
-    : state.phase === "results"
+    : isRevealed() && state.phase === "results"
       ? "Waiting for the host to continue."
       : state.phase === "testing"
         ? assignedTester
@@ -560,26 +686,30 @@ function syncControls() {
   resetButton.textContent = roomMode ? "New game" : "Reset scores";
   resetButton.hidden = roomMode && !host;
   syncTVAddForm();
-  $<HTMLSpanElement>("[data-start-label]").textContent = devMode
-    ? testing
-      ? "Testing..."
-      : "Run speed test"
-    : state.phase === "testing"
-      ? "Testing..."
-      : state.phase === "results" || state.phase === "champion"
-        ? "Round complete"
-        : state.players.some((player) => player.locked)
-          ? "Start the speed test"
-          : "Waiting for guesses";
-  $<HTMLSpanElement>("[data-phase-text]").textContent = devMode
-    ? testing
-      ? "Pinging Cloudflare"
-      : "Ready when you are"
-    : state.phase === "testing"
-      ? "Pinging Cloudflare"
-      : state.phase === "results" || state.phase === "champion"
-        ? "Results are in"
-        : "Ready when you are";
+  $<HTMLSpanElement>("[data-start-label]").textContent = revealPending
+    ? "Testing..."
+    : devMode
+      ? testing
+        ? "Testing..."
+        : "Run speed test"
+      : state.phase === "testing"
+        ? "Testing..."
+        : isRevealed()
+          ? "Round complete"
+          : state.players.some((player) => player.locked)
+            ? "Start the speed test"
+            : "Waiting for guesses";
+  $<HTMLSpanElement>("[data-phase-text]").textContent = revealPending
+    ? "Drumroll..."
+    : devMode
+      ? testing
+        ? "Pinging Cloudflare"
+        : "Ready when you are"
+      : state.phase === "testing"
+        ? "Pinging Cloudflare"
+        : isRevealed()
+          ? "Results are in"
+          : "Ready when you are";
   $<HTMLButtonElement>("[data-reset]").disabled = testing;
   $<HTMLInputElement>("#player-name").disabled = testing;
   $$<HTMLInputElement>("[data-emoji-picker] input").forEach((input) => {
@@ -597,7 +727,7 @@ function renderChampion() {
     if (championDialog.open) championDialog.close();
     return;
   }
-  if (state.phase !== "champion") {
+  if (!isRevealed() || state.phase !== "champion") {
     if (championDialog.open) championDialog.close();
     return;
   }
@@ -660,7 +790,7 @@ function render() {
       (input as HTMLInputElement).checked ||= false;
     });
   renderChampion();
-  if (state.phase === "results") {
+  if (isRevealed() && state.phase === "results") {
     nextButton.textContent =
       state.settings.rounds !== "endless" &&
       state.round >= state.settings.rounds
@@ -760,6 +890,19 @@ function clearRoomElapsedTimer() {
   roomElapsedTimer = 0;
 }
 
+function startRoomReveal(down: number) {
+  const controller = new AbortController();
+  activeRevealController = controller;
+  void playGaugeReveal(down, controller.signal).then(() => {
+    if (activeRevealController !== controller) return;
+    activeRevealController = null;
+    if (controller.signal.aborted || state.phase !== "results") return;
+    revealPending = false;
+    playCue("reveal", activeTheme, state.settings.sound);
+    render();
+  });
+}
+
 function applyRoomView(view: RoomView) {
   const previousPhase = state.phase;
   if (view.phase !== "testing") {
@@ -767,6 +910,16 @@ function applyRoomView(view: RoomView) {
     pendingRoomResult = null;
   }
   const isFirstRoomView = !hasAppliedRoomView;
+  const revealActual =
+    !isFirstRoomView && previousPhase === "testing" && view.phase === "results"
+      ? view.history.at(-1)?.actual
+      : undefined;
+  if (revealPending && view.phase !== "results") {
+    revealPending = false;
+    const controller = activeRevealController;
+    activeRevealController = null;
+    controller?.abort();
+  }
   const enteredChampion =
     !isFirstRoomView &&
     previousPhase !== "champion" &&
@@ -786,6 +939,7 @@ function applyRoomView(view: RoomView) {
     history: view.history,
     isRoomHost: view.isHost,
   };
+  if (revealActual) revealPending = true;
   if (
     previousPhase === "testing" &&
     view.phase === "guessing" &&
@@ -799,12 +953,6 @@ function applyRoomView(view: RoomView) {
     setRemoteTesting(true);
   } else {
     setRemoteTesting(false);
-    if (
-      previousPhase === "testing" &&
-      view.phase === "results" &&
-      !view.canRunTest
-    )
-      playCue("reveal", activeTheme, state.settings.sound);
     if (previousPhase !== "champion" && view.phase === "champion")
       playCue("champion", activeTheme, state.settings.sound);
     lastRoomProgressPhase = null;
@@ -818,6 +966,7 @@ function applyRoomView(view: RoomView) {
   }
   activeTheme = getResolvedTheme();
   render();
+  if (revealActual) startRoomReveal(revealActual.down);
   if (enteredChampion && state.settings.confetti && !reduceMotion)
     burstConfetti(championDialog);
 }
@@ -968,18 +1117,14 @@ async function startTest() {
       });
     }
     setProgress(steps, steps);
-    setGauge(actual.down, actual.down);
     if (devRun) {
+      setGauge(actual.down, actual.down);
       document.documentElement.dataset.phase = state.history.length
         ? "done"
         : "idle";
       $<HTMLSpanElement>("[data-mode]").textContent = "Download";
       $<HTMLSpanElement>("[data-unit]").textContent = "Mbps";
     } else if (roomMode) {
-      latestPing = actual.ping;
-      setResultText("down", actual.down);
-      setResultText("up", actual.up);
-      setResultText("ping", actual.ping);
       const resultAction: Extract<ClientAction, { type: "result" }> = {
         type: "result",
         down: actual.down,
@@ -996,12 +1141,8 @@ async function startTest() {
       document.documentElement.dataset.phase = "done";
       $<HTMLSpanElement>("[data-mode]").textContent = "Download";
       $<HTMLSpanElement>("[data-unit]").textContent = "Mbps";
-      playCue("reveal", activeTheme, state.settings.sound);
     } else {
       latestPing = actual.ping;
-      setResultText("down", actual.down);
-      setResultText("up", actual.up);
-      setResultText("ping", actual.ping);
       const lockedGuesses = state.players.filter(
         (player) => player.locked,
       ).length;
@@ -1020,9 +1161,20 @@ async function startTest() {
       document.documentElement.dataset.phase = "done";
       $<HTMLSpanElement>("[data-mode]").textContent = "Download";
       $<HTMLSpanElement>("[data-unit]").textContent = "Mbps";
-      playCue("reveal", activeTheme, state.settings.sound);
+      revealPending = true;
     }
     render();
+    if (!devRun && !roomMode && revealPending) {
+      const controller = new AbortController();
+      activeRevealController = controller;
+      await playGaugeReveal(actual.down, controller.signal);
+      if (activeRevealController === controller) {
+        activeRevealController = null;
+        revealPending = false;
+        playCue("reveal", activeTheme, state.settings.sound);
+        render();
+      }
+    }
   } catch (error) {
     if (roomMode && error instanceof SpeedTestCancelledError) {
       errorNote.hidden = true;
