@@ -6,4 +6,5 @@ export default defineConfig({
   site: "https://guessthespeed.com",
   integrations: [icon(), sitemap()],
   output: "static",
+  prefetch: { prefetchAll: true, defaultStrategy: "hover" },
 });
