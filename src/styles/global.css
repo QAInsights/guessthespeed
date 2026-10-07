@@ -3139,6 +3139,7 @@ footer {
 
 .round-banner {
   display: inline-flex;
+  gap: 8px;
   margin-bottom: 18px;
   padding: 8px 13px;
   border: 2px solid var(--ink);
@@ -4874,8 +4875,9 @@ html[data-dev="1"] .dev-console {
   }
 
   .work-hero-sticker {
+    width: min(100%, 280px);
     min-height: 0;
-    justify-self: start;
+    justify-self: center;
     padding: 16px 24px;
     transform: rotate(1.5deg);
   }

@@ -415,6 +415,7 @@ export function applyAction(
               room.game.players,
               room.testerId ?? null,
               onlineOwners,
+              clientId,
             ),
           },
         };
@@ -475,6 +476,7 @@ export function nextTesterId(
   players: readonly RoomPlayer[],
   currentTesterId: string | null,
   onlineOwners: ReadonlySet<string>,
+  hostClientId?: string,
 ): string | null {
   const candidates: RoomPlayer[] = [];
   const seenOwners = new Set<string>();
@@ -490,10 +492,11 @@ export function nextTesterId(
   }
   if (!candidates.length) return null;
 
-  const currentOwner =
+  const tester =
     currentTesterId === null
       ? undefined
-      : players.find((player) => player.id === currentTesterId)?.owner;
+      : players.find((player) => player.id === currentTesterId);
+  const currentOwner = tester?.owner ?? hostClientId;
   const currentIndex = candidates.findIndex(
     (player) => player.owner === currentOwner,
   );

@@ -417,6 +417,54 @@ describe("team rooms", () => {
     expect(nextTesterId(players, null, new Set())).toBeNull();
   });
 
+  it("rotates from the host player's device through teammates and back", () => {
+    let room = createRoom("BCDFGH", "token", 0, "team");
+    room = addPlayer(room, hostId, true, "H");
+    room = addPlayer(room, firstId, false, "A");
+    room = addPlayer(room, secondId, false, "B");
+    room = act(room, hostId, true, {
+      type: "settings",
+      rounds: 5,
+      tieMode: "share",
+    });
+    const hostPlayer = playerByOwner(room, hostId);
+    const playerA = playerByOwner(room, firstId);
+    const playerB = playerByOwner(room, secondId);
+
+    room = withGuess(room, hostId, 100, 20);
+    room = act(room, hostId, true, { type: "start" });
+    room = act(room, hostId, true, { type: "result", down: 100, up: 20 });
+    room = act(room, hostId, true, { type: "next" });
+    expect(room.testerId).toBe(playerA.id);
+
+    room = withGuess(room, firstId, 100, 20);
+    room = act(room, firstId, false, { type: "start" });
+    room = act(room, firstId, false, { type: "result", down: 100, up: 20 });
+    room = act(room, hostId, true, { type: "next" });
+    expect(room.testerId).toBe(playerB.id);
+
+    room = withGuess(room, secondId, 100, 20);
+    room = act(room, secondId, false, { type: "start" });
+    room = act(room, secondId, false, { type: "result", down: 100, up: 20 });
+    room = act(room, hostId, true, { type: "next" });
+    expect(room.testerId).toBe(hostPlayer.id);
+  });
+
+  it("starts with the first teammate when the host has no player", () => {
+    let room = createRoom("BCDFGH", "token", 0, "team");
+    room = addPlayer(room, firstId, false, "A");
+    room = addPlayer(room, secondId, false, "B");
+
+    expect(
+      nextTesterId(
+        room.game.players,
+        null,
+        new Set([hostId, firstId, secondId]),
+        hostId,
+      ),
+    ).toBe(playerByOwner(room, firstId).id);
+  });
+
   it("accepts each team face, including ZWJ emoji sequences", () => {
     let room = createRoom("BCDFGH", "token", 0, "team");
     TEAM_FACES.forEach((face, index) => {
