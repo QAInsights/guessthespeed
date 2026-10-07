@@ -42,14 +42,15 @@ const homeSchema: Record<string, unknown>[] = [
 ];
 ---
 
-<Base title={homeTitle} description={homeDescription} schema={homeSchema}>
+<Base
+  title={homeTitle}
+  description={homeDescription}
+  schema={homeSchema}
+  modeSwitch="game"
+>
   <main class="wrap game-main">
     <section class="stage" aria-label="Speed test game">
       <div class="intro">
-        <div class="mode-switch" role="radiogroup" aria-label="Mode" data-mode-switch>
-          <button type="button" role="radio" aria-checked="true" tabindex="0" data-mode-option="game"><Icon name="ph:game-controller-bold" />Game</button>
-          <button type="button" role="radio" aria-checked="false" tabindex="-1" data-mode-option="dev"><Icon name="ph:code-bold" />Dev</button>
-        </div>
         <div class="round" data-round-banner><Icon name="ph:flag-checkered-fill" /><span data-round-label>Round 1 of 3</span></div>
         <h1 class="display" data-game-title>Guess the <span class="wifi-nowrap">Wi-Fi</span>. <em>Beat the family.</em></h1>
         <h2 class="display dev-title" data-dev-title hidden>Dev mode</h2>
