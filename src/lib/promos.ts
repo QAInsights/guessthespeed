@@ -5,6 +5,7 @@ export interface Promo {
   href: string;
   image: string;
   cta: string;
+  tile?: string;
 }
 
 export const PROMOS: Promo[] = [
@@ -42,6 +43,7 @@ export const PROMOS: Promo[] = [
     href: "https://ai.dosa.dev/",
     image: "/promos/ai-dosa.svg",
     cta: "Explore tools",
+    tile: "#0a0a0a",
   },
 ];
 

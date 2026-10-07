@@ -29,6 +29,10 @@ describe("PROMOS", () => {
     expect(new Set(PROMOS.map(({ id }) => id)).size).toBe(PROMOS.length);
   });
 
+  it("uses a dark tile behind the ai.dosa.dev logo", () => {
+    expect(PROMOS.find(({ id }) => id === "dosa")?.tile).toBe("#0a0a0a");
+  });
+
   it("uses secure links and existing local promo images", () => {
     for (const promo of PROMOS) {
       expect(promo.href).toMatch(/^https:\/\//);

@@ -14,12 +14,14 @@ import { PROMOS } from "../lib/promos";
       <div class="promo-card" data-promo-id={promo.id} hidden>
         <a class="promo-link" href={promo.href} target="_blank" rel="noopener">
           <img
+            class:list={{ "promo-image-tiled": Boolean(promo.tile) }}
             src={promo.image}
             alt=""
             width="56"
             height="56"
             loading="lazy"
             decoding="async"
+            style={promo.tile ? `--promo-tile: ${promo.tile}` : undefined}
           />
           <span class="promo-kicker">More from the maker</span>
           <b class="promo-title">{promo.title}</b>

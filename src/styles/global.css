@@ -2487,7 +2487,7 @@ html:not([data-aurora="0"]) .is-winner.has-aurora {
   z-index: 40;
   right: 20px;
   bottom: 20px;
-  width: 300px;
+  width: 320px;
   padding: 14px;
   border: 2.5px solid var(--ink);
   border-radius: var(--r);
@@ -2511,7 +2511,7 @@ html:not([data-aurora="0"]) .is-winner.has-aurora {
   display: grid;
   min-width: 0;
   grid-template-areas:
-    "image kicker"
+    "kicker kicker"
     "image title"
     "image blurb"
     "cta cta";
@@ -2532,11 +2532,15 @@ html:not([data-aurora="0"]) .is-winner.has-aurora {
   object-fit: cover;
 }
 
+.promo-link > img.promo-image-tiled {
+  padding: 7px;
+  background-color: var(--promo-tile);
+  object-fit: contain;
+}
+
 .promo-kicker {
   grid-area: kicker;
   justify-self: start;
-  max-width: calc(100% - 28px);
-  overflow: hidden;
   padding: 3px 7px;
   border: 1.5px solid var(--ink);
   border-radius: 999px;
@@ -2547,7 +2551,6 @@ html:not([data-aurora="0"]) .is-winner.has-aurora {
   font-size: 0.58rem;
   font-weight: 900;
   letter-spacing: 0.06em;
-  text-overflow: ellipsis;
   text-transform: uppercase;
   white-space: nowrap;
 }
@@ -2555,26 +2558,19 @@ html:not([data-aurora="0"]) .is-winner.has-aurora {
 .promo-title {
   grid-area: title;
   min-width: 0;
-  overflow: hidden;
   font-family: "Bricolage Grotesque Variable", sans-serif;
   font-size: 1.15rem;
   font-weight: 850;
   letter-spacing: -0.025em;
   line-height: 1.05;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .promo-blurb {
   grid-area: blurb;
-  display: -webkit-box;
-  overflow: hidden;
   color: var(--muted);
   font-size: 0.78rem;
   font-weight: 650;
   line-height: 1.35;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
 }
 
 .promo-cta {
@@ -2628,6 +2624,16 @@ html:not([data-aurora="0"]) .is-winner.has-aurora {
   transform: rotate(8deg);
 }
 
+@media screen and (min-width: 1301px) {
+  .promo-close {
+    top: -12px;
+    right: -12px;
+    width: 30px;
+    min-width: 30px;
+    height: 30px;
+  }
+}
+
 @keyframes promo-enter {
   from {
     opacity: 0;
@@ -2660,6 +2666,10 @@ html:not([data-aurora="0"]) .is-winner.has-aurora {
     width: 40px;
     height: 40px;
     border-radius: 9px;
+  }
+
+  .promo-link > img.promo-image-tiled {
+    padding: 5px;
   }
 
   .promo-kicker {
