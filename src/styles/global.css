@@ -1222,6 +1222,10 @@ html[data-dev="1"] .intro .play-stat {
   transition: transform 0.12s linear;
 }
 
+html[data-revealing="1"] .gauge-needle {
+  transition: none;
+}
+
 .needle {
   fill: var(--ink);
 }
@@ -1256,6 +1260,42 @@ html[data-dev="1"] .intro .play-stat {
     sans-serif;
   font-variation-settings: "wdth" 75;
   font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html[data-revealing="1"] .readout .num.is-suspense {
+    animation: reveal-question-pulse 700ms ease-in-out infinite alternate;
+  }
+
+  .readout .num.is-revealed {
+    animation: reveal-number-pop 450ms ease-out both;
+    transform-origin: center;
+  }
+
+  @keyframes reveal-question-pulse {
+    from {
+      transform: scale(0.94);
+    }
+
+    to {
+      transform: scale(1.04);
+    }
+  }
+
+  @keyframes reveal-number-pop {
+    0% {
+      transform: scale(0.6) rotate(-7deg);
+    }
+
+    68% {
+      transform: scale(1.15) rotate(4deg);
+    }
+
+    100% {
+      transform: scale(1) rotate(0);
+    }
+  }
 }
 
 .readout .unit {
