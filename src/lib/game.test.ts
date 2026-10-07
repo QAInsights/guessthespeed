@@ -3,6 +3,7 @@ import {
   addPlayer,
   applyResult,
   DEFAULT_PLAYERS,
+  hasUsableRoundResult,
   initialGameState,
   loadGame,
   lockGuess,
@@ -246,6 +247,7 @@ describe("game state", () => {
     let state = initialGameState();
     state = addPlayer(state, "Ada", "🧑", "Friend", "p1");
     state = lockGuess(state, "p1", { down: 100, up: 20 });
+    state = { ...state, phase: "testing" };
     const result = applyResult(state, { down: 100, up: 20, ping: 7.3 });
     expect(result.scores[0].total).toBe(5);
     expect(result.state.history).toHaveLength(1);
@@ -254,6 +256,47 @@ describe("game state", () => {
     const storage = memoryStorage();
     saveGame(result.state, storage);
     expect(loadGame(storage).history[0].actual.ping).toBe(7.3);
+  });
+
+  it("does not score unlocked players", () => {
+    const state: GameState = {
+      ...initialGameState(),
+      phase: "testing",
+      players: [
+        {
+          ...initialGameState().players[0],
+          id: "unlocked",
+          guess: { down: 100, up: 20 },
+          locked: false,
+        },
+      ],
+    };
+    const result = applyResult(state, { down: 100, up: 20 });
+    expect(result.scores).toEqual([]);
+    expect(result.state.players[0].score).toBe(state.players[0].score);
+  });
+
+  it("rejects non-positive or non-finite measured round speeds", () => {
+    expect(hasUsableRoundResult({ down: 0, up: 20 })).toBe(false);
+    expect(hasUsableRoundResult({ down: 20, up: 0 })).toBe(false);
+    expect(hasUsableRoundResult({ down: -1, up: 20 })).toBe(false);
+    expect(hasUsableRoundResult({ down: 20, up: -1 })).toBe(false);
+    expect(
+      hasUsableRoundResult({ down: Number.POSITIVE_INFINITY, up: 20 }),
+    ).toBe(false);
+    expect(hasUsableRoundResult({ down: 20, up: 20 })).toBe(true);
+  });
+
+  it("does not score or append a duplicate result outside testing", () => {
+    let state = initialGameState();
+    state = addPlayer(state, "Ada", "🧑", "Friend", "p1");
+    state = lockGuess(state, "p1", { down: 100, up: 20 });
+    state = { ...state, phase: "testing" };
+    const first = applyResult(state, { down: 100, up: 20 });
+    const duplicate = applyResult(first.state, { down: 90, up: 18 });
+    expect(first.state.history).toHaveLength(1);
+    expect(duplicate.state.history).toHaveLength(1);
+    expect(duplicate.scores).toEqual([]);
   });
 
   it("starts a new round or moves to the champion phase", () => {

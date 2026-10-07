@@ -212,10 +212,6 @@ function utcDay(date: Date): number {
   );
 }
 
-function dateAtNoon(day: number): Date {
-  return new Date(day * 86_400_000 + 12 * 60 * 60 * 1000);
-}
-
 function inWindow(
   date: Date,
   center: Date,
@@ -319,8 +315,4 @@ export function themeForDate(date: Date): ThemeId | null {
 
 export function isThemeId(value: string): value is ThemeId {
   return Object.hasOwn(themes, value);
-}
-
-export function dateFromDay(day: number): Date {
-  return dateAtNoon(day);
 }

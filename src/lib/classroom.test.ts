@@ -74,6 +74,13 @@ function makeData(classes: ClassRoom[] = [makeClassroom()]): ClassroomData {
   return { version: 1, classes };
 }
 
+function seededRng(seed: number): () => number {
+  return () => {
+    seed = (seed * 1_664_525 + 1_013_904_223) >>> 0;
+    return seed / 0x1_0000_0000;
+  };
+}
+
 describe("classroom roster helpers", () => {
   it("splits separators, strips list markers, collapses spaces, and deduplicates", () => {
     expect(
@@ -153,8 +160,35 @@ describe("classroom game selection", () => {
     );
     expect(second.picked).toHaveLength(4);
     expect(new Set(second.picked.map(({ id }) => id)).size).toBe(4);
-    expect(second.spotlightPlayed).toHaveLength(4);
+    expect(second.spotlightPlayed).toHaveLength(1);
   });
+
+  it.each([
+    [5, 3],
+    [7, 3],
+  ])(
+    "keeps spotlight pick counts balanced for %i students and %i picks",
+    (studentCount, wanted) => {
+      const classroom = makeClassroom(makeStudents(studentCount));
+      const counts = new Map(classroom.students.map(({ id }) => [id, 0]));
+      const rng = seededRng(studentCount * 100 + wanted);
+      let spotlightPlayed = classroom.spotlightPlayed;
+
+      for (let round = 0; round < 20; round += 1) {
+        const result = pickSpotlight(
+          { ...classroom, spotlightPlayed },
+          wanted,
+          rng,
+        );
+        for (const { id } of result.picked)
+          counts.set(id, (counts.get(id) ?? 0) + 1);
+        spotlightPlayed = result.spotlightPlayed;
+
+        const picks = [...counts.values()];
+        expect(Math.max(...picks) - Math.min(...picks)).toBeLessThanOrEqual(1);
+      }
+    },
+  );
 
   it("converts teams and students into valid game players with bounded roles", () => {
     const students = makeStudents(10);
@@ -286,6 +320,35 @@ describe("classroom storage and backups", () => {
       "Grace",
     ]);
     expect(isClassroomData(merged)).toBe(true);
+  });
+
+  it("merges a renamed student with the same id", () => {
+    const studentId = "ada";
+    const existing = makeData([
+      makeClassroom([{ id: studentId, name: "Existing", emoji: "🦊" }]),
+    ]);
+    const imported = makeData([
+      makeClassroom([{ id: studentId, name: "Renamed", emoji: "🐼" }]),
+    ]);
+
+    const merged = mergeClassroom(existing, imported);
+    expect(merged.classes[0].students).toEqual([
+      { id: studentId, name: "Existing", emoji: "🦊" },
+    ]);
+    expect(isClassroomData(merged)).toBe(true);
+  });
+
+  it("imports, saves, and loads a non-colliding 128-character student id", () => {
+    const studentId = "s".repeat(128);
+    const imported = makeData([
+      makeClassroom([{ id: studentId, name: "Imported", emoji: "🐼" }]),
+    ]);
+    const merged = mergeClassroom(makeData([]), imported);
+    expect(merged.classes[0].students[0].id).toBe(studentId);
+    expect(isClassroomData(merged)).toBe(true);
+    const storage = memoryStorage();
+    saveClassroom(merged, storage);
+    expect(loadClassroom(storage)).toEqual(merged);
   });
 
   it("caps imported data to the classroom and roster limits", () => {

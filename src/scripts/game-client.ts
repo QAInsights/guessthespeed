@@ -1,6 +1,7 @@
 import {
   addPlayer,
   applyResult,
+  hasUsableRoundResult,
   initialGameState,
   loadGame,
   lockGuess,
@@ -957,6 +958,8 @@ async function startTest() {
           ? { signal: roomRunController.signal }
           : undefined,
     );
+    if (!hasUsableRoundResult(actual))
+      throw new Error("The speed test returned no result.");
     if (!isMockMode() && !roomRunController?.signal.aborted) {
       recordSpeedSample({
         at: Date.now(),

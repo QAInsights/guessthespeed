@@ -290,7 +290,7 @@ export function pickSpotlight(
     : [];
   const picked = [...firstPick, ...fill];
   const spotlightPlayed = needsNewRotation
-    ? picked.map(({ id }) => id)
+    ? fill.map(({ id }) => id)
     : [...played, ...picked.map(({ id }) => id)];
   return { picked, spotlightPlayed };
 }
@@ -578,7 +578,8 @@ export function mergeClassroom(
       let id = student.id;
       let suffix = 1;
       while (mergedStudents.some((member) => member.id === id)) {
-        id = `${student.id}-${suffix}`;
+        const suffixText = `-${suffix}`;
+        id = `${student.id.slice(0, 128 - suffixText.length)}${suffixText}`;
         suffix += 1;
       }
       const added = { ...student, id };

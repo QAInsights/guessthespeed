@@ -66,6 +66,20 @@ describe("scoreRound", () => {
     });
   });
 
+  it("keeps zero-speed results finite and assigns places", () => {
+    const scores = scoreRound(
+      [player("zero", 0, 20), player("positive", 100, 20)],
+      { down: 0, up: 20 },
+      defaults,
+    );
+    expect(
+      scores.every(
+        (score) => score.miss === null || Number.isFinite(score.miss),
+      ),
+    ).toBe(true);
+    expect(scores.map(({ place }) => place)).toEqual([1, 1]);
+  });
+
   it("keeps spot-on bonuses for a too-far guess", () => {
     const [score] = scoreRound([player("bonus", 100, 80)], actual, defaults);
     expect(score).toMatchObject({
@@ -138,6 +152,21 @@ describe("scoreRound", () => {
     ]);
   });
 
+  it("uses upload miss when rounded average and download misses tie", () => {
+    const scores = scoreRound(
+      [
+        player("upload-miss-0.1", 90, 90),
+        player("upload-miss-0.09994", 90, 90.006),
+      ],
+      { down: 100, up: 100 },
+      { ...defaults, tieMode: "download" },
+    );
+    expect(scores.map(({ id, place }) => [id, place])).toEqual([
+      ["upload-miss-0.1", 2],
+      ["upload-miss-0.09994", 1],
+    ]);
+  });
+
   it("awards one or two spot-on bonuses", () => {
     const scores = scoreRound(
       [player("one", 100, 30), player("two", 102, 19)],
@@ -145,6 +174,16 @@ describe("scoreRound", () => {
       defaults,
     );
     expect(scores.map(({ bonus }) => bonus)).toEqual([1, 2]);
+  });
+
+  it("awards the spot-on bonus at an exact 5% error", () => {
+    const [score] = scoreRound(
+      [player("five-percent", 705.6, null)],
+      { down: 672, up: 20 },
+      defaults,
+    );
+    expect(score.downMiss).toBeCloseTo(0.05);
+    expect(score.bonus).toBe(1);
   });
 
   it("treats one missing metric as a full miss for that metric", () => {

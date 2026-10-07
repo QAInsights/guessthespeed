@@ -3,6 +3,7 @@ import {
   formatDuration,
   mbpsFromMBps,
   mbpsToMBps,
+  positiveSpeed,
 } from "../lib/convert";
 
 const converter = document.querySelector<HTMLElement>("[data-mbps-converter]");
@@ -27,11 +28,19 @@ if (converter) {
 
   const updateConversion = (source: "mbps" | "mBps") => {
     const input = source === "mbps" ? mbpsInput : mBpsInput;
-    const value = Number(input?.value);
+    const value = positiveSpeed(Number(input?.value));
     const mbps =
-      source === "mbps" ? value : (mBpsInput && mbpsFromMBps(value)) || null;
+      source === "mbps"
+        ? value
+        : value !== null && mBpsInput
+          ? mbpsFromMBps(value)
+          : null;
     const mBps =
-      source === "mBps" ? value : (mbpsInput && mbpsToMBps(value)) || null;
+      source === "mBps"
+        ? value
+        : value !== null && mbpsInput
+          ? mbpsToMBps(value)
+          : null;
 
     if (!mbps || !mBps || !Number.isFinite(mbps) || !Number.isFinite(mBps)) {
       if (gbpsOutput) gbpsOutput.textContent = "Enter a positive speed";

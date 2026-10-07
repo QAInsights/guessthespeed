@@ -1,6 +1,10 @@
 const isPositiveFinite = (value: number): boolean =>
   Number.isFinite(value) && value > 0;
 
+export function positiveSpeed(value: number): number | null {
+  return isPositiveFinite(value) ? value : null;
+}
+
 export function mbpsToMBps(mbps: number): number | null {
   if (!isPositiveFinite(mbps)) return null;
   const result = mbps / 8;

@@ -17,10 +17,12 @@ export function buildPodiumEntries<T extends { score: number }>(
 ) {
   const sorted = [...players].sort((a, b) => b.score - a.score);
   let place = 0;
-  return sorted.slice(0, 3).map((player, index) => {
+  return sorted.flatMap((player, index) => {
     if (index === 0 || player.score !== sorted[index - 1].score)
       place = index + 1;
-    return { player, place, medal: medals[place - 1] ?? "⭐" };
+    return place <= 3
+      ? [{ player, place, medal: medals[place - 1] ?? "⭐" }]
+      : [];
   });
 }
 
@@ -29,9 +31,10 @@ function formatScoreLabel(points: number) {
 }
 
 function formatMbps(value: number) {
-  return value >= 100
-    ? value.toLocaleString(undefined, { maximumFractionDigits: 1 })
-    : value.toFixed(1);
+  return new Intl.NumberFormat("en-US", {
+    minimumFractionDigits: value >= 100 ? 0 : 1,
+    maximumFractionDigits: 1,
+  }).format(value);
 }
 
 export function buildSharePayload(input: ShareInput) {

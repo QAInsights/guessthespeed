@@ -9,6 +9,7 @@ import {
   normalizeRoomCode,
   ROOM_ALPHABET,
   ROOM_CODE_LENGTH,
+  ROOM_HISTORY_MAX,
   viewFor,
   type Room,
   type RoomPlayer,
@@ -500,6 +501,76 @@ describe("room actions and views", () => {
         .at(-1)
         ?.scores.find((score) => score.id === playerByOwner(room, secondId).id),
     ).toMatchObject({ place: null, placePoints: 0 });
+  });
+
+  it("rejects zero-speed results while keeping guesses that contain zero valid", () => {
+    let room = createRoom("BCDFGH", "token", 0);
+    room = addPlayer(room, hostId, true, "Host");
+    room = withGuess(room, hostId, 0, 0);
+    room = act(room, hostId, true, { type: "start" });
+
+    expect(
+      applyAction(
+        room,
+        hostId,
+        true,
+        { type: "result", down: 0, up: 20 },
+        room.updatedAt + 1,
+      ),
+    ).toEqual({ error: "The speed test returned no result." });
+    expect(
+      applyAction(
+        room,
+        hostId,
+        true,
+        { type: "result", down: 20, up: 0 },
+        room.updatedAt + 1,
+      ),
+    ).toEqual({ error: "The speed test returned no result." });
+    expect(
+      applyAction(
+        room,
+        hostId,
+        true,
+        { type: "result", down: -1, up: 20 },
+        room.updatedAt + 1,
+      ),
+    ).toEqual({ error: "The speed test returned no result." });
+    expect(
+      applyAction(
+        room,
+        hostId,
+        true,
+        { type: "result", down: 20, up: -1 },
+        room.updatedAt + 1,
+      ),
+    ).toEqual({ error: "The speed test returned no result." });
+    expect(room.game.phase).toBe("testing");
+    expect(room.game.players[0].guess).toEqual({ down: 0, up: 0 });
+  });
+
+  it("keeps only the latest room history entries in endless mode", () => {
+    let room = createRoom("BCDFGH", "token", 0);
+    room = addPlayer(room, hostId, true, "Host");
+    room = act(room, hostId, true, {
+      type: "settings",
+      rounds: "endless",
+      tieMode: "share",
+    });
+
+    for (let round = 1; round <= 60; round += 1) {
+      room = withGuess(room, hostId, 100, 20);
+      room = act(room, hostId, true, { type: "start" });
+      room = act(room, hostId, true, {
+        type: "result",
+        down: 100,
+        up: 20,
+      });
+      if (round < 60) room = act(room, hostId, true, { type: "next" });
+    }
+
+    expect(room.game.history).toHaveLength(ROOM_HISTORY_MAX);
+    expect(room.game.history.at(-1)?.round).toBe(60);
   });
 
   it("advances to champion and starts a new game with the same players", () => {
