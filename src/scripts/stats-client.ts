@@ -122,7 +122,7 @@ export async function loadPublicStats(): Promise<void> {
         );
     }
 
-    const modes: PlayMode[] = ["local", "room", "classroom"];
+    const modes: PlayMode[] = ["local", "room", "work", "classroom"];
     for (const mode of modes) {
       const count = totals.modes[mode];
       const percent = totals.rounds > 0 ? (count / totals.rounds) * 100 : 0;
@@ -148,6 +148,12 @@ export async function loadPublicStats(): Promise<void> {
       if (segment)
         segment.style.width = `${Math.min(100, Math.max(0, percent))}%`;
     }
+
+    const devRuns = page.querySelector<HTMLElement>("[data-dev-runs]");
+    if (devRuns)
+      countUp(devRuns, totals.devRuns, (value) =>
+        integerFormat.format(Math.round(value)),
+      );
 
     if (status) status.hidden = true;
   } catch {

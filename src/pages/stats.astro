@@ -20,8 +20,8 @@ const description =
         </span>
         <h1 class="display">Every round, <em>counted.</em></h1>
         <p class="lede">
-          Running totals from families, rooms and classrooms playing Guess the
-          Speed. Totals only, never people.
+          Running totals from families, rooms, teams and classrooms playing Guess
+          the Speed. Totals only, never people.
         </p>
       </div>
       <div class="stats-hero-art" aria-hidden="true">
@@ -89,7 +89,7 @@ const description =
     <section class="mode-section stk" aria-labelledby="mode-title">
       <div class="mode-heading">
         <div>
-          <span class="mode-kicker">THREE WAYS TO PLAY</span>
+          <span class="mode-kicker">FOUR WAYS TO PLAY</span>
           <h2 id="mode-title">Where the rounds happen</h2>
         </div>
         <span class="mode-heading-note">A little friendly mix</span>
@@ -97,6 +97,7 @@ const description =
       <div class="mode-bar" aria-hidden="true">
         <span class="mode-segment mode-family" data-mode-segment="local"></span>
         <span class="mode-segment mode-rooms" data-mode-segment="room"></span>
+        <span class="mode-segment mode-work" data-mode-segment="work"></span>
         <span
           class="mode-segment mode-classroom"
           data-mode-segment="classroom"
@@ -113,14 +114,25 @@ const description =
           <strong data-mode-count="room">...</strong>
           <small data-mode-percent="room">...%</small>
         </li>
+        <li class="mode-work">
+          <span class="mode-name"><i></i>Work</span>
+          <strong data-mode-count="work">...</strong>
+          <small data-mode-percent="work">...%</small>
+        </li>
         <li class="mode-classroom">
           <span class="mode-name"><i></i>Classroom</span>
           <strong data-mode-count="classroom">...</strong>
           <small data-mode-percent="classroom">...%</small>
         </li>
       </ul>
+      <div class="dev-runs stk">
+        <Icon name="ph:code-bold" aria-hidden="true" />
+        <strong data-dev-runs>...</strong>
+        <span>Dev mode tests run for diagnostics, kept out of the round totals.</span>
+      </div>
       <p class="mode-note">
-        Rounds from before this feature aren't split by mode.
+        Rounds from before a mode was added aren't split by mode, so the bar may
+        not add up to every round yet.
       </p>
     </section>
 
@@ -454,6 +466,11 @@ const description =
     background: #69c6dc;
   }
 
+  .mode-work .mode-segment,
+  .mode-segment.mode-work {
+    background: var(--aurora-5);
+  }
+
   .mode-classroom .mode-segment,
   .mode-segment.mode-classroom {
     background: #a8c96a;
@@ -461,7 +478,7 @@ const description =
 
   .mode-legend {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 12px;
     margin: 18px 0 0;
     padding: 0;
@@ -489,6 +506,10 @@ const description =
     background: #e3f5fa;
   }
 
+  .mode-legend .mode-work {
+    background: #f3e8ff;
+  }
+
   .mode-legend .mode-classroom {
     background: #e8f7cf;
   }
@@ -514,6 +535,10 @@ const description =
     background: #69c6dc;
   }
 
+  .mode-work .mode-name i {
+    background: var(--aurora-5);
+  }
+
   .mode-classroom .mode-name i {
     background: #a8c96a;
   }
@@ -527,6 +552,39 @@ const description =
     grid-column: 1 / -1;
     color: #45464b;
     font-weight: 700;
+  }
+
+  .dev-runs {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    margin-top: 16px;
+    padding: 12px 16px;
+    border: 2px solid var(--on-pastel);
+    border-radius: 14px;
+    background: #f3e8ff;
+    box-shadow: 4px 4px 0 var(--shadow);
+    color: var(--on-pastel);
+  }
+
+  .dev-runs > :global(svg) {
+    flex: none;
+    color: var(--aurora-5);
+    font-size: 1.3rem;
+  }
+
+  .dev-runs strong {
+    flex: none;
+    font-size: 1.1rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .dev-runs span {
+    min-width: 0;
+    flex: 1 1 220px;
+    font-weight: 700;
+    line-height: 1.4;
   }
 
   .mode-note {

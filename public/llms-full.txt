@@ -50,7 +50,7 @@ When movable festival windows overlap, the theme whose festival date is closest 
 
 ## Privacy
 
-For a local game, player names, guesses, settings, scores, and history are stored in local storage on the current device. Classroom Mode also keeps class rosters in that browser's local storage. It does not create a room or send student names to the server. Clearing site data deletes a roster; exporting a class file moves it to wherever the file is saved or shared. Multiplayer rooms temporarily share the game state on Cloudflare. There are no accounts or game cookies. The speed test sends measurements to Cloudflare, which collects aggregated, anonymous results to understand internet connection quality. Optional Cloudflare Web Analytics uses a cookieless beacon and only loads when the site owner configures its public token. A public play counter stores only aggregate totals for completed real rounds, games reaching the champion phase, and locked guesses; it stores no IP addresses, device IDs, timestamps per event, names, guesses, or speeds.
+For a local game, player names, guesses, settings, scores, and history are stored in local storage on the current device. Classroom Mode also keeps class rosters in that browser's local storage. It does not create a room or send student names to the server. Clearing site data deletes a roster; exporting a class file moves it to wherever the file is saved or shared. Multiplayer rooms temporarily share the game state on Cloudflare. There are no accounts or game cookies. The speed test sends measurements to Cloudflare, which collects aggregated, anonymous results to understand internet connection quality. Optional Cloudflare Web Analytics uses a cookieless beacon and only loads when the site owner configures its public token. A public play counter stores only aggregate totals for completed real rounds, games reaching the champion phase, locked guesses, and successful Dev mode test runs as a total only; it stores no IP addresses, device IDs, timestamps per event, names, guesses, or speeds.
 
 If you add your internet plan in Settings, it stays in this browser and is never sent to us.
 
@@ -68,7 +68,7 @@ Room game data, including player names, face choices, guesses, and scores, is st
 
 - Home game: https://guessthespeed.com/
 - Our story: https://guessthespeed.com/story/
-- Live stats: https://guessthespeed.com/stats/ shows aggregate rounds, games, guesses, spot-on guesses, average download, closest misses, and play modes.
+- Live stats: https://guessthespeed.com/stats/ shows aggregate rounds, games, guesses, spot-on guesses, average download, closest misses, rounds by Family, Rooms, Work and Classroom, plus a separate total for successful Dev mode test runs.
 - Rules and FAQ: https://guessthespeed.com/how-to-play/
 - How it works: https://guessthespeed.com/how-it-works/
 - Internet speed 101: https://guessthespeed.com/internet-speed-101/
