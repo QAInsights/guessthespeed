@@ -233,9 +233,10 @@ const graphSchema = { '@context': 'https://schema.org', '@graph': graph };
       </a>
       <div class="ctrls">
         <div class="theme-picker" data-theme-picker>
-          <button class="ctrl theme-trigger" type="button" data-theme-trigger aria-haspopup="listbox" aria-expanded="false" aria-controls="theme-menu" aria-label="Choose a theme">
+          <button class="ctrl theme-trigger" type="button" data-theme-trigger aria-haspopup="listbox" aria-expanded="false" aria-controls="theme-menu">
             <span class="theme-dot" aria-hidden="true"></span>
             <span class="theme-trigger-label" data-theme-label>Auto (by date)</span>
+            <span class="sr">, change theme</span>
             <Icon name="ph:caret-down-bold" class="theme-caret" aria-hidden="true" />
           </button>
           <div class="theme-menu" id="theme-menu" data-theme-menu hidden>
