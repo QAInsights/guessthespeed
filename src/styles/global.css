@@ -1067,10 +1067,15 @@ footer {
 
 .mode-switch[hidden],
 html[data-room="1"] .mode-switch,
-html[data-tv="1"] .mode-switch,
-html[data-room="1"] .mode-bar,
-html[data-tv="1"] .mode-bar {
+html[data-room="1"] .mode-bar {
   display: none;
+}
+
+@media (min-width: 900px) {
+  html[data-tv="1"] .mode-switch,
+  html[data-tv="1"] .mode-bar {
+    display: none;
+  }
 }
 
 .intro h1 em {
