@@ -712,6 +712,9 @@ if (isRoom) {
     "[data-cancel-host-transfer]",
   )?.addEventListener("click", () => hostDialog?.close());
   queryOptional<HTMLButtonElement>(
+    "[data-close-host-transfer]",
+  )?.addEventListener("click", () => hostDialog?.close());
+  queryOptional<HTMLButtonElement>(
     "[data-confirm-host-transfer]",
   )?.addEventListener("click", () => {
     if (
