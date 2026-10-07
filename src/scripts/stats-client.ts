@@ -97,11 +97,18 @@ export async function loadPublicStats(): Promise<void> {
     animate("spotOns", totals.spotOns, (value) =>
       integerFormat.format(Math.round(value)),
     );
-    animate(
-      "fastestDown",
-      totals.fastestDown,
-      (value) => `${oneDecimalFormat.format(value)} Mbps`,
+    const averageDown = page.querySelector<HTMLElement>(
+      '[data-stat-value="averageDown"]',
     );
+    if (averageDown) {
+      if (totals.downRounds === 0) averageDown.textContent = "Not yet";
+      else
+        countUp(
+          averageDown,
+          totals.downSum / totals.downRounds,
+          (value) => `${integerFormat.format(Math.round(value))} Mbps`,
+        );
+    }
     const averageMiss = page.querySelector<HTMLElement>(
       '[data-stat-value="averageMiss"]',
     );

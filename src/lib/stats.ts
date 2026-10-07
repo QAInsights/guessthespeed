@@ -8,7 +8,8 @@ export interface PlayTotals {
   games: number;
   guesses: number;
   spotOns: number;
-  fastestDown: number;
+  downSum: number;
+  downRounds: number;
   closestMissSum: number;
   closestMissRounds: number;
   modes: { local: number; room: number; classroom: number };
@@ -30,13 +31,17 @@ export const EMPTY_TOTALS: PlayTotals = Object.freeze({
   games: 0,
   guesses: 0,
   spotOns: 0,
-  fastestDown: 0,
+  downSum: 0,
+  downRounds: 0,
   closestMissSum: 0,
   closestMissRounds: 0,
   modes: Object.freeze({ local: 0, room: 0, classroom: 0 }),
 });
 
-export const STAT_DISPLAY_MIN_ROUNDS = 50;
+// Caps one round's pull on the public average.
+export const STAT_DOWN_CAP = 2500;
+
+export const STAT_DISPLAY_MIN_ROUNDS = 1;
 
 const roundToTenth = (value: number) => Math.round(value * 10) / 10;
 
@@ -66,12 +71,11 @@ export function normalizeTotals(stored: unknown): PlayTotals {
   const rounds = isNonNegativeCount(value.rounds) ? value.rounds : 0;
   const guesses = isNonNegativeCount(value.guesses) ? value.guesses : 0;
   const rawSpotOns = isNonNegativeCount(value.spotOns) ? value.spotOns : 0;
-  const rawFastestDown =
-    typeof value.fastestDown === "number" &&
-    Number.isFinite(value.fastestDown) &&
-    value.fastestDown >= 0 &&
-    value.fastestDown <= 10000
-      ? value.fastestDown
+  const rawDownSum =
+    typeof value.downSum === "number" &&
+    Number.isFinite(value.downSum) &&
+    value.downSum >= 0
+      ? value.downSum
       : 0;
   const rawClosestMissSum =
     typeof value.closestMissSum === "number" &&
@@ -85,7 +89,8 @@ export function normalizeTotals(stored: unknown): PlayTotals {
     games: isNonNegativeCount(value.games) ? value.games : 0,
     guesses,
     spotOns: rawSpotOns <= guesses ? rawSpotOns : 0,
-    fastestDown: roundToTenth(rawFastestDown),
+    downSum: roundToTenth(rawDownSum),
+    downRounds: isNonNegativeCount(value.downRounds) ? value.downRounds : 0,
     closestMissSum: roundToTenth(rawClosestMissSum),
     closestMissRounds: isNonNegativeCount(value.closestMissRounds)
       ? value.closestMissRounds
@@ -195,12 +200,17 @@ export function addStatEvent(totals: PlayTotals, event: StatEvent): PlayTotals {
     event.closestMiss === undefined
       ? totals.closestMissSum
       : roundToTenth(totals.closestMissSum + event.closestMiss);
+  const downSum =
+    event.down === undefined
+      ? totals.downSum
+      : roundToTenth(totals.downSum + Math.min(event.down, STAT_DOWN_CAP));
   return {
     ...totals,
     rounds: totals.rounds + 1,
     guesses: totals.guesses + event.guesses,
     spotOns: totals.spotOns + (event.spotOns ?? 0),
-    fastestDown: roundToTenth(Math.max(totals.fastestDown, event.down ?? 0)),
+    downSum,
+    downRounds: totals.downRounds + Number(event.down !== undefined),
     closestMissSum,
     closestMissRounds:
       totals.closestMissRounds + Number(event.closestMiss !== undefined),
@@ -214,7 +224,8 @@ export function formatPlayStat(
 ): string | null {
   if (!totals || totals.rounds < STAT_DISPLAY_MIN_ROUNDS) return null;
   const rounds = new Intl.NumberFormat("en-US").format(totals.rounds);
+  const roundNoun = totals.rounds === 1 ? "round" : "rounds";
   return options.short
-    ? `${rounds} rounds so far`
-    : `${rounds} rounds played so far`;
+    ? `${rounds} ${roundNoun} so far`
+    : `${rounds} ${roundNoun} played so far`;
 }

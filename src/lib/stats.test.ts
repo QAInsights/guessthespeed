@@ -6,6 +6,7 @@ import {
   normalizeTotals,
   parseStatEvent,
   roundStatEvent,
+  STAT_DOWN_CAP,
   type PlayTotals,
 } from "./stats";
 import type { PlayerRoundScore } from "./scoring";
@@ -95,17 +96,34 @@ describe("parseStatEvent", () => {
 });
 
 describe("normalizeTotals", () => {
-  it("fills the new fields when given the old stored shape", () => {
-    expect(normalizeTotals({ rounds: 7, games: 2, guesses: 20 })).toEqual({
+  it("fills the new fields when given legacy stored shapes", () => {
+    const oldShape = normalizeTotals({
+      rounds: 7,
+      games: 2,
+      guesses: 20,
+    });
+    expect(oldShape).toEqual({
       rounds: 7,
       games: 2,
       guesses: 20,
       spotOns: 0,
-      fastestDown: 0,
+      downSum: 0,
+      downRounds: 0,
       closestMissSum: 0,
       closestMissRounds: 0,
       modes: { local: 0, room: 0, classroom: 0 },
     });
+    expect(oldShape).not.toHaveProperty("fastestDown");
+
+    const fastestLegacy = normalizeTotals({
+      rounds: 7,
+      games: 2,
+      guesses: 20,
+      fastestDown: 900,
+    });
+    expect(fastestLegacy.downSum).toBe(0);
+    expect(fastestLegacy.downRounds).toBe(0);
+    expect(fastestLegacy).not.toHaveProperty("fastestDown");
   });
 
   it("returns zero totals for garbage and replaces invalid fields", () => {
@@ -116,7 +134,8 @@ describe("normalizeTotals", () => {
         games: "two",
         guesses: 2,
         spotOns: 3,
-        fastestDown: Infinity,
+        downSum: Infinity,
+        downRounds: 1.5,
         closestMissSum: -1,
         closestMissRounds: 1.5,
         modes: { local: "one", room: 1, classroom: -1 },
@@ -131,7 +150,7 @@ describe("normalizeTotals", () => {
 });
 
 describe("addStatEvent", () => {
-  it("adds aggregate values and keeps the fastest and rounded miss sum", () => {
+  it("adds download and closest-miss aggregates", () => {
     const afterFirst = addStatEvent(EMPTY_TOTALS, {
       kind: "round",
       guesses: 2,
@@ -155,7 +174,8 @@ describe("addStatEvent", () => {
         rounds: 2,
         guesses: 3,
         spotOns: 1,
-        fastestDown: 345.6,
+        downSum: 620.9,
+        downRounds: 2,
         closestMissSum: 3.3,
         closestMissRounds: 2,
         modes: { room: 1, classroom: 1 },
@@ -163,6 +183,25 @@ describe("addStatEvent", () => {
     );
     expect(afterGame.games).toBe(1);
     expect(EMPTY_TOTALS).toEqual(totals());
+  });
+
+  it("caps a round's download contribution", () => {
+    const afterRound = addStatEvent(EMPTY_TOTALS, {
+      kind: "round",
+      guesses: 1,
+      down: 10000,
+    });
+
+    expect(afterRound.downSum).toBe(STAT_DOWN_CAP);
+    expect(afterRound.downRounds).toBe(1);
+  });
+
+  it("leaves download aggregates unchanged when a round has no download", () => {
+    const before = totals({ downSum: 345.6, downRounds: 2 });
+    const after = addStatEvent(before, { kind: "round", guesses: 1 });
+
+    expect(after.downSum).toBe(345.6);
+    expect(after.downRounds).toBe(2);
   });
 
   it("does not split legacy rounds that have no mode", () => {
@@ -214,24 +253,33 @@ describe("roundStatEvent", () => {
 });
 
 describe("formatPlayStat", () => {
-  it("hides totals below the display threshold", () => {
-    expect(formatPlayStat(totals({ rounds: 49, games: 10, guesses: 90 }))).toBe(
-      null,
-    );
+  it("hides zero-round totals", () => {
+    expect(formatPlayStat(totals())).toBeNull();
     expect(formatPlayStat(null)).toBeNull();
   });
 
-  it("formats long and short totals at and above the threshold", () => {
-    expect(formatPlayStat(totals({ rounds: 50, games: 10, guesses: 90 }))).toBe(
-      "50 rounds played so far",
+  it("formats one round in singular form", () => {
+    const oneRound = totals({ rounds: 1, games: 1, guesses: 2 });
+    expect(formatPlayStat(oneRound)).toBe("1 round played so far");
+    expect(formatPlayStat(oneRound, { short: true })).toBe("1 round so far");
+  });
+
+  it("formats multiple rounds in plural form", () => {
+    expect(formatPlayStat(totals({ rounds: 2, games: 1, guesses: 2 }))).toBe(
+      "2 rounds played so far",
     );
     expect(
-      formatPlayStat(totals({ rounds: 12345, games: 20, guesses: 150 })),
-    ).toBe("12,345 rounds played so far");
+      formatPlayStat(totals({ rounds: 1234, games: 20, guesses: 150 })),
+    ).toBe("1,234 rounds played so far");
     expect(
-      formatPlayStat(totals({ rounds: 12345, games: 20, guesses: 150 }), {
+      formatPlayStat(totals({ rounds: 1234, games: 20, guesses: 150 }), {
         short: true,
       }),
-    ).toBe("12,345 rounds so far");
+    ).toBe("1,234 rounds so far");
+    expect(
+      formatPlayStat(totals({ rounds: 2, games: 1, guesses: 2 }), {
+        short: true,
+      }),
+    ).toBe("2 rounds so far");
   });
 });

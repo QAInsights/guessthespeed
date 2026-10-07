@@ -3,7 +3,7 @@ import { Icon } from "astro-icon/components";
 import Base from "../layouts/Base.astro";
 
 const description =
-  "Live, privacy-safe Guess the Speed totals for rounds, games, guesses, spot-on guesses, fastest download, closest misses, and play modes.";
+  "Live, privacy-safe Guess the Speed totals for rounds, games, guesses, spot-on guesses, average download, closest misses, and play modes.";
 ---
 
 <Base
@@ -72,11 +72,11 @@ const description =
         <strong class="stat-value" data-stat-value="spotOns">...</strong>
         <small>Player-rounds with a bonus.</small>
       </article>
-      <article class="stat-card stat-fastest stk">
+      <article class="stat-card stat-average-down stk">
         <span class="stat-icon"><Icon name="ph:rocket-launch-fill" /></span>
-        <span class="stat-label">Fastest download</span>
-        <strong class="stat-value" data-stat-value="fastestDown">...</strong>
-        <small>The quickest result so far.</small>
+        <span class="stat-label">Average download</span>
+        <strong class="stat-value" data-stat-value="averageDown">...</strong>
+        <small>Across every measured round.</small>
       </article>
       <article class="stat-card stat-closest stk">
         <span class="stat-icon"><Icon name="ph:crosshair-simple-bold" /></span>
@@ -338,7 +338,7 @@ const description =
     transform: rotate(0.9deg);
   }
 
-  .stat-fastest {
+  .stat-average-down {
     background: #ffe2d8;
     transform: rotate(-0.8deg);
   }

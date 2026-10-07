@@ -62,7 +62,7 @@ Room game data, including player names, face choices, guesses, and scores, is st
 
 - Home game: https://guessthespeed.com/
 - Our story: https://guessthespeed.com/story/
-- Live stats: https://guessthespeed.com/stats/ shows aggregate rounds, games, guesses, spot-on guesses, fastest download, closest misses, and play modes.
+- Live stats: https://guessthespeed.com/stats/ shows aggregate rounds, games, guesses, spot-on guesses, average download, closest misses, and play modes.
 - Rules and FAQ: https://guessthespeed.com/how-to-play/
 - How it works: https://guessthespeed.com/how-it-works/
 - Internet speed 101: https://guessthespeed.com/internet-speed-101/
