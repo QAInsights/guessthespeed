@@ -1,7 +1,11 @@
 import { generateRoomCode, normalizeRoomCode } from "../src/lib/room";
 import { parseStatEvent } from "../src/lib/stats";
 import type { Env } from "./types";
-import { declaredBodyTooLarge, isAllowedWebSocketOrigin } from "./http";
+import {
+  declaredBodyTooLarge,
+  isAllowedWebSocketOrigin,
+  utf8LengthExceeds,
+} from "./http";
 import { GameRoom } from "./game-room";
 import { PlayStats } from "./play-stats";
 
@@ -71,7 +75,7 @@ async function handleStats(request: Request, env: Env): Promise<Response> {
       return jsonResponse({ error: "Request body is too large." }, 413);
 
     const body = await request.text();
-    if (new TextEncoder().encode(body).byteLength > 256)
+    if (utf8LengthExceeds(body, 256))
       return jsonResponse({ error: "Request body is too large." }, 413);
 
     let input: unknown;

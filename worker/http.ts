@@ -16,3 +16,9 @@ export function declaredBodyTooLarge(
 ): boolean {
   return contentLength !== null && Number(contentLength) > max;
 }
+
+export function utf8LengthExceeds(text: string, max: number): boolean {
+  if (text.length > max) return true;
+  if (text.length * 3 <= max) return false;
+  return new TextEncoder().encode(text).byteLength > max;
+}
