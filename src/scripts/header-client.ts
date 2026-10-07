@@ -70,6 +70,7 @@ let screenWakeLock: WakeLockSentinelLike | null = null;
 let wakeLockRequest = 0;
 let cursorHideTimer = 0;
 const coarsePointer = window.matchMedia("(pointer: coarse)").matches;
+const tvLayoutQuery = window.matchMedia("(min-width: 900px)");
 
 function syncAudioUnlock() {
   if (settings.sound) {
@@ -84,7 +85,7 @@ function syncAudioUnlock() {
 function syncModeSwitch() {
   if (modeSwitch) {
     classroomMode = loadSession() !== null;
-    modeSwitch.hidden = roomMode || tvMode;
+    modeSwitch.hidden = roomMode || (tvMode && tvLayoutQuery.matches);
     const selectedMode = devMode ? "dev" : "game";
     modeOptions.forEach((option) => {
       const optionMode = option.dataset.modeOption;
@@ -110,6 +111,8 @@ function syncModeSwitch() {
   }
   syncDevBadge();
 }
+
+tvLayoutQuery.addEventListener("change", syncModeSwitch);
 
 function syncDevBadge() {
   devBadge.hidden = !devBadgeVisible({
