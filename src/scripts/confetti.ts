@@ -2,6 +2,7 @@ import { confettiPieces } from "../lib/confetti";
 import { isThemeId, themes } from "../lib/themes";
 
 export function burstConfetti(container: HTMLElement): void {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   const themeId = document.documentElement.dataset.theme;
   const activeTheme =
     typeof themeId === "string" && isThemeId(themeId) ? themeId : "light";

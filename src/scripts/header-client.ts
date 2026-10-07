@@ -1,10 +1,11 @@
 import { loadGame, saveGame, type GameSettings } from "../lib/game";
 import { readRoomLocalSettings, saveRoomLocalSettings } from "./room-settings";
 import { isThemeId, themes, themeForDate, type ThemeId } from "../lib/themes";
-import { playCue } from "../lib/sound";
+import { playCue, unlockAudio } from "../lib/sound";
 import type { RoomView } from "../lib/room";
 import { loadSession } from "../lib/classroom";
 import { describeTarget, isOverlayOpen, shortcutAction } from "./shortcuts";
+import { devBadgeVisible } from "./mode-ui";
 
 const $ = <T extends Element>(selector: string): T =>
   document.querySelector(selector) as T;
@@ -33,9 +34,11 @@ const modeOptions = Array.from(
   modeSwitch?.querySelectorAll<HTMLElement>("[data-mode-option]") ?? [],
 );
 const fxLayer = $<HTMLDivElement>("[data-fx-layer]");
-const reduceMotion = window.matchMedia(
-  "(prefers-reduced-motion: reduce)",
-).matches;
+const reduceMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+let reduceMotion = reduceMotionQuery.matches;
+reduceMotionQuery.addEventListener("change", (event) => {
+  reduceMotion = event.matches;
+});
 
 const roomMode = document.documentElement.dataset.room === "1";
 let classroomMode = loadSession() !== null;
@@ -53,7 +56,6 @@ let devMode =
   !roomMode && !classroomMode && document.documentElement.dataset.dev === "1";
 let tvMode = document.documentElement.dataset.tv === "1";
 let activeTheme: ThemeId = "light";
-devBadge.hidden = !devMode;
 const homePage = window.location.pathname === "/";
 type WakeLockSentinelLike = {
   release(): Promise<void>;
@@ -71,31 +73,50 @@ let wakeLockRequest = 0;
 let cursorHideTimer = 0;
 const coarsePointer = window.matchMedia("(pointer: coarse)").matches;
 
+function syncAudioUnlock() {
+  if (settings.sound) {
+    document.addEventListener("pointerdown", unlockAudio, { once: true });
+    document.addEventListener("keydown", unlockAudio, { once: true });
+  } else {
+    document.removeEventListener("pointerdown", unlockAudio);
+    document.removeEventListener("keydown", unlockAudio);
+  }
+}
+
 function syncModeSwitch() {
-  if (!modeSwitch) return;
-  classroomMode = loadSession() !== null;
-  modeSwitch.hidden = roomMode || tvMode;
-  const selectedMode = devMode ? "dev" : "game";
-  modeOptions.forEach((option) => {
-    const optionMode = option.dataset.modeOption;
-    const selected = !classroomMode && optionMode === selectedMode;
-    const activeClassroom =
-      optionMode === "classroom" && (!homePage || classroomMode);
-    option.classList.toggle(
-      "is-disabled",
-      classroomMode && optionMode !== "classroom",
-    );
-    if (classroomMode && optionMode !== "classroom") {
-      option.setAttribute("aria-disabled", "true");
-      option.setAttribute("title", "End class to switch modes");
-    } else {
-      option.removeAttribute("aria-disabled");
-      option.removeAttribute("title");
-    }
-    if (option instanceof HTMLButtonElement)
-      option.setAttribute("aria-pressed", String(selected));
-    if (activeClassroom) option.setAttribute("aria-current", "page");
-    else option.removeAttribute("aria-current");
+  if (modeSwitch) {
+    classroomMode = loadSession() !== null;
+    modeSwitch.hidden = roomMode || tvMode;
+    const selectedMode = devMode ? "dev" : "game";
+    modeOptions.forEach((option) => {
+      const optionMode = option.dataset.modeOption;
+      const selected = !classroomMode && optionMode === selectedMode;
+      const activeClassroom =
+        optionMode === "classroom" && (!homePage || classroomMode);
+      option.classList.toggle(
+        "is-disabled",
+        classroomMode && optionMode !== "classroom",
+      );
+      if (classroomMode && optionMode !== "classroom") {
+        option.setAttribute("aria-disabled", "true");
+        option.setAttribute("title", "End class to switch modes");
+      } else {
+        option.removeAttribute("aria-disabled");
+        option.removeAttribute("title");
+      }
+      if (option instanceof HTMLButtonElement)
+        option.setAttribute("aria-pressed", String(selected));
+      if (activeClassroom) option.setAttribute("aria-current", "page");
+      else option.removeAttribute("aria-current");
+    });
+  }
+  syncDevBadge();
+}
+
+function syncDevBadge() {
+  devBadge.hidden = !devBadgeVisible({
+    devMode,
+    modeSwitchVisible: Boolean(modeSwitch && !modeSwitch.hidden),
   });
 }
 
@@ -104,7 +125,6 @@ function setDevMode(enabled: boolean) {
   devMode = enabled;
   if (enabled) document.documentElement.dataset.dev = "1";
   else delete document.documentElement.dataset.dev;
-  devBadge.hidden = !enabled;
   syncModeSwitch();
   try {
     localStorage.setItem("gts:dev", enabled ? "1" : "0");
@@ -162,7 +182,8 @@ async function acquireScreenWakeLock() {
 
 function showCursorAndScheduleHide() {
   window.clearTimeout(cursorHideTimer);
-  document.body.classList.remove("tv-cursor-hidden");
+  if (document.body.classList.contains("tv-cursor-hidden"))
+    document.body.classList.remove("tv-cursor-hidden");
   if (!tvMode || !homePage || coarsePointer) return;
   cursorHideTimer = window.setTimeout(() => {
     document.body.classList.add("tv-cursor-hidden");
@@ -317,6 +338,7 @@ function saveSettings(patch: Partial<GameSettings>, playSound = false) {
     saveGame({ ...currentGame, settings });
   }
   applyTheme(settings.themeMode);
+  syncAudioUnlock();
   syncControls();
   document.dispatchEvent(
     new CustomEvent<GameSettings>("gts:settings-change", { detail: settings }),
@@ -529,6 +551,7 @@ window
   });
 
 applyTheme(settings.themeMode);
+syncAudioUnlock();
 syncModeSwitch();
 syncControls();
 if (tvMode) {

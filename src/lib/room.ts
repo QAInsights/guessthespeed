@@ -62,6 +62,28 @@ export interface RoomView extends Omit<
   view: GameState["view"];
 }
 
+export function interruptedTestStep(input: {
+  phase: RoomView["phase"];
+  canRunTest: boolean;
+  runInProgress: boolean;
+  recoveryRequested: boolean;
+  hasPendingResult: boolean;
+}): { action: "none" | "resend" | "abort"; recoveryRequested: boolean } {
+  if (input.phase !== "testing")
+    return { action: "none", recoveryRequested: false };
+  if (!input.canRunTest)
+    return { action: "none", recoveryRequested: input.recoveryRequested };
+  if (input.runInProgress) {
+    return { action: "none", recoveryRequested: input.recoveryRequested };
+  }
+  if (input.hasPendingResult) {
+    return { action: "resend", recoveryRequested: input.recoveryRequested };
+  }
+  if (!input.recoveryRequested)
+    return { action: "abort", recoveryRequested: true };
+  return { action: "none", recoveryRequested: input.recoveryRequested };
+}
+
 let playerSequence = 0;
 
 export function generateRoomCode(random: () => number = Math.random): string {

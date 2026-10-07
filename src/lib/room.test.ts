@@ -5,6 +5,7 @@ import {
   canRunTest,
   createRoom,
   generateRoomCode,
+  interruptedTestStep,
   MAX_PLAYERS,
   normalizeRoomCode,
   ROOM_ALPHABET,
@@ -18,6 +19,107 @@ import {
 const hostId = "host-client";
 const firstId = "player-one";
 const secondId = "player-two";
+
+describe("interruptedTestStep", () => {
+  it("resends a pending result after the test run stops", () => {
+    expect(
+      interruptedTestStep({
+        phase: "testing",
+        canRunTest: true,
+        runInProgress: false,
+        recoveryRequested: true,
+        hasPendingResult: true,
+      }),
+    ).toEqual({ action: "resend", recoveryRequested: true });
+  });
+
+  it("aborts once when an interrupted test has no pending result", () => {
+    expect(
+      interruptedTestStep({
+        phase: "testing",
+        canRunTest: true,
+        runInProgress: false,
+        recoveryRequested: false,
+        hasPendingResult: false,
+      }),
+    ).toEqual({ action: "abort", recoveryRequested: true });
+    expect(
+      interruptedTestStep({
+        phase: "testing",
+        canRunTest: true,
+        runInProgress: true,
+        recoveryRequested: false,
+        hasPendingResult: false,
+      }),
+    ).toEqual({ action: "none", recoveryRequested: false });
+    expect(
+      interruptedTestStep({
+        phase: "testing",
+        canRunTest: true,
+        runInProgress: false,
+        recoveryRequested: true,
+        hasPendingResult: false,
+      }),
+    ).toEqual({ action: "none", recoveryRequested: true });
+  });
+
+  it("resets recovery after leaving testing so a second interruption can recover", () => {
+    const firstInterruption = interruptedTestStep({
+      phase: "testing",
+      canRunTest: true,
+      runInProgress: false,
+      recoveryRequested: false,
+      hasPendingResult: false,
+    });
+    const betweenTests = interruptedTestStep({
+      phase: "guessing",
+      canRunTest: true,
+      runInProgress: false,
+      recoveryRequested: firstInterruption.recoveryRequested,
+      hasPendingResult: false,
+    });
+    expect(betweenTests).toEqual({
+      action: "none",
+      recoveryRequested: false,
+    });
+    expect(
+      interruptedTestStep({
+        phase: "testing",
+        canRunTest: true,
+        runInProgress: false,
+        recoveryRequested: betweenTests.recoveryRequested,
+        hasPendingResult: false,
+      }),
+    ).toEqual({ action: "abort", recoveryRequested: true });
+  });
+
+  it.each([false, true])(
+    "does not recover a test assigned to another device with recovery latch %s",
+    (recoveryRequested) => {
+      expect(
+        interruptedTestStep({
+          phase: "testing",
+          canRunTest: false,
+          runInProgress: false,
+          recoveryRequested,
+          hasPendingResult: false,
+        }),
+      ).toEqual({ action: "none", recoveryRequested });
+    },
+  );
+
+  it("does not recover while the assigned tester is still running", () => {
+    expect(
+      interruptedTestStep({
+        phase: "testing",
+        canRunTest: true,
+        runInProgress: true,
+        recoveryRequested: false,
+        hasPendingResult: false,
+      }),
+    ).toEqual({ action: "none", recoveryRequested: false });
+  });
+});
 
 function addPlayer(
   room: Room,

@@ -9,8 +9,12 @@ let lastTick = 0;
 function audioContext(): AudioContext | null {
   if (typeof window === "undefined") return null;
   context ??= new AudioContext();
-  if (context.state === "suspended") void context.resume();
   return context;
+}
+
+export function unlockAudio(): void {
+  const audio = audioContext();
+  if (audio?.state === "suspended") void audio.resume();
 }
 
 export function playCue(
@@ -27,6 +31,7 @@ export function playCue(
   }
   const audio = audioContext();
   if (!audio) return;
+  if (audio.state === "suspended") void audio.resume();
   const palette = themes[themeId].sound;
   const notes: Record<Exclude<SoundCue, "tick">, number[]> = {
     lockIn: [0],

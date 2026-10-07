@@ -239,6 +239,7 @@ function renderStudentRoster(classroom: ClassRoom) {
     const chip = document.createElement("button");
     chip.className = "student-chip";
     chip.type = "button";
+    chip.dataset.studentId = student.id;
     chip.setAttribute("aria-label", `Edit ${student.name}`);
     const face = document.createElement("span");
     face.setAttribute("aria-hidden", "true");
@@ -531,23 +532,11 @@ function moveStudent(studentId: string, fromIndex: number) {
   if (classroom) renderTeamPreview(classroom);
 }
 
-function normalizeRosterInput(value: string): string {
-  let name = value.trim().replace(/\s+/gu, " ");
-  const marker = /^(?:(?:\d+\.)|[-*•])\s*/u;
-  while (marker.test(name)) name = name.replace(marker, "").trim();
-  let limited = "";
-  for (const character of name) {
-    if (limited.length + character.length > 16) break;
-    limited += character;
-  }
-  return limited;
-}
-
 function countDuplicates(text: string, existing: string[]): number {
   const seen = new Set(existing.map((name) => name.toLowerCase()));
   let duplicates = 0;
   for (const entry of text.split(/[\n,;\t]+/u)) {
-    const name = normalizeRosterInput(entry);
+    const name = cleanStudentName(entry);
     if (!name) continue;
     const key = name.toLowerCase();
     if (seen.has(key)) duplicates += 1;
@@ -562,7 +551,7 @@ function addStudents(event: SubmitEvent) {
   if (!classroom) return;
   const entries = rosterText.value
     .split(/[\n,;\t]+/u)
-    .map(normalizeRosterInput)
+    .map(cleanStudentName)
     .filter(Boolean);
   const duplicates = countDuplicates(
     rosterText.value,
@@ -874,6 +863,8 @@ function bindEvents() {
   });
   spotlightCountInput.addEventListener("change", () => {
     clampInput(spotlightCountInput, 2, 8);
+    const classroom = currentClass();
+    if (classroom) updatePlayPanel(classroom);
   });
   modeInputs.forEach((input) =>
     input.addEventListener("change", () => {
@@ -908,7 +899,17 @@ function bindEvents() {
     studentDialog.close(),
   );
   studentDialog.addEventListener("close", () => {
+    const studentId = editingStudentId;
     editingStudentId = null;
+    if (
+      studentId &&
+      (!document.activeElement || document.activeElement === document.body)
+    )
+      Array.from(
+        studentRoster.querySelectorAll<HTMLButtonElement>("[data-student-id]"),
+      )
+        .find((button) => button.dataset.studentId === studentId)
+        ?.focus();
   });
 }
 

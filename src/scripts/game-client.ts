@@ -44,7 +44,11 @@ import {
 } from "./room-client";
 import { readRoomLocalSettings } from "./room-settings";
 import { burstConfetti } from "./confetti";
-import type { ClientAction, RoomView } from "../lib/room";
+import {
+  interruptedTestStep,
+  type ClientAction,
+  type RoomView,
+} from "../lib/room";
 import { roundStatEvent } from "../lib/stats";
 import { sendStat } from "./stats-client";
 import { recordSpeedSample } from "./history-client";
@@ -81,8 +85,8 @@ const $$ = <T extends Element>(
   selector: string,
   root: ParentNode = document,
 ): T[] => Array.from(root.querySelectorAll(selector)) as T[];
-const escapeHtml = (value: string) =>
-  value.replace(
+const escapeHtml = (value: unknown) =>
+  String(value ?? "").replace(
     /[&<>"']/g,
     (char) =>
       ({
@@ -111,6 +115,7 @@ let animationFrame = 0;
 let runInProgress = false;
 let activeRoomTestController: AbortController | null = null;
 let interruptedRoomTestRecoveryRequested = false;
+let pendingRoomResult: Extract<ClientAction, { type: "result" }> | null = null;
 let activeTheme: ThemeId = "light";
 let lastSpeedPhase: Phase | null = null;
 let lastRoomProgressPhase: Phase | null = null;
@@ -126,9 +131,11 @@ const isMockMode = () =>
 const isTesting = () => state.phase === "testing" || runInProgress;
 const isMine = (player: ClientPlayer) => !roomMode || player.mine === true;
 const isRoomHost = () => !roomMode || state.isRoomHost === true;
-const reduceMotion = window.matchMedia(
-  "(prefers-reduced-motion: reduce)",
-).matches;
+const reduceMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+let reduceMotion = reduceMotionQuery.matches;
+reduceMotionQuery.addEventListener("change", (event) => {
+  reduceMotion = event.matches;
+});
 const guessDialog = $<HTMLDialogElement>("[data-guess-dialog]");
 const startConfirmDialog = $<HTMLDialogElement>("[data-start-confirm-dialog]");
 const startConfirmMessage = $<HTMLParagraphElement>(
@@ -753,7 +760,7 @@ function setRemoteTesting(active: boolean) {
     }
   } else if (runInProgress) {
     runInProgress = false;
-    window.clearInterval(roomElapsedTimer);
+    clearRoomElapsedTimer();
     liveDot.classList.remove("is-live");
     liveDot.hidden = true;
     elapsedLabel.hidden = true;
@@ -765,8 +772,17 @@ function setRemoteTesting(active: boolean) {
   }
 }
 
+function clearRoomElapsedTimer() {
+  window.clearInterval(roomElapsedTimer);
+  roomElapsedTimer = 0;
+}
+
 function applyRoomView(view: RoomView) {
   const previousPhase = state.phase;
+  if (view.phase !== "testing") {
+    clearRoomElapsedTimer();
+    pendingRoomResult = null;
+  }
   const isFirstRoomView = !hasAppliedRoomView;
   const enteredChampion =
     !isFirstRoomView &&
@@ -981,16 +997,19 @@ async function startTest() {
       setResultText("down", actual.down);
       setResultText("up", actual.up);
       setResultText("ping", actual.ping);
-      if (
-        !store.send({
-          type: "result",
-          down: actual.down,
-          up: actual.up,
-          ping: actual.ping,
-        })
-      )
+      const resultAction: Extract<ClientAction, { type: "result" }> = {
+        type: "result",
+        down: actual.down,
+        up: actual.up,
+        ping: actual.ping,
+      };
+      pendingRoomResult = resultAction;
+      if (store.send(resultAction)) pendingRoomResult = null;
+      else {
         errorNote.textContent =
           "The result could not reach the room. Reconnect and try again.";
+        errorNote.hidden = false;
+      }
       document.documentElement.dataset.phase = "done";
       $<HTMLSpanElement>("[data-mode]").textContent = "Download";
       $<HTMLSpanElement>("[data-unit]").textContent = "Mbps";
@@ -1090,18 +1109,32 @@ document.addEventListener("gts:settings-change", (event) => {
 document.addEventListener("gts:room-state", (event) => {
   if (!roomMode) return;
   const view = (event as CustomEvent<RoomView>).detail;
-  const recoverInterruptedTest =
-    view.canRunTest &&
-    view.phase === "testing" &&
-    !runInProgress &&
-    !interruptedRoomTestRecoveryRequested;
+  const recovery = interruptedTestStep({
+    phase: view.phase,
+    canRunTest: view.canRunTest,
+    runInProgress,
+    recoveryRequested: interruptedRoomTestRecoveryRequested,
+    hasPendingResult: pendingRoomResult !== null,
+  });
+  interruptedRoomTestRecoveryRequested = recovery.recoveryRequested;
   applyRoomView(view);
-  if (!recoverInterruptedTest) return;
-  interruptedRoomTestRecoveryRequested = true;
+  if (recovery.action === "resend" && pendingRoomResult) {
+    if (store.send(pendingRoomResult)) {
+      pendingRoomResult = null;
+      errorNote.hidden = true;
+    }
+    return;
+  }
+  if (recovery.action !== "abort") return;
   errorNote.textContent =
     "The last test was interrupted. Press Start to run it again.";
   errorNote.hidden = false;
   store.send({ type: "abort" });
+});
+
+document.addEventListener("gts:room-disconnect", () => {
+  if (roomElapsedTimer) setRemoteTesting(false);
+  else clearRoomElapsedTimer();
 });
 
 document.addEventListener("gts:room-progress", (event) => {
@@ -1141,8 +1174,27 @@ $<HTMLButtonElement>("[data-close-edit]").addEventListener("click", () =>
 $<HTMLButtonElement>("[data-cancel-edit]").addEventListener("click", () =>
   editDialog.close(),
 );
+guessDialog.addEventListener("close", () => {
+  const playerId = activePlayerId;
+  activePlayerId = null;
+  if (
+    playerId &&
+    (!document.activeElement || document.activeElement === document.body)
+  )
+    $$<HTMLButtonElement>("[data-guess]")
+      .find((button) => button.dataset.guess === playerId)
+      ?.focus();
+});
 editDialog.addEventListener("close", () => {
+  const playerId = editingPlayerId;
   editingPlayerId = null;
+  if (
+    playerId &&
+    (!document.activeElement || document.activeElement === document.body)
+  )
+    $$<HTMLButtonElement>("[data-edit]")
+      .find((button) => button.dataset.edit === playerId)
+      ?.focus();
 });
 $<HTMLFormElement>("[data-edit-form]").addEventListener("submit", (event) => {
   event.preventDefault();
@@ -1180,7 +1232,6 @@ $<HTMLFormElement>("[data-edit-form]").addEventListener("submit", (event) => {
     });
     persist();
   }
-  editingPlayerId = null;
   editDialog.close();
   render();
 });

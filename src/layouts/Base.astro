@@ -1,6 +1,8 @@
 ---
 import '@fontsource-variable/bricolage-grotesque';
 import '@fontsource-variable/figtree';
+import bricolageFontUrl from '@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-wght-normal.woff2?url';
+import figtreeFontUrl from '@fontsource-variable/figtree/files/figtree-latin-wght-normal.woff2?url';
 import { Icon } from 'astro-icon/components';
 import '../styles/global.css';
 import Footer from '../components/Footer.astro';
@@ -104,6 +106,20 @@ const graphSchema = { '@context': 'https://schema.org', '@graph': graph };
 >
   <head>
     <meta charset="utf-8" />
+    <link
+      rel="preload"
+      href={bricolageFontUrl}
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href={figtreeFontUrl}
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
     <script is:inline>
       const roomQueryRequested = new URLSearchParams(window.location.search).has("room");
       let classroomSessionActive = false;
