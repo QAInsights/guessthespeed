@@ -4,6 +4,7 @@ import { isThemeId, themes, themeForDate, type ThemeId } from "../lib/themes";
 import { playCue } from "../lib/sound";
 import type { RoomView } from "../lib/room";
 import { loadSession } from "../lib/classroom";
+import { describeTarget, isOverlayOpen, shortcutAction } from "./shortcuts";
 
 const $ = <T extends Element>(selector: string): T =>
   document.querySelector(selector) as T;
@@ -403,6 +404,18 @@ soundButton.addEventListener("click", () => {
 tvButton.addEventListener("click", () => setTVMode(!tvMode));
 fullscreenButton.addEventListener("click", () => {
   void toggleFullscreen();
+});
+document.addEventListener("keydown", (event) => {
+  const action = shortcutAction({
+    key: event.key,
+    ctrlKey: event.ctrlKey,
+    metaKey: event.metaKey,
+    altKey: event.altKey,
+    repeat: event.repeat,
+    target: describeTarget(event.target),
+    overlayOpen: isOverlayOpen(document),
+  });
+  if (action === "fullscreen") void toggleFullscreen();
 });
 document.addEventListener("fullscreenchange", syncFullscreenControl);
 document.addEventListener("visibilitychange", () => {

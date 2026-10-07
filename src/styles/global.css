@@ -3176,7 +3176,39 @@ html[data-dev="1"] .dev-console {
   }
 }
 
+.tv-shortcut-hint {
+  display: none;
+}
+
 @media (min-width: 900px) {
+  html[data-tv="1"][data-home="1"] .tv-shortcut-hint {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(7px, 0.8vw, 14px);
+    margin: 0;
+    color: var(--ink);
+    font-size: clamp(12px, 1vw, 17px);
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .tv-shortcut-hint kbd {
+    display: inline-flex;
+    min-width: 2em;
+    align-items: center;
+    justify-content: center;
+    margin-right: 4px;
+    padding: 2px 7px;
+    border: 2px solid var(--ink);
+    border-radius: 7px;
+    background: var(--bg);
+    box-shadow: 2px 2px 0 var(--shadow);
+    color: var(--ink);
+    font: inherit;
+    transform: rotate(-2deg);
+  }
+
   html[data-tv="1"][data-home="1"] .wrap {
     max-width: none;
     padding-right: clamp(20px, 2vw, 38px);
