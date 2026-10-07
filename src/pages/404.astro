@@ -22,7 +22,7 @@ import Base from '../layouts/Base.astro';
       <article class="not-found-meter stk">
         <svg
           class="not-found-gauge"
-          viewBox="0 0 400 360"
+          viewBox="0 0 400 390"
           role="img"
           aria-labelledby="not-found-gauge-title not-found-gauge-description"
         >
@@ -31,24 +31,25 @@ import Base from '../layouts/Base.astro';
           <path class="not-found-track-outline" d="M70.1 260 A150 150 0 1 1 329.9 260" />
           <path class="not-found-track" d="M70.1 260 A150 150 0 1 1 329.9 260" />
           <g class="not-found-ticks" aria-hidden="true">
-            <text x="106" y="239">5</text>
-            <text x="92" y="177">10</text>
-            <text x="116" y="118">25</text>
-            <text x="168" y="82">50</text>
-            <text x="232" y="82">100</text>
-            <text x="284" y="118">250</text>
-            <text x="308" y="177">500</text>
-            <text x="294" y="239">1000</text>
+            <text x="103" y="241">0</text>
+            <text x="88" y="185">5</text>
+            <text x="103" y="129">10</text>
+            <text x="144" y="88">25</text>
+            <text x="200" y="73">50</text>
+            <text x="256" y="88">100</text>
+            <text x="297" y="129">250</text>
+            <text x="312" y="185">500</text>
+            <text x="297" y="241">1000</text>
           </g>
           <g class="not-found-needle" transform="rotate(-120 200 185)">
-            <path d="M194 185 L200 80 L206 185 Z" />
+            <path d="M194 185 L200 90 L206 185 Z" />
           </g>
           <circle class="not-found-hub" cx="200" cy="185" r="15" />
-          <text class="not-found-readout-label" x="200" y="219">DOWNLOAD</text>
-          <text class="not-found-readout" x="200" y="261">0</text>
-          <text class="not-found-unit" x="200" y="283">Mbps</text>
-          <rect class="not-found-stamp" x="112" y="307" width="176" height="34" rx="17" />
-          <text class="not-found-stamp-text" x="200" y="329">PAGE NOT FOUND</text>
+          <text class="not-found-readout-label" x="200" y="244">DOWNLOAD</text>
+          <text class="not-found-readout" x="200" y="286">0</text>
+          <text class="not-found-unit" x="200" y="309">Mbps</text>
+          <rect class="not-found-stamp" x="112" y="333" width="176" height="34" rx="17" />
+          <text class="not-found-stamp-text" x="200" y="355">PAGE NOT FOUND</text>
         </svg>
       </article>
     </section>
@@ -162,6 +163,7 @@ import Base from '../layouts/Base.astro';
       700 15px "Bricolage Grotesque Variable",
       sans-serif;
     text-anchor: middle;
+    dominant-baseline: middle;
   }
 
   .not-found-needle {
