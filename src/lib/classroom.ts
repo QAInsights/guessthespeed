@@ -1,4 +1,5 @@
 import type { Player, StorageLike } from "./game";
+import { MAX_NAME_LENGTH } from "./limits";
 
 export interface Student {
   id: string;
@@ -127,8 +128,8 @@ function isStudent(value: unknown): value is Student {
     value.id.length <= 128 &&
     typeof value.name === "string" &&
     value.name.length > 0 &&
-    value.name.length <= 16 &&
-    normalizeName(value.name, 16) === value.name &&
+    value.name.length <= MAX_NAME_LENGTH &&
+    normalizeName(value.name, MAX_NAME_LENGTH) === value.name &&
     isStudentFace(value.emoji)
   );
 }
@@ -187,7 +188,7 @@ export function isClassroomData(value: unknown): value is ClassroomData {
 export function parseRoster(text: string, existing: string[] = []): string[] {
   const existingNames = new Set<string>();
   for (const value of existing) {
-    const name = normalizeName(value, 16);
+    const name = normalizeName(value, MAX_NAME_LENGTH);
     if (name) existingNames.add(name.toLowerCase());
   }
 
@@ -195,7 +196,7 @@ export function parseRoster(text: string, existing: string[] = []): string[] {
   const added: string[] = [];
   for (const entry of text.split(/[\n,;\t]+/u)) {
     if (total >= MAX_STUDENTS) break;
-    const name = normalizeName(entry, 16);
+    const name = normalizeName(entry, MAX_NAME_LENGTH);
     const key = name.toLowerCase();
     if (!name || existingNames.has(key)) continue;
     existingNames.add(key);
@@ -210,7 +211,7 @@ export function assignFaces(names: string[], startIndex: number): Student[] {
     ? Math.max(0, Math.floor(startIndex))
     : 0;
   return names.flatMap((value, index) => {
-    const name = normalizeName(value, 16);
+    const name = normalizeName(value, MAX_NAME_LENGTH);
     if (!name) return [];
     return [
       {
@@ -483,7 +484,7 @@ function sanitizeImportedData(value: unknown): ClassroomData | null {
       )
         return null;
       const studentId = rawStudent.id.trim().slice(0, 128);
-      const studentName = normalizeName(rawStudent.name, 16);
+      const studentName = normalizeName(rawStudent.name, MAX_NAME_LENGTH);
       const key = studentName.toLowerCase();
       if (!studentId || !studentName || ids.has(studentId) || names.has(key))
         continue;
@@ -523,7 +524,7 @@ function sanitizeImportedData(value: unknown): ClassroomData | null {
 export function exportClassroom(data: ClassroomData): string {
   const sanitized = sanitizeImportedData(data);
   const normalized = sanitized
-    ? mergeClassroom(emptyClassroom(), sanitized)
+    ? mergeSanitized(emptyClassroom(), sanitized)
     : emptyClassroom();
   return JSON.stringify(normalized, null, 2);
 }
@@ -543,6 +544,13 @@ export function mergeClassroom(
 ): ClassroomData {
   const current = sanitizeImportedData(existing) ?? emptyClassroom();
   const incoming = sanitizeImportedData(imported) ?? emptyClassroom();
+  return mergeSanitized(current, incoming);
+}
+
+function mergeSanitized(
+  current: ClassroomData,
+  incoming: ClassroomData,
+): ClassroomData {
   const classes = current.classes.map((classroom) => ({
     ...classroom,
     students: classroom.students.map((student) => ({ ...student })),
