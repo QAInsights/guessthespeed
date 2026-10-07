@@ -84,11 +84,7 @@ function loadFonts(): Promise<FontData[]> {
 
 function headlineSize(card: OgCard): number {
   const longestLine = Math.max(card.line1.length, card.line2.length);
-  if (longestLine <= 12) return 84;
-  if (longestLine <= 16) return 78;
-  if (longestLine <= 19) return 72;
-  if (longestLine <= 20) return 66;
-  return 60;
+  return Math.min(88, Math.floor(620 / (longestLine * 0.36)));
 }
 
 function node(
