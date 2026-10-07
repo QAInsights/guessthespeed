@@ -17,6 +17,7 @@ import type { TieMode } from "./scoring";
 export const ROOM_ALPHABET = "BCDFGHJKMNPQRSTVWXZ";
 export const ROOM_CODE_LENGTH = 6;
 export const MAX_PLAYERS = 12;
+export const ROOM_HISTORY_MAX = 50;
 export const ROOM_TTL_MS = 6 * 60 * 60 * 1000;
 
 export interface RoomPlayer extends Player {
@@ -264,6 +265,11 @@ export function applyAction(
         return { error: "Only the assigned tester can submit the result." };
       if (game.phase !== "testing")
         return { error: "There is no test in progress." };
+      if (
+        (typeof action.down === "number" && action.down <= 0) ||
+        (typeof action.up === "number" && action.up <= 0)
+      )
+        return { error: "The speed test returned no result." };
       if (!validSpeed(action.down) || !validSpeed(action.up))
         return { error: "Enter speeds between 0 and 100000 Mbps." };
       if (action.ping !== undefined && !validSpeed(action.ping))
@@ -387,7 +393,7 @@ function updateRoomGame(
           tieMode: game.settings.tieMode,
         },
         round: game.round,
-        history: game.history,
+        history: game.history.slice(-ROOM_HISTORY_MAX),
         phase: game.phase,
       },
     },

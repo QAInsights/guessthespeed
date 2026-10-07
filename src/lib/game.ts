@@ -79,6 +79,17 @@ export interface RoundActual extends Actual {
   ping?: number;
 }
 
+export function hasUsableRoundResult(
+  actual: Pick<RoundActual, "down" | "up">,
+): boolean {
+  return (
+    Number.isFinite(actual.down) &&
+    actual.down > 0 &&
+    Number.isFinite(actual.up) &&
+    actual.up > 0
+  );
+}
+
 export interface RoundHistory {
   round: number;
   actual: RoundActual;
@@ -206,6 +217,8 @@ export function applyResult(
   state: GameState,
   actual: RoundActual,
 ): { state: GameState; scores: PlayerRoundScore[] } {
+  if (state.phase !== "testing") return { state, scores: [] };
+
   const scores = scoreRound(
     state.players
       .filter((player) => player.locked)

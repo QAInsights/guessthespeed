@@ -38,6 +38,7 @@ export const DEFAULT_SCORING_SETTINGS: ScoringSettings = {
 const rounded = (value: number) => Math.round(value * 10_000) / 10_000;
 
 function metricMiss(guess: number | null, actual: number): number {
+  if (!(actual > 0) || !Number.isFinite(actual)) return 1;
   return guess === null ? 1 : Math.abs(guess - actual) / actual;
 }
 
@@ -72,8 +73,8 @@ export function scoreRound(
         place: null as number | null,
         placePoints: 0,
         bonus:
-          Number(downMiss <= settings.spotOnPct) +
-          Number(upMiss <= settings.spotOnPct),
+          Number(rounded(downMiss) <= settings.spotOnPct) +
+          Number(rounded(upMiss) <= settings.spotOnPct),
         total: 0,
       },
     ];

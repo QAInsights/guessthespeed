@@ -1,6 +1,7 @@
 import {
   addPlayer,
   applyResult,
+  hasUsableRoundResult,
   initialGameState,
   loadGame,
   lockGuess,
@@ -956,6 +957,8 @@ async function startTest() {
           ? { signal: roomRunController.signal }
           : undefined,
     );
+    if (!hasUsableRoundResult(actual))
+      throw new Error("The speed test returned no result.");
     setProgress(steps, steps);
     setGauge(actual.down, actual.down);
     if (devRun) {

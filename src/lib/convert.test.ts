@@ -4,6 +4,7 @@ import {
   formatDuration,
   mbpsFromMBps,
   mbpsToMBps,
+  positiveSpeed,
 } from "./convert";
 
 describe("Mbps and MB/s conversion", () => {
@@ -21,6 +22,16 @@ describe("Mbps and MB/s conversion", () => {
       expect(mbpsFromMBps(input)).toBeNull();
     },
   );
+
+  it.each([
+    [-50, null],
+    [0, null],
+    [Number.NaN, null],
+    [Number.POSITIVE_INFINITY, null],
+    [12.5, 12.5],
+  ])("validates a positive speed value %s", (input, expected) => {
+    expect(positiveSpeed(input)).toBe(expected);
+  });
 });
 
 describe("downloadSeconds", () => {

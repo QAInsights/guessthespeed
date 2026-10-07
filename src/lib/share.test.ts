@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   buildPodiumEntries,
   buildSharePayload,
@@ -72,6 +72,19 @@ describe("share results", () => {
     ).toContain("🥇 First 9 pts · 🥈 Second 6 pts · 🥈 Also second 6 pts");
   });
 
+  it("includes every player tied for a podium place", () => {
+    const entries = buildPodiumEntries([
+      { name: "One", score: 10 },
+      { name: "Two", score: 10 },
+      { name: "Three", score: 10 },
+      { name: "Four", score: 10 },
+    ]);
+    expect(entries).toHaveLength(4);
+    expect(entries.map(({ place, medal }) => [place, medal])).toEqual(
+      Array.from({ length: 4 }, () => [1, "🥇"]),
+    );
+  });
+
   it("uses singular and plural point labels", () => {
     const text = buildShareText({
       players: [
@@ -94,6 +107,30 @@ describe("share results", () => {
     expect(
       buildShareText({ players: [{ name: "Ada", score: 3 }] }),
     ).not.toContain("Our internet hit");
+  });
+
+  it("formats share speeds with en-US grouping regardless of runtime locale", () => {
+    const localeSpy = vi
+      .spyOn(Number.prototype, "toLocaleString")
+      .mockImplementation(function (
+        this: number,
+        locales?: Intl.LocalesArgument,
+        options?: Intl.NumberFormatOptions,
+      ) {
+        if (locales === undefined) return "1.234,5";
+        return new Intl.NumberFormat(locales, options).format(this);
+      });
+
+    try {
+      expect(
+        buildShareText({
+          players: [{ name: "Ada", score: 3 }],
+          lastActual: { down: 1234.5, up: 45.5 },
+        }),
+      ).toContain("1,234.5 Mbps down and 45.5 Mbps up.");
+    } finally {
+      localeSpy.mockRestore();
+    }
   });
 
   it("uses the friendly fallback when there are no players or all scores are zero", () => {
