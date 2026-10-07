@@ -192,6 +192,7 @@ describe("host transfer", () => {
     isHost: true,
     clientId: hostId,
     playerId: "missing-player",
+    targetOnline: true,
     newHostToken: "new-host-token",
     now: 900,
   };
@@ -273,6 +274,23 @@ describe("host transfer", () => {
     expect(result.room.game.phase).toBe(room.game.phase);
     expect(room.hostToken).toBe("secret-host-token");
     expect(room.updatedAt).not.toBe(result.room.updatedAt);
+  });
+
+  it("rejects handing over host to a player whose device is offline", () => {
+    const room = joinedRoom();
+    const target = playerByOwner(room, firstId);
+
+    expect(
+      transferHost(room, {
+        ...options,
+        playerId: target.id,
+        targetOnline: false,
+      }),
+    ).toEqual({
+      ok: false,
+      error: "That player's phone is offline. Try again when it reconnects.",
+    });
+    expect(room.hostToken).toBe("secret-host-token");
   });
 
   it("keeps a null tester assignment null", () => {

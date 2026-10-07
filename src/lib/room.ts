@@ -148,6 +148,7 @@ export function transferHost(
     isHost: boolean;
     clientId: string;
     playerId: string;
+    targetOnline: boolean;
     newHostToken: string;
     now: number;
   },
@@ -165,6 +166,11 @@ export function transferHost(
     (candidate) => candidate.id === opts.playerId,
   );
   if (!player) return { ok: false, error: "That player has left the room." };
+  if (!opts.targetOnline)
+    return {
+      ok: false,
+      error: "That player's phone is offline. Try again when it reconnects.",
+    };
   if (player.owner === opts.clientId)
     return { ok: false, error: "Pick a player on another device." };
   return {

@@ -113,11 +113,22 @@ export class GameRoom extends DurableObject<Env> {
         this.sendState(socket, room, attachment);
         return;
       }
+      const targetPlayer = room.game.players.find(
+        (player) => player.id === action.id,
+      );
+      const targetOnline =
+        targetPlayer !== undefined &&
+        this.ctx
+          .getWebSockets()
+          .some(
+            (target) => getAttachment(target)?.clientId === targetPlayer.owner,
+          );
       const hostToken = crypto.randomUUID();
       const result = transferHost(room, {
         isHost: attachment.isHost,
         clientId: attachment.clientId,
         playerId: action.id,
+        targetOnline,
         newHostToken: hostToken,
         now: Date.now(),
       });
