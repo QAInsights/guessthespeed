@@ -1,57 +1,94 @@
 ---
 import { Icon } from 'astro-icon/components';
+
+const columns = [
+  {
+    title: 'Play',
+    links: [
+      { href: '/speed-test-game/', label: 'Speed test game' },
+      { href: '/family-game-night-ideas/', label: 'Game night ideas' },
+      { href: '/work/', label: 'Team icebreaker' },
+      { href: '/classroom/', label: 'Classroom mode' },
+      { href: '/internet-speed-lesson-for-kids/', label: 'Classroom lesson' },
+    ],
+  },
+  {
+    title: 'Learn',
+    links: [
+      { href: '/how-to-play/', label: 'How to play' },
+      { href: '/how-it-works/', label: 'How it works' },
+      { href: '/internet-speed-101/', label: 'Internet speed 101' },
+      { href: '/what-is-a-good-internet-speed/', label: 'Good internet speed' },
+    ],
+  },
+  {
+    title: 'Tools',
+    links: [
+      { href: '/am-i-getting-the-speed-i-pay-for/', label: 'Plan speed check' },
+      { href: '/how-much-internet-speed-do-i-need/', label: 'Speed calculator' },
+      { href: '/mbps-to-mbs/', label: 'Mbps to MB/s' },
+    ],
+  },
+  {
+    title: 'About',
+    links: [
+      { href: '/story/', label: 'Our story' },
+      { href: '/stats/', label: 'Live stats' },
+      { href: '/privacy/', label: 'Privacy' },
+    ],
+  },
+];
+
+const projects = [
+  { href: 'https://qainsights.com', label: 'QAInsights' },
+  { href: 'https://dosa.dev', label: 'dosa.dev' },
+  { href: 'https://ai.dosa.dev', label: 'ai.dosa.dev' },
+  { href: 'https://iamspeed.dev', label: 'iamspeed.dev' },
+];
 ---
 
 <footer>
   <div class="wrap foot">
-    <div class="foot-copy">
-      <p><b>Guess the Speed</b> is a free family game. No accounts, scores stay on this device.</p>
-      <p>Made by NaveenKumar for game night with his kids</p>
-      <p>© 2026 Guess the Speed</p>
+    <div class="foot-brand">
+      <a class="foot-logo" href="/" aria-label="Guess the Speed home">
+        <span class="logo-badge" aria-hidden="true">?</span>
+        <b>guess the speed</b>
+      </a>
+      <p>
+        The internet speed guessing game for family game night, classrooms and
+        team calls. Free, no accounts, and scores stay on this device.
+      </p>
+      <div class="foot-actions">
+        <a href="https://buymeacoffee.com/qainsights" target="_blank" rel="noopener">
+          <Icon name="ph:coffee-fill" aria-hidden="true" />
+          Buy me a coffee
+        </a>
+        <a href="https://github.com/QAInsights/guessthespeed" target="_blank" rel="noopener">
+          <Icon name="ph:github-logo-fill" aria-hidden="true" />
+          GitHub
+        </a>
+      </div>
     </div>
-    <div class="foot-groups">
-      <nav class="foot-group" aria-label="More projects">
-        <h2>More projects</h2>
-        <div class="foot-links">
-          <a href="https://qainsights.com" rel="noopener">QAInsights</a>
-          <a href="https://dosa.dev" rel="noopener">dosa.dev</a>
-          <a href="https://ai.dosa.dev" rel="noopener">ai.dosa.dev</a>
-          <a href="https://iamspeed.dev" rel="noopener">iamspeed.dev</a>
-          <a href="https://buymeacoffee.com/qainsights" target="_blank" rel="noopener">
-            <Icon name="ph:coffee-fill" aria-hidden="true" />
-            Buy me a coffee
-          </a>
-          <a href="https://github.com/QAInsights/guessthespeed" target="_blank" rel="noopener">
-            <Icon name="ph:github-logo-fill" aria-hidden="true" />
-            GitHub
-          </a>
+    <nav class="foot-nav" aria-label="Footer">
+      {columns.map((column) => (
+        <div class="foot-col">
+          <h2>{column.title}</h2>
+          <ul>
+            {column.links.map((link) => (
+              <li><a href={link.href}>{link.label}</a></li>
+            ))}
+          </ul>
         </div>
-      </nav>
-      <nav class="foot-group" aria-label="Guide">
-        <h2>Guide</h2>
-        <div class="foot-links">
-          <a href="/story/">Our story</a>
-          <a href="/stats/">Live stats</a>
-          <a href="/how-to-play/">How to play</a>
-          <a href="/classroom/">Classroom mode</a>
-          <a href="/how-it-works/">How it works</a>
-          <a href="/internet-speed-101/">Internet speed 101</a>
-          <a href="/what-is-a-good-internet-speed/">Good internet speed</a>
-          <a href="/am-i-getting-the-speed-i-pay-for/">Plan speed check</a>
-          <a href="/how-much-internet-speed-do-i-need/">Speed calculator</a>
-          <a href="/mbps-to-mbs/">Mbps to MB/s</a>
-          <a href="/privacy/">Privacy</a>
-        </div>
-      </nav>
-      <nav class="foot-group" aria-label="Play ideas">
-        <h2>Play ideas</h2>
-        <div class="foot-links">
-          <a href="/speed-test-game/">Speed test game</a>
-          <a href="/work/">Team icebreaker</a>
-          <a href="/family-game-night-ideas/">Game night ideas</a>
-          <a href="/internet-speed-lesson-for-kids/">Classroom lesson</a>
-        </div>
-      </nav>
-    </div>
+      ))}
+    </nav>
+  </div>
+  <div class="wrap foot-base">
+    <p>© 2026 Guess the Speed. Made by NaveenKumar for game night with his kids.</p>
+    <nav class="foot-projects" aria-label="More projects">
+      <span>More projects</span>
+      {projects.map((project) => (
+        <a href={project.href} rel="noopener">{project.label}</a>
+      ))}
+    </nav>
   </div>
 </footer>

@@ -2970,99 +2970,225 @@ html[data-phase="up"] .house-promo {
 
 footer {
   margin-top: 72px;
-  padding: 28px 0 40px;
+  padding: 44px 0 0;
   border-top: 2.5px solid var(--ink);
+  background: color-mix(in srgb, var(--surface) 55%, transparent);
 }
 
 .foot {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.9fr);
   align-items: start;
-  gap: 32px;
+  gap: 48px;
 }
 
-.foot-copy {
+.foot-brand {
   display: grid;
-  gap: 6px;
+  gap: 14px;
   align-content: start;
 }
 
-.foot-copy p {
-  max-width: 42ch;
-  margin: 0;
-  color: var(--muted);
-  line-height: 1.5;
-}
-
-.foot-copy b {
-  color: var(--ink);
-}
-
-.foot-groups {
-  display: grid;
-  grid-template-columns:
-    minmax(0, 1.25fr)
-    repeat(2, minmax(0, 0.85fr));
-  gap: 20px;
-}
-
-.foot-group {
-  min-width: 0;
-}
-
-.foot-group h2 {
-  margin: 0 0 10px;
-  font-size: 15px;
-  letter-spacing: 0.04em;
-}
-
-.foot-links {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-}
-
-.foot-group[aria-label="Guide"] .foot-links,
-.foot-group[aria-label="Play ideas"] .foot-links {
-  grid-template-columns: minmax(0, 1fr);
-}
-
-.foot-links a {
+.foot-logo {
   display: inline-flex;
-  min-height: 42px;
+  width: fit-content;
   align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 8px 10px;
-  border: 2px solid var(--ink);
-  border-radius: 999px;
-  background: var(--surface);
+  gap: 10px;
   color: var(--ink);
-  font-size: 14px;
-  font-weight: 800;
-  text-align: center;
   text-decoration: none;
 }
 
-.foot-group[aria-label="Guide"] .foot-links a,
-.foot-group[aria-label="Play ideas"] .foot-links a {
-  white-space: nowrap;
+.foot-logo .logo-badge {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  box-shadow: 2px 2px 0 var(--shadow);
+  font-size: 21px;
 }
 
-.foot-links a:hover {
+.foot-logo b {
+  font:
+    800 19px/1 "Bricolage Grotesque Variable",
+    sans-serif;
+  letter-spacing: -0.01em;
+}
+
+.foot-brand p {
+  max-width: 38ch;
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.foot-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.foot-actions a {
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: var(--surface);
+  box-shadow: 2px 2px 0 var(--shadow);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.foot-actions a:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 var(--shadow);
+}
+
+.foot-actions svg {
+  width: 16px;
+  height: 16px;
+}
+
+.foot-nav {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.foot-col {
+  min-width: 0;
+}
+
+.foot-col h2 {
+  margin: 0 0 14px;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.foot-col h2::after {
+  display: block;
+  width: 18px;
+  height: 3px;
+  margin-top: 8px;
+  border-radius: 2px;
   background: var(--accent);
-  color: var(--on-accent);
+  content: "";
 }
 
-@media (max-width: 760px) {
-  .foot,
-  .foot-groups {
+.foot-col ul {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.foot-col a,
+.foot-projects a {
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  text-underline-offset: 4px;
+}
+
+.foot-col a:hover,
+.foot-projects a:hover {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+  text-decoration-thickness: 2px;
+}
+
+.foot-col a:focus-visible,
+.foot-projects a:focus-visible,
+.foot-actions a:focus-visible,
+.foot-logo:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.foot-base {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 24px;
+  margin-top: 40px;
+  padding-top: 18px;
+  padding-bottom: 40px;
+  border-top: 1.5px solid color-mix(in srgb, var(--ink) 14%, transparent);
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.foot-base p {
+  margin: 0;
+}
+
+.foot-projects {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 16px;
+}
+
+.foot-projects span {
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.foot-projects a {
+  font-size: 13px;
+}
+
+@media (max-width: 960px) {
+  .foot {
     grid-template-columns: minmax(0, 1fr);
+    gap: 36px;
+  }
+}
+
+@media (max-width: 640px) {
+  footer {
+    padding-top: 36px;
   }
 
-  .foot-group[aria-label="Guide"] .foot-links,
-  .foot-group[aria-label="Play ideas"] .foot-links {
+  .foot-nav {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 28px 20px;
+  }
+
+  .foot-col ul {
+    gap: 4px;
+  }
+
+  .foot-col a {
+    display: inline-flex;
+    min-height: 32px;
+    align-items: center;
+  }
+
+  .foot-base {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .foot-projects span {
+    flex-basis: 100%;
   }
 }
 
