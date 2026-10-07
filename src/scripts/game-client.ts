@@ -183,6 +183,7 @@ function endClass() {
     clearSession();
     if (loadSession())
       throw new Error("Classroom session could not be cleared");
+    document.dispatchEvent(new CustomEvent("gts:classroom-change"));
     window.location.assign("/");
   } catch {
     errorNote.textContent =

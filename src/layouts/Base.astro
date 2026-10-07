@@ -4,6 +4,7 @@ import '@fontsource-variable/figtree';
 import { Icon } from 'astro-icon/components';
 import '../styles/global.css';
 import Footer from '../components/Footer.astro';
+import ModeSwitch from '../components/ModeSwitch.astro';
 import { themes, type ThemeId } from '../lib/themes';
 
 interface Props {
@@ -11,6 +12,7 @@ interface Props {
   description?: string;
   breadcrumb?: string;
   schema?: Record<string, unknown>[];
+  modeSwitch?: "game" | "classroom";
 }
 
 const {
@@ -18,6 +20,7 @@ const {
   description = "A free family game: everyone guesses the Wi-Fi download and upload speed, then a real speed test reveals who came closest. Play on one screen or on everyone's phone.",
   breadcrumb,
   schema = [],
+  modeSwitch,
 } = Astro.props;
 const canonical = new URL(Astro.url.pathname, 'https://guessthespeed.com').toString();
 const beaconToken = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
@@ -243,6 +246,11 @@ const graphSchema = { '@context': 'https://schema.org', '@graph': graph };
         </button>
       </div>
     </header>
+    {modeSwitch && (
+      <div class="wrap mode-bar">
+        <ModeSwitch current={modeSwitch} />
+      </div>
+    )}
     <dialog class="sticker-dialog" data-settings-dialog aria-labelledby="settings-title">
       <div class="dialog-inner">
         <div class="dialog-head">

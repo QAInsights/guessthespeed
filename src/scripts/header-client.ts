@@ -27,9 +27,9 @@ const settingsDialog = $<HTMLDialogElement>("[data-settings-dialog]");
 const closeSettingsButton = $<HTMLButtonElement>("[data-close-settings]");
 const settingsForm = $<HTMLFormElement>("[data-settings-form]");
 const devBadge = $<HTMLButtonElement>("[data-dev-badge]");
-const modeSwitch = document.querySelector<HTMLDivElement>("[data-mode-switch]");
+const modeSwitch = document.querySelector<HTMLElement>("[data-mode-switch]");
 const modeOptions = Array.from(
-  modeSwitch?.querySelectorAll<HTMLButtonElement>("[data-mode-option]") ?? [],
+  modeSwitch?.querySelectorAll<HTMLElement>("[data-mode-option]") ?? [],
 );
 const fxLayer = $<HTMLDivElement>("[data-fx-layer]");
 const reduceMotion = window.matchMedia(
@@ -37,7 +37,7 @@ const reduceMotion = window.matchMedia(
 ).matches;
 
 const roomMode = document.documentElement.dataset.room === "1";
-const classroomMode = loadSession() !== null;
+let classroomMode = loadSession() !== null;
 const initialGame = roomMode ? null : loadGame();
 let roomHost = false;
 let settings: GameSettings = roomMode
@@ -72,12 +72,29 @@ const coarsePointer = window.matchMedia("(pointer: coarse)").matches;
 
 function syncModeSwitch() {
   if (!modeSwitch) return;
-  modeSwitch.hidden = roomMode || classroomMode || tvMode;
+  classroomMode = loadSession() !== null;
+  modeSwitch.hidden = roomMode || tvMode;
   const selectedMode = devMode ? "dev" : "game";
   modeOptions.forEach((option) => {
-    const selected = option.dataset.modeOption === selectedMode;
-    option.setAttribute("aria-checked", String(selected));
-    option.tabIndex = selected ? 0 : -1;
+    const optionMode = option.dataset.modeOption;
+    const selected = !classroomMode && optionMode === selectedMode;
+    const activeClassroom =
+      optionMode === "classroom" && (!homePage || classroomMode);
+    option.classList.toggle(
+      "is-disabled",
+      classroomMode && optionMode !== "classroom",
+    );
+    if (classroomMode && optionMode !== "classroom") {
+      option.setAttribute("aria-disabled", "true");
+      option.setAttribute("title", "End class to switch modes");
+    } else {
+      option.removeAttribute("aria-disabled");
+      option.removeAttribute("title");
+    }
+    if (option instanceof HTMLButtonElement)
+      option.setAttribute("aria-pressed", String(selected));
+    if (activeClassroom) option.setAttribute("aria-current", "page");
+    else option.removeAttribute("aria-current");
   });
 }
 
@@ -402,34 +419,14 @@ closeSettingsButton.addEventListener("click", () => settingsDialog.close());
 devBadge.addEventListener("click", () => setDevMode(false));
 
 modeOptions.forEach((option) => {
-  option.addEventListener("click", () => {
-    setDevMode(option.dataset.modeOption === "dev");
+  option.addEventListener("click", (event) => {
+    const optionMode = option.dataset.modeOption;
+    if (classroomMode && optionMode !== "classroom") {
+      event.preventDefault();
+      return;
+    }
+    if (option instanceof HTMLButtonElement) setDevMode(optionMode === "dev");
   });
-});
-
-modeSwitch?.addEventListener("keydown", (event) => {
-  if (
-    !["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key) ||
-    !modeOptions.length
-  )
-    return;
-  event.preventDefault();
-  const focusedIndex = modeOptions.indexOf(event.target as HTMLButtonElement);
-  const selectedIndex = modeOptions.findIndex(
-    (option) => option.getAttribute("aria-checked") === "true",
-  );
-  const currentIndex = focusedIndex >= 0 ? focusedIndex : selectedIndex;
-  const nextIndex =
-    event.key === "Home"
-      ? 0
-      : event.key === "End"
-        ? modeOptions.length - 1
-        : event.key === "ArrowRight"
-          ? (currentIndex + 1) % modeOptions.length
-          : (currentIndex - 1 + modeOptions.length) % modeOptions.length;
-  const option = modeOptions[nextIndex];
-  setDevMode(option.dataset.modeOption === "dev");
-  option.focus();
 });
 
 document.addEventListener("gts:dev-change", (event) => {
@@ -438,6 +435,7 @@ document.addEventListener("gts:dev-change", (event) => {
 });
 
 document.addEventListener("gts:tv-change", syncModeSwitch);
+document.addEventListener("gts:classroom-change", syncModeSwitch);
 
 settingsForm.addEventListener("submit", (event) => {
   event.preventDefault();
