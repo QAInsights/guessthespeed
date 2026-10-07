@@ -69,6 +69,10 @@ export function formatPlanChip(pct: number, planned: number): string {
   })} Mbps plan`;
 }
 
+export function formatPlanChipShort(pct: number): string {
+  return `${pct}% of plan`;
+}
+
 export function loadPlan(storage?: PlanStorageLike): InternetPlan {
   try {
     const target =

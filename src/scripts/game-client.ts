@@ -55,6 +55,7 @@ import { sendStat } from "./stats-client";
 import { recordSpeedSample } from "./history-client";
 import {
   formatPlanChip,
+  formatPlanChipShort,
   hasPlan,
   loadPlan,
   planPercent,
@@ -557,10 +558,15 @@ function updatePlanComparisons() {
     if (pct === null || planned === null) {
       chip.hidden = true;
       chip.textContent = "";
+      chip.removeAttribute("aria-label");
+      chip.removeAttribute("title");
       chip.classList.remove("plan-chip-good", "plan-chip-ok", "plan-chip-low");
       continue;
     }
-    chip.textContent = formatPlanChip(pct, planned);
+    const fullLabel = formatPlanChip(pct, planned);
+    chip.textContent = formatPlanChipShort(pct);
+    chip.setAttribute("aria-label", fullLabel);
+    chip.title = fullLabel;
     chip.classList.remove("plan-chip-good", "plan-chip-ok", "plan-chip-low");
     chip.classList.add(`plan-chip-${planTone(pct)}`);
     chip.hidden = false;

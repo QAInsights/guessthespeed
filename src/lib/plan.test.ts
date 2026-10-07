@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   formatPlanChip,
+  formatPlanChipShort,
   hasPlan,
   loadPlan,
   parsePlan,
@@ -100,6 +101,10 @@ describe("plan comparison", () => {
   it("formats plan chips with a grouped Mbps plan value", () => {
     expect(formatPlanChip(84, 500)).toBe("84% of your 500 Mbps plan");
     expect(formatPlanChip(84, 1500)).toBe("84% of your 1,500 Mbps plan");
+  });
+
+  it("formats a short visible plan chip", () => {
+    expect(formatPlanChipShort(90)).toBe("90% of plan");
   });
 });
 
