@@ -1,0 +1,680 @@
+---
+import { Icon } from "astro-icon/components";
+import Base from "../layouts/Base.astro";
+
+const description =
+  "Live, privacy-safe Guess the Speed totals for rounds, games, guesses, spot-on guesses, average download, closest misses, and play modes.";
+---
+
+<Base
+  title="Guess the Speed Stats: Rounds Played, Spot-on Guesses and More"
+  description={description}
+  breadcrumb="Stats"
+>
+  <main class="wrap stats-page" data-stats-page>
+    <header class="stats-hero">
+      <div class="stats-hero-copy">
+        <span class="round-banner">
+          <Icon name="ph:chart-line-up-bold" aria-hidden="true" />
+          Live totals
+        </span>
+        <h1 class="display">Every round, <em>counted.</em></h1>
+        <p class="lede">
+          Running totals from families, rooms and classrooms playing Guess the
+          Speed. Totals only, never people.
+        </p>
+      </div>
+      <div class="stats-hero-art" aria-hidden="true">
+        <div class="hero-sticker stk">
+          <span class="hero-sticker-kicker">THE GOOD PART</span>
+          <strong><Icon name="ph:chart-line-up-bold" /></strong>
+          <b>More guesses</b>
+          <span>better bragging rights</span>
+        </div>
+        <div class="hero-privacy-sticker stk">
+          <Icon name="ph:lock-key-fill" />
+          Totals only
+        </div>
+        <span class="hero-star hero-star-one">✦</span>
+        <span class="hero-star hero-star-two">✳</span>
+      </div>
+    </header>
+
+    <p class="stats-status" data-stats-status role="status">
+      Gathering the live totals...
+    </p>
+    <p class="stats-error stk" data-stats-error role="alert" hidden>
+      The scoreboard is taking a breather. Try again in a minute.
+    </p>
+
+    <section class="stats-grid" aria-label="Public game totals">
+      <article class="stat-card stat-rounds stk">
+        <span class="stat-icon"><Icon name="ph:flag-checkered-fill" /></span>
+        <span class="stat-label">Rounds played</span>
+        <strong class="stat-value" data-stat-value="rounds">...</strong>
+        <small>One more round, one more guess.</small>
+      </article>
+      <article class="stat-card stat-games stk">
+        <span class="stat-icon"><Icon name="ph:trophy-fill" /></span>
+        <span class="stat-label">Games finished</span>
+        <strong class="stat-value" data-stat-value="games">...</strong>
+        <small>Final rounds reached.</small>
+      </article>
+      <article class="stat-card stat-guesses stk">
+        <span class="stat-icon"><Icon name="ph:lightbulb-fill" /></span>
+        <span class="stat-label">Guesses made</span>
+        <strong class="stat-value" data-stat-value="guesses">...</strong>
+        <small>Download and upload predictions.</small>
+      </article>
+      <article class="stat-card stat-spot-ons stk">
+        <span class="stat-icon"><Icon name="ph:target-bold" /></span>
+        <span class="stat-label">Spot-on guesses</span>
+        <strong class="stat-value" data-stat-value="spotOns">...</strong>
+        <small>Player-rounds with a bonus.</small>
+      </article>
+      <article class="stat-card stat-average-down stk">
+        <span class="stat-icon"><Icon name="ph:rocket-launch-fill" /></span>
+        <span class="stat-label">Average download</span>
+        <strong class="stat-value" data-stat-value="averageDown">...</strong>
+        <small>Across every measured round.</small>
+      </article>
+      <article class="stat-card stat-closest stk">
+        <span class="stat-icon"><Icon name="ph:crosshair-simple-bold" /></span>
+        <span class="stat-label">Average closest miss</span>
+        <strong class="stat-value" data-stat-value="averageMiss">...</strong>
+        <small>Best miss from each measured round.</small>
+      </article>
+    </section>
+
+    <section class="mode-section stk" aria-labelledby="mode-title">
+      <div class="mode-heading">
+        <div>
+          <span class="mode-kicker">THREE WAYS TO PLAY</span>
+          <h2 id="mode-title">Where the rounds happen</h2>
+        </div>
+        <span class="mode-heading-note">A little friendly mix</span>
+      </div>
+      <div class="mode-bar" aria-hidden="true">
+        <span class="mode-segment mode-family" data-mode-segment="local"></span>
+        <span class="mode-segment mode-rooms" data-mode-segment="room"></span>
+        <span
+          class="mode-segment mode-classroom"
+          data-mode-segment="classroom"
+        ></span>
+      </div>
+      <ul class="mode-legend" aria-label="Rounds by play mode">
+        <li class="mode-family">
+          <span class="mode-name"><i></i>Family</span>
+          <strong data-mode-count="local">...</strong>
+          <small data-mode-percent="local">...%</small>
+        </li>
+        <li class="mode-rooms">
+          <span class="mode-name"><i></i>Rooms</span>
+          <strong data-mode-count="room">...</strong>
+          <small data-mode-percent="room">...%</small>
+        </li>
+        <li class="mode-classroom">
+          <span class="mode-name"><i></i>Classroom</span>
+          <strong data-mode-count="classroom">...</strong>
+          <small data-mode-percent="classroom">...%</small>
+        </li>
+      </ul>
+      <p class="mode-note">
+        Rounds from before this feature aren't split by mode.
+      </p>
+    </section>
+
+    <aside class="stats-privacy stk">
+      <Icon name="ph:lock-key-fill" aria-hidden="true" />
+      <p>
+        These are aggregate totals only. No names, guesses or individual round
+        results are part of this scoreboard.{' '}
+        <a href="/privacy/">Read the privacy details</a>.
+      </p>
+    </aside>
+    <p class="stats-since">Counting since October 2026.</p>
+  </main>
+
+  <script>
+    import { loadPublicStats } from "../scripts/stats-client";
+
+    void loadPublicStats();
+  </script>
+</Base>
+
+<style>
+  .stats-page {
+    max-width: 1120px;
+    padding-top: 34px;
+    padding-bottom: 42px;
+  }
+
+  .stats-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 280px;
+    align-items: center;
+    gap: 30px;
+    margin-bottom: 24px;
+  }
+
+  .stats-hero .round-banner {
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    background: #fff1b8;
+    color: var(--on-pastel);
+  }
+
+  .stats-hero h1 {
+    max-width: 15ch;
+    margin: 0;
+    font-size: clamp(48px, 7vw, 76px);
+    line-height: 0.98;
+  }
+
+  .stats-hero h1 em {
+    color: var(--accent);
+  }
+
+  .stats-hero .lede {
+    max-width: 61ch;
+    margin: 18px 0 0;
+    color: var(--muted);
+    font-size: clamp(17px, 2vw, 20px);
+    line-height: 1.5;
+  }
+
+  .stats-hero-art {
+    position: relative;
+    display: grid;
+    min-height: 228px;
+    place-items: center;
+  }
+
+  .hero-sticker {
+    display: grid;
+    width: 214px;
+    min-height: 192px;
+    place-items: center;
+    padding: 20px;
+    border: 2.5px solid var(--on-pastel);
+    border-radius: 22px;
+    background: #e3f5fa;
+    box-shadow: 6px 6px 0 var(--shadow);
+    color: var(--on-pastel);
+    transform: rotate(4deg);
+  }
+
+  .hero-sticker-kicker {
+    font-size: 0.75rem;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+  }
+
+  .hero-sticker strong {
+    display: grid;
+    width: 72px;
+    height: 72px;
+    place-items: center;
+    border: 2px solid var(--on-pastel);
+    border-radius: 20px;
+    background: #ffdb66;
+    box-shadow: 3px 3px 0 var(--shadow);
+    font-size: 2.7rem;
+  }
+
+  .hero-sticker b {
+    font-size: 1.25rem;
+  }
+
+  .hero-sticker > span:last-child {
+    color: #565b66;
+    font-size: 0.88rem;
+    font-weight: 700;
+  }
+
+  .hero-privacy-sticker {
+    position: absolute;
+    right: -4px;
+    bottom: 2px;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 14px;
+    border: 2px solid var(--on-pastel);
+    border-radius: 999px;
+    background: #e8f7cf;
+    box-shadow: 3px 3px 0 var(--shadow);
+    color: var(--on-pastel);
+    font-size: 0.9rem;
+    font-weight: 850;
+    transform: rotate(-3deg);
+  }
+
+  .hero-star {
+    position: absolute;
+    color: var(--accent);
+    font-size: 2rem;
+  }
+
+  .hero-star-one {
+    top: 4px;
+    right: 25px;
+    transform: rotate(14deg);
+  }
+
+  .hero-star-two {
+    bottom: 25px;
+    left: 1px;
+    color: #eaa925;
+    font-size: 1.6rem;
+    transform: rotate(-12deg);
+  }
+
+  .stats-status {
+    min-height: 1.5em;
+    margin: 0 0 10px;
+    color: var(--muted);
+    font-size: 0.92rem;
+    font-weight: 700;
+  }
+
+  .stats-error {
+    margin: 0 0 18px;
+    padding: 14px 18px;
+    border: 2px solid var(--on-pastel);
+    border-radius: 14px;
+    background: #fff1b8;
+    box-shadow: 3px 3px 0 var(--shadow);
+    color: var(--on-pastel);
+    font-weight: 800;
+  }
+
+  .stats-error[hidden] {
+    display: none;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+    align-items: stretch;
+  }
+
+  .stat-card {
+    display: grid;
+    min-width: 0;
+    min-height: 178px;
+    grid-template-columns: 42px minmax(0, 1fr);
+    grid-template-rows: auto auto 1fr;
+    align-content: start;
+    align-items: center;
+    column-gap: 12px;
+    row-gap: 8px;
+    padding: 18px;
+    border: 2.5px solid var(--on-pastel);
+    border-radius: 18px;
+    box-shadow: 5px 5px 0 var(--shadow);
+    color: var(--on-pastel);
+  }
+
+  .stat-rounds {
+    background: #fff1b8;
+    transform: rotate(-1.2deg);
+  }
+
+  .stat-games {
+    background: #e3f5fa;
+    transform: rotate(0.8deg);
+  }
+
+  .stat-guesses {
+    background: #f3e9ff;
+    transform: rotate(-0.6deg);
+  }
+
+  .stat-spot-ons {
+    background: #e8f7cf;
+    transform: rotate(0.9deg);
+  }
+
+  .stat-average-down {
+    background: #ffe2d8;
+    transform: rotate(-0.8deg);
+  }
+
+  .stat-closest {
+    background: #e2f3e9;
+    transform: rotate(0.6deg);
+  }
+
+  .stat-icon {
+    display: grid;
+    width: 42px;
+    height: 42px;
+    grid-row: 1 / 3;
+    place-items: center;
+    border: 2px solid var(--on-pastel);
+    border-radius: 13px;
+    background: rgb(255 255 255 / 70%);
+    box-shadow: 2px 2px 0 var(--shadow);
+    font-size: 1.35rem;
+  }
+
+  .stat-label {
+    align-self: end;
+    font-size: 0.92rem;
+    font-weight: 850;
+    line-height: 1.15;
+  }
+
+  .stat-value {
+    min-width: 0;
+    grid-column: 2;
+    font-size: clamp(27px, 3.2vw, 39px);
+    font-variant-numeric: tabular-nums;
+    font-weight: 950;
+    line-height: 1;
+    overflow-wrap: anywhere;
+  }
+
+  .stat-card small {
+    grid-column: 1 / -1;
+    align-self: end;
+    color: #45464b;
+    font-size: 0.82rem;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+
+  .mode-section {
+    margin-top: 30px;
+    padding: clamp(18px, 3vw, 28px);
+    border: 2.5px solid var(--ink);
+    border-radius: 22px;
+    background: var(--surface);
+    box-shadow: 5px 5px 0 var(--shadow);
+  }
+
+  .mode-heading {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 18px;
+  }
+
+  .mode-kicker {
+    color: #b23b21;
+    font-size: 0.75rem;
+    font-weight: 900;
+    letter-spacing: 0.14em;
+  }
+
+  .mode-heading h2 {
+    margin: 4px 0 0;
+    font-size: clamp(25px, 4vw, 34px);
+    line-height: 1;
+  }
+
+  .mode-heading-note {
+    flex: none;
+    padding: 7px 11px;
+    border: 2px solid var(--on-pastel);
+    border-radius: 999px;
+    background: #fff1b8;
+    color: var(--on-pastel);
+    font-size: 0.78rem;
+    font-weight: 850;
+    transform: rotate(-2deg);
+  }
+
+  .mode-bar {
+    display: flex;
+    height: 24px;
+    overflow: hidden;
+    border: 2px solid var(--ink);
+    border-radius: 999px;
+    background: var(--soft);
+  }
+
+  .mode-segment {
+    width: 0;
+    flex: none;
+    transition: width 850ms cubic-bezier(0.2, 0.75, 0.3, 1);
+  }
+
+  .mode-family .mode-segment,
+  .mode-segment.mode-family {
+    background: #ff8b55;
+  }
+
+  .mode-rooms .mode-segment,
+  .mode-segment.mode-rooms {
+    background: #69c6dc;
+  }
+
+  .mode-classroom .mode-segment,
+  .mode-segment.mode-classroom {
+    background: #a8c96a;
+  }
+
+  .mode-legend {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin: 18px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .mode-legend li {
+    display: grid;
+    min-width: 0;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 4px 10px;
+    padding: 12px 14px;
+    border: 2px solid var(--on-pastel);
+    border-radius: 14px;
+    box-shadow: 3px 3px 0 var(--shadow);
+    color: var(--on-pastel);
+  }
+
+  .mode-legend .mode-family {
+    background: #fff1b8;
+  }
+
+  .mode-legend .mode-rooms {
+    background: #e3f5fa;
+  }
+
+  .mode-legend .mode-classroom {
+    background: #e8f7cf;
+  }
+
+  .mode-name {
+    display: inline-flex;
+    min-width: 0;
+    align-items: center;
+    gap: 7px;
+    font-weight: 850;
+  }
+
+  .mode-name i {
+    width: 10px;
+    height: 10px;
+    flex: none;
+    border: 1px solid var(--on-pastel);
+    border-radius: 50%;
+    background: #ff8b55;
+  }
+
+  .mode-rooms .mode-name i {
+    background: #69c6dc;
+  }
+
+  .mode-classroom .mode-name i {
+    background: #a8c96a;
+  }
+
+  .mode-legend strong {
+    font-size: 1.1rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .mode-legend small {
+    grid-column: 1 / -1;
+    color: #45464b;
+    font-weight: 700;
+  }
+
+  .mode-note {
+    margin: 16px 0 0;
+    color: var(--muted);
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+
+  .stats-privacy {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 26px;
+    padding: 14px 18px;
+    border: 2px solid var(--on-pastel);
+    border-radius: 14px;
+    background: #e8f7cf;
+    box-shadow: 4px 4px 0 var(--shadow);
+    color: var(--on-pastel);
+  }
+
+  .stats-privacy > :global(svg) {
+    flex: none;
+    font-size: 1.4rem;
+  }
+
+  .stats-privacy p {
+    margin: 0;
+    font-weight: 700;
+    line-height: 1.45;
+  }
+
+  .stats-privacy a {
+    color: var(--on-pastel);
+    font-weight: 900;
+    text-underline-offset: 3px;
+  }
+
+  .stats-since {
+    margin: 20px 0 0;
+    color: var(--muted);
+    font-size: 0.86rem;
+    font-weight: 750;
+    text-align: center;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mode-segment {
+      transition: none;
+    }
+  }
+
+  @media (max-width: 760px) {
+    .stats-page {
+      padding-top: 24px;
+    }
+
+    .stats-hero {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .stats-hero-art {
+      display: none;
+    }
+
+    .stats-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .stat-card {
+      min-height: 160px;
+      column-gap: 8px;
+      padding: 14px 12px;
+    }
+
+    .stat-icon {
+      width: 36px;
+      height: 36px;
+      font-size: 1.15rem;
+    }
+
+    .stat-label {
+      font-size: 0.83rem;
+    }
+
+    .stat-value {
+      font-size: clamp(24px, 7vw, 32px);
+    }
+
+    .stat-card small {
+      font-size: 0.74rem;
+    }
+
+    .mode-legend {
+      gap: 8px;
+    }
+
+    .mode-legend li {
+      gap: 4px 6px;
+      padding: 10px;
+      font-size: 0.88rem;
+    }
+  }
+
+  @media (max-width: 420px) {
+    .stats-grid {
+      gap: 10px;
+    }
+
+    .stat-card {
+      min-height: 154px;
+      grid-template-columns: 32px minmax(0, 1fr);
+      column-gap: 7px;
+      padding: 13px 10px;
+    }
+
+    .stat-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      font-size: 1rem;
+    }
+
+    .stat-label {
+      font-size: 0.78rem;
+    }
+
+    .stat-value {
+      font-size: clamp(22px, 7vw, 28px);
+    }
+
+    .mode-heading {
+      align-items: start;
+      flex-direction: column;
+    }
+
+    .mode-legend {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .mode-legend li {
+      grid-template-columns: minmax(0, 1fr) auto auto;
+    }
+
+    .mode-legend small {
+      grid-column: auto;
+    }
+  }
+</style>

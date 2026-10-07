@@ -1,4 +1,19 @@
-import { formatPlayStat, type PlayTotals, type StatEvent } from "../lib/stats";
+import {
+  formatPlayStat,
+  normalizeTotals,
+  type PlayTotals,
+  type PlayMode,
+  type StatEvent,
+} from "../lib/stats";
+
+const integerFormat = new Intl.NumberFormat("en-US");
+const oneDecimalFormat = new Intl.NumberFormat("en-US", {
+  minimumFractionDigits: 1,
+  maximumFractionDigits: 1,
+});
+const percentFormat = new Intl.NumberFormat("en-US", {
+  maximumFractionDigits: 1,
+});
 
 export function sendStat(event: StatEvent): void {
   try {
@@ -22,6 +37,123 @@ function isPlayTotals(value: unknown): value is PlayTotals {
       Number.isInteger(totals[key]) &&
       totals[key] >= 0,
   );
+}
+
+function countUp(
+  element: HTMLElement,
+  target: number,
+  format: (value: number) => string,
+): void {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    element.textContent = format(target);
+    return;
+  }
+
+  const startedAt = performance.now();
+  const duration = 850;
+  const draw = (now: number) => {
+    const progress = Math.min(1, (now - startedAt) / duration);
+    const eased = 1 - (1 - progress) ** 3;
+    element.textContent = format(target * eased);
+    if (progress < 1) requestAnimationFrame(draw);
+  };
+  requestAnimationFrame(draw);
+}
+
+export async function loadPublicStats(): Promise<void> {
+  const page = document.querySelector<HTMLElement>("[data-stats-page]");
+  if (!page) return;
+  const status = page.querySelector<HTMLElement>("[data-stats-status]");
+  const error = page.querySelector<HTMLElement>("[data-stats-error]");
+
+  try {
+    const response = await fetch("/api/stats", {
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!response.ok) throw new Error("Stats request failed");
+    const value: unknown = await response.json();
+    if (!isPlayTotals(value)) throw new Error("Stats response was invalid");
+    const totals = normalizeTotals(value);
+
+    const animate = (
+      key: string,
+      target: number,
+      format: (value: number) => string,
+    ) => {
+      const element = page.querySelector<HTMLElement>(
+        `[data-stat-value="${key}"]`,
+      );
+      if (element) countUp(element, target, format);
+    };
+    animate("rounds", totals.rounds, (value) =>
+      integerFormat.format(Math.round(value)),
+    );
+    animate("games", totals.games, (value) =>
+      integerFormat.format(Math.round(value)),
+    );
+    animate("guesses", totals.guesses, (value) =>
+      integerFormat.format(Math.round(value)),
+    );
+    animate("spotOns", totals.spotOns, (value) =>
+      integerFormat.format(Math.round(value)),
+    );
+    const averageDown = page.querySelector<HTMLElement>(
+      '[data-stat-value="averageDown"]',
+    );
+    if (averageDown) {
+      if (totals.downRounds === 0) averageDown.textContent = "Not yet";
+      else
+        countUp(
+          averageDown,
+          totals.downSum / totals.downRounds,
+          (value) => `${integerFormat.format(Math.round(value))} Mbps`,
+        );
+    }
+    const averageMiss = page.querySelector<HTMLElement>(
+      '[data-stat-value="averageMiss"]',
+    );
+    if (averageMiss) {
+      if (totals.closestMissRounds === 0) averageMiss.textContent = "Not yet";
+      else
+        countUp(
+          averageMiss,
+          totals.closestMissSum / totals.closestMissRounds,
+          (value) => `${oneDecimalFormat.format(value)}%`,
+        );
+    }
+
+    const modes: PlayMode[] = ["local", "room", "classroom"];
+    for (const mode of modes) {
+      const count = totals.modes[mode];
+      const percent = totals.rounds > 0 ? (count / totals.rounds) * 100 : 0;
+      const countElement = page.querySelector<HTMLElement>(
+        `[data-mode-count="${mode}"]`,
+      );
+      const percentElement = page.querySelector<HTMLElement>(
+        `[data-mode-percent="${mode}"]`,
+      );
+      const segment = page.querySelector<HTMLElement>(
+        `[data-mode-segment="${mode}"]`,
+      );
+      if (countElement)
+        countUp(countElement, count, (value) =>
+          integerFormat.format(Math.round(value)),
+        );
+      if (percentElement)
+        countUp(
+          percentElement,
+          percent,
+          (value) => `${percentFormat.format(value)}%`,
+        );
+      if (segment)
+        segment.style.width = `${Math.min(100, Math.max(0, percent))}%`;
+    }
+
+    if (status) status.hidden = true;
+  } catch {
+    if (status) status.hidden = true;
+    if (error) error.hidden = false;
+  }
 }
 
 export async function loadPlayStat(): Promise<void> {

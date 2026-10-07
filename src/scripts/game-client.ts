@@ -44,6 +44,7 @@ import {
 import { readRoomLocalSettings } from "./room-settings";
 import { burstConfetti } from "./confetti";
 import type { ClientAction, RoomView } from "../lib/room";
+import { roundStatEvent } from "../lib/stats";
 import { sendStat } from "./stats-client";
 
 type ClientPlayer = Player & { mine?: boolean };
@@ -991,7 +992,15 @@ async function startTest() {
       ).length;
       const result = applyResult(state, actual);
       state = result.state;
-      if (!isMockMode()) sendStat({ kind: "round", guesses: lockedGuesses });
+      if (!isMockMode())
+        sendStat(
+          roundStatEvent(
+            result.scores,
+            actual,
+            classroomMode ? "classroom" : "local",
+            lockedGuesses,
+          ),
+        );
       persist();
       document.documentElement.dataset.phase = "done";
       $<HTMLSpanElement>("[data-mode]").textContent = "Download";

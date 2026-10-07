@@ -7,7 +7,7 @@ import {
   viewFor,
   type Room,
 } from "../src/lib/room";
-import type { StatEvent } from "../src/lib/stats";
+import { roundStatEvent, type StatEvent } from "../src/lib/stats";
 import type { Env } from "./types";
 
 interface SocketAttachment {
@@ -118,10 +118,23 @@ export class GameRoom extends DurableObject<Env> {
       parsed.type === "result" &&
       previousPhase === "testing" &&
       result.room.game.phase === "results"
-    )
-      this.recordStat({ kind: "round", guesses: lockedGuesses });
-    else if (parsed.type === "next" && result.room.game.phase === "champion")
+    ) {
+      const lastRound = result.room.game.history.at(-1);
+      if (lastRound)
+        this.recordStat(
+          roundStatEvent(
+            lastRound.scores,
+            lastRound.actual,
+            "room",
+            lockedGuesses,
+          ),
+        );
+    } else if (
+      parsed.type === "next" &&
+      result.room.game.phase === "champion"
+    ) {
       this.recordStat({ kind: "game" });
+    }
   }
 
   webSocketClose(socket: WebSocket): void {
