@@ -259,7 +259,9 @@ function scheduleReconnect(): void {
 async function checkThenConnect(): Promise<void> {
   if (!roomCode || ended) return;
   try {
-    const response = await fetch(`/api/rooms/${roomCode}`);
+    const response = await fetch(`/api/rooms/${roomCode}`, {
+      signal: AbortSignal.timeout(5000),
+    });
     if (response.status === 404) {
       showEndedRoom();
       return;
@@ -273,11 +275,17 @@ async function checkThenConnect(): Promise<void> {
 
 function connect(): void {
   if (!roomCode || ended) return;
+  if (socket) {
+    const previousSocket = socket;
+    socket = null;
+    previousSocket.close();
+  }
   const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
   const url = `${protocol}//${window.location.host}/api/rooms/${roomCode}/ws`;
   const nextSocket = new WebSocket(url);
   socket = nextSocket;
   nextSocket.addEventListener("open", () => {
+    if (socket !== nextSocket) return;
     setConnectionStatus("Connecting...");
     const hello: { type: "hello"; clientId: string; hostToken?: string } = {
       type: "hello",
@@ -292,6 +300,7 @@ function connect(): void {
     nextSocket.send(JSON.stringify(hello));
   });
   nextSocket.addEventListener("message", (event: MessageEvent<string>) => {
+    if (socket !== nextSocket) return;
     let message: unknown;
     try {
       message = JSON.parse(event.data);
@@ -330,12 +339,15 @@ function connect(): void {
     }
   });
   nextSocket.addEventListener("close", () => {
+    if (socket !== nextSocket) return;
+    socket = null;
     if (ended) return;
     latestView = null;
+    document.dispatchEvent(new CustomEvent("gts:room-disconnect"));
     scheduleReconnect();
   });
   nextSocket.addEventListener("error", () => {
-    if (!ended) setConnectionStatus("Reconnecting...");
+    if (socket === nextSocket && !ended) setConnectionStatus("Reconnecting...");
   });
 }
 

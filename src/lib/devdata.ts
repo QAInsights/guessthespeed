@@ -132,7 +132,9 @@ function omitIp(value: unknown): unknown {
   if (!value || typeof value !== "object") return value;
   return Object.fromEntries(
     Object.entries(value).flatMap(([key, entry]) =>
-      key.toLowerCase() === "ip" ? [] : [[key, omitIp(entry)]],
+      /^(?:client|remote|user)?ip(?:address)?$/i.test(key)
+        ? []
+        : [[key, omitIp(entry)]],
     ),
   );
 }

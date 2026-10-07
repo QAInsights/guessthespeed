@@ -133,25 +133,40 @@ describe("buildExport", () => {
     const exported = buildExport({
       connection: {
         ip: "203.0.113.42",
-        nested: [{ IP: "2001:db8::1", value: "kept" }],
+        clientIp: "203.0.113.42",
+        remoteIp: "203.0.113.43",
+        userIp: "203.0.113.44",
+        ipAddress: "203.0.113.45",
+        IP: "203.0.113.46",
+        nested: [
+          {
+            clientIp: "203.0.113.47",
+            user: { remoteIp: "203.0.113.48", IP: "2001:db8::1" },
+            value: "kept",
+          },
+        ],
       },
-      browser: { language: "en-US" },
+      browser: { language: "en-US", ipv6: "2001:db8::1" },
       summary: { download: 100 },
+      postal: { zip: "97204" },
+      tip: "preserved",
     });
     const assertNoIpKey = (value: unknown) => {
       if (Array.isArray(value)) {
         value.forEach(assertNoIpKey);
       } else if (value && typeof value === "object") {
-        expect(Object.keys(value)).not.toContain("ip");
-        expect(Object.keys(value)).not.toContain("IP");
+        for (const key of Object.keys(value))
+          expect(key).not.toMatch(/^(?:client|remote|user)?ip(?:address)?$/i);
         Object.values(value).forEach(assertNoIpKey);
       }
     };
 
     expect(exported).toEqual({
-      connection: { nested: [{ value: "kept" }] },
-      browser: { language: "en-US" },
+      connection: { nested: [{ user: {}, value: "kept" }] },
+      browser: { language: "en-US", ipv6: "2001:db8::1" },
       summary: { download: 100 },
+      postal: { zip: "97204" },
+      tip: "preserved",
     });
     assertNoIpKey(exported);
   });

@@ -290,7 +290,7 @@ function renderRequestBars(rows: RequestRow[]): string {
       const x = index * 14 + 2;
       const y = baseline - barHeight;
       const color = direction === "download" ? "var(--accent)" : "var(--ink)";
-      return `<rect x="${x}" y="${y.toFixed(1)}" width="9" height="${barHeight.toFixed(1)}" rx="2" fill="${color}"><title>${direction}: ${displayValue(point.bps / 1e6)} Mbps</title></rect>`;
+      return `<rect x="${x}" y="${y.toFixed(1)}" width="9" height="${barHeight.toFixed(1)}" rx="2" fill="${color}"><title>${escapeHtml(direction)}: ${displayValue(point.bps / 1e6)} Mbps</title></rect>`;
     })
     .join("");
   return `<svg class="dev-bars" viewBox="0 0 ${width} ${height}" role="img" aria-label="Mbps per request bar chart">${bars}</svg><p>Download <span style="color:var(--accent)" aria-hidden="true">■</span> · Upload <span style="color:var(--ink)" aria-hidden="true">■</span></p>`;
@@ -315,7 +315,7 @@ function renderRequests() {
   const body = rows
     .map(({ direction, point }, index) => {
       const elapsedMs = Date.parse(point.measTime) - details!.startedAt;
-      return `<tr><td>${index + 1}</td><td>${direction}</td><td>${sizeLabel(point.bytes)}</td><td>${displayValue(point.duration)} ms</td><td>${point.serverTime === -1 ? "n/a" : `${displayValue(point.serverTime)} ms`}</td><td>${displayValue(point.ping)} ms</td><td>${displayValue(point.transferSize, 0)}</td><td>${displayValue(point.bps / 1e6)} Mbps</td><td>${counted.has(point) ? "yes" : "no"}</td><td>${displayValue(elapsedMs / 1000)} s</td></tr>`;
+      return `<tr><td>${index + 1}</td><td>${escapeHtml(direction)}</td><td>${sizeLabel(point.bytes)}</td><td>${displayValue(point.duration)} ms</td><td>${point.serverTime === -1 ? "n/a" : `${displayValue(point.serverTime)} ms`}</td><td>${displayValue(point.ping)} ms</td><td>${displayValue(point.transferSize, 0)}</td><td>${displayValue(point.bps / 1e6)} Mbps</td><td>${counted.has(point) ? "yes" : "no"}</td><td>${displayValue(elapsedMs / 1000)} s</td></tr>`;
     })
     .join("");
   requestsContent.innerHTML = `${renderRequestBars(rows)}<div class="dev-data-table-wrap"><table class="dev-data-table"><thead><tr><th>#</th><th>Direction</th><th>Size</th><th>Duration</th><th>Server time</th><th>Ping</th><th>Transfer bytes</th><th>Mbps</th><th>Counted</th><th>Run offset</th></tr></thead><tbody>${body}</tbody></table></div>`;
