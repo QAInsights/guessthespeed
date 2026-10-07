@@ -13,6 +13,7 @@ import {
   type SpeedDetails,
 } from "../lib/speedtest";
 import { escapeHtml } from "../lib/html";
+import { loadPlan, planPercent } from "../lib/plan";
 import { $ } from "./dom";
 
 type BrowserDetails = Record<string, string | number | boolean>;
@@ -157,6 +158,21 @@ function renderSummary() {
   }
   const down = getSummaryValue(details, "download");
   const up = getSummaryValue(details, "upload");
+  const plan = loadPlan();
+  const plannedDown = plan.down;
+  const plannedUp = plan.up;
+  const downPercent = planPercent(
+    down === undefined ? undefined : down / 1e6,
+    plannedDown,
+  );
+  const upPercent = planPercent(
+    up === undefined ? undefined : up / 1e6,
+    plannedUp,
+  );
+  const planValue = (planned: number | null, pct: number | null) =>
+    planned === null
+      ? "not set"
+      : `${planned.toLocaleString(undefined, { maximumFractionDigits: 0 })} Mbps${pct === null ? "" : ` (this run ${pct}%)`}`;
   const latency = getSummaryValue(details, "latency");
   const jitter = getSummaryValue(details, "jitter");
   const duration =
@@ -180,6 +196,8 @@ function renderSummary() {
       "Upload",
       up === undefined ? "unavailable" : `${displayValue(up / 1e6)} Mbps`,
     ],
+    ["Plan download", planValue(plannedDown, downPercent)],
+    ["Plan upload", planValue(plannedUp, upPercent)],
     [
       "Median ping",
       latency === undefined ? "unavailable" : `${displayValue(latency)} ms`,

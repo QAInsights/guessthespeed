@@ -1,0 +1,292 @@
+---
+import Base from '../layouts/Base.astro';
+
+const questions = [
+  {
+    question: 'How close should my speed test be to my plan?',
+    answer:
+      'This guide uses 80% of the advertised download speed as its own quick-check rule of thumb. It is not a provider guarantee or a regulatory standard. Repeat the test under fair conditions before drawing a conclusion.',
+  },
+  {
+    question: 'Does one low speed test mean my provider is not delivering?',
+    answer:
+      'No. A single test is a snapshot of one device, place, and moment. Repeat on a wired device near the router at different times and look for a consistent pattern.',
+  },
+  {
+    question: 'How can I test my internet speed fairly?',
+    answer:
+      'Use a wired device near the router when possible, pause other heavy internet activity, and repeat the test at different times. Keep the device and test method consistent when comparing results.',
+  },
+  {
+    question: 'Does Guess the Speed send my plan speed anywhere?',
+    answer:
+      'No. An internet plan entered in Settings is saved in this browser and is never sent to us. The checker compares the plan and measured speed on your device.',
+  },
+];
+
+const faqSchema = {
+  '@type': 'FAQPage',
+  mainEntity: questions.map(({ question, answer }) => ({
+    '@type': 'Question',
+    name: question,
+    acceptedAnswer: { '@type': 'Answer', text: answer },
+  })),
+};
+---
+
+<Base
+  title="Am I Getting the Internet Speed I Pay For? A Quick Check"
+  description="Compare your internet plan with real download results, test fairly, and learn when a repeated speed gap is worth discussing with your provider."
+  breadcrumb="Internet plan check"
+  schema={[faqSchema]}
+>
+  <main class="wrap content-page plan-check-page">
+    <span class="round-banner">Speed school</span>
+    <h1>Am I Getting the Internet Speed I Pay For? A Quick Check</h1>
+    <p class="lede">
+      Run a speed test on a device close to your router, ideally with a wired
+      connection, then compare the download and upload results with your plan.
+      Repeat at different times of day. One low result is not proof of a problem,
+      but a pattern is a useful reason to investigate.
+    </p>
+
+    <section class="plan-check-card" aria-labelledby="plan-check-title">
+      <div class="plan-check-intro">
+        <span class="plan-check-kicker">A quick download check</span>
+        <h2 id="plan-check-title">Compare your plan with a test</h2>
+        <p>
+          Enter the download speed on your plan and a measured download result.
+          The comparison stays in this browser.
+        </p>
+      </div>
+      <div class="plan-check-fields">
+        <label class="plan-check-field">
+          Plan download (Mbps)
+          <input
+            class="dialog-input"
+            data-plan-check-plan
+            type="number"
+            min="1"
+            max="10000"
+            step="any"
+            inputmode="decimal"
+            placeholder="500"
+          />
+        </label>
+        <label class="plan-check-field">
+          Measured download (Mbps)
+          <input
+            class="dialog-input"
+            data-plan-check-measured
+            type="number"
+            min="1"
+            step="any"
+            inputmode="decimal"
+            placeholder="420"
+          />
+        </label>
+      </div>
+      <output class="plan-check-result" data-plan-check-result aria-live="polite">
+        Enter both speeds to see how close your result is.
+      </output>
+      <div class="plan-check-actions">
+        <button class="guess-button" type="button" data-use-last-test>
+          Use my last test
+        </button>
+        <button class="go" type="button" data-save-plan>
+          Save as my plan
+        </button>
+      </div>
+      <p class="plan-check-status" data-plan-check-status aria-live="polite"></p>
+      <p class="plan-check-note">
+        The colors use this site's rule of thumb: 80% or more is close for this
+        quick check, 50% to 79% is a gap to keep an eye on, and below 50% is a
+        larger gap worth retesting. These bands are not a provider guarantee or
+        a regulatory figure.
+      </p>
+    </section>
+
+    <article class="content-card stk">
+      <h2>What counts as close enough?</h2>
+      <p>
+        For a quick comparison in Guess the Speed, we use 80% of the plan's
+        download speed as our own rule of thumb for "close enough." It is a
+        practical signal, not a promise about what every device must receive or
+        a standard set by a regulator. The percentage helps you notice a gap;
+        it cannot explain the cause by itself.
+      </p>
+      <p>
+        Providers may describe a service tier as "up to" a speed. A speed test
+        measures what reached one device at one moment, and Wi-Fi typically
+        delivers less than a wired connection. Compare like with like before
+        deciding whether the difference is persistent.
+      </p>
+
+      <h2>Why tests come in lower than the plan</h2>
+      <p>
+        A speed test can be lower for reasons inside the home or along the route
+        to the test server. The <a href="/what-is-a-good-internet-speed/#less-than-plan">good internet speed guide explains common causes in more detail</a>.
+      </p>
+      <ul>
+        <li>Wi-Fi distance and walls between your device and the router.</li>
+        <li>Other people streaming, calling, or downloading during the test.</li>
+        <li>An older device or Wi-Fi standard that cannot use the full connection.</li>
+        <li>A VPN adding another step between your device and the test.</li>
+        <li>The selected test server or the route traffic takes to reach it.</li>
+      </ul>
+
+      <h2>How to test fairly</h2>
+      <ol>
+        <li>Use a wired connection near the router when one is available.</li>
+        <li>Pause large downloads, backups, and other heavy activity for a moment.</li>
+        <li>Run the same test more than once, including at different times of day.</li>
+        <li>Compare both download and upload with the matching numbers on your plan.</li>
+        <li>Keep the device, room, and connection type consistent when repeating.</li>
+      </ol>
+
+      <h2>When to call your provider</h2>
+      <p>
+        If several tests across different days stay well below your plan on a
+        wired device near the router, keep a short record before contacting
+        your provider. Note the date, time, device, connection type, and both
+        measured speeds. A repeatable pattern is more useful to discuss than
+        one result from one busy evening.
+      </p>
+      <p>
+        The <strong>Your Wi-Fi lately</strong> chart keeps recent real-test
+        results in this browser, while Dev mode's JSON download gives you a
+        detailed record of a run. Neither includes your saved plan speed.
+      </p>
+
+      <h2>Make it a game</h2>
+      <p>
+        Turn the next test into a family challenge: guess the download and
+        upload, run a real test, and see who came closest. <a href="/">Play Guess the Speed</a> or read more about the <a href="/speed-test-game/">speed test game</a>.
+      </p>
+    </article>
+
+    <article class="content-card stk plan-check-faq">
+      <h2>Common questions</h2>
+      {questions.map(({ question, answer }) => (
+        <section>
+          <h3>{question}</h3>
+          <p>{answer}</p>
+        </section>
+      ))}
+    </article>
+  </main>
+  <script>
+    import '../scripts/plan-check-client';
+  </script>
+</Base>
+
+<style>
+  .plan-check-card {
+    display: grid;
+    gap: 18px;
+    margin: 0 0 24px;
+    padding: clamp(20px, 4vw, 36px);
+    border: 3px solid var(--ink);
+    border-radius: 20px;
+    background: var(--surface);
+    box-shadow: 7px 7px 0 var(--shadow);
+  }
+
+  .plan-check-intro h2 {
+    margin: 5px 0 8px;
+    font-size: clamp(26px, 4vw, 36px);
+  }
+
+  .plan-check-intro p {
+    max-width: 60ch;
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .plan-check-kicker {
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .plan-check-fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .plan-check-field {
+    display: grid;
+    gap: 7px;
+    font-weight: 800;
+  }
+
+  .plan-check-result {
+    display: block;
+    padding: 16px 18px;
+    border: 2px solid var(--ink);
+    border-radius: 14px;
+    background: var(--soft);
+    color: var(--ink);
+    font-size: clamp(19px, 3vw, 25px);
+    font-weight: 900;
+    line-height: 1.35;
+  }
+
+  .plan-check-result[data-tone='good'] {
+    border-color: var(--on-pastel);
+    background: #b9edc8;
+    color: var(--on-pastel);
+  }
+
+  .plan-check-result[data-tone='ok'] {
+    border-color: var(--on-pastel);
+    background: #ffe08a;
+    color: var(--on-pastel);
+  }
+
+  .plan-check-result[data-tone='low'] {
+    border-color: var(--on-pastel);
+    background: #ffc5bd;
+    color: var(--on-pastel);
+  }
+
+  .plan-check-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .plan-check-status,
+  .plan-check-note {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.55;
+  }
+
+  .plan-check-faq section + section {
+    margin-top: 20px;
+  }
+
+  .plan-check-faq h3 {
+    margin-bottom: 6px;
+  }
+
+  .plan-check-faq p {
+    margin: 0;
+  }
+
+  @media (max-width: 600px) {
+    .plan-check-fields {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .plan-check-actions > button {
+      width: 100%;
+    }
+  }
+</style>
