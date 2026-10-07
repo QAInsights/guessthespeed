@@ -1171,6 +1171,17 @@ $<HTMLButtonElement>("[data-close-edit]").addEventListener("click", () =>
 $<HTMLButtonElement>("[data-cancel-edit]").addEventListener("click", () =>
   editDialog.close(),
 );
+guessDialog.addEventListener("close", () => {
+  const playerId = activePlayerId;
+  activePlayerId = null;
+  if (
+    playerId &&
+    (!document.activeElement || document.activeElement === document.body)
+  )
+    $$<HTMLButtonElement>("[data-guess]")
+      .find((button) => button.dataset.guess === playerId)
+      ?.focus();
+});
 editDialog.addEventListener("close", () => {
   const playerId = editingPlayerId;
   editingPlayerId = null;
