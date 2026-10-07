@@ -1,6 +1,7 @@
 import { generateRoomCode, normalizeRoomCode } from "../src/lib/room";
 import { parseStatEvent } from "../src/lib/stats";
 import type { Env } from "./types";
+import { declaredBodyTooLarge, isAllowedWebSocketOrigin } from "./http";
 import { GameRoom } from "./game-room";
 import { PlayStats } from "./play-stats";
 
@@ -23,7 +24,7 @@ export default {
         return createRoom(env);
 
       const match = url.pathname.match(/^\/api\/rooms\/([^/]+)(\/ws)?$/);
-      if (!match || !["GET"].includes(request.method))
+      if (!match || request.method !== "GET")
         return jsonResponse({ error: "Not found." }, 404);
 
       let inputCode: string;
@@ -38,9 +39,10 @@ export default {
       const stub = env.ROOMS.get(env.ROOMS.idFromName(code));
       if (match[2]) {
         if (request.headers.get("Upgrade")?.toLowerCase() !== "websocket")
-          return jsonResponse({ error: "WebSocket upgrade required." }, 400);
-        const exists = await stub.fetch("https://room.internal/check");
-        if (!exists.ok) return jsonResponse({ error: "Room not found." }, 404);
+          return jsonResponse({ error: "WebSocket upgrade required." }, 426);
+        const origin = request.headers.get("Origin");
+        if (!isAllowedWebSocketOrigin(origin, url.host))
+          return jsonResponse({ error: "Origin not allowed." }, 403);
         return stub.fetch(request);
       }
 
@@ -65,9 +67,12 @@ async function handleStats(request: Request, env: Env): Promise<Response> {
         400,
       );
 
+    if (declaredBodyTooLarge(request.headers.get("content-length"), 256))
+      return jsonResponse({ error: "Request body is too large." }, 413);
+
     const body = await request.text();
     if (new TextEncoder().encode(body).byteLength > 256)
-      return jsonResponse({ error: "Request body is too large." }, 400);
+      return jsonResponse({ error: "Request body is too large." }, 413);
 
     let input: unknown;
     try {
