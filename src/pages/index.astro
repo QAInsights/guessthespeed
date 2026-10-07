@@ -41,6 +41,32 @@ const homeSchema: Record<string, unknown>[] = [
     ],
   },
 ];
+const overheard: { face: string; quote: string; who: string; note: string }[] = [
+  {
+    face: '👩',
+    quote: 'We pay for 500. Why does it say 212?',
+    who: 'The parent who pays the bill',
+    note: 'every single round',
+  },
+  {
+    face: '🧒',
+    quote: 'What is internet speed?',
+    who: 'A 6-year-old',
+    note: 'one round before winning',
+  },
+  {
+    face: '🥱',
+    quote: 'One more round. Just one.',
+    who: 'Everyone',
+    note: 'at 10 pm',
+  },
+  {
+    face: '😎',
+    quote: 'Turn off the Wi-Fi on Grandpa’s tablet!',
+    who: 'Big sister',
+    note: 'being strategic',
+  },
+];
 ---
 
 <Base
@@ -291,6 +317,22 @@ const homeSchema: Record<string, unknown>[] = [
         </p>
       </div>
       <p class="note stk"><strong>Why both numbers?</strong> Most home plans upload more slowly than they download. Guessing both makes the game extra interesting.</p>
+    </section>
+
+    <section class="overheard" aria-labelledby="overheard-title">
+      <div class="overheard-head">
+        <span class="overheard-kicker">Overheard at game night</span>
+        <h2 id="overheard-title" class="display">Honest reviews, sort of.</h2>
+        <p>Things families shout mid-round. Not real reviews, just real living rooms.</p>
+      </div>
+      <div class="overheard-grid">
+        {overheard.map((q) => (
+          <figure class="quote-card stk">
+            <blockquote><p>{q.quote}</p></blockquote>
+            <figcaption><span class="quote-face" aria-hidden="true">{q.face}</span><span><b>{q.who}</b><small>{q.note}</small></span></figcaption>
+          </figure>
+        ))}
+      </div>
     </section>
 
     <aside class="story-teaser note stk" aria-labelledby="story-teaser-title">
