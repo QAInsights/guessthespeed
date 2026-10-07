@@ -109,6 +109,17 @@ const homeSchema: Record<string, unknown>[] = [
         <div class="stat stk"><span><Icon name="ph:arrow-down-fill" />Download</span><div><b data-result="down">-</b><small>Mbps</small></div></div>
         <div class="stat stk"><span><Icon name="ph:arrow-up-fill" />Upload</span><div><b data-result="up">-</b><small>Mbps</small></div></div>
       </div>
+      <article class="wifi-history-card stk" data-history-card hidden aria-labelledby="wifi-history-title">
+        <div class="wifi-history-head">
+          <h2 class="display" id="wifi-history-title">Your Wi-Fi lately</h2>
+          <p class="wifi-history-summary" data-history-summary></p>
+        </div>
+        <svg class="wifi-history-chart" data-history-chart role="img" viewBox="0 0 600 180"></svg>
+        <p class="wifi-history-footer">
+          <span>Saved on this device only.</span>
+          <button class="wifi-history-clear" type="button" data-clear-history>Clear history</button>
+        </p>
+      </article>
     </section>
 
     <section class="room-bar stk" data-room-bar aria-label="Multiplayer room" hidden>

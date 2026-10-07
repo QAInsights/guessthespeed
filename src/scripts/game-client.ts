@@ -46,6 +46,7 @@ import { burstConfetti } from "./confetti";
 import type { ClientAction, RoomView } from "../lib/room";
 import { roundStatEvent } from "../lib/stats";
 import { sendStat } from "./stats-client";
+import { recordSpeedSample } from "./history-client";
 import { describeTarget, isOverlayOpen, shortcutAction } from "./shortcuts";
 
 type ClientPlayer = Player & { mine?: boolean };
@@ -956,6 +957,14 @@ async function startTest() {
           ? { signal: roomRunController.signal }
           : undefined,
     );
+    if (!isMockMode() && !roomRunController?.signal.aborted) {
+      recordSpeedSample({
+        at: Date.now(),
+        down: actual.down,
+        up: actual.up,
+        ping: actual.ping,
+      });
+    }
     setProgress(steps, steps);
     setGauge(actual.down, actual.down);
     if (devRun) {
