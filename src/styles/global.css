@@ -419,6 +419,11 @@ html[data-room="1"] .dev-console {
   --danger-ink: #8c1d18;
   --soft: #dfe3ea;
   --shadow: #16171b;
+  --aurora-1: #ff5a36;
+  --aurora-2: #ffb020;
+  --aurora-3: #2ec4b6;
+  --aurora-4: #4c6ef5;
+  --aurora-5: #e64980;
   --r: 14px;
   color-scheme: light;
 }
@@ -433,6 +438,11 @@ html[data-room="1"] .dev-console {
   --danger-ink: #ffaaa3;
   --soft: #2a2d33;
   --shadow: #000000c0;
+  --aurora-1: #ff6b4a;
+  --aurora-2: #ffd43b;
+  --aurora-3: #38d9a9;
+  --aurora-4: #74c0fc;
+  --aurora-5: #da77f2;
   color-scheme: dark;
 }
 
@@ -446,6 +456,11 @@ html[data-room="1"] .dev-console {
   --danger-ink: #ffaaa3;
   --soft: #3a2c4b;
   --shadow: #0b0710;
+  --aurora-1: #ff8a1f;
+  --aurora-2: #b46cff;
+  --aurora-3: #7cff6b;
+  --aurora-4: #ffd23f;
+  --aurora-5: #ff4f7b;
   color-scheme: dark;
 }
 
@@ -459,6 +474,11 @@ html[data-room="1"] .dev-console {
   --danger-ink: #ffaaa3;
   --soft: #561f44;
   --shadow: #12040d;
+  --aurora-1: #ffbd38;
+  --aurora-2: #ff6f3c;
+  --aurora-3: #ff3d8b;
+  --aurora-4: #ffe08a;
+  --aurora-5: #c77dff;
   color-scheme: dark;
 }
 
@@ -471,6 +491,11 @@ html[data-room="1"] .dev-console {
   --on-accent: #fffaf2;
   --soft: #e5d3bc;
   --shadow: #2d1c12;
+  --aurora-1: #c94c18;
+  --aurora-2: #e0a100;
+  --aurora-3: #8a5a2b;
+  --aurora-4: #a3311f;
+  --aurora-5: #5f7d2e;
   color-scheme: light;
 }
 
@@ -484,6 +509,11 @@ html[data-room="1"] .dev-console {
   --danger-ink: #ffaaa3;
   --soft: #364b62;
   --shadow: #0b121c;
+  --aurora-1: #92dcff;
+  --aurora-2: #c3f0ff;
+  --aurora-3: #7aa7ff;
+  --aurora-4: #b8a6ff;
+  --aurora-5: #e8f7ff;
   color-scheme: dark;
 }
 
@@ -497,6 +527,11 @@ html[data-room="1"] .dev-console {
   --danger-ink: #ffaaa3;
   --soft: #21503f;
   --shadow: #06140f;
+  --aurora-1: #ff4d42;
+  --aurora-2: #3ddc84;
+  --aurora-3: #ffd166;
+  --aurora-4: #f5f5f5;
+  --aurora-5: #2ab673;
   color-scheme: dark;
 }
 
@@ -510,6 +545,11 @@ html[data-room="1"] .dev-console {
   --danger-ink: #ffaaa3;
   --soft: #393354;
   --shadow: #0b0817;
+  --aurora-1: #ffd166;
+  --aurora-2: #ff6ec7;
+  --aurora-3: #7df9ff;
+  --aurora-4: #b388ff;
+  --aurora-5: #ffffff;
   color-scheme: dark;
 }
 
@@ -522,6 +562,11 @@ html[data-room="1"] .dev-console {
   --on-accent: #fff;
   --soft: #e7d8b8;
   --shadow: #332514;
+  --aurora-1: #b74619;
+  --aurora-2: #e09f1f;
+  --aurora-3: #2f8f4e;
+  --aurora-4: #d8572a;
+  --aurora-5: #6b8e23;
   color-scheme: light;
 }
 
@@ -534,6 +579,11 @@ html[data-room="1"] .dev-console {
   --on-accent: #fff;
   --soft: #edd8c8;
   --shadow: #39251e;
+  --aurora-1: #c44936;
+  --aurora-2: #e8457a;
+  --aurora-3: #ff8fab;
+  --aurora-4: #b5179e;
+  --aurora-5: #f4a259;
   color-scheme: light;
 }
 
@@ -546,6 +596,11 @@ html[data-room="1"] .dev-console {
   --on-accent: #fff;
   --soft: #f0d8e6;
   --shadow: #2b1923;
+  --aurora-1: #a72769;
+  --aurora-2: #ff9f1c;
+  --aurora-3: #2ec4b6;
+  --aurora-4: #3a86ff;
+  --aurora-5: #8ac926;
   color-scheme: light;
 }
 
@@ -558,6 +613,11 @@ html[data-room="1"] .dev-console {
   --on-accent: #fff;
   --soft: #dfdbef;
   --shadow: #211c32;
+  --aurora-1: #51427f;
+  --aurora-2: #f4a6c6;
+  --aurora-3: #8fd3b6;
+  --aurora-4: #ffd166;
+  --aurora-5: #9ab8ff;
   color-scheme: light;
 }
 
@@ -571,6 +631,11 @@ html[data-room="1"] .dev-console {
   --danger-ink: #ffaaa3;
   --soft: #274654;
   --shadow: #06151e;
+  --aurora-1: #e8be63;
+  --aurora-2: #5fd3c6;
+  --aurora-3: #f6e7b0;
+  --aurora-4: #8fb8ff;
+  --aurora-5: #c9a0ff;
   color-scheme: dark;
 }
 
@@ -583,6 +648,11 @@ html[data-room="1"] .dev-console {
   --on-accent: #fffdf4;
   --soft: #d8c9a8;
   --shadow: #183526;
+  --aurora-1: #14613e;
+  --aurora-2: #c08a1a;
+  --aurora-3: #2a9d8f;
+  --aurora-4: #8c5a2b;
+  --aurora-5: #d4a017;
   color-scheme: light;
 }
 
@@ -596,6 +666,11 @@ html[data-room="1"] .dev-console {
   --danger-ink: #ffaaa3;
   --soft: #682530;
   --shadow: #20090e;
+  --aurora-1: #f2c45c;
+  --aurora-2: #ff4d4d;
+  --aurora-3: #ff8c42;
+  --aurora-4: #ffe7a0;
+  --aurora-5: #ff6f91;
   color-scheme: dark;
 }
 
@@ -608,6 +683,11 @@ html[data-room="1"] .dev-console {
   --on-accent: #fff;
   --soft: #cce9d2;
   --shadow: #183b25;
+  --aurora-1: #177245;
+  --aurora-2: #3ab06a;
+  --aurora-3: #d4a017;
+  --aurora-4: #ff8c1a;
+  --aurora-5: #0f9d8a;
   color-scheme: light;
 }
 
@@ -1676,6 +1756,7 @@ html[data-revealing="1"] .gauge-needle {
   padding: 16px;
   border: 2.5px solid var(--ink);
   border-radius: var(--r);
+  --card-fill: var(--surface);
   background: var(--surface);
   box-shadow: 5px 5px 0 var(--shadow);
 }
@@ -1689,8 +1770,73 @@ html[data-revealing="1"] .gauge-needle {
 }
 
 .p-card.is-winner {
+  --card-fill: var(--accent);
   background: var(--accent);
   color: var(--on-accent);
+}
+
+@property --aurora-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+html:not([data-aurora="0"]) .has-aurora {
+  border-color: transparent;
+  background:
+    linear-gradient(var(--card-fill), var(--card-fill)) padding-box,
+    conic-gradient(
+        from calc(var(--aurora-start) + var(--aurora-angle)),
+        var(--aurora-a),
+        transparent 16%,
+        var(--aurora-b) 33%,
+        transparent 50%,
+        var(--aurora-c) 66%,
+        transparent 83%,
+        var(--aurora-a)
+      )
+      border-box,
+    linear-gradient(
+        color-mix(in srgb, var(--ink) 28%, var(--card-fill)),
+        color-mix(in srgb, var(--ink) 28%, var(--card-fill))
+      )
+      border-box;
+  box-shadow:
+    5px 5px 0 var(--shadow),
+    0 0 18px -6px color-mix(in srgb, var(--aurora-a) 55%, transparent);
+  animation: aurora-drift var(--aurora-dur) linear var(--aurora-delay) infinite;
+}
+
+html:not([data-aurora="0"]) .is-winner.has-aurora {
+  background:
+    linear-gradient(var(--card-fill), var(--card-fill)) padding-box,
+    conic-gradient(
+        from calc(var(--aurora-start) + var(--aurora-angle)),
+        var(--aurora-a),
+        transparent 16%,
+        var(--aurora-b) 33%,
+        transparent 50%,
+        var(--aurora-c) 66%,
+        transparent 83%,
+        var(--aurora-a)
+      )
+      border-box,
+    linear-gradient(var(--aurora-b), var(--aurora-b)) border-box;
+  box-shadow:
+    5px 5px 0 var(--shadow),
+    0 0 26px -4px color-mix(in srgb, var(--aurora-b) 70%, transparent);
+}
+
+@keyframes aurora-drift {
+  to {
+    --aurora-angle: 360deg;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html:not([data-aurora="0"]) .has-aurora {
+    animation: none;
+  }
 }
 
 .p-card.is-winner .p-results {
@@ -2673,7 +2819,8 @@ dialog::backdrop {
   accent-color: var(--accent);
 }
 
-.confetti-setting {
+.confetti-setting,
+.aurora-setting {
   grid-template-columns: 1fr auto;
   align-items: center;
   padding: 12px 14px;
@@ -2682,18 +2829,21 @@ dialog::backdrop {
   background: var(--bg);
 }
 
-.confetti-setting span {
+.confetti-setting span,
+.aurora-setting span {
   display: grid;
   gap: 3px;
 }
 
-.confetti-setting small {
+.confetti-setting small,
+.aurora-setting small {
   color: var(--muted);
   font-size: 12px;
   font-weight: 600;
 }
 
-.confetti-setting input {
+.confetti-setting input,
+.aurora-setting input {
   width: 22px;
   height: 22px;
   accent-color: var(--accent);

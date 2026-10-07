@@ -24,4 +24,12 @@ describe("room local settings", () => {
     stubRoomSettings(JSON.stringify({ confetti: false }));
     expect(readRoomLocalSettings().confetti).toBe(false);
   });
+
+  it("defaults animated borders on unless a boolean preference is saved", () => {
+    stubRoomSettings(JSON.stringify({ animatedBorders: "off" }));
+    expect(readRoomLocalSettings().animatedBorders).toBe(true);
+
+    stubRoomSettings(JSON.stringify({ animatedBorders: false }));
+    expect(readRoomLocalSettings().animatedBorders).toBe(false);
+  });
 });

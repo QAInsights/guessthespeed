@@ -5,6 +5,7 @@ export interface RoomLocalSettings {
   themeMode: GameSettings["themeMode"];
   sound: boolean;
   confetti: boolean;
+  animatedBorders: boolean;
 }
 
 const STORAGE_KEY = "gts:room-settings";
@@ -14,6 +15,7 @@ export function readRoomLocalSettings(): RoomLocalSettings {
     themeMode: "auto",
     sound: true,
     confetti: true,
+    animatedBorders: true,
   };
   try {
     const saved: unknown = JSON.parse(
@@ -30,6 +32,10 @@ export function readRoomLocalSettings(): RoomLocalSettings {
         typeof saved.confetti === "boolean"
           ? saved.confetti
           : defaults.confetti,
+      animatedBorders:
+        typeof saved.animatedBorders === "boolean"
+          ? saved.animatedBorders
+          : defaults.animatedBorders,
     };
   } catch {
     return defaults;

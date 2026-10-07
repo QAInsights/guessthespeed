@@ -190,6 +190,11 @@ const graphSchema = { '@context': 'https://schema.org', '@graph': graph };
         ];
         if (explicitThemes.includes(themeMode))
           document.documentElement.dataset.theme = themeMode;
+        const animatedBorders = roomPage
+          ? savedSettings?.animatedBorders
+          : savedSettings?.settings?.animatedBorders;
+        if (animatedBorders === false)
+          document.documentElement.dataset.aurora = "0";
       } catch {}
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -325,6 +330,7 @@ const graphSchema = { '@context': 'https://schema.org', '@graph': graph };
           </label>
           <label class="dialog-field sound-setting"><span>Sound</span><input type="checkbox" name="sound" /></label>
           <label class="dialog-field confetti-setting"><span>Confetti<small>A quick burst when the champion is crowned.</small></span><input type="checkbox" name="confetti" /></label>
+          <label class="dialog-field aurora-setting"><span>Animated borders<small>Soft moving light around each player card.</small></span><input type="checkbox" name="animatedBorders" /></label>
           <p class="room-settings-note" data-room-settings-note hidden>Only the host can change rounds or tie rules in this room.</p>
           <div class="dialog-actions">
             <button class="go" type="submit">Save settings</button>
