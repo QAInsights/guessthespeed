@@ -13,6 +13,7 @@ interface Props {
   breadcrumb?: string;
   schema?: Record<string, unknown>[];
   modeSwitch?: "game" | "classroom";
+  noindex?: boolean;
 }
 
 const {
@@ -21,6 +22,7 @@ const {
   breadcrumb,
   schema = [],
   modeSwitch,
+  noindex = false,
 } = Astro.props;
 const canonical = new URL(Astro.url.pathname, 'https://guessthespeed.com').toString();
 const beaconToken = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
@@ -168,6 +170,7 @@ const graphSchema = { '@context': 'https://schema.org', '@graph': graph };
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex" />}
     <link rel="canonical" href={canonical} />
     <meta name="theme-color" content="#eceff3" />
     <meta name="color-scheme" content="light dark" />
