@@ -5,6 +5,7 @@ import {
   formatPlayStat,
   normalizeTotals,
   parseStatEvent,
+  roomStatMode,
   roundStatEvent,
   STAT_DOWN_CAP,
   type PlayTotals,
@@ -73,6 +74,17 @@ describe("parseStatEvent", () => {
     });
   });
 
+  it("accepts Dev events and Work round modes", () => {
+    expect(parseStatEvent({ kind: "dev" })).toEqual({ kind: "dev" });
+    expect(parseStatEvent({ kind: "dev", extra: true })).toBeNull();
+    expect(parseStatEvent({ kind: "round", guesses: 2, mode: "work" })).toEqual(
+      { kind: "round", guesses: 2, mode: "work" },
+    );
+    expect(
+      parseStatEvent({ kind: "round", guesses: 2, mode: "bogus" }),
+    ).toBeNull();
+  });
+
   it.each([
     { kind: "round", guesses: 0 },
     { kind: "round", guesses: 13 },
@@ -106,13 +118,14 @@ describe("normalizeTotals", () => {
     expect(oldShape).toEqual({
       rounds: 7,
       games: 2,
+      devRuns: 0,
       guesses: 20,
       spotOns: 0,
       downSum: 0,
       downRounds: 0,
       closestMissSum: 0,
       closestMissRounds: 0,
-      modes: { local: 0, room: 0, classroom: 0 },
+      modes: { local: 0, room: 0, classroom: 0, work: 0 },
     });
     expect(oldShape).not.toHaveProperty("fastestDown");
 
@@ -133,17 +146,19 @@ describe("normalizeTotals", () => {
       normalizeTotals({
         rounds: -1,
         games: "two",
+        devRuns: "many",
         guesses: 2,
         spotOns: 3,
         downSum: Infinity,
         downRounds: 1.5,
         closestMissSum: -1,
         closestMissRounds: 1.5,
-        modes: { local: "one", room: 1, classroom: -1 },
+        modes: { local: "one", room: 1, classroom: -1, work: 1.5 },
       }),
     ).toEqual(
       totals({
         guesses: 2,
+        devRuns: 0,
         modes: { room: 1 },
       }),
     );
@@ -151,6 +166,20 @@ describe("normalizeTotals", () => {
 });
 
 describe("addStatEvent", () => {
+  it("increments only the Dev run total for a Dev event", () => {
+    const before = totals({
+      rounds: 5,
+      games: 2,
+      guesses: 10,
+      modes: { room: 2, work: 3 },
+    });
+
+    expect(addStatEvent(before, { kind: "dev" })).toEqual({
+      ...before,
+      devRuns: 1,
+    });
+  });
+
   it("adds download and closest-miss aggregates", () => {
     const afterFirst = addStatEvent(EMPTY_TOTALS, {
       kind: "round",
@@ -208,7 +237,26 @@ describe("addStatEvent", () => {
   it("does not split legacy rounds that have no mode", () => {
     expect(
       addStatEvent(EMPTY_TOTALS, { kind: "round", guesses: 1 }).modes,
-    ).toEqual({ local: 0, room: 0, classroom: 0 });
+    ).toEqual({ local: 0, room: 0, classroom: 0, work: 0 });
+  });
+
+  it("counts Work rounds in the Work mode bucket", () => {
+    const after = addStatEvent(EMPTY_TOTALS, {
+      kind: "round",
+      guesses: 2,
+      mode: "work",
+    });
+
+    expect(after.rounds).toBe(1);
+    expect(after.modes.work).toBe(1);
+  });
+});
+
+describe("roomStatMode", () => {
+  it("distinguishes team rooms from other rooms", () => {
+    expect(roomStatMode("team")).toBe("work");
+    expect(roomStatMode("family")).toBe("room");
+    expect(roomStatMode(undefined)).toBe("room");
   });
 });
 
@@ -242,12 +290,17 @@ describe("roundStatEvent", () => {
     ).toMatchObject({ mode: "room", closestMiss: 100 });
   });
 
-  it("keeps team-room rounds in the shared room stats bucket", () => {
+  it("keeps team-room rounds in the Work stats bucket", () => {
     const teamRoom = createRoom("BCDFGH", "token", 0, "team");
     expect(teamRoom.kind).toBe("team");
     expect(
-      roundStatEvent([score({ miss: 0.1 })], { down: 100, up: 20 }, "room", 1),
-    ).toMatchObject({ kind: "round", mode: "room" });
+      roundStatEvent(
+        [score({ miss: 0.1 })],
+        { down: 100, up: 20 },
+        roomStatMode(teamRoom.kind),
+        1,
+      ),
+    ).toMatchObject({ kind: "round", mode: "work" });
   });
 
   it("omits closest miss when all player misses are null", () => {

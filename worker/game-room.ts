@@ -10,7 +10,7 @@ import {
   type Room,
 } from "../src/lib/room";
 import { isRecord } from "../src/lib/guards";
-import { roundStatEvent, type StatEvent } from "../src/lib/stats";
+import { roomStatMode, roundStatEvent, type StatEvent } from "../src/lib/stats";
 import { alarmToSchedule } from "./alarm";
 import { utf8LengthExceeds } from "./http";
 import { roomHasCapacity } from "./room-capacity";
@@ -201,7 +201,7 @@ export class GameRoom extends DurableObject<Env> {
           roundStatEvent(
             lastRound.scores,
             lastRound.actual,
-            "room",
+            roomStatMode(result.room.kind),
             lockedGuesses,
           ),
         );

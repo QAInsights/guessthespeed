@@ -1196,6 +1196,7 @@ async function startTest() {
     }
     setProgress(steps, steps);
     if (devRun) {
+      if (!isMockMode()) sendStat({ kind: "dev" });
       setGauge(actual.down, actual.down);
       document.documentElement.dataset.phase = state.history.length
         ? "done"

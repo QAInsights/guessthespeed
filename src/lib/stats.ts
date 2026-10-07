@@ -1,18 +1,19 @@
-import { MAX_PLAYERS } from "./room";
+import { MAX_PLAYERS, type RoomKind } from "./room";
 import type { Actual, PlayerRoundScore } from "./scoring";
 
-export type PlayMode = "local" | "room" | "classroom";
+export type PlayMode = "local" | "room" | "classroom" | "work";
 
 export interface PlayTotals {
   rounds: number;
   games: number;
+  devRuns: number;
   guesses: number;
   spotOns: number;
   downSum: number;
   downRounds: number;
   closestMissSum: number;
   closestMissRounds: number;
-  modes: { local: number; room: number; classroom: number };
+  modes: { local: number; room: number; classroom: number; work: number };
 }
 
 export type StatEvent =
@@ -24,18 +25,20 @@ export type StatEvent =
       closestMiss?: number;
       spotOns?: number;
     }
-  | { kind: "game" };
+  | { kind: "game" }
+  | { kind: "dev" };
 
 export const EMPTY_TOTALS: PlayTotals = Object.freeze({
   rounds: 0,
   games: 0,
+  devRuns: 0,
   guesses: 0,
   spotOns: 0,
   downSum: 0,
   downRounds: 0,
   closestMissSum: 0,
   closestMissRounds: 0,
-  modes: Object.freeze({ local: 0, room: 0, classroom: 0 }),
+  modes: Object.freeze({ local: 0, room: 0, classroom: 0, work: 0 }),
 });
 
 // Caps one round's pull on the public average.
@@ -46,7 +49,12 @@ const STAT_DISPLAY_MIN_ROUNDS = 1;
 const roundToTenth = (value: number) => Math.round(value * 10) / 10;
 
 function isPlayMode(value: unknown): value is PlayMode {
-  return value === "local" || value === "room" || value === "classroom";
+  return (
+    value === "local" ||
+    value === "room" ||
+    value === "classroom" ||
+    value === "work"
+  );
 }
 
 function isNonNegativeCount(value: unknown): value is number {
@@ -87,6 +95,7 @@ export function normalizeTotals(stored: unknown): PlayTotals {
   return {
     rounds,
     games: isNonNegativeCount(value.games) ? value.games : 0,
+    devRuns: isNonNegativeCount(value.devRuns) ? value.devRuns : 0,
     guesses,
     spotOns: rawSpotOns <= guesses ? rawSpotOns : 0,
     downSum: roundToTenth(rawDownSum),
@@ -99,6 +108,7 @@ export function normalizeTotals(stored: unknown): PlayTotals {
       local: isNonNegativeCount(modes.local) ? modes.local : 0,
       room: isNonNegativeCount(modes.room) ? modes.room : 0,
       classroom: isNonNegativeCount(modes.classroom) ? modes.classroom : 0,
+      work: isNonNegativeCount(modes.work) ? modes.work : 0,
     },
   };
 }
@@ -106,6 +116,8 @@ export function normalizeTotals(stored: unknown): PlayTotals {
 export function parseStatEvent(body: unknown): StatEvent | null {
   if (!body || typeof body !== "object" || Array.isArray(body)) return null;
   const value = body as Record<string, unknown>;
+  if (value.kind === "dev")
+    return Object.keys(value).length === 1 ? { kind: "dev" } : null;
   if (value.kind === "game") return { kind: "game" };
   if (value.kind !== "round") return null;
   if (
@@ -158,6 +170,10 @@ export function parseStatEvent(body: unknown): StatEvent | null {
   };
 }
 
+export function roomStatMode(kind: RoomKind | undefined): PlayMode {
+  return kind === "team" ? "work" : "room";
+}
+
 export function roundStatEvent(
   scores: PlayerRoundScore[],
   actual: Actual,
@@ -193,6 +209,7 @@ export function roundStatEvent(
 
 export function addStatEvent(totals: PlayTotals, event: StatEvent): PlayTotals {
   if (event.kind === "game") return { ...totals, games: totals.games + 1 };
+  if (event.kind === "dev") return { ...totals, devRuns: totals.devRuns + 1 };
 
   const modes = { ...totals.modes };
   if (event.mode) modes[event.mode] += 1;
