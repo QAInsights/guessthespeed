@@ -8,6 +8,7 @@ import '../styles/global.css';
 import Footer from '../components/Footer.astro';
 import HousePromo from '../components/HousePromo.astro';
 import ModeSwitch from '../components/ModeSwitch.astro';
+import { ogCards, ogImagePath } from '../lib/og-cards';
 import { themes, type ThemeId } from '../lib/themes';
 
 interface Props {
@@ -28,6 +29,10 @@ const {
   noindex = false,
 } = Astro.props;
 const canonical = new URL(Astro.url.pathname, 'https://guessthespeed.com').toString();
+const ogCard =
+  ogCards.find((card) => card.path === Astro.url.pathname) ?? ogCards[0]!;
+const ogImageAlt = `${ogCard.line1} ${ogCard.line2}`;
+const ogImageUrl = `https://guessthespeed.com${ogImagePath(Astro.url.pathname)}`;
 const beaconToken = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
 const themeHints: Record<ThemeId, { emoji: string; hint: string }> = {
   light: { emoji: '☀️', hint: 'Bright and bold' },
@@ -229,13 +234,15 @@ const graphSchema = { '@context': 'https://schema.org', '@graph': graph };
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
-    <meta property="og:image" content="https://guessthespeed.com/og.png" />
+    <meta property="og:image" content={ogImageUrl} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={ogImageAlt} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
-    <meta name="twitter:image" content="https://guessthespeed.com/og.png" />
+    <meta name="twitter:image" content={ogImageUrl} />
+    <meta name="twitter:image:alt" content={ogImageAlt} />
     <title>{title}</title>
     <script type="application/ld+json" set:html={JSON.stringify(graphSchema)}></script>
     {beaconToken && (
