@@ -21,6 +21,7 @@ interface RateLimit {
 }
 
 const ROOM_KEY = "room";
+const MAX_ROOM_CONNECTIONS = 24;
 const MAX_MESSAGE_BYTES = 2 * 1024;
 const MAX_MESSAGES_PER_SECOND = 20;
 const MAX_PROGRESS_PER_SECOND = 10;
@@ -28,7 +29,7 @@ const CLIENT_ID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export class GameRoom extends DurableObject<Env> {
-  private readonly rateLimits = new Map<WebSocket, RateLimit>();
+  private readonly rateLimits = new WeakMap<WebSocket, RateLimit>();
   private progressWindowStartedAt = 0;
   private progressCount = 0;
 
@@ -109,6 +110,7 @@ export class GameRoom extends DurableObject<Env> {
     );
     if ("error" in result) {
       sendError(socket, result.error);
+      this.sendState(socket, room, attachment);
       return;
     }
     await this.ctx.storage.put(ROOM_KEY, result.room);
@@ -216,6 +218,8 @@ export class GameRoom extends DurableObject<Env> {
   private async connectWebSocket(): Promise<Response> {
     if (!(await this.loadRoom()))
       return Response.json({ error: "Room not found." }, { status: 404 });
+    if (this.ctx.getWebSockets().length >= MAX_ROOM_CONNECTIONS)
+      return Response.json({ error: "This room is full." }, { status: 503 });
     const pair = new WebSocketPair();
     const client = pair[0];
     const server = pair[1];
@@ -267,6 +271,7 @@ export class GameRoom extends DurableObject<Env> {
       sendError(sender, "This room has ended.");
       return;
     }
+    if (room.game.phase !== "testing") return;
     if (!canRunTest(room, attachment.clientId, attachment.isHost)) {
       sendError(sender, "Only the assigned tester can share test progress.");
       return;
