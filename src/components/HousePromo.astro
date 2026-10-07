@@ -1,0 +1,94 @@
+---
+import { Icon } from "astro-icon/components";
+import { PROMOS } from "../lib/promos";
+---
+
+<aside
+  class="house-promo stk"
+  data-house-promo
+  hidden
+  aria-label="More from the maker"
+>
+  {
+    PROMOS.map((promo) => (
+      <div class="promo-card" data-promo-id={promo.id} hidden>
+        <a class="promo-link" href={promo.href} target="_blank" rel="noopener">
+          <img
+            class:list={{ "promo-image-tiled": Boolean(promo.tile) }}
+            src={promo.image}
+            alt=""
+            width="56"
+            height="56"
+            loading="lazy"
+            decoding="async"
+            style={promo.tile ? `--promo-tile: ${promo.tile}` : undefined}
+          />
+          <span class="promo-kicker">More from the maker</span>
+          <b class="promo-title">{promo.title}</b>
+          <span class="promo-blurb">{promo.blurb}</span>
+          <span class="promo-cta">
+            {promo.cta} <span aria-hidden="true">→</span>
+          </span>
+          <span class="sr">(opens in a new tab)</span>
+        </a>
+      </div>
+    ))
+  }
+  <button
+    type="button"
+    class="promo-close"
+    data-promo-close
+    aria-label="Close"
+  >
+    <Icon name="ph:x-bold" />
+  </button>
+</aside>
+
+<script>
+  import { pickPromo, PROMOS } from "../lib/promos";
+
+  const aside = document.querySelector<HTMLElement>("[data-house-promo]");
+  if (aside) {
+    const promo = pickPromo(PROMOS);
+    const card = promo
+      ? aside.querySelector<HTMLElement>(`[data-promo-id="${promo.id}"]`)
+      : null;
+
+    if (card) {
+      card.hidden = false;
+      aside.hidden = false;
+
+      const root = document.documentElement;
+      const updateHeight = () => {
+        const isVisible =
+          !aside.hidden &&
+          getComputedStyle(aside).display !== "none" &&
+          window.matchMedia("(max-width: 1300px)").matches;
+        const bottom = Number.parseFloat(getComputedStyle(aside).bottom) || 0;
+        const reservedHeight = Math.ceil(
+          aside.getBoundingClientRect().height + bottom,
+        );
+        root.style.setProperty(
+          "--promo-h",
+          isVisible ? `${reservedHeight + 1}px` : "0px",
+        );
+      };
+
+      aside
+        .querySelector<HTMLButtonElement>("[data-promo-close]")
+        ?.addEventListener("click", () => {
+          aside.hidden = true;
+          updateHeight();
+        });
+
+      new ResizeObserver(updateHeight).observe(aside);
+      new MutationObserver(updateHeight).observe(root, {
+        attributes: true,
+        attributeFilter: ["data-tv", "data-dev", "data-phase"],
+      });
+      window.addEventListener("resize", updateHeight);
+      window.matchMedia("print").addEventListener("change", updateHeight);
+      updateHeight();
+    }
+  }
+</script>

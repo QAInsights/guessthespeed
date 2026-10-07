@@ -6,6 +6,7 @@ import figtreeFontUrl from '@fontsource-variable/figtree/files/figtree-latin-wgh
 import { Icon } from 'astro-icon/components';
 import '../styles/global.css';
 import Footer from '../components/Footer.astro';
+import HousePromo from '../components/HousePromo.astro';
 import ModeSwitch from '../components/ModeSwitch.astro';
 import { themes, type ThemeId } from '../lib/themes';
 
@@ -340,6 +341,7 @@ const graphSchema = { '@context': 'https://schema.org', '@graph': graph };
     </dialog>
     <slot />
     <Footer />
+    <HousePromo />
     <script>
       import '../scripts/header-client';
     </script>
