@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { applyResult, initialGameState, type GameState } from "./game";
+import { MAX_SPEED_MBPS } from "./limits";
 import {
   applyAction,
   canRunTest,
@@ -222,6 +223,40 @@ describe("room codes", () => {
 });
 
 describe("room actions and views", () => {
+  it("accepts the maximum speed and rejects values above the shared limit", () => {
+    const room = joinedRoom();
+    const player = playerByOwner(room, firstId);
+    const accepted = applyAction(
+      room,
+      firstId,
+      false,
+      {
+        type: "guess",
+        id: player.id,
+        down: MAX_SPEED_MBPS,
+        up: 0,
+      },
+      room.updatedAt + 1,
+    );
+    const rejected = applyAction(
+      room,
+      firstId,
+      false,
+      {
+        type: "guess",
+        id: player.id,
+        down: MAX_SPEED_MBPS + 1,
+        up: 0,
+      },
+      room.updatedAt + 1,
+    );
+
+    expect(accepted).not.toHaveProperty("error");
+    expect(rejected).toEqual({
+      error: `Enter speeds between 0 and ${MAX_SPEED_MBPS} Mbps.`,
+    });
+  });
+
   it("hides other players' guesses from players and the host while guessing and testing, then reveals them", () => {
     let room = joinedRoom();
     room = withGuess(room, hostId, 101, 21);
@@ -467,8 +502,8 @@ describe("room actions and views", () => {
       canRunTest: false,
     });
 
-    const { testerId: _testerId, ...storedLegacyRoom } = room;
-    const legacyRoom = storedLegacyRoom as Room;
+    const legacyRoom = { ...room };
+    Reflect.deleteProperty(legacyRoom, "testerId");
     expect(canRunTest(legacyRoom, hostId, true)).toBe(true);
     expect(canRunTest(legacyRoom, firstId, false)).toBe(false);
     expect(viewFor(legacyRoom, hostId, true)).toMatchObject({
@@ -581,7 +616,10 @@ describe("room actions and views", () => {
 
     const expectedState: GameState = {
       ...initialGameState(),
-      players: room.game.players.map(({ owner: _owner, ...player }) => player),
+      players: room.game.players.map(({ owner, ...player }) => {
+        void owner;
+        return player;
+      }),
       settings: { ...initialGameState().settings, ...room.game.settings },
       round: room.game.round,
       history: room.game.history,

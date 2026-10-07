@@ -3,7 +3,9 @@ import {
   type ClientAction,
   type RoomView,
 } from "../lib/room";
+import { isRecord } from "../lib/guards";
 import { loadSession } from "../lib/classroom";
+import { queryOptional } from "./dom";
 
 export interface RoomProgress {
   type: "progress";
@@ -27,9 +29,6 @@ let ended = false;
 let reconnectAttempt = 0;
 let reconnectTimer = 0;
 let memoryClientId: string | null = null;
-
-const $ = <T extends Element>(selector: string): T | null =>
-  document.querySelector(selector) as T | null;
 
 function createUuid(): string {
   if (typeof crypto.randomUUID === "function") return crypto.randomUUID();
@@ -65,10 +64,6 @@ function stableClientId(): string {
 
 export function isRoomMode(): boolean {
   return isRoom;
-}
-
-export function getRoomCode(): string | null {
-  return roomCode;
 }
 
 export function getRoomView(): RoomView | null {
@@ -116,12 +111,12 @@ function roomPageUrl(code: string): string {
 }
 
 function showRoomError(message: string): void {
-  const joinError = $<HTMLElement>("[data-room-join-error]");
+  const joinError = queryOptional<HTMLElement>("[data-room-join-error]");
   if (joinError) {
     joinError.textContent = message;
     joinError.hidden = false;
   }
-  const entryError = $<HTMLElement>("[data-room-entry-error]");
+  const entryError = queryOptional<HTMLElement>("[data-room-entry-error]");
   if (entryError) {
     entryError.textContent = message;
     entryError.hidden = false;
@@ -129,7 +124,7 @@ function showRoomError(message: string): void {
 }
 
 function setConnectionStatus(status: string): void {
-  const target = $<HTMLElement>("[data-room-connection]");
+  const target = queryOptional<HTMLElement>("[data-room-connection]");
   if (target) target.textContent = status;
 }
 
@@ -142,8 +137,10 @@ function roomTesterOptions(): HTMLButtonElement[] {
 }
 
 function closeRoomTesterMenu(returnFocus = false): void {
-  const trigger = $<HTMLButtonElement>("[data-room-tester-trigger]");
-  const menu = $<HTMLDivElement>("[data-room-tester-menu]");
+  const trigger = queryOptional<HTMLButtonElement>(
+    "[data-room-tester-trigger]",
+  );
+  const menu = queryOptional<HTMLDivElement>("[data-room-tester-menu]");
   if (!trigger || !menu || menu.hidden) return;
   menu.hidden = true;
   trigger.setAttribute("aria-expanded", "false");
@@ -161,12 +158,14 @@ function focusRoomTesterOption(index: number): void {
 }
 
 function updateRoomTesterControls(view: RoomView): void {
-  const picker = $<HTMLDivElement>("[data-room-tester-control]");
-  const trigger = $<HTMLButtonElement>("[data-room-tester-trigger]");
-  const value = $<HTMLElement>("[data-room-tester-value]");
-  const menu = $<HTMLDivElement>("[data-room-tester-menu]");
-  const chip = $<HTMLElement>("[data-room-tester-chip]");
-  const stopButton = $<HTMLButtonElement>("[data-room-stop-test]");
+  const picker = queryOptional<HTMLDivElement>("[data-room-tester-control]");
+  const trigger = queryOptional<HTMLButtonElement>(
+    "[data-room-tester-trigger]",
+  );
+  const value = queryOptional<HTMLElement>("[data-room-tester-value]");
+  const menu = queryOptional<HTMLDivElement>("[data-room-tester-menu]");
+  const chip = queryOptional<HTMLElement>("[data-room-tester-chip]");
+  const stopButton = queryOptional<HTMLButtonElement>("[data-room-stop-test]");
   if (!picker || !trigger || !value || !menu || !chip || !stopButton) return;
 
   picker.hidden = !view.isHost;
@@ -241,7 +240,7 @@ function showEndedRoom(): void {
   window.clearTimeout(reconnectTimer);
   setConnectionStatus("Room ended");
   if (socket && socket.readyState < WebSocket.CLOSING) socket.close();
-  const dialog = $<HTMLDialogElement>("[data-room-ended-dialog]");
+  const dialog = queryOptional<HTMLDialogElement>("[data-room-ended-dialog]");
   if (dialog && !dialog.open) dialog.showModal();
 }
 
@@ -352,21 +351,21 @@ function connect(): void {
 }
 
 function showJoinDialog(): void {
-  const dialog = $<HTMLDialogElement>("[data-room-join-dialog]");
-  const code = $<HTMLElement>("[data-room-join-code]");
+  const dialog = queryOptional<HTMLDialogElement>("[data-room-join-dialog]");
+  const code = queryOptional<HTMLElement>("[data-room-join-code]");
   if (code) code.textContent = roomCode ?? "";
   if (dialog && !dialog.open) dialog.showModal();
 }
 
 function closeJoinDialog(): void {
-  const dialog = $<HTMLDialogElement>("[data-room-join-dialog]");
+  const dialog = queryOptional<HTMLDialogElement>("[data-room-join-dialog]");
   if (dialog?.open) dialog.close();
 }
 
 function renderQrCode(): void {
   if (!roomCode) return;
-  const imageRoot = $<HTMLDivElement>("[data-room-qr-image]");
-  const codeText = $<HTMLElement>("[data-room-qr-code]");
+  const imageRoot = queryOptional<HTMLDivElement>("[data-room-qr-image]");
+  const codeText = queryOptional<HTMLElement>("[data-room-qr-code]");
   if (!imageRoot) return;
   void import("qrcode-generator").then(({ default: qrcode }) => {
     const qr = qrcode(0, "M");
@@ -382,8 +381,8 @@ function renderQrCode(): void {
 
 async function copyRoomLink(): Promise<void> {
   const copyButtons = [
-    $<HTMLButtonElement>("[data-copy-room-link]"),
-    $<HTMLButtonElement>("[data-copy-room-qr-link]"),
+    queryOptional<HTMLButtonElement>("[data-copy-room-link]"),
+    queryOptional<HTMLButtonElement>("[data-copy-room-qr-link]"),
   ].filter((button): button is HTMLButtonElement => button !== null);
   try {
     await navigator.clipboard.writeText(roomLink());
@@ -402,7 +401,7 @@ async function copyRoomLink(): Promise<void> {
 async function joinWithCode(form: HTMLFormElement): Promise<void> {
   const input = form.elements.namedItem("code") as HTMLInputElement;
   const code = normalizeRoomCode(input.value);
-  const error = $<HTMLElement>("[data-room-entry-error]");
+  const error = queryOptional<HTMLElement>("[data-room-entry-error]");
   if (!code) {
     if (error) {
       error.textContent = "Enter a valid six-letter room code.";
@@ -430,8 +429,8 @@ async function joinWithCode(form: HTMLFormElement): Promise<void> {
 }
 
 async function createRoom(): Promise<void> {
-  const button = $<HTMLButtonElement>("[data-create-room]");
-  const error = $<HTMLElement>("[data-room-entry-error]");
+  const button = queryOptional<HTMLButtonElement>("[data-create-room]");
+  const error = queryOptional<HTMLElement>("[data-room-entry-error]");
   if (button) {
     button.disabled = true;
     button.textContent = "Creating...";
@@ -494,17 +493,15 @@ function isRoomProgress(value: unknown): value is RoomProgress {
   );
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
 if (isRoom) {
-  const bar = $<HTMLElement>("[data-room-bar]");
-  const code = $<HTMLElement>("[data-room-code]");
+  const bar = queryOptional<HTMLElement>("[data-room-bar]");
+  const code = queryOptional<HTMLElement>("[data-room-code]");
   if (bar) bar.hidden = false;
   if (code) code.textContent = roomCode?.split("").join(" ") ?? rawCode;
-  const testerTrigger = $<HTMLButtonElement>("[data-room-tester-trigger]");
-  const testerMenu = $<HTMLDivElement>("[data-room-tester-menu]");
+  const testerTrigger = queryOptional<HTMLButtonElement>(
+    "[data-room-tester-trigger]",
+  );
+  const testerMenu = queryOptional<HTMLDivElement>("[data-room-tester-menu]");
   testerTrigger?.addEventListener("click", () => {
     if (!testerMenu || testerTrigger.disabled) return;
     if (!testerMenu.hidden) {
@@ -566,7 +563,7 @@ if (isRoom) {
     }
   });
   document.addEventListener("pointerdown", (event) => {
-    const picker = $<HTMLElement>("[data-room-tester-control]");
+    const picker = queryOptional<HTMLElement>("[data-room-tester-control]");
     if (
       testerMenu &&
       !testerMenu.hidden &&
@@ -575,37 +572,40 @@ if (isRoom) {
     )
       closeRoomTesterMenu();
   });
-  $<HTMLButtonElement>("[data-room-stop-test]")?.addEventListener(
+  queryOptional<HTMLButtonElement>("[data-room-stop-test]")?.addEventListener(
     "click",
     () => {
       sendRoomAction({ type: "abort" });
     },
   );
-  $<HTMLButtonElement>("[data-show-room-qr]")?.addEventListener("click", () => {
-    renderQrCode();
-    $<HTMLDialogElement>("[data-room-qr-dialog]")?.showModal();
-  });
-  $<HTMLButtonElement>("[data-close-room-qr]")?.addEventListener("click", () =>
-    $<HTMLDialogElement>("[data-room-qr-dialog]")?.close(),
-  );
-  $<HTMLButtonElement>("[data-close-room-ended]")?.addEventListener(
+  queryOptional<HTMLButtonElement>("[data-show-room-qr]")?.addEventListener(
     "click",
-    () => $<HTMLDialogElement>("[data-room-ended-dialog]")?.close(),
+    () => {
+      renderQrCode();
+      queryOptional<HTMLDialogElement>("[data-room-qr-dialog]")?.showModal();
+    },
   );
-  $<HTMLButtonElement>("[data-copy-room-link]")?.addEventListener(
+  queryOptional<HTMLButtonElement>("[data-close-room-qr]")?.addEventListener(
+    "click",
+    () => queryOptional<HTMLDialogElement>("[data-room-qr-dialog]")?.close(),
+  );
+  queryOptional<HTMLButtonElement>("[data-close-room-ended]")?.addEventListener(
+    "click",
+    () => queryOptional<HTMLDialogElement>("[data-room-ended-dialog]")?.close(),
+  );
+  queryOptional<HTMLButtonElement>("[data-copy-room-link]")?.addEventListener(
     "click",
     () => void copyRoomLink(),
   );
-  $<HTMLButtonElement>("[data-copy-room-qr-link]")?.addEventListener(
-    "click",
-    () => void copyRoomLink(),
-  );
-  $<HTMLFormElement>("[data-room-join-form]")?.addEventListener(
+  queryOptional<HTMLButtonElement>(
+    "[data-copy-room-qr-link]",
+  )?.addEventListener("click", () => void copyRoomLink());
+  queryOptional<HTMLFormElement>("[data-room-join-form]")?.addEventListener(
     "submit",
     (event) => {
       event.preventDefault();
       const form = event.currentTarget as HTMLFormElement;
-      const joinError = $<HTMLElement>("[data-room-join-error]");
+      const joinError = queryOptional<HTMLElement>("[data-room-join-error]");
       if (joinError) {
         joinError.hidden = true;
         joinError.textContent = "";
@@ -638,7 +638,7 @@ if (isRoom) {
       });
     },
   );
-  $<HTMLDialogElement>("[data-room-join-dialog]")?.addEventListener(
+  queryOptional<HTMLDialogElement>("[data-room-join-dialog]")?.addEventListener(
     "cancel",
     (event) => {
       if (
@@ -655,11 +655,11 @@ if (isRoom) {
   if (!roomCode) showEndedRoom();
   else connect();
 } else if (!classroomSessionActive) {
-  $<HTMLButtonElement>("[data-create-room]")?.addEventListener(
+  queryOptional<HTMLButtonElement>("[data-create-room]")?.addEventListener(
     "click",
     () => void createRoom(),
   );
-  $<HTMLFormElement>("[data-home-join-form]")?.addEventListener(
+  queryOptional<HTMLFormElement>("[data-home-join-form]")?.addEventListener(
     "submit",
     (event) => {
       event.preventDefault();

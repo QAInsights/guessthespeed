@@ -2,6 +2,7 @@
 import { Icon } from 'astro-icon/components';
 import Base from '../layouts/Base.astro';
 import { ROLES } from '../lib/game';
+import { MAX_NAME_LENGTH } from '../lib/limits';
 
 const roleChoices = ROLES;
 const homeTitle = 'Guess the Speed | The Internet Speed Guessing Game for Families';
@@ -246,7 +247,7 @@ const homeSchema: Record<string, unknown>[] = [
       <form class="add stk" id="add-player-form" data-add-form>
         <div>
           <label class="lbl" for="player-name">Player name</label>
-          <input id="player-name" name="name" maxlength="16" autocomplete="off" placeholder="e.g. Grandpa Raj" required />
+          <input id="player-name" name="name" maxlength={MAX_NAME_LENGTH} autocomplete="off" placeholder="e.g. Grandpa Raj" required />
         </div>
         <fieldset class="role-fieldset">
           <legend class="lbl">Pick a face</legend>
@@ -341,7 +342,7 @@ const homeSchema: Record<string, unknown>[] = [
       <p class="room-join-code">Room <strong data-room-join-code></strong></p>
       <form class="dialog-form" data-room-join-form>
         <label class="dialog-field">Your name
-          <input class="dialog-input" name="name" type="text" maxlength="16" autocomplete="off" required />
+          <input class="dialog-input" name="name" type="text" maxlength={MAX_NAME_LENGTH} autocomplete="off" required />
         </label>
         <fieldset class="edit-role-fieldset">
           <legend class="lbl">Pick your face</legend>
@@ -394,7 +395,7 @@ const homeSchema: Record<string, unknown>[] = [
       </div>
       <form class="dialog-form" data-edit-form>
         <label class="dialog-field">Player name
-          <input class="dialog-input" name="name" type="text" maxlength="16" autocomplete="off" required />
+          <input class="dialog-input" name="name" type="text" maxlength={MAX_NAME_LENGTH} autocomplete="off" required />
         </label>
         <fieldset class="edit-role-fieldset">
           <legend class="lbl">Pick a face</legend>

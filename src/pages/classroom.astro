@@ -1,6 +1,7 @@
 ---
 import Base from "../layouts/Base.astro";
 import { Icon } from "astro-icon/components";
+import { MAX_NAME_LENGTH } from "../lib/limits";
 
 const description =
   "A free internet speed game for teachers. Build a private class roster, make balanced teams or spotlight students, then guess a real speed test together on one shared screen.";
@@ -400,7 +401,7 @@ const faqSchema = {
             data-student-name
             name="name"
             type="text"
-            maxlength="16"
+            maxlength={MAX_NAME_LENGTH}
             autocomplete="off"
             required
           />

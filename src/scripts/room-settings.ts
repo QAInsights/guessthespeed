@@ -1,4 +1,5 @@
 import { isThemeMode, type GameSettings } from "../lib/game";
+import { isRecord } from "../lib/guards";
 
 export interface RoomLocalSettings {
   themeMode: GameSettings["themeMode"];
@@ -41,8 +42,4 @@ export function saveRoomLocalSettings(settings: RoomLocalSettings): void {
   } catch {
     return;
   }
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
 }

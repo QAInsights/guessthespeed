@@ -7,6 +7,7 @@ import {
   type TieMode,
 } from "./scoring";
 import { isThemeId, type ThemeId } from "./themes";
+import { MAX_NAME_LENGTH } from "./limits";
 
 export const ROLES = [
   { emoji: "👨", role: "Dad" },
@@ -136,7 +137,7 @@ export function addPlayer(
   role: string,
   id: string,
 ): GameState {
-  const trimmedName = name.trim().slice(0, 16);
+  const trimmedName = name.trim().slice(0, MAX_NAME_LENGTH);
   if (!trimmedName || state.players.some((player) => player.id === id))
     return state;
   return {
@@ -161,7 +162,7 @@ export function updatePlayer(
   id: string,
   details: Pick<Player, "name" | "emoji" | "role">,
 ): GameState {
-  const name = details.name.trim().slice(0, 16);
+  const name = details.name.trim().slice(0, MAX_NAME_LENGTH);
   if (!name || !state.players.some((player) => player.id === id)) return state;
   return {
     ...state,
@@ -324,9 +325,11 @@ export function saveGame(state: GameState, storage?: StorageLike): void {
 }
 
 function finiteOrNull(value: number | null): number | null {
-  return typeof value === "number" && Number.isFinite(value) && value >= 0
-    ? value
-    : null;
+  return isNonNegativeFinite(value) ? value : null;
+}
+
+function isNonNegativeFinite(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value) && value >= 0;
 }
 
 function isGameState(value: unknown): value is GameState {
@@ -366,7 +369,7 @@ function isGameState(value: unknown): value is GameState {
         Number.isFinite(player.score) &&
         player.score >= 0 &&
         player.name.trim().length > 0 &&
-        player.name.length <= 16 &&
+        player.name.length <= MAX_NAME_LENGTH &&
         typeof player.locked === "boolean" &&
         !!player.guess &&
         isOptionalNumber(player.guess.down) &&
@@ -419,10 +422,7 @@ function isGameState(value: unknown): value is GameState {
 }
 
 function isOptionalNumber(value: unknown): value is number | null {
-  return (
-    value === null ||
-    (typeof value === "number" && Number.isFinite(value) && value >= 0)
-  );
+  return value === null || isNonNegativeFinite(value);
 }
 
 export function isThemeMode(value: string): value is "auto" | ThemeId {
