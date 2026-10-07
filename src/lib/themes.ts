@@ -168,42 +168,95 @@ export const themes: Record<ThemeId, Theme> = {
 
 type LookupTheme = "diwali" | "holi" | "eidfitr" | "eidadha" | "lunarnewyear";
 
-const lookupDays: Record<LookupTheme, Record<number, string>> = {
-  diwali: {
-    2026: "2026-11-08",
-    2027: "2027-10-29",
-    2028: "2028-10-17",
-    2029: "2029-11-05",
-    2030: "2030-10-26",
-  },
-  holi: {
-    2026: "2026-03-04",
-    2027: "2027-03-22",
-    2028: "2028-03-11",
-    2029: "2029-03-01",
-    2030: "2030-03-20",
-  },
-  eidfitr: {
-    2026: "2026-03-20",
-    2027: "2027-03-09",
-    2028: "2028-02-26",
-    2029: "2029-02-14",
-    2030: "2030-02-04",
-  },
-  eidadha: {
-    2026: "2026-05-27",
-    2027: "2027-05-16",
-    2028: "2028-05-05",
-    2029: "2029-04-24",
-    2030: "2030-04-13",
-  },
-  lunarnewyear: {
-    2026: "2026-02-17",
-    2027: "2027-02-06",
-    2028: "2028-01-26",
-    2029: "2029-02-13",
-    2030: "2030-02-03",
-  },
+// Diwali and Holi: Drik Panchang (New Delhi). Eids: Umm al-Qura calendar. Extend before 2041.
+const lookupDays: Record<LookupTheme, readonly string[]> = {
+  diwali: [
+    "2026-11-08",
+    "2027-10-29",
+    "2028-10-17",
+    "2029-11-05",
+    "2030-10-26",
+    "2031-11-14",
+    "2032-11-02",
+    "2033-10-22",
+    "2034-11-10",
+    "2035-10-30",
+    "2036-10-18",
+    "2037-11-07",
+    "2038-10-27",
+    "2039-11-15",
+    "2040-11-04",
+  ],
+  holi: [
+    "2026-03-04",
+    "2027-03-22",
+    "2028-03-11",
+    "2029-03-01",
+    "2030-03-20",
+    "2031-03-09",
+    "2032-03-27",
+    "2033-03-16",
+    "2034-03-05",
+    "2035-03-24",
+    "2036-03-12",
+    "2037-03-02",
+    "2038-03-21",
+    "2039-03-11",
+    "2040-03-29",
+  ],
+  eidfitr: [
+    "2026-03-20",
+    "2027-03-09",
+    "2028-02-26",
+    "2029-02-14",
+    "2030-02-04",
+    "2031-01-24",
+    "2032-01-14",
+    "2033-01-02",
+    "2033-12-23",
+    "2034-12-12",
+    "2035-12-01",
+    "2036-11-19",
+    "2037-11-08",
+    "2038-10-29",
+    "2039-10-19",
+    "2040-10-07",
+  ],
+  eidadha: [
+    "2026-05-27",
+    "2027-05-16",
+    "2028-05-05",
+    "2029-04-24",
+    "2030-04-13",
+    "2031-04-02",
+    "2032-03-22",
+    "2033-03-11",
+    "2034-03-01",
+    "2035-02-18",
+    "2036-02-07",
+    "2037-01-26",
+    "2038-01-16",
+    "2039-01-05",
+    "2039-12-26",
+    "2040-12-14",
+  ],
+  lunarnewyear: [
+    "2026-02-17",
+    "2027-02-06",
+    "2028-01-26",
+    "2029-02-13",
+    "2030-02-03",
+    "2031-01-23",
+    "2032-02-11",
+    "2033-01-31",
+    "2034-02-19",
+    "2035-02-08",
+    "2036-01-28",
+    "2037-02-15",
+    "2038-02-04",
+    "2039-01-24",
+    "2040-02-12",
+  ],
 };
 
 function utcDay(date: Date): number {
@@ -246,9 +299,13 @@ function thanksgiving(year: number): Date {
   return new Date(year, 10, firstThursday + 21);
 }
 
-function lookupDate(theme: LookupTheme, year: number): Date | null {
-  const day = lookupDays[theme][year];
-  return day ? new Date(`${day}T12:00:00`) : null;
+function lookupDates(theme: LookupTheme, year: number): Date[] {
+  return lookupDays[theme]
+    .filter((day) => {
+      const centerYear = Number(day.slice(0, 4));
+      return centerYear >= year - 1 && centerYear <= year + 1;
+    })
+    .map((day) => new Date(`${day}T12:00:00`));
 }
 
 export function themeForDate(date: Date): ThemeId | null {
@@ -258,46 +315,44 @@ export function themeForDate(date: Date): ThemeId | null {
   const movableFestivals = [
     {
       theme: "diwali",
-      center: lookupDate("diwali", year),
+      centers: lookupDates("diwali", year),
       before: 3,
       after: 2,
     },
     {
       theme: "holi",
-      center: lookupDate("holi", year),
+      centers: lookupDates("holi", year),
       before: 3,
       after: 1,
     },
-    { theme: "easter", center: easterSunday(year), before: 6, after: 1 },
+    { theme: "easter", centers: [easterSunday(year)], before: 6, after: 1 },
     {
       theme: "eidfitr",
-      center: lookupDate("eidfitr", year),
+      centers: lookupDates("eidfitr", year),
       before: 1,
       after: 2,
     },
     {
       theme: "eidadha",
-      center: lookupDate("eidadha", year),
+      centers: lookupDates("eidadha", year),
       before: 1,
       after: 3,
     },
     {
       theme: "lunarnewyear",
-      center: lookupDate("lunarnewyear", year),
+      centers: lookupDates("lunarnewyear", year),
       before: 2,
       after: 5,
     },
   ] as const;
   let selectedFestival: { theme: ThemeId; distance: number } | null = null;
   for (const festival of movableFestivals) {
-    if (
-      !festival.center ||
-      !inWindow(date, festival.center, festival.before, festival.after)
-    )
-      continue;
-    const distance = Math.abs(utcDay(date) - utcDay(festival.center));
-    if (!selectedFestival || distance < selectedFestival.distance)
-      selectedFestival = { theme: festival.theme, distance };
+    for (const center of festival.centers) {
+      if (!inWindow(date, center, festival.before, festival.after)) continue;
+      const distance = Math.abs(utcDay(date) - utcDay(center));
+      if (!selectedFestival || distance < selectedFestival.distance)
+        selectedFestival = { theme: festival.theme, distance };
+    }
   }
   if (selectedFestival) return selectedFestival.theme;
 
