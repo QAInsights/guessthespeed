@@ -1,6 +1,7 @@
 import { generateRoomCode, normalizeRoomCode } from "../src/lib/room";
 import { parseStatEvent } from "../src/lib/stats";
 import type { Env } from "./types";
+import { declaredBodyTooLarge, isAllowedWebSocketOrigin } from "./http";
 import { GameRoom } from "./game-room";
 import { PlayStats } from "./play-stats";
 
@@ -40,14 +41,8 @@ export default {
         if (request.headers.get("Upgrade")?.toLowerCase() !== "websocket")
           return jsonResponse({ error: "WebSocket upgrade required." }, 426);
         const origin = request.headers.get("Origin");
-        if (origin !== null) {
-          try {
-            if (new URL(origin).host !== url.host)
-              return jsonResponse({ error: "Origin not allowed." }, 403);
-          } catch {
-            return jsonResponse({ error: "Origin not allowed." }, 403);
-          }
-        }
+        if (!isAllowedWebSocketOrigin(origin, url.host))
+          return jsonResponse({ error: "Origin not allowed." }, 403);
         return stub.fetch(request);
       }
 
@@ -72,8 +67,7 @@ async function handleStats(request: Request, env: Env): Promise<Response> {
         400,
       );
 
-    const contentLength = request.headers.get("content-length");
-    if (contentLength !== null && Number(contentLength) > 256)
+    if (declaredBodyTooLarge(request.headers.get("content-length"), 256))
       return jsonResponse({ error: "Request body is too large." }, 413);
 
     const body = await request.text();

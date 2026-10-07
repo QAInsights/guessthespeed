@@ -8,7 +8,10 @@ import {
   type Room,
 } from "../src/lib/room";
 import { roundStatEvent, type StatEvent } from "../src/lib/stats";
+import { MAX_ROOM_CONNECTIONS, roomHasCapacity } from "./room-capacity";
 import type { Env } from "./types";
+
+export { MAX_ROOM_CONNECTIONS, roomHasCapacity } from "./room-capacity";
 
 interface SocketAttachment {
   clientId: string;
@@ -21,7 +24,6 @@ interface RateLimit {
 }
 
 const ROOM_KEY = "room";
-const MAX_ROOM_CONNECTIONS = 24;
 const MAX_MESSAGE_BYTES = 2 * 1024;
 const MAX_MESSAGES_PER_SECOND = 20;
 const MAX_PROGRESS_PER_SECOND = 10;
@@ -218,7 +220,7 @@ export class GameRoom extends DurableObject<Env> {
   private async connectWebSocket(): Promise<Response> {
     if (!(await this.loadRoom()))
       return Response.json({ error: "Room not found." }, { status: 404 });
-    if (this.ctx.getWebSockets().length >= MAX_ROOM_CONNECTIONS)
+    if (!roomHasCapacity(this.ctx.getWebSockets().length))
       return Response.json({ error: "This room is full." }, { status: 503 });
     const pair = new WebSocketPair();
     const client = pair[0];
