@@ -569,12 +569,7 @@ export function mergeClassroom(
         ({ name }) =>
           normalizedNameKey(name) === normalizedNameKey(student.name),
       );
-      const duplicate =
-        byName ??
-        (byId &&
-        normalizedNameKey(byId.name) === normalizedNameKey(student.name)
-          ? byId
-          : undefined);
+      const duplicate = byId ?? byName;
       if (duplicate) {
         idMap.set(student.id, duplicate.id);
         continue;

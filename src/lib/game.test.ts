@@ -258,6 +258,24 @@ describe("game state", () => {
     expect(loadGame(storage).history[0].actual.ping).toBe(7.3);
   });
 
+  it("does not score unlocked players", () => {
+    const state: GameState = {
+      ...initialGameState(),
+      phase: "testing",
+      players: [
+        {
+          ...initialGameState().players[0],
+          id: "unlocked",
+          guess: { down: 100, up: 20 },
+          locked: false,
+        },
+      ],
+    };
+    const result = applyResult(state, { down: 100, up: 20 });
+    expect(result.scores).toEqual([]);
+    expect(result.state.players[0].score).toBe(state.players[0].score);
+  });
+
   it("rejects non-positive or non-finite measured round speeds", () => {
     expect(hasUsableRoundResult({ down: 0, up: 20 })).toBe(false);
     expect(hasUsableRoundResult({ down: 20, up: 0 })).toBe(false);

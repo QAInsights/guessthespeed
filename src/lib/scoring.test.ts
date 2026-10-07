@@ -152,6 +152,18 @@ describe("scoreRound", () => {
     ]);
   });
 
+  it("uses upload miss when rounded average and download misses tie", () => {
+    const scores = scoreRound(
+      [player("upload-miss-0.1", 90, 90), player("upload-miss-0.09994", 90, 90.006)],
+      { down: 100, up: 100 },
+      { ...defaults, tieMode: "download" },
+    );
+    expect(scores.map(({ id, place }) => [id, place])).toEqual([
+      ["upload-miss-0.09994", 1],
+      ["upload-miss-0.1", 2],
+    ]);
+  });
+
   it("awards one or two spot-on bonuses", () => {
     const scores = scoreRound(
       [player("one", 100, 30), player("two", 102, 19)],

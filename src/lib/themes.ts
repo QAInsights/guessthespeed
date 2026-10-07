@@ -320,7 +320,3 @@ export function themeForDate(date: Date): ThemeId | null {
 export function isThemeId(value: string): value is ThemeId {
   return Object.hasOwn(themes, value);
 }
-
-export function dateFromDay(day: number): Date {
-  return dateAtNoon(day);
-}

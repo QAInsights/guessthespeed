@@ -322,21 +322,30 @@ describe("classroom storage and backups", () => {
     expect(isClassroomData(merged)).toBe(true);
   });
 
-  it("bounds a colliding imported student id and preserves the merged data", () => {
-    const collidingId = "s".repeat(128);
+  it("merges a renamed student with the same id", () => {
+    const studentId = "ada";
     const existing = makeData([
-      makeClassroom([{ id: collidingId, name: "Existing", emoji: "🦊" }]),
+      makeClassroom([{ id: studentId, name: "Existing", emoji: "🦊" }]),
     ]);
     const imported = makeData([
-      makeClassroom([{ id: collidingId, name: "Imported", emoji: "🐼" }]),
+      makeClassroom([{ id: studentId, name: "Renamed", emoji: "🐼" }]),
     ]);
 
     const merged = mergeClassroom(existing, imported);
-    const addedId = merged.classes[0].students[1].id;
-    expect(addedId).not.toBe(collidingId);
-    expect(addedId.length).toBeLessThanOrEqual(128);
+    expect(merged.classes[0].students).toEqual([
+      { id: studentId, name: "Existing", emoji: "🦊" },
+    ]);
     expect(isClassroomData(merged)).toBe(true);
+  });
 
+  it("imports, saves, and loads a non-colliding 128-character student id", () => {
+    const studentId = "s".repeat(128);
+    const imported = makeData([
+      makeClassroom([{ id: studentId, name: "Imported", emoji: "🐼" }]),
+    ]);
+    const merged = mergeClassroom(makeData([]), imported);
+    expect(merged.classes[0].students[0].id).toBe(studentId);
+    expect(isClassroomData(merged)).toBe(true);
     const storage = memoryStorage();
     saveClassroom(merged, storage);
     expect(loadClassroom(storage)).toEqual(merged);
