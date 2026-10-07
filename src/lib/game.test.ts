@@ -200,6 +200,35 @@ describe("game state", () => {
     ).toBe(false);
   });
 
+  it("defaults animated borders on for old or invalid saved settings", () => {
+    const saved = initialGameState();
+    const legacySettings = { ...saved.settings };
+    delete (legacySettings as Partial<typeof saved.settings>).animatedBorders;
+    const legacySave = { ...saved, settings: legacySettings };
+    const invalidSave = {
+      ...saved,
+      settings: { ...saved.settings, animatedBorders: "off" },
+    };
+    const disabledSave = {
+      ...saved,
+      settings: { ...saved.settings, animatedBorders: false },
+    };
+
+    expect(initialGameState().settings.animatedBorders).toBe(true);
+    expect(
+      loadGame(memoryStorage(JSON.stringify(legacySave))).settings
+        .animatedBorders,
+    ).toBe(true);
+    expect(
+      loadGame(memoryStorage(JSON.stringify(invalidSave))).settings
+        .animatedBorders,
+    ).toBe(true);
+    expect(
+      loadGame(memoryStorage(JSON.stringify(disabledSave))).settings
+        .animatedBorders,
+    ).toBe(false);
+  });
+
   it("preserves saved names when the default family names change", () => {
     const saved = initialGameState();
     saved.players[2].name = "Priya";

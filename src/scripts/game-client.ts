@@ -19,6 +19,7 @@ import {
   type GameSettings,
   type Player,
 } from "../lib/game";
+import { auroraFor, auroraStyleVars } from "../lib/aurora";
 import { BACKUP_KEY, clearSession, loadSession } from "../lib/classroom";
 import {
   runSpeedTest,
@@ -342,7 +343,7 @@ function renderPlayerCard(player: ClientPlayer, index: number) {
       : locked
         ? `<div class="p-actions"><button type="button" class="locked-pill" data-guess="${escapeHtml(player.id)}" ${isTesting() ? "disabled" : ""}><span aria-hidden="true">🔒</span>Locked in <small>Change</small></button>${roomMode ? `<button class="room-unlock" type="button" data-unlock="${escapeHtml(player.id)}" ${isTesting() ? "disabled" : ""}>Unlock</button>` : ""}</div>`
         : `<div class="p-actions"><button type="button" class="guess-button" data-guess="${escapeHtml(player.id)}" ${isTesting() ? "disabled" : ""}>Guess</button></div>`;
-  return `<article class="p-card ${winnerClass}" style="--card-index:${index}">
+  return `<article class="p-card has-aurora ${winnerClass}" style="--card-index:${index};${auroraStyleVars(auroraFor(player.id))}">
     ${mine ? `<button class="p-edit" type="button" data-edit="${escapeHtml(player.id)}" aria-label="Edit ${escapeHtml(player.name)}" ${isTesting() ? "disabled" : ""}><span aria-hidden="true">✎</span></button>` : ""}
     ${canRemove ? `<button class="p-rm" type="button" data-remove="${escapeHtml(player.id)}" aria-label="Remove ${escapeHtml(player.name)}" ${isTesting() ? "disabled" : ""}>×</button>` : ""}
     <div class="p-head">${roleFor(player)}<div class="p-score"><b>${displayedScore}</b><span>${displayedScore === 1 ? "pt" : "pts"}</span></div></div>
@@ -1243,6 +1244,7 @@ document.addEventListener("gts:settings-change", (event) => {
           themeMode: nextSettings.themeMode,
           sound: nextSettings.sound,
           confetti: nextSettings.confetti,
+          animatedBorders: nextSettings.animatedBorders,
         }
       : nextSettings,
   };

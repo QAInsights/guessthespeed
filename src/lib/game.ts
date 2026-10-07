@@ -74,6 +74,7 @@ export interface GameSettings {
   themeMode: "auto" | ThemeId;
   sound: boolean;
   confetti: boolean;
+  animatedBorders: boolean;
 }
 
 export interface RoundActual extends Actual {
@@ -122,6 +123,7 @@ export function initialGameState(): GameState {
       themeMode: "auto",
       sound: true,
       confetti: true,
+      animatedBorders: true,
     },
     round: 1,
     history: [],
@@ -305,6 +307,10 @@ export function loadGame(storage?: StorageLike): GameState {
         confetti:
           typeof parsed.settings.confetti === "boolean"
             ? parsed.settings.confetti
+            : true,
+        animatedBorders:
+          typeof parsed.settings.animatedBorders === "boolean"
+            ? parsed.settings.animatedBorders
             : true,
       },
     };

@@ -26,6 +26,7 @@ import {
   type Team,
 } from "../lib/classroom";
 import { initialGameState, loadGame, saveGame, STORAGE_KEY } from "../lib/game";
+import { auroraFor, auroraStyleVars } from "../lib/aurora";
 import { $ } from "./dom";
 
 const classList = $<HTMLDivElement>("[data-class-list]");
@@ -493,7 +494,8 @@ function renderTeamPreview(classroom: ClassRoom) {
 
   previewTeams.forEach((team, teamIndex) => {
     const card = document.createElement("article");
-    card.className = "team-card";
+    card.className = "team-card has-aurora";
+    card.setAttribute("style", auroraStyleVars(auroraFor(team.name)));
     const heading = document.createElement("h3");
     heading.textContent = `${team.emoji} ${team.name}`;
     const list = document.createElement("ul");

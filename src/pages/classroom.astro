@@ -1129,19 +1129,47 @@ const faqSchema = {
     padding: 12px;
     border: 2px solid var(--on-pastel);
     border-radius: 15px;
+    --card-fill: #fff5ce;
     background: #fff5ce;
     box-shadow: 3px 3px 0 var(--shadow);
     color: var(--on-pastel);
   }
 
   .team-preview :global(.team-card:nth-child(3n + 2)) {
+    --card-fill: #e3f5fa;
     background: #e3f5fa;
     transform: rotate(0.4deg);
   }
 
   .team-preview :global(.team-card:nth-child(3n + 3)) {
+    --card-fill: #f3e9ff;
     background: #f3e9ff;
     transform: rotate(-0.4deg);
+  }
+
+  :global(html:not([data-aurora="0"]) .team-preview .team-card.has-aurora) {
+    border-color: transparent;
+    background:
+      linear-gradient(var(--card-fill), var(--card-fill)) padding-box,
+      conic-gradient(
+          from calc(var(--aurora-start) + var(--aurora-angle)),
+          var(--aurora-a),
+          transparent 16%,
+          var(--aurora-b) 33%,
+          transparent 50%,
+          var(--aurora-c) 66%,
+          transparent 83%,
+          var(--aurora-a)
+        )
+        border-box,
+      linear-gradient(
+          color-mix(in srgb, var(--ink) 28%, var(--card-fill)),
+          color-mix(in srgb, var(--ink) 28%, var(--card-fill))
+        )
+        border-box;
+    box-shadow:
+      3px 3px 0 var(--shadow),
+      0 0 18px -6px color-mix(in srgb, var(--aurora-a) 55%, transparent);
   }
 
   .team-preview :global(.team-card h3) {

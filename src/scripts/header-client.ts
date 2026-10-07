@@ -316,6 +316,9 @@ function syncControls() {
   roundsControl.disabled = roomMode && (!roomHost || testing);
   tieControl.disabled = roomMode && (!roomHost || testing);
   $<HTMLElement>("[data-room-settings-note]").hidden = !roomMode || roomHost;
+  (
+    settingsForm.elements.namedItem("animatedBorders") as HTMLInputElement
+  ).checked = settings.animatedBorders;
   soundButton.setAttribute("aria-pressed", String(settings.sound));
   soundButton.setAttribute(
     "aria-label",
@@ -332,6 +335,7 @@ function saveSettings(patch: Partial<GameSettings>, playSound = false) {
       themeMode: settings.themeMode,
       sound: settings.sound,
       confetti: settings.confetti,
+      animatedBorders: settings.animatedBorders,
     });
   } else {
     const currentGame = loadGame();
@@ -339,6 +343,9 @@ function saveSettings(patch: Partial<GameSettings>, playSound = false) {
     saveGame({ ...currentGame, settings });
   }
   applyTheme(settings.themeMode);
+  document.documentElement.dataset.aurora = settings.animatedBorders
+    ? "1"
+    : "0";
   syncAudioUnlock();
   syncControls();
   document.dispatchEvent(
@@ -361,6 +368,9 @@ function fillSettingsForm() {
     settings.sound;
   (settingsForm.elements.namedItem("confetti") as HTMLInputElement).checked =
     settings.confetti;
+  (
+    settingsForm.elements.namedItem("animatedBorders") as HTMLInputElement
+  ).checked = settings.animatedBorders;
 }
 
 themeTrigger.addEventListener("click", () => {
@@ -506,6 +516,9 @@ settingsForm.addEventListener("submit", (event) => {
   const confetti = (
     settingsForm.elements.namedItem("confetti") as HTMLInputElement
   ).checked;
+  const animatedBorders = (
+    settingsForm.elements.namedItem("animatedBorders") as HTMLInputElement
+  ).checked;
   if (roomMode) {
     if (roomHost)
       document.dispatchEvent(
@@ -513,9 +526,16 @@ settingsForm.addEventListener("submit", (event) => {
           detail: { rounds, tieMode },
         }),
       );
-    saveSettings({ themeMode, sound, confetti });
+    saveSettings({ themeMode, sound, confetti, animatedBorders });
   } else {
-    saveSettings({ rounds, tieMode, themeMode, sound, confetti });
+    saveSettings({
+      rounds,
+      tieMode,
+      themeMode,
+      sound,
+      confetti,
+      animatedBorders,
+    });
   }
   settingsDialog.close();
 });
@@ -558,6 +578,7 @@ applyTheme(settings.themeMode);
 syncAudioUnlock();
 syncModeSwitch();
 syncControls();
+document.documentElement.dataset.aurora = settings.animatedBorders ? "1" : "0";
 if (tvMode) {
   void acquireScreenWakeLock();
   showCursorAndScheduleHide();
