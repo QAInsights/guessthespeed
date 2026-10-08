@@ -273,6 +273,21 @@ function getResolvedTheme(mode: GameSettings["themeMode"]): ThemeId {
 function applyTheme(mode: GameSettings["themeMode"]) {
   activeTheme = getResolvedTheme(mode);
   document.documentElement.dataset.theme = activeTheme;
+  const resolvedDate = new Date();
+  const day = `${resolvedDate.getFullYear()}-${String(
+    resolvedDate.getMonth() + 1,
+  ).padStart(2, "0")}-${String(resolvedDate.getDate()).padStart(2, "0")}`;
+  try {
+    localStorage.setItem(
+      "gts:theme-resolved",
+      JSON.stringify({
+        mode,
+        theme: activeTheme,
+        day,
+        dark: window.matchMedia("(prefers-color-scheme: dark)").matches,
+      }),
+    );
+  } catch {}
   const metaTheme = document.querySelector(
     'meta[name="theme-color"]',
   ) as HTMLMetaElement;
@@ -639,6 +654,11 @@ window
   });
 
 applyTheme(settings.themeMode);
+requestAnimationFrame(() => {
+  requestAnimationFrame(() => {
+    document.documentElement.dataset.themeReady = "1";
+  });
+});
 syncAudioUnlock();
 syncModeSwitch();
 syncControls();

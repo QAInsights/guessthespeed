@@ -769,6 +769,7 @@ html[data-room="1"] .dev-console {
 }
 
 html {
+  background: var(--bg);
   -webkit-text-size-adjust: 100%;
   scroll-behavior: smooth;
 }
@@ -782,6 +783,10 @@ body {
   transition:
     background 0.3s,
     color 0.3s;
+}
+
+html:not([data-theme-ready]) body {
+  transition: none;
 }
 
 button,
