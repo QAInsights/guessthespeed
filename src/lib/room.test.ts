@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
+import { englishDataset } from "obscenity";
 import { applyResult, initialGameState, type GameState } from "./game";
 import { MAX_SPEED_MBPS } from "./limits";
+import { BLOCKED_NAME_MESSAGE } from "./name-filter";
 import {
   applyAction,
   canRunTest,
@@ -24,6 +26,16 @@ import { TEAM_FACES } from "./team";
 const hostId = "host-client";
 const firstId = "player-one";
 const secondId = "player-two";
+
+function sampleDatasetWord(): string {
+  let sample: string | undefined;
+  englishDataset.removePhrasesIf((phrase) => {
+    sample ??= phrase.metadata?.originalWord;
+    return false;
+  });
+  if (!sample) throw new Error("The package dataset did not provide a sample.");
+  return sample;
+}
 
 describe("interruptedTestStep", () => {
   it("resends a pending result after the test run stops", () => {
@@ -580,6 +592,74 @@ describe("team rooms", () => {
 });
 
 describe("room actions and views", () => {
+  it("rejects a join with a package dataset sample without adding a player", () => {
+    const word = sampleDatasetWord();
+    const room = createRoom("BCDFGH", "secret-host-token", 100);
+    const result = applyAction(
+      room,
+      firstId,
+      false,
+      { type: "join", name: word, emoji: "🧑", role: "Friend" },
+      room.updatedAt + 1,
+    );
+
+    expect("error" in result).toBe(true);
+    if ("error" in result) expect(result.error).toBe(BLOCKED_NAME_MESSAGE);
+    expect(room.game.players).toHaveLength(0);
+  });
+
+  it("rejects editing a player to a package dataset sample and keeps the name", () => {
+    const word = sampleDatasetWord();
+    const room = joinedRoom();
+    const player = playerByOwner(room, firstId);
+    const result = applyAction(
+      room,
+      firstId,
+      false,
+      {
+        type: "edit",
+        id: player.id,
+        name: word,
+        emoji: player.emoji,
+        role: player.role,
+      },
+      room.updatedAt + 1,
+    );
+
+    expect("error" in result).toBe(true);
+    if ("error" in result) expect(result.error).toBe(BLOCKED_NAME_MESSAGE);
+    expect(playerByOwner(room, firstId).name === "First").toBe(true);
+  });
+
+  it("rejects a join when a package dataset sample is used as a role", () => {
+    const word = sampleDatasetWord();
+    const room = createRoom("BCDFGH", "secret-host-token", 100);
+    const result = applyAction(
+      room,
+      firstId,
+      false,
+      { type: "join", name: "Cassie", emoji: "🧑", role: word },
+      room.updatedAt + 1,
+    );
+
+    expect("error" in result).toBe(true);
+    if ("error" in result) expect(result.error).toBe(BLOCKED_NAME_MESSAGE);
+    expect(room.game.players).toHaveLength(0);
+  });
+
+  it("allows joining with Cassie", () => {
+    const room = createRoom("BCDFGH", "secret-host-token", 100);
+    const result = applyAction(
+      room,
+      firstId,
+      false,
+      { type: "join", name: "Cassie", emoji: "🧑", role: "Friend" },
+      room.updatedAt + 1,
+    );
+
+    expect(result).toHaveProperty("room.game.players.0.name", "Cassie");
+  });
+
   it("accepts the maximum speed and rejects values above the shared limit", () => {
     const room = joinedRoom();
     const player = playerByOwner(room, firstId);

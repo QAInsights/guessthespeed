@@ -3,6 +3,7 @@ import {
   type ClientAction,
   type RoomView,
 } from "../lib/room";
+import { BLOCKED_NAME_MESSAGE, isBlockedName } from "../lib/name-filter";
 import { isRecord } from "../lib/guards";
 import { loadSession } from "../lib/classroom";
 import { queryOptional } from "./dom";
@@ -821,7 +822,8 @@ if (isRoom) {
         joinError.hidden = true;
         joinError.textContent = "";
       }
-      const name = (form.elements.namedItem("name") as HTMLInputElement).value;
+      const nameInput = form.elements.namedItem("name") as HTMLInputElement;
+      const name = nameInput.value;
       const selected = Number(
         form.querySelector<HTMLInputElement>('input[name="emoji"]:checked')
           ?.value ?? 0,
@@ -841,7 +843,15 @@ if (isRoom) {
       const emoji =
         roleChoice?.querySelector("span")?.textContent?.slice(0, 16) ?? "🧑";
       if (!name.trim()) {
-        (form.elements.namedItem("name") as HTMLInputElement).focus();
+        nameInput.focus();
+        return;
+      }
+      if (isBlockedName(name)) {
+        if (joinError) {
+          joinError.textContent = BLOCKED_NAME_MESSAGE;
+          joinError.hidden = false;
+        }
+        nameInput.focus();
         return;
       }
       sendRoomAction({
