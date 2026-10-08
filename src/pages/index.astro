@@ -79,17 +79,43 @@ const overheard: { face: string; quote: string; who: string; note: string }[] = 
 >
   <main class="wrap game-main">
     <section class="stage mode-hero" aria-label="Speed test game">
-      <div class="intro mode-hero-copy">
-        <div class="round mode-hero-pill" data-round-banner>
-          <Icon name="ph:flag-checkered-fill" aria-hidden="true" />
-          <span data-round-label>Round 1 of 3</span>
-          <span class="dev-mode-pill-label" aria-hidden="true">Dev mode</span>
+      <div class="mode-hero-left">
+        <div class="intro mode-hero-copy">
+          <div class="round mode-hero-pill" data-round-banner>
+            <Icon name="ph:flag-checkered-fill" aria-hidden="true" />
+            <span data-round-label>Round 1 of 3</span>
+            <span class="dev-mode-pill-label" aria-hidden="true">Dev mode</span>
+          </div>
+          <h1 class="display mode-hero-heading" data-game-title>Guess the <span class="wifi-nowrap">Wi-Fi</span>.<br /><em data-game-team-headline>Beat the family.</em></h1>
+          <h2 class="display mode-hero-heading dev-title" data-dev-title hidden>Raw speed test.<br /><em>No game.</em></h2>
+          <p class="mode-hero-lede" data-game-lede>Guess the download and upload. Run a real speed test. Closest guesses score!</p>
+          <p class="dev-lede mode-hero-lede" data-dev-lede hidden>Raw Cloudflare speed test data. No game, no scores.</p>
+          <p class="play-stat" data-play-stat hidden><a href="/stats/"><span>🎉{' '}<span data-play-stat-text></span></span></a></p>
         </div>
-        <h1 class="display mode-hero-heading" data-game-title>Guess the <span class="wifi-nowrap">Wi-Fi</span>.<br /><em data-game-team-headline>Beat the family.</em></h1>
-        <h2 class="display mode-hero-heading dev-title" data-dev-title hidden>Raw speed test.<br /><em>No game.</em></h2>
-        <p class="mode-hero-lede" data-game-lede>Guess the download and upload. Run a real speed test. Closest guesses score!</p>
-        <p class="dev-lede mode-hero-lede" data-dev-lede hidden>Raw Cloudflare speed test data. No game, no scores.</p>
-        <p class="play-stat" data-play-stat hidden><a href="/stats/"><span>🎉{' '}<span data-play-stat-text></span></span></a></p>
+
+        <div class="stats-column mode-hero-stats">
+          <div class="stats" aria-label="Latest speed test results">
+            <div class="stat stk"><span><Icon name="ph:timer-fill" />Ping</span><div><b data-result="ping">-</b><small>ms</small></div></div>
+            <div class="stat stk">
+              <span><Icon name="ph:arrow-down-fill" />Download</span>
+              <div class="stat-result">
+                <div><b data-result="down">-</b><small>Mbps</small></div>
+                <a class="plan-chip" data-plan-chip="down" href="/what-is-a-good-internet-speed/#less-than-plan" hidden></a>
+              </div>
+            </div>
+            <div class="stat stk">
+              <span><Icon name="ph:arrow-up-fill" />Upload</span>
+              <div class="stat-result">
+                <div><b data-result="up">-</b><small>Mbps</small></div>
+                <a class="plan-chip" data-plan-chip="up" href="/what-is-a-good-internet-speed/#less-than-plan" hidden></a>
+              </div>
+            </div>
+          </div>
+          <button class="plan-nudge" data-plan-nudge type="button" hidden>
+            <Icon name="ph:plus-bold" aria-hidden="true" />
+            Add your plan to see how close you get
+          </button>
+        </div>
       </div>
 
       <div class="mode-hero-visual">
@@ -137,30 +163,6 @@ const overheard: { face: string; quote: string; who: string; note: string }[] = 
           <span>·</span>
           <span><kbd>F</kbd> full screen</span>
         </p>
-
-        <div class="stats-column">
-          <div class="stats" aria-label="Latest speed test results">
-            <div class="stat stk"><span><Icon name="ph:timer-fill" />Ping</span><div><b data-result="ping">-</b><small>ms</small></div></div>
-            <div class="stat stk">
-              <span><Icon name="ph:arrow-down-fill" />Download</span>
-              <div class="stat-result">
-                <div><b data-result="down">-</b><small>Mbps</small></div>
-                <a class="plan-chip" data-plan-chip="down" href="/what-is-a-good-internet-speed/#less-than-plan" hidden></a>
-              </div>
-            </div>
-            <div class="stat stk">
-              <span><Icon name="ph:arrow-up-fill" />Upload</span>
-              <div class="stat-result">
-                <div><b data-result="up">-</b><small>Mbps</small></div>
-                <a class="plan-chip" data-plan-chip="up" href="/what-is-a-good-internet-speed/#less-than-plan" hidden></a>
-              </div>
-            </div>
-          </div>
-          <button class="plan-nudge" data-plan-nudge type="button" hidden>
-            <Icon name="ph:plus-bold" aria-hidden="true" />
-            Add your plan to see how close you get
-          </button>
-        </div>
       </div>
       <span class="sr" data-reveal-announcement aria-live="polite" aria-atomic="true"></span>
       <article class="wifi-history-card stk" data-history-card hidden aria-labelledby="wifi-history-title">
