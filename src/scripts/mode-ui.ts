@@ -1,6 +1,8 @@
-export function devBadgeVisible(input: {
+export function modeSwitchHidden(input: {
+  roomMode: boolean;
+  tvMode: boolean;
+  tvLayout: boolean;
   devMode: boolean;
-  modeSwitchVisible: boolean;
 }): boolean {
-  return input.devMode && !input.modeSwitchVisible;
+  return input.roomMode || (input.tvMode && input.tvLayout && !input.devMode);
 }
