@@ -25,7 +25,7 @@ export function isBlockedName(value: string): boolean {
   if (matcher.hasMatch(value)) return true;
 
   let run: string[] = [];
-  for (const token of value.split(/[\s._*\-]+/)) {
+  for (const token of value.split(/[\s._*-]+/)) {
     if (Array.from(token).length === 1) {
       run.push(token);
       continue;
