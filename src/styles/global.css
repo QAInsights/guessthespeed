@@ -936,22 +936,6 @@ h3,
   white-space: nowrap;
 }
 
-.dev-badge {
-  height: 38px;
-  padding: 0 11px;
-  border: 2.5px solid var(--ink);
-  border-radius: 10px;
-  background: var(--accent);
-  box-shadow: 3px 3px 0 var(--shadow);
-  color: var(--on-accent);
-  font:
-    800 13px/1 ui-monospace,
-    SFMono-Regular,
-    Menlo,
-    monospace;
-  letter-spacing: 0.06em;
-}
-
 .theme-picker {
   position: relative;
   min-width: 0;
@@ -1223,8 +1207,8 @@ html[data-room="1"] .mode-bar {
 }
 
 @media (min-width: 900px) {
-  html[data-tv="1"] .mode-switch,
-  html[data-tv="1"] .mode-bar {
+  html[data-tv="1"]:not([data-dev="1"]) .mode-switch,
+  html[data-tv="1"]:not([data-dev="1"]) .mode-bar {
     display: none;
   }
 }
@@ -4390,6 +4374,10 @@ html[data-dev="1"] .dev-console {
     height: calc(100dvh - 80px);
     min-height: 0;
     overflow: hidden;
+  }
+
+  html[data-tv="1"][data-home="1"][data-dev="1"] .game-main {
+    height: calc(100dvh - 80px - 64px);
   }
 
   html[data-tv="1"][data-home="1"] .classroom-session-banner:not([hidden]) {

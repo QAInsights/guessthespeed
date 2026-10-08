@@ -6,7 +6,7 @@ import type { RoomView } from "../lib/room";
 import { loadSession } from "../lib/classroom";
 import { loadPlan, savePlan, type InternetPlan } from "../lib/plan";
 import { describeTarget, isOverlayOpen, shortcutAction } from "./shortcuts";
-import { devBadgeVisible } from "./mode-ui";
+import { modeSwitchHidden } from "./mode-ui";
 import { $ } from "./dom";
 
 const themePicker = $<HTMLDivElement>("[data-theme-picker]");
@@ -27,7 +27,6 @@ const settingsButton = $<HTMLButtonElement>("[data-open-settings]");
 const settingsDialog = $<HTMLDialogElement>("[data-settings-dialog]");
 const closeSettingsButton = $<HTMLButtonElement>("[data-close-settings]");
 const settingsForm = $<HTMLFormElement>("[data-settings-form]");
-const devBadge = $<HTMLButtonElement>("[data-dev-badge]");
 const modeSwitch = document.querySelector<HTMLElement>("[data-mode-switch]");
 const teamRoomButton = document.querySelector<HTMLButtonElement>(
   "[data-create-team-room]",
@@ -97,7 +96,12 @@ function syncAudioUnlock() {
 function syncModeSwitch() {
   if (modeSwitch) {
     classroomMode = loadSession() !== null;
-    modeSwitch.hidden = roomMode || (tvMode && tvLayoutQuery.matches);
+    modeSwitch.hidden = modeSwitchHidden({
+      roomMode,
+      tvMode,
+      tvLayout: tvLayoutQuery.matches,
+      devMode,
+    });
     const selectedMode = classroomMode
       ? "classroom"
       : devMode
@@ -137,7 +141,6 @@ function syncModeSwitch() {
       });
     if (teamRoomClassroomNote) teamRoomClassroomNote.hidden = !classroomMode;
   }
-  syncDevBadge();
 }
 
 tvLayoutQuery.addEventListener("change", syncModeSwitch);
@@ -156,13 +159,6 @@ modeSwitch?.addEventListener("click", (event) => {
   )
     setDevMode(false);
 });
-
-function syncDevBadge() {
-  devBadge.hidden = !devBadgeVisible({
-    devMode,
-    modeSwitchVisible: Boolean(modeSwitch && !modeSwitch.hidden),
-  });
-}
 
 function setDevMode(enabled: boolean) {
   if (roomMode || classroomMode) return;
@@ -513,7 +509,6 @@ settingsButton.addEventListener("click", () => {
 });
 
 closeSettingsButton.addEventListener("click", () => settingsDialog.close());
-devBadge.addEventListener("click", () => setDevMode(false));
 
 modeOptions.forEach((option) => {
   option.addEventListener("click", (event) => {

@@ -1,16 +1,59 @@
 import { describe, expect, it } from "vitest";
-import { devBadgeVisible } from "./mode-ui";
+import { modeSwitchHidden } from "./mode-ui";
 
-describe("devBadgeVisible", () => {
+describe("modeSwitchHidden", () => {
   it.each([
-    { devMode: false, modeSwitchVisible: false, expected: false },
-    { devMode: false, modeSwitchVisible: true, expected: false },
-    { devMode: true, modeSwitchVisible: false, expected: true },
-    { devMode: true, modeSwitchVisible: true, expected: false },
-  ])(
-    "returns $expected for devMode=$devMode and modeSwitchVisible=$modeSwitchVisible",
-    ({ devMode, modeSwitchVisible, expected }) => {
-      expect(devBadgeVisible({ devMode, modeSwitchVisible })).toBe(expected);
+    {
+      scenario: "room mode stays hidden with Dev enabled",
+      input: {
+        roomMode: true,
+        tvMode: true,
+        tvLayout: true,
+        devMode: true,
+      },
+      expected: true,
     },
-  );
+    {
+      scenario: "TV desktop Game mode is hidden",
+      input: {
+        roomMode: false,
+        tvMode: true,
+        tvLayout: true,
+        devMode: false,
+      },
+      expected: true,
+    },
+    {
+      scenario: "TV desktop Dev mode is visible",
+      input: {
+        roomMode: false,
+        tvMode: true,
+        tvLayout: true,
+        devMode: true,
+      },
+      expected: false,
+    },
+    {
+      scenario: "TV phone layout is visible",
+      input: {
+        roomMode: false,
+        tvMode: true,
+        tvLayout: false,
+        devMode: false,
+      },
+      expected: false,
+    },
+    {
+      scenario: "plain non-TV mode is visible",
+      input: {
+        roomMode: false,
+        tvMode: false,
+        tvLayout: true,
+        devMode: false,
+      },
+      expected: false,
+    },
+  ])("$scenario", ({ input, expected }) => {
+    expect(modeSwitchHidden(input)).toBe(expected);
+  });
 });
