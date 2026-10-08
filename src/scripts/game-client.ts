@@ -19,6 +19,7 @@ import {
   type GameSettings,
   type Player,
 } from "../lib/game";
+import { BLOCKED_NAME_MESSAGE, isBlockedName } from "../lib/name-filter";
 import { auroraFor, auroraStyleVars } from "../lib/aurora";
 import { BACKUP_KEY, clearSession, loadSession } from "../lib/classroom";
 import {
@@ -146,10 +147,12 @@ const startConfirmMessage = $<HTMLParagraphElement>(
 );
 const startAnywayButton = $<HTMLButtonElement>("[data-start-anyway]");
 const editDialog = $<HTMLDialogElement>("[data-edit-dialog]");
+const editError = $<HTMLParagraphElement>("[data-edit-error]");
 const championDialog = $<HTMLDialogElement>("[data-champion-dialog]");
 const shareButton = $<HTMLButtonElement>("[data-share-result]");
 const shareStatus = $<HTMLParagraphElement>("[data-share-status]");
 const addForm = $<HTMLFormElement>("[data-add-form]");
+const addError = $<HTMLParagraphElement>("[data-add-error]");
 const tvAddToggle = $<HTMLButtonElement>("[data-tv-add-toggle]");
 const planChips = $$<HTMLAnchorElement>("[data-plan-chip]");
 const planNudge = $<HTMLButtonElement>("[data-plan-nudge]");
@@ -904,6 +907,8 @@ function openEdit(id: string) {
   if (!player || !isMine(player)) return;
   editingPlayerId = player.id;
   const form = $<HTMLFormElement>("[data-edit-form]");
+  editError.hidden = true;
+  editError.textContent = "";
   (form.elements.namedItem("name") as HTMLInputElement).value = player.name;
   const roleIndex = ROLES.findIndex(
     (role) => role.emoji === player.emoji && role.role === player.role,
@@ -1417,9 +1422,18 @@ $<HTMLFormElement>("[data-edit-form]").addEventListener("submit", (event) => {
   event.preventDefault();
   if (!editingPlayerId || isTesting()) return;
   const form = event.currentTarget as HTMLFormElement;
-  const name = (form.elements.namedItem("name") as HTMLInputElement).value;
+  const nameInput = form.elements.namedItem("name") as HTMLInputElement;
+  const name = nameInput.value;
+  editError.hidden = true;
+  editError.textContent = "";
   if (!name.trim()) {
-    (form.elements.namedItem("name") as HTMLInputElement).focus();
+    nameInput.focus();
+    return;
+  }
+  if (roomMode && isBlockedName(name)) {
+    editError.textContent = BLOCKED_NAME_MESSAGE;
+    editError.hidden = false;
+    nameInput.focus();
     return;
   }
   const selected = Number(
@@ -1537,9 +1551,18 @@ window.addEventListener("resize", syncTVAddForm);
 
 addForm.addEventListener("submit", (event) => {
   event.preventDefault();
+  addError.hidden = true;
+  addError.textContent = "";
   const form = event.currentTarget as HTMLFormElement;
-  const name = (form.elements.namedItem("name") as HTMLInputElement).value;
+  const nameInput = form.elements.namedItem("name") as HTMLInputElement;
+  const name = nameInput.value;
   if (!name.trim()) return;
+  if (roomMode && isBlockedName(name)) {
+    addError.textContent = BLOCKED_NAME_MESSAGE;
+    addError.hidden = false;
+    nameInput.focus();
+    return;
+  }
   const selected = Number(
     (
       form.querySelector(
@@ -1572,6 +1595,11 @@ addForm.addEventListener("submit", (event) => {
   playCue("lockIn", activeTheme, state.settings.sound);
   render();
   $<HTMLInputElement>("#player-name").focus();
+});
+
+$<HTMLInputElement>("#player-name").addEventListener("input", () => {
+  addError.hidden = true;
+  addError.textContent = "";
 });
 
 $$<HTMLButtonElement>("[data-view-toggle] button").forEach((button) => {

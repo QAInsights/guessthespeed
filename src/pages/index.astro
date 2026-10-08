@@ -309,6 +309,7 @@ const overheard: { face: string; quote: string; who: string; note: string }[] = 
         <div>
           <label class="lbl" for="player-name">Player name</label>
           <input id="player-name" name="name" maxlength={MAX_NAME_LENGTH} autocomplete="off" placeholder="e.g. Grandpa Raj" required />
+          <p class="room-join-error" data-add-error role="status" hidden></p>
         </div>
         <fieldset class="role-fieldset">
           <legend class="lbl">Pick a face</legend>
@@ -511,6 +512,7 @@ const overheard: { face: string; quote: string; who: string; note: string }[] = 
             ))}
           </div>
         </fieldset>
+        <p class="room-join-error" data-edit-error role="status" hidden></p>
         <div class="dialog-actions">
           <button class="guess-button" type="button" data-cancel-edit>Cancel</button>
           <button class="go" type="submit">Save player</button>

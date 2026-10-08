@@ -14,6 +14,7 @@ import {
 } from "./game";
 import { isRecord } from "./guards";
 import { MAX_NAME_LENGTH, MAX_SPEED_MBPS } from "./limits";
+import { BLOCKED_NAME_MESSAGE, isBlockedName } from "./name-filter";
 import type { TieMode } from "./scoring";
 
 export const ROOM_ALPHABET = "BCDFGHJKMNPQRSTVWXZ";
@@ -217,6 +218,8 @@ export function applyAction(
       const role = shortString(action.role);
       if (name === null || emoji === null || role === null)
         return { error: "Enter a name and choose a face." };
+      if (isBlockedName(name) || isBlockedName(role) || isBlockedName(emoji))
+        return { error: BLOCKED_NAME_MESSAGE };
       if (game.phase === "testing")
         return { error: "Wait for the test to finish before joining." };
       if (
@@ -256,6 +259,8 @@ export function applyAction(
       const role = shortString(action.role);
       if (name === null || emoji === null || role === null)
         return { error: "Enter a name and choose a face." };
+      if (isBlockedName(name) || isBlockedName(role) || isBlockedName(emoji))
+        return { error: BLOCKED_NAME_MESSAGE };
       return updateRoomGame(
         room,
         updatePlayer(game, player.id, { name, emoji, role }),
