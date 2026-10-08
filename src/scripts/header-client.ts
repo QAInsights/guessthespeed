@@ -6,7 +6,7 @@ import type { RoomView } from "../lib/room";
 import { loadSession } from "../lib/classroom";
 import { loadPlan, savePlan, type InternetPlan } from "../lib/plan";
 import { describeTarget, isOverlayOpen, shortcutAction } from "./shortcuts";
-import { modeSwitchHidden } from "./mode-ui";
+import { modeSwitchHidden, urlWithoutDevParam } from "./mode-ui";
 import { $ } from "./dom";
 
 const themePicker = $<HTMLDivElement>("[data-theme-picker]");
@@ -169,6 +169,8 @@ function setDevMode(enabled: boolean) {
   try {
     localStorage.setItem("gts:dev", enabled ? "1" : "0");
   } catch {}
+  const updatedUrl = urlWithoutDevParam(location.href);
+  if (updatedUrl !== null) history.replaceState(history.state, "", updatedUrl);
   document.dispatchEvent(
     new CustomEvent<boolean>("gts:dev-change", { detail: enabled }),
   );
