@@ -17,6 +17,8 @@ const samples = sampleDatasetWords();
 const allowedNames = [
   "Mom",
   "Dad",
+  "J R Smith",
+  "A B C",
   "Big Sis",
   "Little One",
   "Grandpa Raj",
@@ -44,20 +46,26 @@ const allowedNames = [
 ];
 
 describe("name filter", () => {
-  it("checks package-provided samples and reports unsupported variant types", () => {
+  it("blocks dataset samples across separated-letter variants", () => {
     expect(samples.length).toBe(3);
-    const unsupported = new Set<string>();
     for (const word of samples) {
+      const lettersSeparatedBySpaces = Array.from(word).join(" ");
       expect(isBlockedName(word), "as-is").toBe(true);
       expect(isBlockedName(word.toUpperCase()), "uppercase").toBe(true);
-      if (!isBlockedName(Array.from(word).join(" ")))
-        unsupported.add("letters separated by spaces");
+      expect(
+        isBlockedName(lettersSeparatedBySpaces),
+        "letters separated by spaces",
+      ).toBe(true);
+      expect(
+        isBlockedName(Array.from(word).join(".")),
+        "letters separated by dots",
+      ).toBe(true);
+      expect(
+        isBlockedName(`Big ${lettersSeparatedBySpaces}`),
+        "inside a longer name with letters separated",
+      ).toBe(true);
       expect(isBlockedName(`Big ${word}`), "inside a longer name").toBe(true);
     }
-    if (unsupported.size)
-      console.info(
-        `Package matcher does not catch: ${[...unsupported].sort().join(", ")}`,
-      );
   });
 
   it.each(allowedNames)("allows the name %s", (name) => {

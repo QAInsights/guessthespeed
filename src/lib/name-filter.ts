@@ -22,5 +22,16 @@ const matcher = new RegExpMatcher({
 });
 
 export function isBlockedName(value: string): boolean {
-  return matcher.hasMatch(value);
+  if (matcher.hasMatch(value)) return true;
+
+  let run: string[] = [];
+  for (const token of value.split(/[\s._*\-]+/)) {
+    if (Array.from(token).length === 1) {
+      run.push(token);
+      continue;
+    }
+    if (run.length >= 3 && matcher.hasMatch(run.join(""))) return true;
+    run = [];
+  }
+  return run.length >= 3 && matcher.hasMatch(run.join(""));
 }
