@@ -210,8 +210,33 @@ const graphSchema = { '@context': 'https://schema.org', '@graph': graph };
           "lunarnewyear",
           "stpatricks",
         ];
-        if (explicitThemes.includes(themeMode))
+        if (explicitThemes.includes(themeMode)) {
           document.documentElement.dataset.theme = themeMode;
+        } else {
+          const today = new Date();
+          const localDay = `${today.getFullYear()}-${String(
+            today.getMonth() + 1,
+          ).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+          const prefersDark = window.matchMedia(
+            "(prefers-color-scheme: dark)",
+          ).matches;
+          let resolvedTheme = null;
+          try {
+            resolvedTheme = JSON.parse(
+              localStorage.getItem("gts:theme-resolved") ?? "null",
+            );
+          } catch {}
+          if (
+            resolvedTheme?.mode === "auto" &&
+            resolvedTheme?.day === localDay &&
+            resolvedTheme?.dark === prefersDark &&
+            explicitThemes.includes(resolvedTheme?.theme)
+          ) {
+            document.documentElement.dataset.theme = resolvedTheme.theme;
+          } else if (prefersDark) {
+            document.documentElement.dataset.theme = "dark";
+          }
+        }
         const animatedBorders = roomPage
           ? savedSettings?.animatedBorders
           : savedSettings?.settings?.animatedBorders;

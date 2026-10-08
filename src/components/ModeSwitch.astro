@@ -9,45 +9,42 @@ const { current } = Astro.props;
 ---
 
 <nav class="mode-switch" aria-label="Mode" data-mode-switch>
-  {current === "game" ? (
-    <>
-      <button
-        type="button"
-        aria-pressed="true"
-        data-mode-option="game"
-      >
-        <Icon name="ph:game-controller-bold" aria-hidden="true" />Game
-      </button>
-      <button
-        type="button"
-        aria-pressed="false"
-        data-mode-option="dev"
-      >
-        <Icon name="ph:code-bold" aria-hidden="true" />Dev
-      </button>
-    </>
-  ) : (
-    <>
-      <a href="/?dev=0" data-mode-option="game">
-        <Icon name="ph:game-controller-bold" aria-hidden="true" />Game
-      </a>
-      <a href="/?dev=1" data-mode-option="dev">
-        <Icon name="ph:code-bold" aria-hidden="true" />Dev
-      </a>
-    </>
-  )}
   <a
     href="/classroom/"
     aria-current={current === "classroom" ? "page" : undefined}
     data-mode-option="classroom"
   >
-    <Icon name="ph:chalkboard-teacher-bold" aria-hidden="true" />Classroom
+    <Icon name="ph:chalkboard-teacher-bold" aria-hidden="true" />
+    Classroom
   </a>
+  {current === "game" ? (
+    <button type="button" aria-pressed="false" data-mode-option="dev">
+      <Icon name="ph:code-bold" aria-hidden="true" />
+      Dev
+    </button>
+  ) : (
+    <a href="/?dev=1" data-mode-option="dev">
+      <Icon name="ph:code-bold" aria-hidden="true" />
+      Dev
+    </a>
+  )}
+  {current === "game" ? (
+    <button type="button" aria-pressed="true" data-mode-option="game">
+      <Icon name="ph:game-controller-bold" aria-hidden="true" />
+      Game
+    </button>
+  ) : (
+    <a href="/?dev=0" data-mode-option="game">
+      <Icon name="ph:game-controller-bold" aria-hidden="true" />
+      Game
+    </a>
+  )}
   <a
     href="/work/"
     aria-current={current === "work" ? "page" : undefined}
     data-mode-option="work"
   >
-    <Icon name="ph:briefcase-bold" aria-hidden="true" />Work
+    <Icon name="ph:briefcase-bold" aria-hidden="true" />
+    Work
   </a>
 </nav>

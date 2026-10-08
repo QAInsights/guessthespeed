@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { modeSwitchHidden } from "./mode-ui";
+import { modeSwitchHidden, urlWithoutDevParam } from "./mode-ui";
 
 describe("modeSwitchHidden", () => {
   it.each([
@@ -55,5 +55,24 @@ describe("modeSwitchHidden", () => {
     },
   ])("$scenario", ({ input, expected }) => {
     expect(modeSwitchHidden(input)).toBe(expected);
+  });
+});
+
+describe("urlWithoutDevParam", () => {
+  it.each([
+    ["/?dev=1", "/"],
+    ["/?dev=0&tv=1#x", "/?tv=1#x"],
+  ])("removes dev from %s", (href, expected) => {
+    expect(urlWithoutDevParam(href)).toBe(expected);
+  });
+
+  it("returns null when dev is absent", () => {
+    expect(urlWithoutDevParam("/?tv=1")).toBeNull();
+  });
+
+  it("preserves an absolute URL origin", () => {
+    expect(urlWithoutDevParam("https://example.com/play?dev=1&tv=1#x")).toBe(
+      "https://example.com/play?tv=1#x",
+    );
   });
 });

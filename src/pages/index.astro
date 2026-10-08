@@ -78,83 +78,91 @@ const overheard: { face: string; quote: string; who: string; note: string }[] = 
   modeSwitch="game"
 >
   <main class="wrap game-main">
-    <section class="stage" aria-label="Speed test game">
-      <div class="intro">
-        <div class="round" data-round-banner><Icon name="ph:flag-checkered-fill" /><span data-round-label>Round 1 of 3</span></div>
-        <h1 class="display" data-game-title>Guess the <span class="wifi-nowrap">Wi-Fi</span>. <em data-game-team-headline>Beat the family.</em></h1>
-        <h2 class="display dev-title" data-dev-title hidden>Dev mode</h2>
-        <p data-game-lede>Guess the download and upload. Run a real speed test. Closest guesses score!</p>
-        <p class="dev-lede" data-dev-lede hidden>Raw Cloudflare speed test data. No game, no scores.</p>
-        <p class="play-stat" data-play-stat hidden><a href="/stats/"><span>🎉{' '}<span data-play-stat-text></span></span></a></p>
-      </div>
-
-      <div class="gauge-card stk">
-        <div class="gauge" data-gauge>
-          <svg viewBox="0 0 400 320" role="img" aria-label="Live internet speed gauge">
-            <path class="track-o" data-arc data-cx="200" data-cy="185" data-r="150" data-start="-120" data-sweep="240"></path>
-            <path class="track" data-arc data-cx="200" data-cy="185" data-r="150" data-start="-120" data-sweep="240"></path>
-            <path class="gauge-fill" data-arc data-cx="200" data-cy="185" data-r="150" data-start="-120" data-sweep="240"></path>
-            <g data-ticks data-cx="200" data-cy="185" data-r="108" data-start="-120" data-sweep="240"></g>
-            <g class="gauge-needle">
-              <path class="needle" d="M194 185 L200 80 L206 185 Z"></path>
-              <circle class="hub" cx="200" cy="185" r="15"></circle>
-            </g>
-          </svg>
-          <div class="readout">
-            <span class="mode" data-mode>Download</span>
-            <span class="num" data-live>0</span>
-            <span class="unit" data-unit>Mbps</span>
+    <section class="stage mode-hero" aria-label="Speed test game">
+      <div class="mode-hero-left">
+        <div class="intro mode-hero-copy">
+          <div class="round mode-hero-pill" data-round-banner>
+            <Icon name="ph:flag-checkered-fill" aria-hidden="true" />
+            <span data-round-label>Round 1 of 3</span>
+            <span class="dev-mode-pill-label" aria-hidden="true">Dev mode</span>
           </div>
+          <h1 class="display mode-hero-heading" data-game-title>Guess the <span class="wifi-nowrap">Wi-Fi</span>.<br /><em data-game-team-headline>Beat the family.</em></h1>
+          <h2 class="display mode-hero-heading dev-title" data-dev-title hidden>Raw speed test.<br /><em>No game.</em></h2>
+          <p class="mode-hero-lede" data-game-lede>Guess the download and upload. Run a real speed test. Closest guesses score!</p>
+          <p class="dev-lede mode-hero-lede" data-dev-lede hidden>Raw Cloudflare speed test data. No game, no scores.</p>
+          <p class="play-stat" data-play-stat hidden><a href="/stats/"><span>🎉{' '}<span data-play-stat-text></span></span></a></p>
         </div>
-        <div class="phase-status">
-          <span class="live-dot" data-live-dot aria-hidden="true" hidden></span>
-          <div class="phase" data-phase-label aria-live="polite">
-            <span data-phase-text>Ready when you are</span>
-            <span class="elapsed" data-elapsed aria-hidden="true" hidden></span>
-            <span class="slow-hint" data-slow-hint hidden>Big file still on its way...</span>
-          </div>
-        </div>
-        <div class="test-progress" data-test-progress role="progressbar" aria-label="Speed test progress" aria-valuemin="0" aria-valuemax="13" aria-valuenow="0" hidden>
-          <div class="test-progress-fill" data-progress-fill></div>
-        </div>
-        <button class="go" type="button" data-start-btn disabled>
-          <Icon name="ph:lightning-fill" />
-          <span data-start-label>Waiting for guesses</span>
-        </button>
-        <p class="room-waiting" data-room-waiting hidden></p>
-        <div class="winner" data-winner-banner hidden aria-live="polite"></div>
-        <p class="error-note" data-error-note hidden></p>
-      </div>
-      <p class="tv-shortcut-hint" aria-hidden="true">
-        <span><kbd>Space</kbd> start</span>
-        <span>·</span>
-        <span><kbd>N</kbd> next round</span>
-        <span>·</span>
-        <span><kbd>F</kbd> full screen</span>
-      </p>
 
-      <div class="stats-column">
-        <div class="stats" aria-label="Latest speed test results">
-          <div class="stat stk"><span><Icon name="ph:timer-fill" />Ping</span><div><b data-result="ping">-</b><small>ms</small></div></div>
-          <div class="stat stk">
-            <span><Icon name="ph:arrow-down-fill" />Download</span>
-            <div class="stat-result">
-              <div><b data-result="down">-</b><small>Mbps</small></div>
-              <a class="plan-chip" data-plan-chip="down" href="/what-is-a-good-internet-speed/#less-than-plan" hidden></a>
+        <div class="stats-column mode-hero-stats">
+          <div class="stats" aria-label="Latest speed test results">
+            <div class="stat stk"><span><Icon name="ph:timer-fill" />Ping</span><div><b data-result="ping">-</b><small>ms</small></div></div>
+            <div class="stat stk">
+              <span><Icon name="ph:arrow-down-fill" />Download</span>
+              <div class="stat-result">
+                <div><b data-result="down">-</b><small>Mbps</small></div>
+                <a class="plan-chip" data-plan-chip="down" href="/what-is-a-good-internet-speed/#less-than-plan" hidden></a>
+              </div>
+            </div>
+            <div class="stat stk">
+              <span><Icon name="ph:arrow-up-fill" />Upload</span>
+              <div class="stat-result">
+                <div><b data-result="up">-</b><small>Mbps</small></div>
+                <a class="plan-chip" data-plan-chip="up" href="/what-is-a-good-internet-speed/#less-than-plan" hidden></a>
+              </div>
             </div>
           </div>
-          <div class="stat stk">
-            <span><Icon name="ph:arrow-up-fill" />Upload</span>
-            <div class="stat-result">
-              <div><b data-result="up">-</b><small>Mbps</small></div>
-              <a class="plan-chip" data-plan-chip="up" href="/what-is-a-good-internet-speed/#less-than-plan" hidden></a>
+          <button class="plan-nudge" data-plan-nudge type="button" hidden>
+            <Icon name="ph:plus-bold" aria-hidden="true" />
+            Add your plan to see how close you get
+          </button>
+        </div>
+      </div>
+
+      <div class="mode-hero-visual">
+        <div class="gauge-card stk">
+          <div class="gauge" data-gauge>
+            <svg viewBox="0 0 400 320" role="img" aria-label="Live internet speed gauge">
+              <path class="track-o" data-arc data-cx="200" data-cy="185" data-r="150" data-start="-120" data-sweep="240"></path>
+              <path class="track" data-arc data-cx="200" data-cy="185" data-r="150" data-start="-120" data-sweep="240"></path>
+              <path class="gauge-fill" data-arc data-cx="200" data-cy="185" data-r="150" data-start="-120" data-sweep="240"></path>
+              <g data-ticks data-cx="200" data-cy="185" data-r="108" data-start="-120" data-sweep="240"></g>
+              <g class="gauge-needle">
+                <path class="needle" d="M194 185 L200 80 L206 185 Z"></path>
+                <circle class="hub" cx="200" cy="185" r="15"></circle>
+              </g>
+            </svg>
+            <div class="readout">
+              <span class="mode" data-mode>Download</span>
+              <span class="num" data-live>0</span>
+              <span class="unit" data-unit>Mbps</span>
             </div>
           </div>
+          <div class="phase-status">
+            <span class="live-dot" data-live-dot aria-hidden="true" hidden></span>
+            <div class="phase" data-phase-label aria-live="polite">
+              <span data-phase-text>Ready when you are</span>
+              <span class="elapsed" data-elapsed aria-hidden="true" hidden></span>
+              <span class="slow-hint" data-slow-hint hidden>Big file still on its way...</span>
+            </div>
+          </div>
+          <div class="test-progress" data-test-progress role="progressbar" aria-label="Speed test progress" aria-valuemin="0" aria-valuemax="13" aria-valuenow="0" hidden>
+            <div class="test-progress-fill" data-progress-fill></div>
+          </div>
+          <button class="go" type="button" data-start-btn disabled>
+            <Icon name="ph:lightning-fill" />
+            <span data-start-label>Waiting for guesses</span>
+          </button>
+          <p class="room-waiting" data-room-waiting hidden></p>
+          <div class="winner" data-winner-banner hidden aria-live="polite"></div>
+          <p class="error-note" data-error-note hidden></p>
         </div>
-        <button class="plan-nudge" data-plan-nudge type="button" hidden>
-          <Icon name="ph:plus-bold" aria-hidden="true" />
-          Add your plan to see how close you get
-        </button>
+        <p class="tv-shortcut-hint" aria-hidden="true">
+          <span><kbd>Space</kbd> start</span>
+          <span>·</span>
+          <span><kbd>N</kbd> next round</span>
+          <span>·</span>
+          <span><kbd>F</kbd> full screen</span>
+        </p>
       </div>
       <span class="sr" data-reveal-announcement aria-live="polite" aria-atomic="true"></span>
       <article class="wifi-history-card stk" data-history-card hidden aria-labelledby="wifi-history-title">

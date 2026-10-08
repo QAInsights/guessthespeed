@@ -52,12 +52,12 @@ const faqSchema = {
     ></script>
   </Fragment>
 
-  <main class="wrap content-page classroom-page">
-    <header class="classroom-hero">
-      <div class="classroom-hero-copy">
-        <span class="round-banner">Classroom mode</span>
-        <h1 class="display">Your class vs. <em>the Wi-Fi.</em></h1>
-        <p class="lede">
+  <main class="wrap content-page classroom-page mode-page">
+    <header class="classroom-hero mode-hero">
+      <div class="classroom-hero-copy mode-hero-copy">
+        <span class="mode-hero-pill">Classroom mode</span>
+        <h1 class="display mode-hero-heading">Your class vs.<br /><em>the <span class="wifi-nowrap">Wi-Fi.</span></em></h1>
+        <p class="lede mode-hero-lede">
           Turn your students' speed guesses into a quick, lively class game.
         </p>
         <p class="privacy-sticker stk">
@@ -65,7 +65,7 @@ const faqSchema = {
           <strong>Your class list never leaves this device.</strong>
         </p>
       </div>
-      <div class="classroom-team-stickers" aria-label="Example team scores">
+      <div class="classroom-team-stickers mode-hero-visual" aria-label="Example team scores">
         <article class="classroom-team-sticker classroom-team-sticker-rockets">
           <span class="classroom-team-name"><span aria-hidden="true">🚀</span> Rockets</span>
           <strong>12<small>pts</small></strong>
@@ -435,43 +435,18 @@ const faqSchema = {
 
 <style>
   .classroom-page {
-    max-width: 1120px;
-    padding-top: 12px;
+    max-width: 1180px;
+    padding-top: 0;
   }
 
   .classroom-page [hidden] {
     display: none !important;
   }
 
-  .classroom-hero {
-    margin-bottom: 28px;
-  }
-
-  .classroom-hero h1 {
-    max-width: 13ch;
-    margin: 0 0 14px;
-    font-size: clamp(42px, 6vw, 68px);
-    line-height: 0.96;
-  }
-
-  .classroom-hero h1 em {
-    display: inline;
-    padding: 0 8px;
-    border-radius: 8px;
-    background: var(--accent);
-    box-decoration-break: clone;
-    color: var(--on-accent);
-    font-style: normal;
-    white-space: nowrap;
-    -webkit-box-decoration-break: clone;
-  }
-
-  .classroom-hero .lede {
-    margin-bottom: 16px;
-  }
-
   .classroom-team-stickers {
-    display: none;
+    display: grid;
+    gap: 14px;
+    padding: 14px 12px;
   }
 
   .classroom-team-sticker {
@@ -528,21 +503,6 @@ const faqSchema = {
     font-weight: 850;
   }
 
-  @media (min-width: 900px) {
-    .classroom-hero {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(300px, 0.72fr);
-      align-items: center;
-      gap: 44px;
-    }
-
-    .classroom-team-stickers {
-      display: grid;
-      gap: 14px;
-      padding: 14px 12px;
-    }
-  }
-
   .privacy-sticker {
     display: inline-flex;
     min-height: 48px;
@@ -563,7 +523,7 @@ const faqSchema = {
   }
 
   .classroom-tool {
-    margin-top: 22px;
+    margin-top: 0;
   }
 
   .classroom-tool-heading,
