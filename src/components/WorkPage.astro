@@ -1,0 +1,176 @@
+---
+import { Icon } from "astro-icon/components";
+import Base from "../layouts/Base.astro";
+import { MAX_PLAYERS } from "../lib/room";
+import { formatNumber, localizedPath, type Locale } from "../lib/i18n";
+import { t } from "../lib/messages";
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const msg = (
+  key: Parameters<typeof t>[0],
+  params: Record<string, string | number | boolean> = {},
+) => t(key, params, locale);
+const description = msg("work_page_description");
+const heroStickerLines = msg("work_page_hero_sticker_main").split("\n");
+
+const questions = [
+  {
+    question: msg("work_page_faq_question_1"),
+    answer: msg("work_page_faq_answer_1"),
+  },
+  {
+    question: msg("work_page_faq_question_2"),
+    answer: msg("work_page_faq_answer_2"),
+  },
+  {
+    question: msg("work_page_faq_question_3"),
+    answer: msg("work_page_faq_answer_3", {
+      limit: formatNumber(MAX_PLAYERS, locale),
+    }),
+  },
+  {
+    question: msg("work_page_faq_question_4"),
+    answer: msg("work_page_faq_answer_4"),
+  },
+];
+
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  inLanguage: locale,
+  mainEntity: questions.map(({ question, answer }) => ({
+    "@type": "Question",
+    name: question,
+    acceptedAnswer: { "@type": "Answer", text: answer },
+  })),
+};
+---
+
+<Base
+  title={msg("work_page_title")}
+  description={description}
+  breadcrumb={msg("work_page_breadcrumb")}
+  modeSwitch="work"
+  locale={locale}
+  translatedPage="/work/"
+>
+  <Fragment slot="head">
+    <script
+      type="application/ld+json"
+      set:html={JSON.stringify(faqSchema)}
+    ></script>
+  </Fragment>
+
+  <main class="wrap content-page work-page mode-page">
+    <header class="work-hero mode-hero">
+      <div class="work-hero-copy mode-hero-copy">
+        <span class="mode-hero-pill"><Icon name="ph:briefcase-bold" aria-hidden="true" /> {msg("work_page_hero_mode")}</span>
+        <h1 class="display mode-hero-heading">{msg("work_page_hero_heading_first")}<br /><em><span class={locale === "en" ? "wifi-nowrap" : undefined}>{msg("work_page_hero_heading_second")}</span></em></h1>
+        <p class="lede mode-hero-lede">{msg("work_page_hero_lede")}</p>
+        <p class="work-hero-note">
+          <Icon name="ph:users-three-bold" aria-hidden="true" />
+          {msg("work_page_hero_note")}
+        </p>
+      </div>
+      <div class="work-hero-sticker stk mode-hero-visual" aria-label={msg("work_page_hero_aria")}>
+        <span class="work-sticker-spark" aria-hidden="true">✳</span>
+        <strong>{heroStickerLines[0]}<br />{heroStickerLines[1]}</strong>
+        <small>{msg("work_page_hero_sticker_subtitle")}</small>
+      </div>
+    </header>
+
+    <section class="work-room-card stk" aria-labelledby="work-room-title">
+      <div class="work-room-card-copy">
+        <span class="work-kicker">{msg("work_page_room_kicker")}</span>
+        <h2 class="display" id="work-room-title">{msg("work_page_room_title")}</h2>
+        <p>{msg("work_page_room_copy")}</p>
+      </div>
+      <div class="work-room-actions">
+        <button class="go" type="button" data-create-team-room>
+          <Icon name="ph:users-three-bold" aria-hidden="true" />
+          {msg("work_page_start_room")}
+        </button>
+        <form class="room-join-form" data-home-join-form data-work-join-form>
+          <label class="sr" for="work-room-code">{msg("room_code_label")}</label>
+          <input
+            class="dialog-input"
+            id="work-room-code"
+            name="code"
+            type="text"
+            maxlength="9"
+            inputmode="text"
+            autocomplete="off"
+            placeholder={msg("room_code_placeholder")}
+          />
+          <button class="guess-button" type="submit">{msg("room_join_code")}</button>
+        </form>
+        <p class="room-entry-error" data-room-entry-error role="status" hidden></p>
+        <p class="work-classroom-note" data-work-classroom-note hidden>
+          {msg("classroom_room_note")}
+        </p>
+      </div>
+    </section>
+
+    <section class="work-steps" aria-labelledby="work-steps-title">
+      <div>
+        <span class="work-kicker">{msg("work_page_steps_kicker")}</span>
+        <h2 class="display" id="work-steps-title">{msg("work_page_steps_title")}</h2>
+        <p>{msg("work_page_steps_intro")}</p>
+      </div>
+      <ol>
+        <li><span>01</span><p>{msg("work_page_step_1")}</p></li>
+        <li><span>02</span><p>{msg("work_page_step_2")}</p></li>
+        <li><span>03</span><p>{msg("work_page_step_3")}</p></li>
+      </ol>
+    </section>
+
+    <div class="work-detail-grid">
+      <article class="content-card stk">
+        <span class="work-kicker">{msg("work_page_office_kicker")}</span>
+        <h2>{msg("work_page_office_title")}</h2>
+        <p>{msg("work_page_office_copy_before")}<strong>{msg("work_page_office_rotate")}</strong>{msg("work_page_office_copy_after")}</p>
+      </article>
+      <article class="content-card stk">
+        <span class="work-kicker">{msg("work_page_why_kicker")}</span>
+        <h2>{msg("work_page_why_title")}</h2>
+        <p>{msg("work_page_why_copy")}</p>
+      </article>
+    </div>
+
+    <aside class="work-privacy stk" aria-labelledby="work-privacy-title">
+      <div class="work-privacy-icon" aria-hidden="true"><Icon name="ph:lock-key-bold" /></div>
+      <div>
+        <h2 id="work-privacy-title">{msg("work_page_privacy_title")}</h2>
+        <p>{msg("work_page_privacy_copy")}</p>
+        <a href="/privacy/">{msg("work_page_privacy_link")}</a>
+      </div>
+    </aside>
+
+    <section class="work-faq" aria-labelledby="work-faq-title">
+      <span class="work-kicker">{msg("work_page_faq_kicker")}</span>
+      <h2 class="display" id="work-faq-title">{msg("work_page_faq_title")}</h2>
+      <div class="work-faq-list">
+        {questions.map(({ question, answer }) => (
+          <details>
+            <summary>{question}</summary>
+            <p>{answer}</p>
+          </details>
+        ))}
+      </div>
+    </section>
+
+    <nav class="work-related-links" aria-label={msg("work_page_related_aria")}>
+      <a href={localizedPath("/", locale)}>{msg("work_page_play_link")}</a>
+      <a href="/speed-test-game/">{msg("work_page_speed_test_link")}</a>
+      <a href="/privacy/">{msg("footer_privacy")}</a>
+    </nav>
+  </main>
+</Base>
+
+<script>
+  import "../scripts/room-client";
+</script>

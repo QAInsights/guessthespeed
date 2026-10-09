@@ -1,14 +1,14 @@
 ---
 import { Icon } from "astro-icon/components";
-import { LOCALE_INFO, type Locale } from "../lib/i18n";
+import { LOCALE_INFO, localizedPath, type Locale } from "../lib/i18n";
 import { t } from "../lib/messages";
 
 interface Props {
   locale?: Locale;
-  translatedHome?: boolean;
+  translatedPage?: "/" | "/classroom/" | "/work/";
 }
 
-const { locale = "en", translatedHome = false } = Astro.props;
+const { locale = "en", translatedPage } = Astro.props;
 const columns = [
   {
     title: t("footer_play", {}, locale),
@@ -21,8 +21,18 @@ const columns = [
         href: "/family-game-night-ideas/",
         label: t("footer_game_night_ideas", {}, locale),
       },
-      { href: "/work/", label: t("footer_team_icebreaker", {}, locale) },
-      { href: "/classroom/", label: t("footer_classroom_mode", {}, locale) },
+      {
+        href: translatedPage
+          ? localizedPath("/work/", locale)
+          : "/work/",
+        label: t("footer_team_icebreaker", {}, locale),
+      },
+      {
+        href: translatedPage
+          ? localizedPath("/classroom/", locale)
+          : "/classroom/",
+        label: t("footer_classroom_mode", {}, locale),
+      },
       {
         href: "/internet-speed-lesson-for-kids/",
         label: t("footer_classroom_lesson", {}, locale),
@@ -81,7 +91,7 @@ const projects = [
     <div class="foot-brand">
       <a
         class="foot-logo"
-        href="/"
+        href={localizedPath("/", locale)}
         aria-label={t("header_home_aria", {}, locale)}
       >
         <span class="logo-badge" aria-hidden="true">
@@ -145,8 +155,8 @@ const projects = [
     {(["en", "ta", "es"] as const).map((optionLocale) => (
       <a
         href={
-          translatedHome
-            ? LOCALE_INFO[optionLocale].home
+          translatedPage
+            ? localizedPath(translatedPage, optionLocale)
             : optionLocale === "en"
               ? Astro.url.pathname
               : LOCALE_INFO[optionLocale].home

@@ -19,6 +19,10 @@
 - [Play Guess the Speed](https://guessthespeed.com/)
 - [Guess the Speed in Tamil](https://guessthespeed.com/ta/)
 - [Guess the Speed in Spanish](https://guessthespeed.com/es/)
+- [Classroom mode in Tamil](https://guessthespeed.com/ta/classroom/)
+- [Classroom mode in Spanish](https://guessthespeed.com/es/classroom/)
+- [Work mode in Tamil](https://guessthespeed.com/ta/work/)
+- [Work mode in Spanish](https://guessthespeed.com/es/work/)
 - [Our story](https://guessthespeed.com/story/)
 - [Live stats](https://guessthespeed.com/stats/) shows aggregate totals for rounds, games, guesses, spot-on guesses, average download, closest misses, and play modes.
 - [How to play](https://guessthespeed.com/how-to-play/)

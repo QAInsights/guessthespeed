@@ -30,6 +30,14 @@ export function isLocale(value: unknown): value is Locale {
   return typeof value === "string" && LOCALES.includes(value as Locale);
 }
 
+export function localizedPath(
+  path: "/" | "/classroom/" | "/work/",
+  locale: Locale,
+): string {
+  if (locale === "en") return path;
+  return path === "/" ? LOCALE_INFO[locale].home : `/${locale}${path}`;
+}
+
 export function formatNumber(
   value: number,
   locale: Locale,

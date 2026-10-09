@@ -5,7 +5,7 @@ import { ROLES } from "../lib/game";
 import { MAX_NAME_LENGTH } from "../lib/limits";
 import { TEAM_FACES } from "../lib/team";
 import { t } from "../lib/messages";
-import { LOCALE_INFO, type Locale } from "../lib/i18n";
+import { LOCALE_INFO, localizedPath, type Locale } from "../lib/i18n";
 
 interface Props {
   locale: Locale;
@@ -96,7 +96,7 @@ const overheard: { face: string; quote: string; who: string; note: string }[] =
   title={homeTitle}
   description={homeDescription}
   locale={locale}
-  translatedHome
+  translatedPage="/"
   schema={homeSchema}
   modeSwitch="game"
 >
@@ -518,7 +518,7 @@ const overheard: { face: string; quote: string; who: string; note: string }[] =
         </h2>
         <p>{msg("room_entry_text")}</p>
         <p class="room-work-link">
-          <a href="/work/">{msg("room_team_link")}</a>
+          <a href={localizedPath("/work/", locale)}>{msg("room_team_link")}</a>
         </p>
       </div>
       <div class="room-entry-actions">
@@ -570,7 +570,7 @@ const overheard: { face: string; quote: string; who: string; note: string }[] =
           </p>
         </div>
         <div class="classroom-session-actions">
-          <a class="guess-button" href="/classroom/">
+          <a class="guess-button" href={localizedPath("/classroom/", locale)}>
             {msg("classroom_menu")}
           </a>
           <button
@@ -739,7 +739,7 @@ const overheard: { face: string; quote: string; who: string; note: string }[] =
     <aside class="classroom-teaser stk" aria-label={msg("mode_classroom")}>
       <p>
         {msg("home_classroom_teaser")}{" "}
-        <a href="/classroom/">{msg("home_classroom_link")}</a>.
+        <a href={localizedPath("/classroom/", locale)}>{msg("home_classroom_link")}</a>.
       </p>
     </aside>
   </main>

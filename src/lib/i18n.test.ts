@@ -1,6 +1,7 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import { localizedPath } from "./i18n";
 
 const messagesDir = join(process.cwd(), "messages");
 const catalogs = Object.fromEntries(
@@ -85,5 +86,21 @@ describe("localization catalogs", () => {
     expect(packageJson.scripts.i18n).toContain(
       "--strategy globalVariable baseLocale",
     );
+  });
+});
+
+describe("localizedPath", () => {
+  it.each([
+    ["en", "/", "/"],
+    ["en", "/classroom/", "/classroom/"],
+    ["en", "/work/", "/work/"],
+    ["ta", "/", "/ta/"],
+    ["ta", "/classroom/", "/ta/classroom/"],
+    ["ta", "/work/", "/ta/work/"],
+    ["es", "/", "/es/"],
+    ["es", "/classroom/", "/es/classroom/"],
+    ["es", "/work/", "/es/work/"],
+  ] as const)("maps %s %s to %s", (locale, path, expected) => {
+    expect(localizedPath(path, locale)).toBe(expected);
   });
 });

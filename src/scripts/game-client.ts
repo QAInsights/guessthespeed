@@ -53,6 +53,7 @@ import {
 import { roundStatEvent } from "../lib/stats";
 import { sendStat } from "./stats-client";
 import { recordSpeedSample } from "./history-client";
+import { localizedPath } from "../lib/i18n";
 import { hasPlan, loadPlan, planPercent, planTone } from "../lib/plan";
 import { describeTarget, isOverlayOpen, shortcutAction } from "./shortcuts";
 import { escapeHtml } from "../lib/html";
@@ -202,7 +203,7 @@ function endClass() {
     if (loadSession())
       throw new Error("Classroom session could not be cleared");
     document.dispatchEvent(new CustomEvent("gts:classroom-change"));
-    window.location.assign("/");
+    window.location.assign(localizedPath("/", locale));
   } catch {
     errorNote.textContent = msg("classroom_end_failed");
   }

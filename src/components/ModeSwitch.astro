@@ -1,7 +1,7 @@
 ---
 import { Icon } from "astro-icon/components";
 import { t } from "../lib/messages";
-import type { Locale } from "../lib/i18n";
+import { localizedPath, type Locale } from "../lib/i18n";
 
 interface Props {
   current: "game" | "classroom" | "work";
@@ -17,7 +17,7 @@ const { current, locale = "en" } = Astro.props;
   data-mode-switch
 >
   <a
-    href="/classroom/"
+    href={localizedPath("/classroom/", locale)}
     aria-current={current === "classroom" ? "page" : undefined}
     data-mode-option="classroom"
   >
@@ -30,7 +30,7 @@ const { current, locale = "en" } = Astro.props;
       {t("mode_dev", {}, locale)}
     </button>
   ) : (
-    <a href="/?dev=1" data-mode-option="dev">
+    <a href={`${localizedPath("/", locale)}?dev=1`} data-mode-option="dev">
       <Icon name="ph:code-bold" aria-hidden="true" />
       {t("mode_dev", {}, locale)}
     </a>
@@ -41,13 +41,13 @@ const { current, locale = "en" } = Astro.props;
       {t("mode_game", {}, locale)}
     </button>
   ) : (
-    <a href="/?dev=0" data-mode-option="game">
+    <a href={`${localizedPath("/", locale)}?dev=0`} data-mode-option="game">
       <Icon name="ph:game-controller-bold" aria-hidden="true" />
       {t("mode_game", {}, locale)}
     </a>
   )}
   <a
-    href="/work/"
+    href={localizedPath("/work/", locale)}
     aria-current={current === "work" ? "page" : undefined}
     data-mode-option="work"
   >

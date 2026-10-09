@@ -12,7 +12,7 @@ import HousePromo from "../components/HousePromo.astro";
 import ModeSwitch from "../components/ModeSwitch.astro";
 import { ogCardFor, ogImagePath } from "../lib/og-cards";
 import { type ThemeId } from "../lib/themes";
-import { LOCALE_INFO, type Locale } from "../lib/i18n";
+import { LOCALE_INFO, localizedPath, type Locale } from "../lib/i18n";
 import { t } from "../lib/messages";
 
 interface Props {
@@ -23,7 +23,7 @@ interface Props {
   modeSwitch?: "game" | "classroom" | "work";
   noindex?: boolean;
   locale?: Locale;
-  translatedHome?: boolean;
+  translatedPage?: "/" | "/classroom/" | "/work/";
 }
 
 const {
@@ -34,7 +34,7 @@ const {
   modeSwitch,
   noindex = false,
   locale = "en",
-  translatedHome = false,
+  translatedPage,
 } = Astro.props;
 const pageTitle =
   title ?? "Guess the Speed | The Internet Speed Guessing Game for Families";
@@ -45,9 +45,11 @@ const canonical = new URL(
   Astro.url.pathname,
   "https://guessthespeed.com",
 ).toString();
-const ogCard = ogCardFor(locale === "ta" ? "/" : Astro.url.pathname);
+const ogPath =
+  translatedPage && locale !== "en" ? translatedPage : Astro.url.pathname;
+const ogCard = ogCardFor(ogPath);
 const ogImageAlt = `${ogCard.line1} ${ogCard.line2}`;
-const ogImageUrl = `https://guessthespeed.com${ogImagePath(locale === "ta" ? "/" : Astro.url.pathname)}`;
+const ogImageUrl = `https://guessthespeed.com${ogImagePath(ogPath)}`;
 const beaconToken = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
 const themeHints: Record<ThemeId, { emoji: string; hint: string }> = {
   light: { emoji: "☀️", hint: t("theme_light_hint", {}, locale) },
@@ -117,8 +119,12 @@ if (breadcrumb && Astro.url.pathname !== "/") {
 }
 graph.push(...schema);
 const graphSchema = { "@context": "https://schema.org", "@graph": graph };
-const languageTargets: Record<Locale, string> = translatedHome
-  ? { en: "/", ta: "/ta/", es: "/es/" }
+const languageTargets: Record<Locale, string> = translatedPage
+  ? {
+      en: localizedPath(translatedPage, "en"),
+      ta: localizedPath(translatedPage, "ta"),
+      es: localizedPath(translatedPage, "es"),
+    }
   : { en: Astro.url.pathname, ta: "/ta/", es: "/es/" };
 ---
 
@@ -126,7 +132,7 @@ const languageTargets: Record<Locale, string> = translatedHome
 <html
   lang={locale}
   data-theme="light"
-  data-home={translatedHome ? "1" : undefined}
+  data-home={translatedPage === "/" ? "1" : undefined}
 >
   <head>
     <meta charset="utf-8" />
@@ -174,7 +180,7 @@ const languageTargets: Record<Locale, string> = translatedHome
           session.startedAt >= 0;
       } catch {}
       const roomQueryMode = roomQueryRequested && !classroomSessionActive;
-      const leavesDevMode = /^\/(?:classroom|work)\/?$/.test(
+      const leavesDevMode = /^\/(?:ta\/|es\/)?(?:classroom|work)\/?$/.test(
         window.location.pathname,
       );
       if (roomQueryMode) document.documentElement.dataset.room = "1";
@@ -278,19 +284,19 @@ const languageTargets: Record<Locale, string> = translatedHome
     <meta name="description" content={pageDescription} />
     {noindex && <meta name="robots" content="noindex" />}
     <link rel="canonical" href={canonical} />
-    {translatedHome && (
+    {translatedPage && (
       <>
         {(["en", "ta", "es"] as const).map((alternate) => (
           <link
             rel="alternate"
             hreflang={alternate}
-            href={`https://guessthespeed.com${LOCALE_INFO[alternate].home}`}
+            href={`https://guessthespeed.com${localizedPath(translatedPage, alternate)}`}
           />
         ))}
         <link
           rel="alternate"
           hreflang="x-default"
-          href="https://guessthespeed.com/"
+          href={`https://guessthespeed.com${localizedPath(translatedPage, "en")}`}
         />
       </>
     )}
@@ -333,7 +339,7 @@ const languageTargets: Record<Locale, string> = translatedHome
   <body>
     <div class="fx-layer" data-fx-layer aria-hidden="true"></div>
     <header class="wrap top">
-      <a class="logo" href="/" aria-label={t("header_home_aria", {}, locale)}>
+      <a class="logo" href={localizedPath("/", locale)} aria-label={t("header_home_aria", {}, locale)}>
         <span class="logo-badge">?</span>
         <b>guess the speed</b>
       </a>
@@ -653,9 +659,10 @@ const languageTargets: Record<Locale, string> = translatedHome
       </div>
     </dialog>
     <slot />
-    <Footer locale={locale} translatedHome={translatedHome} />
+    <Footer locale={locale} translatedPage={translatedPage} />
     <HousePromo locale={locale} />
     <script>
+      import "../scripts/locale-links";
       import "../scripts/header-client";
     </script>
   </body>

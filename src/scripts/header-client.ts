@@ -95,8 +95,15 @@ let wakeLockRequest = 0;
 let cursorHideTimer = 0;
 const coarsePointer = window.matchMedia("(pointer: coarse)").matches;
 const tvLayoutQuery = window.matchMedia("(min-width: 900px)");
-const classroomPage = window.location.pathname === "/classroom/";
-const workPage = window.location.pathname === "/work/";
+const routePathname =
+  window.location.pathname.replace(/^\/(?:ta|es)(?=\/)/u, "") || "/";
+const classroomPage = routePathname === "/classroom/";
+const workPage = routePathname === "/work/";
+if (homePage || classroomPage || workPage) {
+  try {
+    localStorage.setItem("gts:locale", locale);
+  } catch {}
+}
 
 function syncLocaleHint() {
   if (!localeHint) return;
