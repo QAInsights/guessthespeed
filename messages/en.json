@@ -540,6 +540,7 @@
   "game_edit_player": "Edit {name}",
   "game_remove_player": "Remove {name}",
   "game_score_short": "{points} pts",
+  "game_points_unit": "pts",
   "game_round_miss": "{percent}% miss {tooFar}",
   "game_hidden": "Hidden",
   "game_round_status": "Round status",

@@ -540,6 +540,7 @@
   "game_edit_player": "{name} பெயரை மாற்று",
   "game_remove_player": "{name} பெயரை நீக்கு",
   "game_score_short": "{points} புள்ளிகள்",
+  "game_points_unit": "புள்ளிகள்",
   "game_round_miss": "வித்தியாசம் {percent}% {tooFar}",
   "game_hidden": "மறைக்கப்பட்டுள்ளது",
   "game_round_status": "சுற்றின் நிலை",

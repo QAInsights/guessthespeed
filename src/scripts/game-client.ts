@@ -67,6 +67,11 @@ import {
   revealProgress,
 } from "./gauge-reveal";
 
+const pencilIcon =
+  '<svg aria-hidden="true" width="20" height="20" viewBox="0 0 256 256" fill="currentColor"><path d="m230.14 70.54l-44.68-44.69a20 20 0 0 0-28.29 0L33.86 149.17A19.85 19.85 0 0 0 28 163.31V208a20 20 0 0 0 20 20h44.69a19.86 19.86 0 0 0 14.14-5.86L230.14 98.82a20 20 0 0 0 0-28.28M91 204H52v-39l84-84l39 39Zm101-101l-39-39l18.34-18.34l39 39Z"/></svg>';
+const removeIcon =
+  '<svg aria-hidden="true" width="20" height="20" viewBox="0 0 256 256" fill="currentColor"><path d="M208.49 191.51a12 12 0 0 1-17 17L128 145l-63.51 63.49a12 12 0 0 1-17-17L111 128L47.51 64.49a12 12 0 0 1 17-17L128 111l63.51-63.52a12 12 0 0 1 17 17L145 128Z"/></svg>';
+
 type ClientPlayer = Player & { mine?: boolean };
 const locale: Locale = initializeClientLocale();
 const msg = (
@@ -345,10 +350,10 @@ function renderPlayerCard(player: ClientPlayer, index: number) {
   const points = roundResult?.total ?? 0;
   const playerTools = [
     mine
-      ? `<button class="p-edit" type="button" data-edit="${escapeHtml(player.id)}" aria-label="${msg("game_edit_player", { name: escapeHtml(player.name) })}" ${isTesting() ? "disabled" : ""}><span aria-hidden="true">✎</span></button>`
+      ? `<button class="p-edit" type="button" data-edit="${escapeHtml(player.id)}" aria-label="${msg("game_edit_player", { name: escapeHtml(player.name) })}" ${isTesting() ? "disabled" : ""}>${pencilIcon}</button>`
       : "",
     canRemove
-      ? `<button class="p-rm" type="button" data-remove="${escapeHtml(player.id)}" aria-label="${msg("game_remove_player", { name: escapeHtml(player.name) })}" ${isTesting() ? "disabled" : ""}>×</button>`
+      ? `<button class="p-rm" type="button" data-remove="${escapeHtml(player.id)}" aria-label="${msg("game_remove_player", { name: escapeHtml(player.name) })}" ${isTesting() ? "disabled" : ""}>${removeIcon}</button>`
       : "",
   ]
     .filter(Boolean)
@@ -375,7 +380,7 @@ function renderPlayerCard(player: ClientPlayer, index: number) {
         ? `<div class="p-actions"><div class="p-card-guess-actions"><button type="button" class="locked-pill" aria-label="${msg("game_locked_in")}, ${msg("game_change")}" data-guess="${escapeHtml(player.id)}" ${isTesting() ? "disabled" : ""}><span aria-hidden="true">🔒</span>${msg("game_locked_in")}</button>${roomMode ? `<button class="room-unlock" type="button" data-unlock="${escapeHtml(player.id)}" ${isTesting() ? "disabled" : ""}>${msg("game_unlock")}</button>` : ""}</div>${playerToolsMarkup}</div>`
         : `<div class="p-actions"><div class="p-card-guess-actions"><button type="button" class="guess-button" data-guess="${escapeHtml(player.id)}" ${isTesting() ? "disabled" : ""}>${msg("game_guess")}</button></div>${playerToolsMarkup}</div>`;
   return `<article class="p-card has-aurora ${winnerClass}" style="--card-index:${index};${auroraStyleVars(auroraFor(player.id))}">
-    <div class="p-head">${roleFor(player)}<div class="p-score"><b>${formatNumber(displayedScore, locale)}</b><span>${formatScoreLabel(displayedScore)}</span></div></div>
+    <div class="p-head">${roleFor(player)}<div class="p-score" role="group" aria-label="${escapeHtml(formatScoreLabel(displayedScore))}"><b>${formatNumber(displayedScore, locale)}</b><span>${msg("game_points_unit")}</span></div></div>
     ${guessAction}
   </article>`;
 }
@@ -427,8 +432,8 @@ function renderPlayerTable(player: ClientPlayer, index: number) {
     <td>${roundStatus}</td>
     <td class="p-score">${formatNumber(displayedScore, locale)} <span>${formatScoreLabel(displayedScore)}</span></td>
     <td><div class="p-table-actions">
-      ${mine ? `<button class="p-edit" type="button" data-edit="${escapeHtml(player.id)}" aria-label="${msg("game_edit_player", { name: escapeHtml(player.name) })}" ${isTesting() ? "disabled" : ""}><span aria-hidden="true">✎</span></button>` : ""}
-      ${canRemove ? `<button class="p-rm" type="button" data-remove="${escapeHtml(player.id)}" aria-label="${msg("game_remove_player", { name: escapeHtml(player.name) })}" ${isTesting() ? "disabled" : ""}>×</button>` : ""}
+      ${mine ? `<button class="p-edit" type="button" data-edit="${escapeHtml(player.id)}" aria-label="${msg("game_edit_player", { name: escapeHtml(player.name) })}" ${isTesting() ? "disabled" : ""}>${pencilIcon}</button>` : ""}
+      ${canRemove ? `<button class="p-rm" type="button" data-remove="${escapeHtml(player.id)}" aria-label="${msg("game_remove_player", { name: escapeHtml(player.name) })}" ${isTesting() ? "disabled" : ""}>${removeIcon}</button>` : ""}
     </div></td>
   </tr>`;
 }

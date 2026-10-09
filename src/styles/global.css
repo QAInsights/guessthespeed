@@ -2099,9 +2099,9 @@ html:not([data-aurora="0"]) .is-winner.has-aurora {
 
 .p-actions {
   display: flex;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 8px;
   margin-top: 12px;
   min-width: 0;
@@ -2110,17 +2110,20 @@ html:not([data-aurora="0"]) .is-winner.has-aurora {
 .p-card-guess-actions {
   display: flex;
   flex-wrap: wrap;
-  flex: 1 1 auto;
+  flex: 0 1 auto;
   align-items: center;
   gap: 8px;
-  min-width: 0;
 }
 
 .p-card-guess-actions > * {
-  min-width: 0;
-  max-width: 100%;
-  overflow-wrap: anywhere;
-  white-space: normal;
+  overflow-wrap: normal;
+  word-break: normal;
+  white-space: nowrap;
+}
+
+html[lang] .p-actions .p-card-guess-actions > * {
+  overflow-wrap: normal;
+  word-break: normal;
 }
 
 .guess-button,
@@ -2165,8 +2168,9 @@ html:not([data-aurora="0"]) .is-winner.has-aurora {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 8px;
+  gap: 0;
   flex: none;
+  margin-left: auto;
 }
 
 .p-edit {
@@ -2204,6 +2208,14 @@ html:not([data-aurora="0"]) .is-winner.has-aurora {
   transition:
     background-color 120ms ease,
     color 120ms ease;
+}
+
+.p-edit svg,
+.p-rm svg {
+  display: block;
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
 }
 
 .p-edit:hover,
