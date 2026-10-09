@@ -471,7 +471,7 @@ const languageTargets: Record<Locale, string> = translatedHome
           aria-controls="language-menu"
         >
           <Icon name="ph:globe-hemisphere-west-bold" aria-hidden="true" />
-          <span>
+          <span class="language-name">
             {t(
               `language_${locale === "en" ? "english" : locale === "ta" ? "tamil" : "spanish"}` as Parameters<
                 typeof t
@@ -480,6 +480,7 @@ const languageTargets: Record<Locale, string> = translatedHome
               locale,
             )}
           </span>
+          <span class="language-code" aria-hidden="true">{locale.toUpperCase()}</span>
           <Icon name="ph:caret-down-bold" aria-hidden="true" />
         </button>
         <div

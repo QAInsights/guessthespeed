@@ -3165,6 +3165,10 @@ footer {
   flex: none;
 }
 
+.language-code {
+  display: none;
+}
+
 .language-menu {
   z-index: 40;
   width: min(270px, calc(100vw - 28px));
@@ -3285,6 +3289,14 @@ html[lang="ta"] .sec-head > h2,
 html[lang="es"] .sec-head > h2 {
   min-width: 0;
   overflow-wrap: anywhere;
+}
+
+html[lang="ta"] .mode-switch :is(button, a),
+html[lang="es"] .mode-switch :is(button, a),
+.mode-switch :is(button, a) {
+  overflow-wrap: normal;
+  white-space: nowrap;
+  word-break: normal;
 }
 
 @media (max-width: 960px) {
@@ -4211,14 +4223,23 @@ html[data-dev="1"] .dev-console {
     width: 100%;
     max-width: 420px;
     margin: 0 auto;
+    justify-content: flex-start;
+    overflow-x: auto;
+    scrollbar-width: none;
   }
 
   .mode-switch :is(button, a) {
-    flex: 1;
+    flex: 0 0 auto;
     min-height: 44px;
-    padding-right: 8px;
-    padding-left: 8px;
+    gap: 4px;
+    padding-right: 6px;
+    padding-left: 6px;
+    font-size: 12px;
     text-align: center;
+  }
+
+  .mode-switch::-webkit-scrollbar {
+    display: none;
   }
 
   .top {
@@ -4243,8 +4264,31 @@ html[data-dev="1"] .dev-console {
   }
 
   .ctrls {
-    width: 100%;
+    width: auto;
+    flex: 1;
     gap: 6px;
+    min-width: 0;
+  }
+
+  .language-picker {
+    margin-left: auto;
+  }
+
+  .language-trigger {
+    gap: 5px;
+    padding-right: 7px;
+    padding-left: 7px;
+  }
+
+  .language-trigger .language-name,
+  .language-trigger svg:last-child {
+    display: none;
+  }
+
+  .language-trigger .language-code {
+    display: inline;
+    font-size: 12px;
+    font-weight: 800;
   }
 
   .ctrl {
@@ -4434,26 +4478,21 @@ html[data-dev="1"] .dev-console {
   }
 }
 
-@media (max-width: 360px) {
-  .mode-switch :is(button, a) {
-    gap: 3px;
-    padding-right: 4px;
-    padding-left: 4px;
-    font-size: 13px;
-  }
-}
-
 @media (max-width: 420px) {
+  .mode-switch {
+    gap: 1px;
+    padding: 3px;
+  }
+
   .mode-switch :is(button, a) {
-    gap: 4px;
-    padding-right: 5px;
-    padding-left: 5px;
-    font-size: 13px;
+    gap: 2px;
+    padding-right: 3px;
+    padding-left: 3px;
   }
 
   .mode-switch svg {
-    width: 15px;
-    height: 15px;
+    width: 12px;
+    height: 12px;
   }
 }
 
@@ -5320,11 +5359,31 @@ html[data-dev="1"] .dev-console {
 }
 
 @media (max-width: 360px) {
-  .mode-switch :is(button, a) {
-    gap: 2px;
-    padding-right: 4px;
-    padding-left: 4px;
+  .ctrls {
+    gap: 4px;
+  }
+
+  .theme-trigger {
+    gap: 4px;
+    padding-right: 5px;
+    padding-left: 5px;
     font-size: 12px;
+  }
+
+  .theme-caret {
+    width: 12px;
+    height: 12px;
+  }
+
+  .mode-switch {
+    gap: 0;
+    padding: 3px;
+  }
+
+  .mode-switch :is(button, a) {
+    gap: 0;
+    padding-right: 2px;
+    padding-left: 2px;
   }
 
   .mode-switch svg {

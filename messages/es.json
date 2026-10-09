@@ -13,7 +13,7 @@
   "header_home_aria": "Inicio de Guess the Speed",
   "header_theme_change": "Cambiar tema",
   "header_theme_title": "Elige un tema",
-  "header_theme_auto": "Automático por fecha",
+  "header_theme_auto": "Auto",
   "header_theme_auto_hint": "Sigue el calendario",
   "header_theme_now": "Ahora: {theme}",
   "header_sound_toggle": "Activar o desactivar sonido",
