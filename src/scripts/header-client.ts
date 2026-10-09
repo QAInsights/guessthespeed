@@ -24,6 +24,7 @@ const soundButton = $<HTMLButtonElement>("[data-sound-toggle]");
 const soundOn = $<HTMLSpanElement>("[data-sound-on]");
 const soundOff = $<HTMLSpanElement>("[data-sound-off]");
 const tvButton = $<HTMLButtonElement>("[data-tv-toggle]");
+const settingsTVToggle = $<HTMLButtonElement>("[data-settings-tv-toggle]");
 const fullscreenButton = $<HTMLButtonElement>("[data-fullscreen]");
 const languageTrigger = document.querySelector<HTMLButtonElement>(
   "[data-language-trigger]",
@@ -33,6 +34,24 @@ const languageMenu = document.querySelector<HTMLElement>(
 );
 const languageOptions = Array.from(
   document.querySelectorAll<HTMLAnchorElement>("[data-language-option]"),
+);
+const languageTriggerCompactQuery = window.matchMedia("(max-width: 640px)");
+function syncLanguageTriggerLabel() {
+  if (!languageTrigger) return;
+  const visibleLabel = languageTrigger.querySelector<HTMLElement>(
+    languageTriggerCompactQuery.matches ? ".language-code" : ".language-name",
+  );
+  const prefix = visibleLabel?.textContent?.trim();
+  if (prefix)
+    languageTrigger.setAttribute(
+      "aria-label",
+      `${prefix}, ${t("language_picker_aria", {}, locale)}`,
+    );
+}
+syncLanguageTriggerLabel();
+languageTriggerCompactQuery.addEventListener(
+  "change",
+  syncLanguageTriggerLabel,
 );
 const localeHint = document.querySelector<HTMLElement>("[data-locale-hint]");
 const localeHintDismiss = document.querySelector<HTMLButtonElement>(
@@ -261,6 +280,7 @@ function syncFullscreenControl() {
 
 function syncTVControls() {
   tvButton.setAttribute("aria-pressed", String(tvMode));
+  settingsTVToggle.setAttribute("aria-checked", String(tvMode));
   syncFullscreenControl();
 }
 
@@ -456,9 +476,11 @@ function syncControls() {
   soundButton.setAttribute("aria-pressed", String(settings.sound));
   soundButton.setAttribute(
     "aria-label",
-    settings.sound
-      ? t("header_sound_off", {}, locale)
-      : t("header_sound_on", {}, locale),
+    `${t("header_sound_label", {}, locale)}, ${
+      settings.sound
+        ? t("header_sound_off", {}, locale)
+        : t("header_sound_on", {}, locale)
+    }`,
   );
   soundOn.hidden = !settings.sound;
   soundOff.hidden = settings.sound;
@@ -633,6 +655,7 @@ soundButton.addEventListener("click", () => {
 });
 
 tvButton.addEventListener("click", () => setTVMode(!tvMode));
+settingsTVToggle.addEventListener("click", () => setTVMode(!tvMode));
 fullscreenButton.addEventListener("click", () => {
   void toggleFullscreen();
 });

@@ -59,7 +59,11 @@ describe("localization catalogs", () => {
       "dev_asn",
       "dev_warp",
     ]);
-    const unchangedSpanishAllowlist = new Set(["header_theme_auto"]);
+    const unchangedSpanishAllowlist = new Set([
+      "header_theme_auto",
+      "header_tv_label",
+      "game_points_unit",
+    ]);
     for (const key of Object.keys(catalogs.en)) {
       for (const locale of ["en", "ta", "es"] as const) {
         expect(catalogs[locale][key], `${locale}.${key}`).not.toContain(
