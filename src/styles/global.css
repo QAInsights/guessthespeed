@@ -2838,10 +2838,6 @@ html[lang] .p-actions .p-card-guess-actions > * {
 }
 
 @media screen and (min-width: 1301px) {
-  html[data-home="1"] .house-promo {
-    max-width: 260px;
-  }
-
   .promo-close {
     top: -12px;
     right: -12px;
@@ -5638,6 +5634,12 @@ html[data-dev="1"] .dev-mode-pill-label {
 
   .work-hero .work-hero-sticker {
     transform: none;
+  }
+}
+
+@media (min-width: 981px) {
+  .stage.mode-hero .mode-hero-visual .play-stat {
+    justify-self: start;
   }
 }
 
