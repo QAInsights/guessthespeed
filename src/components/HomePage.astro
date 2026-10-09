@@ -127,13 +127,6 @@ const overheard: { face: string; quote: string; who: string; note: string }[] =
           <p class="dev-lede mode-hero-lede" data-dev-lede hidden>
             {msg("home_dev_lede")}
           </p>
-          <p class="play-stat" data-play-stat hidden>
-            <a href="/stats/">
-              <span>
-                🎉 <span data-play-stat-text></span>
-              </span>
-            </a>
-          </p>
         </div>
 
         <div class="stats-column mode-hero-stats">
@@ -297,6 +290,13 @@ const overheard: { face: string; quote: string; who: string; note: string }[] =
           ></div>
           <p class="error-note" data-error-note hidden></p>
         </div>
+        <p class="play-stat" data-play-stat hidden>
+          <a href="/stats/">
+            <span>
+              🎉 <span data-play-stat-text></span>
+            </span>
+          </a>
+        </p>
         <p class="tv-shortcut-hint" aria-hidden="true">
           <span>
             <kbd>Space</kbd> {msg("shortcut_start")}
@@ -506,52 +506,6 @@ const overheard: { face: string; quote: string; who: string; note: string }[] =
       </button>
     </aside>
 
-    <section
-      class="room-entry stk"
-      data-room-entry
-      aria-labelledby="room-entry-title"
-    >
-      <div class="room-entry-copy">
-        <span class="room-kicker">{msg("room_entry_title")}</span>
-        <h2 class="display" id="room-entry-title">
-          {msg("room_entry_heading")}
-        </h2>
-        <p>{msg("room_entry_text")}</p>
-        <p class="room-work-link">
-          <a href={localizedPath("/work/", locale)}>{msg("room_team_link")}</a>
-        </p>
-      </div>
-      <div class="room-entry-actions">
-        <button class="go" type="button" data-create-room>
-          {msg("room_create")}
-        </button>
-        <form class="room-join-form" data-home-join-form>
-          <label class="sr" for="room-code-input">
-            {msg("room_code_label")}
-          </label>
-          <input
-            class="dialog-input"
-            id="room-code-input"
-            name="code"
-            type="text"
-            maxlength="9"
-            inputmode="text"
-            autocomplete="off"
-            placeholder={msg("room_code_placeholder")}
-          />
-          <button class="guess-button" type="submit">
-            {msg("room_join_code")}
-          </button>
-        </form>
-        <p
-          class="room-entry-error"
-          data-room-entry-error
-          role="status"
-          hidden
-        ></p>
-      </div>
-    </section>
-
     <section aria-labelledby="players-heading" data-game-section>
       <aside
         class="classroom-session-banner stk"
@@ -663,6 +617,52 @@ const overheard: { face: string; quote: string; who: string; note: string }[] =
       </form>
     </section>
 
+    <section
+      class="room-entry stk"
+      data-room-entry
+      aria-labelledby="room-entry-title"
+    >
+      <div class="room-entry-copy">
+        <span class="room-kicker">{msg("room_entry_title")}</span>
+        <h2 class="display" id="room-entry-title">
+          {msg("room_entry_heading")}
+        </h2>
+        <p>{msg("room_entry_text")}</p>
+        <p class="room-work-link">
+          <a href={localizedPath("/work/", locale)}>{msg("room_team_link")}</a>
+        </p>
+      </div>
+      <div class="room-entry-actions">
+        <button class="go" type="button" data-create-room>
+          {msg("room_create")}
+        </button>
+        <form class="room-join-form" data-home-join-form>
+          <label class="sr" for="room-code-input">
+            {msg("room_code_label")}
+          </label>
+          <input
+            class="dialog-input"
+            id="room-code-input"
+            name="code"
+            type="text"
+            maxlength="9"
+            inputmode="text"
+            autocomplete="off"
+            placeholder={msg("room_code_placeholder")}
+          />
+          <button class="guess-button" type="submit">
+            {msg("room_join_code")}
+          </button>
+        </form>
+        <p
+          class="room-entry-error"
+          data-room-entry-error
+          role="status"
+          hidden
+        ></p>
+      </div>
+    </section>
+
     <section class="how" aria-labelledby="how-round-heading">
       <div>
         <h2 id="how-round-heading" class="display">
@@ -749,7 +749,7 @@ const overheard: { face: string; quote: string; who: string; note: string }[] =
     data-guess-dialog
     aria-labelledby="guess-title"
   >
-    <div class="dialog-inner">
+    <div class="dialog-inner guess-dialog-inner">
       <div class="dialog-head">
         <h2 id="guess-title" class="display">
           {msg("dialog_guess_title")}
@@ -765,43 +765,111 @@ const overheard: { face: string; quote: string; who: string; note: string }[] =
       </div>
       <div class="guess-person">
         <span data-guess-emoji>🙂</span>
-        <b data-guess-player>{msg("room_role_player")}</b>
-      </div>
-      <form class="dialog-form" data-guess-form>
-        <label class="dialog-field">
-          {msg("home_download")}
-          <input
-            class="dialog-input"
-            name="down"
-            type="number"
-            inputmode="decimal"
-            min="0"
-            step="any"
-            placeholder={msg("dialog_download_guess")}
-          />
-          <small>{msg("dialog_download_help")}</small>
-        </label>
-        <label class="dialog-field">
-          {msg("home_upload")}
-          <input
-            class="dialog-input"
-            name="up"
-            type="number"
-            inputmode="decimal"
-            min="0"
-            step="any"
-            placeholder={msg("dialog_download_guess")}
-          />
-          <small>{msg("dialog_upload_help")}</small>
-        </label>
-        <p class="guess-hint">{msg("dialog_guess_hidden")}</p>
-        <div class="dialog-actions">
-          <button class="go" type="submit">
-            <Icon name="ph:lock-key-fill" />
-            {msg("dialog_lock_guess")}
-          </button>
+          <b data-guess-player>{msg("room_role_player")}</b>
         </div>
-      </form>
+      <div class="guess-dialog-scroll">
+        <p class="guess-mbps-note">
+          {msg("guess_mbps_explainer")}{" "}
+          <a href="/internet-speed-101/">{msg("footer_internet_101")}</a>
+        </p>
+        <form
+          class="dialog-form guess-dialog-form"
+          id="guess-form"
+          data-guess-form
+        >
+          <div class="dialog-field guess-field">
+            <label for="guess-download">{msg("home_download")}</label>
+            <div class="guess-input-control">
+              <button
+                class="guess-stepper"
+                type="button"
+                data-guess-step="-1"
+                data-guess-field="down"
+                aria-label={msg("guess_step_decrease", {
+                  field: msg("home_download"),
+                })}
+              ><span aria-hidden="true">−</span></button>
+              <input
+                class="dialog-input"
+                id="guess-download"
+                name="down"
+                type="number"
+                inputmode="decimal"
+                min="0"
+                step="any"
+                placeholder={msg("dialog_download_guess")}
+              />
+              <button
+                class="guess-stepper"
+                type="button"
+                data-guess-step="1"
+                data-guess-field="down"
+                aria-label={msg("guess_step_increase", {
+                  field: msg("home_download"),
+                })}
+              ><span aria-hidden="true">+</span></button>
+            </div>
+            <div
+              class="guess-picks"
+              role="group"
+              aria-label={msg("guess_quick_picks_for", {
+                field: msg("home_download"),
+              })}
+              data-guess-picks="down"
+            ></div>
+            <small>{msg("dialog_download_help")}</small>
+          </div>
+          <div class="dialog-field guess-field">
+            <label for="guess-upload">{msg("home_upload")}</label>
+            <div class="guess-input-control">
+              <button
+                class="guess-stepper"
+                type="button"
+                data-guess-step="-1"
+                data-guess-field="up"
+                aria-label={msg("guess_step_decrease", {
+                  field: msg("home_upload"),
+                })}
+              ><span aria-hidden="true">−</span></button>
+              <input
+                class="dialog-input"
+                id="guess-upload"
+                name="up"
+                type="number"
+                inputmode="decimal"
+                min="0"
+                step="any"
+                placeholder={msg("dialog_download_guess")}
+              />
+              <button
+                class="guess-stepper"
+                type="button"
+                data-guess-step="1"
+                data-guess-field="up"
+                aria-label={msg("guess_step_increase", {
+                  field: msg("home_upload"),
+                })}
+              ><span aria-hidden="true">+</span></button>
+            </div>
+            <div
+              class="guess-picks"
+              role="group"
+              aria-label={msg("guess_quick_picks_for", {
+                field: msg("home_upload"),
+              })}
+              data-guess-picks="up"
+            ></div>
+            <small>{msg("dialog_upload_help")}</small>
+          </div>
+          <p class="guess-hint">{msg("dialog_guess_hidden")}</p>
+        </form>
+      </div>
+      <div class="dialog-actions guess-dialog-actions">
+        <button class="go" type="submit" form="guess-form">
+          <Icon name="ph:lock-key-fill" />
+          {msg("dialog_lock_guess")}
+        </button>
+      </div>
     </div>
   </dialog>
 
