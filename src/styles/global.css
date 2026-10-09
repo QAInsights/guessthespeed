@@ -1245,7 +1245,8 @@ html[data-room="1"] .mode-bar {
   align-items: center;
   width: fit-content;
   max-width: 100%;
-  margin: 18px 0 0;
+  justify-self: center;
+  margin: 8px 0 20px;
   padding: 7px 12px;
   border: 2.5px solid var(--ink);
   border-radius: 7px;
@@ -2837,6 +2838,10 @@ html[lang] .p-actions .p-card-guess-actions > * {
 }
 
 @media screen and (min-width: 1301px) {
+  html[data-home="1"] .house-promo {
+    max-width: 260px;
+  }
+
   .promo-close {
     top: -12px;
     right: -12px;
@@ -5652,7 +5657,6 @@ html[data-dev="1"] .dev-mode-pill-label {
 
   html[data-tv="1"][data-home="1"] .mode-hero-visual .play-stat {
     order: 2;
-    margin-left: 12px;
   }
 
   html[data-tv="1"][data-home="1"] .mode-hero-stats {
@@ -5932,8 +5936,16 @@ html[data-dev="1"] .dev-mode-pill-label {
 }
 
 .guess-input-control .dialog-input {
+  appearance: textfield;
+  -moz-appearance: textfield;
   min-width: 0;
   text-align: center;
+}
+
+.guess-input-control .dialog-input::-webkit-inner-spin-button,
+.guess-input-control .dialog-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 .guess-stepper {
@@ -5951,6 +5963,10 @@ html[data-dev="1"] .dev-mode-pill-label {
   font-size: 24px;
   font-weight: 900;
   line-height: 1;
+}
+
+.guess-stepper svg {
+  display: block;
 }
 
 .guess-stepper:focus-visible,
@@ -6017,29 +6033,19 @@ html[data-dev="1"] .dev-mode-pill-label {
   }
 
   .stage.mode-hero .gauge-card {
-    padding-bottom: 8px;
+    padding-bottom: 4px;
   }
 
   .mode-hero .mode-hero-lede {
     line-height: 1.25;
   }
-
-  .stage.mode-hero .mode-hero-visual .gauge {
-    max-width: 58vw;
-  }
 }
 
 @media (max-width: 370px) {
-  html[lang="ta"] .stage.mode-hero .gauge-card {
-    padding: 0 10px;
-  }
-
   html[lang="ta"] .stage.mode-hero .mode-hero-visual .gauge {
-    max-width: 44vw;
-  }
-
-  html[lang="ta"] .stage.mode-hero .phase-status {
-    margin: 0;
+    margin-bottom: -15vw;
+    transform: scale(0.8);
+    transform-origin: top center;
   }
 }
 
