@@ -11,6 +11,7 @@ export type { Phase } from "./progress";
 export interface LiveUpdate {
   phase: Phase;
   mbps?: number;
+  downloadMbps?: number;
   pingMs?: number;
   step?: number;
   steps?: number;
@@ -296,6 +297,7 @@ async function runMock(
         step: current.step,
         steps: measurements.length,
         bytes: current.bytes,
+        downloadMbps: down,
       });
       lastUploadStep = stepIndex;
     }
@@ -414,6 +416,9 @@ export function runSpeedTest(
         step: measurementId + 1,
         steps: measurements.length,
         bytes: "bytes" in measurement ? measurement.bytes : undefined,
+        ...(phase === "up" && test!.results.getDownloadBandwidth() !== undefined
+          ? { downloadMbps: test!.results.getDownloadBandwidth()! / 1e6 }
+          : {}),
       });
     };
     test.onResultsChange = ({ type }) => {

@@ -4,6 +4,15 @@ import { join } from "node:path";
 
 const dist = join(process.cwd(), "dist");
 const readPage = (path) => readFileSync(join(dist, path), "utf8");
+const collectHtmlFiles = (directory) =>
+  readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const path = join(directory, entry.name);
+    return entry.isDirectory()
+      ? collectHtmlFiles(path)
+      : entry.isFile() && entry.name.endsWith(".html")
+        ? [path]
+        : [];
+  });
 const routes = {
   home: { en: "/", ta: "/ta/", es: "/es/" },
   classroom: {
@@ -69,6 +78,18 @@ for (const path of [
   "/es/work/",
 ]) {
   assert.ok(sitemap.includes(absoluteUrl(path)), `sitemap contains ${path}`);
+}
+
+for (const path of collectHtmlFiles(dist)) {
+  const html = readFileSync(path, "utf8").replace(
+    /<(script|style)\b[^>]*>[\s\S]*?<\/\1\s*>/gi,
+    "",
+  );
+  assert.doesNotMatch(
+    html,
+    />[^<]*\bundefined\b[^<]*</i,
+    `${path} contains undefined in visible text`,
+  );
 }
 
 console.log("Localization build metadata checks passed.");
