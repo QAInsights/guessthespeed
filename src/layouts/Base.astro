@@ -36,6 +36,13 @@ const {
   locale = "en",
   translatedPage,
 } = Astro.props;
+const languageName = t(
+  `language_${locale === "en" ? "english" : locale === "ta" ? "tamil" : "spanish"}` as Parameters<
+    typeof t
+  >[0],
+  {},
+  locale,
+);
 const pageTitle =
   title ?? "Guess the Speed | The Internet Speed Guessing Game for Families";
 const pageDescription =
@@ -428,6 +435,7 @@ const languageTargets: Record<Locale, string> = translatedPage
           <span data-sound-off hidden>
             <Icon name="ph:speaker-slash-fill" />
           </span>
+          <span class="ctrl-label">{t("header_sound_label", {}, locale)}</span>
         </button>
         <button
           class="ctrl icon-btn"
@@ -438,6 +446,7 @@ const languageTargets: Record<Locale, string> = translatedPage
           aria-pressed="false"
         >
           <Icon name="ph:television-simple-bold" />
+          <span class="ctrl-label">{t("header_tv_label", {}, locale)}</span>
         </button>
         <button
           class="ctrl icon-btn"
@@ -449,13 +458,15 @@ const languageTargets: Record<Locale, string> = translatedPage
           hidden
         >
           <Icon name="ph:corners-out-bold" />
+          <span class="ctrl-label">{t("header_fullscreen", {}, locale)}</span>
         </button>
         <a
           class="ctrl icon-btn how-link"
           href="/how-to-play/"
-          aria-label={t("header_how_to_play", {}, locale)}
+          aria-label={`${t("header_help_label", {}, locale)}, ${t("header_how_to_play", {}, locale)}`}
         >
           <Icon name="ph:question-fill" />
+          <span class="ctrl-label">{t("header_help_label", {}, locale)}</span>
         </a>
         <button
           class="ctrl icon-btn"
@@ -464,6 +475,7 @@ const languageTargets: Record<Locale, string> = translatedPage
           aria-label={t("header_settings_open", {}, locale)}
         >
           <Icon name="ph:gear-six-fill" />
+          <span class="ctrl-label">{t("header_settings_label", {}, locale)}</span>
         </button>
       </div>
       <div class="language-picker" data-language-picker>
@@ -471,21 +483,13 @@ const languageTargets: Record<Locale, string> = translatedPage
           class="ctrl language-trigger"
           type="button"
           data-language-trigger
-          aria-label={t("language_picker_aria", {}, locale)}
+          aria-label={`${languageName}, ${t("language_picker_aria", {}, locale)}`}
           aria-haspopup="listbox"
           aria-expanded="false"
           aria-controls="language-menu"
         >
           <Icon name="ph:globe-hemisphere-west-bold" aria-hidden="true" />
-          <span class="language-name">
-            {t(
-              `language_${locale === "en" ? "english" : locale === "ta" ? "tamil" : "spanish"}` as Parameters<
-                typeof t
-              >[0],
-              {},
-              locale,
-            )}
-          </span>
+          <span class="language-name">{languageName}</span>
           <span class="language-code" aria-hidden="true">{locale.toUpperCase()}</span>
           <Icon name="ph:caret-down-bold" aria-hidden="true" />
         </button>
@@ -550,6 +554,24 @@ const languageTargets: Record<Locale, string> = translatedPage
           >
             <Icon name="ph:x-bold" />
           </button>
+        </div>
+        <div class="settings-nav">
+          <button
+            class="settings-nav-row"
+            type="button"
+            role="switch"
+            aria-checked="false"
+            data-settings-tv-toggle
+          >
+            <Icon name="ph:television-simple-bold" aria-hidden="true" />
+            <span>{t("header_tv_mode", {}, locale)}</span>
+            <span class="settings-switch" aria-hidden="true"><span></span></span>
+          </button>
+          <a class="settings-nav-row" href="/how-to-play/">
+            <Icon name="ph:question-fill" aria-hidden="true" />
+            <span>{t("header_how_to_play", {}, locale)}</span>
+            <Icon name="ph:arrow-up-right-bold" aria-hidden="true" />
+          </a>
         </div>
         <form class="dialog-form" data-settings-form>
           <label class="dialog-field">

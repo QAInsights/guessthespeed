@@ -342,6 +342,7 @@ function renderPlayerCard(player: ClientPlayer, index: number) {
   const mine = isMine(player);
   const canRemove = !roomMode || isRoomHost() || mine;
   const concealed = roomMode && !mine && !revealed;
+  const points = roundResult?.total ?? 0;
   const guessAction = revealed
     ? `<div class="p-results">
         <span>${msg("game_download_guess")}: ${player.guess.down === null ? msg("game_no_guess") : `${formatNumber(player.guess.down, locale)} Mbps`}</span>
@@ -349,7 +350,7 @@ function renderPlayerCard(player: ClientPlayer, index: number) {
         <span>${miss === null || miss === undefined ? msg("game_no_guess_this_round") : msg("game_average_miss", { percent: formatNumber(miss * 100, locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) })}${tooFar ? `, ${msg("game_too_far_points")}` : ""}</span>
       </div>
       <div class="p-actions">
-        <span class="points-pill">${medal ? `${medal} ` : ""}${formatPointAward(roundResult?.total ?? 0)}</span>
+        <span class="points-pill ${points > 0 ? "is-positive" : "is-zero"}">${medal ? `${medal} ` : ""}${formatPointAward(points)}</span>
         ${roundResult?.bonus ? `<span class="bonus-pill">${msg("game_spot_on_points", { points: formatNumber(roundResult.bonus, locale) })}</span>` : ""}
       </div>`
     : concealed
@@ -736,6 +737,10 @@ function syncControls() {
   const guessing = state.phase === "guessing";
   const testing = isTesting();
   const lockedGuess = state.players.some((player) => player.locked);
+  const lockedCount = state.players.filter((player) => player.locked).length;
+  const allGuessed =
+    state.players.length > 0 && lockedCount === state.players.length;
+  const waitingForGuesses = guessing && !allGuessed && !devMode;
   const waitingForGuess = roomMode && canRun && guessing && !lockedGuess;
   startButton.disabled =
     (!devMode && (!guessing || !lockedGuess)) || runInProgress;
@@ -773,6 +778,10 @@ function syncControls() {
     : msg("home_reset_scores");
   resetButton.hidden = roomMode && !host;
   syncTVAddForm();
+  startButton.classList.toggle(
+    "is-neutral",
+    revealPending || testing || waitingForGuesses,
+  );
   $<HTMLSpanElement>("[data-start-label]").textContent = revealPending
     ? msg("game_testing")
     : devMode
@@ -783,9 +792,12 @@ function syncControls() {
         ? msg("game_testing")
         : isRevealed()
           ? msg("game_round_complete")
-          : state.players.some((player) => player.locked)
+          : allGuessed
             ? msg("game_start_test")
-            : msg("home_waiting_guesses");
+            : msg("home_guesses_in", {
+                done: formatNumber(lockedCount, locale),
+                total: formatNumber(state.players.length, locale),
+              });
   $<HTMLSpanElement>("[data-phase-text]").textContent = revealPending
     ? msg("home_drumroll")
     : devMode
