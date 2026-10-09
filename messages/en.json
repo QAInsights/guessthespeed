@@ -13,7 +13,7 @@
   "header_home_aria": "Guess the Speed home",
   "header_theme_change": "Change theme",
   "header_theme_title": "Pick a theme",
-  "header_theme_auto": "Auto (by date)",
+  "header_theme_auto": "Auto",
   "header_theme_auto_hint": "Follows the calendar",
   "header_theme_now": "Now: {theme}",
   "header_sound_toggle": "Toggle sound",

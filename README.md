@@ -70,8 +70,8 @@ Speed test nights on the living-room TV became our family game night, with every
       <p><strong>Ready for a small screen</strong><br>The gauge, controls, and player cards reflow for a phone, with touch-sized buttons.</p>
     </td>
     <td width="50%" valign="top">
-      <img src="docs/screenshots/results.png" alt="Round results with the Auto by date theme selector" width="440">
-      <p><strong>Festive themes</strong><br>Choose light, dark, or seasonal themes, or leave Auto (by date) on to follow the calendar.</p>
+      <img src="docs/screenshots/results.png" alt="Round results with the Auto theme selector" width="440">
+      <p><strong>Festive themes</strong><br>Choose light, dark, or seasonal themes, or leave Auto on to follow the calendar.</p>
     </td>
   </tr>
 </table>
