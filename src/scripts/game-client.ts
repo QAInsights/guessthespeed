@@ -906,7 +906,7 @@ function render() {
       state.settings.rounds !== "endless" &&
       state.round >= state.settings.rounds
         ? msg("game_see_champion")
-        : msg("shortcut_next");
+        : msg("game_next_round");
     const nextRoundButton = $<HTMLButtonElement>("[data-next-round]");
     if (roomMode && !isRoomHost()) nextRoundButton.hidden = true;
     else nextRoundButton?.removeAttribute("hidden");
@@ -1194,6 +1194,8 @@ async function startTest() {
           setPhase(update.phase, currentBytes);
         }
         if (update.mbps !== undefined) setGauge(update.mbps);
+        if (update.downloadMbps !== undefined && !devRun)
+          setResultText("down", update.downloadMbps);
         if (update.pingMs !== undefined) {
           setGauge(update.pingMs);
           if (!devRun) setResultText("ping", update.pingMs);
@@ -1759,7 +1761,7 @@ const nextButton = document.createElement("button");
 nextButton.type = "button";
 nextButton.className = "go next-round";
 nextButton.dataset.nextRound = "";
-nextButton.textContent = msg("shortcut_next");
+nextButton.textContent = msg("game_next_round");
 nextButton.hidden = true;
 nextButton.addEventListener("click", () => {
   if (roomMode) {

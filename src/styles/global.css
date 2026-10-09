@@ -4617,7 +4617,7 @@ html[data-dev="1"] .dev-console {
     flex: none;
   }
 
-  html[data-tv="1"][data-home="1"] .intro h1,
+  html[data-tv="1"][data-home="1"] .intro [data-game-title],
   html[data-tv="1"][data-home="1"] .intro [data-game-lede] {
     position: absolute;
     width: 1px;
@@ -5152,6 +5152,11 @@ html[data-dev="1"] .dev-console {
   height: 19px;
 }
 
+.work-room-actions .room-join-form > button {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
 .work-classroom-note {
   margin: 0;
   color: var(--muted);
@@ -5195,7 +5200,7 @@ html[data-dev="1"] .dev-console {
 
 .work-steps li > span {
   flex: 0 0 auto;
-  color: var(--accent);
+  color: var(--ink);
   font-family: var(--mono, ui-monospace, monospace);
   font-weight: 950;
 }
@@ -5572,5 +5577,10 @@ html[data-dev="1"] .dev-mode-pill-label {
 
   html[data-tv="1"][data-home="1"] .mode-hero-stats {
     order: 3;
+    transform: translateY(-12px);
+  }
+
+  html[data-tv="1"][data-home="1"] .intro .play-stat {
+    margin-left: 12px;
   }
 }
