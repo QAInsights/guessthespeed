@@ -3291,8 +3291,6 @@ html[lang="es"] .sec-head > h2 {
   overflow-wrap: anywhere;
 }
 
-html[lang="ta"] .mode-switch :is(button, a),
-html[lang="es"] .mode-switch :is(button, a),
 .mode-switch :is(button, a) {
   overflow-wrap: normal;
   white-space: nowrap;
@@ -4229,7 +4227,7 @@ html[data-dev="1"] .dev-console {
   }
 
   .mode-switch :is(button, a) {
-    flex: 0 0 auto;
+    flex: 1 0 auto;
     min-height: 44px;
     gap: 4px;
     padding-right: 6px;
