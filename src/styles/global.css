@@ -2143,14 +2143,19 @@ html:not([data-aurora="0"]) .is-winner.has-aurora {
   font-weight: 700;
 }
 
+.p-card-tools {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}
+
 .p-edit {
-  position: absolute;
-  z-index: 1;
-  top: -12px;
-  right: 22px;
   display: grid;
-  width: 30px;
-  height: 30px;
+  width: 44px;
+  height: 44px;
+  flex: none;
   place-items: center;
   border: 2px solid var(--ink);
   border-radius: 50%;
@@ -2159,42 +2164,20 @@ html:not([data-aurora="0"]) .is-winner.has-aurora {
   font-size: 19px;
   font-weight: 800;
   line-height: 1;
-  opacity: 0;
-  transition: opacity 0.15s;
+  opacity: 1;
 }
 
 .p-rm {
-  position: absolute;
-  z-index: 1;
-  top: -12px;
-  right: -12px;
   display: grid;
-  width: 30px;
-  height: 30px;
+  width: 44px;
+  height: 44px;
+  flex: none;
   place-items: center;
   border: 2px solid var(--ink);
   border-radius: 50%;
   background: var(--surface);
   color: var(--ink);
-  opacity: 0;
-  transition: opacity 0.15s;
-}
-
-.p-card:hover .p-rm,
-.p-card:focus-within .p-rm {
   opacity: 1;
-}
-
-.p-card:hover .p-edit,
-.p-card:focus-within .p-edit {
-  opacity: 1;
-}
-
-@media (hover: none) {
-  .p-edit,
-  .p-rm {
-    opacity: 1;
-  }
 }
 
 .p-table-wrap {
@@ -5788,6 +5771,10 @@ html[data-dev="1"] .dev-mode-pill-label {
   opacity: 1;
 }
 
+.gauge-card .go {
+  white-space: nowrap;
+}
+
 .go.is-neutral:hover:not(:disabled) {
   transform: none;
   box-shadow: 4px 4px 0 var(--shadow);
@@ -5856,12 +5843,6 @@ html[data-dev="1"] .dev-mode-pill-label {
 [data-room-emoji-picker] small {
   font-size: 0.875rem;
   font-weight: 650;
-}
-
-.p-edit,
-.p-rm {
-  width: 44px;
-  height: 44px;
 }
 
 .p-table th {

@@ -343,6 +343,16 @@ function renderPlayerCard(player: ClientPlayer, index: number) {
   const canRemove = !roomMode || isRoomHost() || mine;
   const concealed = roomMode && !mine && !revealed;
   const points = roundResult?.total ?? 0;
+  const playerTools = [
+    mine
+      ? `<button class="p-edit" type="button" data-edit="${escapeHtml(player.id)}" aria-label="${msg("game_edit_player", { name: escapeHtml(player.name) })}" ${isTesting() ? "disabled" : ""}><span aria-hidden="true">✎</span></button>`
+      : "",
+    canRemove
+      ? `<button class="p-rm" type="button" data-remove="${escapeHtml(player.id)}" aria-label="${msg("game_remove_player", { name: escapeHtml(player.name) })}" ${isTesting() ? "disabled" : ""}>×</button>`
+      : "",
+  ]
+    .filter(Boolean)
+    .join("");
   const guessAction = revealed
     ? `<div class="p-results">
         <span>${msg("game_download_guess")}: ${player.guess.down === null ? msg("game_no_guess") : `${formatNumber(player.guess.down, locale)} Mbps`}</span>
@@ -359,10 +369,9 @@ function renderPlayerCard(player: ClientPlayer, index: number) {
         ? `<div class="p-actions"><button type="button" class="locked-pill" data-guess="${escapeHtml(player.id)}" ${isTesting() ? "disabled" : ""}><span aria-hidden="true">🔒</span>${msg("game_locked_in")} <small>${msg("game_change")}</small></button>${roomMode ? `<button class="room-unlock" type="button" data-unlock="${escapeHtml(player.id)}" ${isTesting() ? "disabled" : ""}>${msg("game_unlock")}</button>` : ""}</div>`
         : `<div class="p-actions"><button type="button" class="guess-button" data-guess="${escapeHtml(player.id)}" ${isTesting() ? "disabled" : ""}>${msg("game_guess")}</button></div>`;
   return `<article class="p-card has-aurora ${winnerClass}" style="--card-index:${index};${auroraStyleVars(auroraFor(player.id))}">
-    ${mine ? `<button class="p-edit" type="button" data-edit="${escapeHtml(player.id)}" aria-label="${msg("game_edit_player", { name: escapeHtml(player.name) })}" ${isTesting() ? "disabled" : ""}><span aria-hidden="true">✎</span></button>` : ""}
-    ${canRemove ? `<button class="p-rm" type="button" data-remove="${escapeHtml(player.id)}" aria-label="${msg("game_remove_player", { name: escapeHtml(player.name) })}" ${isTesting() ? "disabled" : ""}>×</button>` : ""}
     <div class="p-head">${roleFor(player)}<div class="p-score"><b>${formatNumber(displayedScore, locale)}</b><span>${formatScoreLabel(displayedScore)}</span></div></div>
     ${guessAction}
+    ${playerTools ? `<div class="p-card-tools">${playerTools}</div>` : ""}
   </article>`;
 }
 
