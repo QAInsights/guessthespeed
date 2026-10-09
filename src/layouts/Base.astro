@@ -1,15 +1,19 @@
 ---
-import '@fontsource-variable/bricolage-grotesque';
-import '@fontsource-variable/figtree';
-import bricolageFontUrl from '@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-wght-normal.woff2?url';
-import figtreeFontUrl from '@fontsource-variable/figtree/files/figtree-latin-wght-normal.woff2?url';
-import { Icon } from 'astro-icon/components';
-import '../styles/global.css';
-import Footer from '../components/Footer.astro';
-import HousePromo from '../components/HousePromo.astro';
-import ModeSwitch from '../components/ModeSwitch.astro';
-import { ogCardFor, ogImagePath } from '../lib/og-cards';
-import { themes, type ThemeId } from '../lib/themes';
+import "@fontsource-variable/bricolage-grotesque";
+import "@fontsource-variable/figtree";
+import "@fontsource-variable/noto-sans-tamil";
+import bricolageFontUrl from "@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-wght-normal.woff2?url";
+import figtreeFontUrl from "@fontsource-variable/figtree/files/figtree-latin-wght-normal.woff2?url";
+import notoTamilFontUrl from "@fontsource-variable/noto-sans-tamil/files/noto-sans-tamil-tamil-wght-normal.woff2?url";
+import { Icon } from "astro-icon/components";
+import "../styles/global.css";
+import Footer from "../components/Footer.astro";
+import HousePromo from "../components/HousePromo.astro";
+import ModeSwitch from "../components/ModeSwitch.astro";
+import { ogCardFor, ogImagePath } from "../lib/og-cards";
+import { type ThemeId } from "../lib/themes";
+import { LOCALE_INFO, localizedPath, type Locale } from "../lib/i18n";
+import { t } from "../lib/messages";
 
 interface Props {
   title?: string;
@@ -18,80 +22,94 @@ interface Props {
   schema?: Record<string, unknown>[];
   modeSwitch?: "game" | "classroom" | "work";
   noindex?: boolean;
+  locale?: Locale;
+  translatedPage?: "/" | "/classroom/" | "/work/";
 }
 
 const {
-  title = 'Guess the Speed | The Internet Speed Guessing Game for Families',
-  description = "A free family game: everyone guesses the Wi-Fi download and upload speed, then a real speed test reveals who came closest. Play on one screen or on everyone's phone.",
+  title,
+  description,
   breadcrumb,
   schema = [],
   modeSwitch,
   noindex = false,
+  locale = "en",
+  translatedPage,
 } = Astro.props;
-const canonical = new URL(Astro.url.pathname, 'https://guessthespeed.com').toString();
-const ogCard = ogCardFor(Astro.url.pathname);
+const pageTitle =
+  title ?? "Guess the Speed | The Internet Speed Guessing Game for Families";
+const pageDescription =
+  description ??
+  "A free family game: everyone guesses the Wi-Fi download and upload speed, then a real speed test reveals who came closest. Play on one screen or on everyone's phone.";
+const canonical = new URL(
+  Astro.url.pathname,
+  "https://guessthespeed.com",
+).toString();
+const ogPath =
+  translatedPage && locale !== "en" ? translatedPage : Astro.url.pathname;
+const ogCard = ogCardFor(ogPath);
 const ogImageAlt = `${ogCard.line1} ${ogCard.line2}`;
-const ogImageUrl = `https://guessthespeed.com${ogImagePath(Astro.url.pathname)}`;
+const ogImageUrl = `https://guessthespeed.com${ogImagePath(ogPath)}`;
 const beaconToken = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
 const themeHints: Record<ThemeId, { emoji: string; hint: string }> = {
-  light: { emoji: '☀️', hint: 'Bright and bold' },
-  dark: { emoji: '🌙', hint: 'Night mode' },
-  halloween: { emoji: '🎃', hint: 'Oct 15 to 31' },
-  diwali: { emoji: '🪔', hint: 'Around Diwali' },
-  thanksgiving: { emoji: '🥧', hint: 'Late November' },
-  winter: { emoji: '❄️', hint: 'January' },
-  christmas: { emoji: '🎄', hint: 'Dec 1 to 26' },
-  newyear: { emoji: '🎉', hint: 'Dec 27 to Jan 2' },
-  pongal: { emoji: '🌾', hint: 'Jan 13 to 17' },
-  valentines: { emoji: '💌', hint: 'Feb 7 to 14' },
-  holi: { emoji: '🎨', hint: 'Around Holi' },
-  easter: { emoji: '🐣', hint: 'Easter week' },
-  eidfitr: { emoji: '🌙', hint: 'Around Eid al-Fitr' },
-  eidadha: { emoji: '🕌', hint: 'Around Eid al-Adha' },
-  lunarnewyear: { emoji: '🏮', hint: 'Around Lunar New Year' },
-  stpatricks: { emoji: '☘️', hint: 'Mar 15 to 17' },
+  light: { emoji: "☀️", hint: t("theme_light_hint", {}, locale) },
+  dark: { emoji: "🌙", hint: t("theme_dark_hint", {}, locale) },
+  halloween: { emoji: "🎃", hint: t("theme_halloween_hint", {}, locale) },
+  diwali: { emoji: "🪔", hint: t("theme_diwali_hint", {}, locale) },
+  thanksgiving: { emoji: "🥧", hint: t("theme_thanksgiving_hint", {}, locale) },
+  winter: { emoji: "❄️", hint: t("theme_winter_hint", {}, locale) },
+  christmas: { emoji: "🎄", hint: t("theme_christmas_hint", {}, locale) },
+  newyear: { emoji: "🎉", hint: t("theme_newyear_hint", {}, locale) },
+  pongal: { emoji: "🌾", hint: t("theme_pongal_hint", {}, locale) },
+  valentines: { emoji: "💌", hint: t("theme_valentines_hint", {}, locale) },
+  holi: { emoji: "🎨", hint: t("theme_holi_hint", {}, locale) },
+  easter: { emoji: "🐣", hint: t("theme_easter_hint", {}, locale) },
+  eidfitr: { emoji: "🌙", hint: t("theme_eidfitr_hint", {}, locale) },
+  eidadha: { emoji: "🕌", hint: t("theme_eidadha_hint", {}, locale) },
+  lunarnewyear: { emoji: "🏮", hint: t("theme_lunarnewyear_hint", {}, locale) },
+  stpatricks: { emoji: "☘️", hint: t("theme_stpatricks_hint", {}, locale) },
 };
 const themeChoices = (Object.keys(themeHints) as ThemeId[]).map((id) => ({
   id,
-  label: themes[id].label,
+  label: t(`theme_${id}` as Parameters<typeof t>[0], {}, locale),
   ...themeHints[id],
 }));
-const websiteId = 'https://guessthespeed.com/#website';
-const authorId = 'https://guessthespeed.com/#author';
+const websiteId = "https://guessthespeed.com/#website";
+const authorId = "https://guessthespeed.com/#author";
 const graph: Record<string, unknown>[] = [
   {
-    '@type': 'WebSite',
-    '@id': websiteId,
-    name: 'Guess the Speed',
-    url: 'https://guessthespeed.com/',
-    inLanguage: 'en',
-    publisher: { '@id': authorId },
+    "@type": "WebSite",
+    "@id": websiteId,
+    name: "Guess the Speed",
+    url: `https://guessthespeed.com${LOCALE_INFO[locale].home}`,
+    inLanguage: locale,
+    publisher: { "@id": authorId },
   },
   {
-    '@type': 'Person',
-    '@id': authorId,
-    name: 'NaveenKumar Namachivayam',
-    url: 'https://qainsights.com',
+    "@type": "Person",
+    "@id": authorId,
+    name: "NaveenKumar Namachivayam",
+    url: "https://qainsights.com",
     sameAs: [
-      'https://qainsights.com',
-      'https://github.com/QAInsights',
-      'https://dosa.dev',
-      'https://iamspeed.dev',
+      "https://qainsights.com",
+      "https://github.com/QAInsights",
+      "https://dosa.dev",
+      "https://iamspeed.dev",
     ],
   },
 ];
-if (breadcrumb && Astro.url.pathname !== '/') {
+if (breadcrumb && Astro.url.pathname !== "/") {
   graph.push({
-    '@type': 'BreadcrumbList',
+    "@type": "BreadcrumbList",
     itemListElement: [
       {
-        '@type': 'ListItem',
+        "@type": "ListItem",
         position: 1,
-        name: 'Home',
-        item: 'https://guessthespeed.com/',
+        name: "Home",
+        item: "https://guessthespeed.com/",
       },
       {
-        '@type': 'ListItem',
+        "@type": "ListItem",
         position: 2,
         name: breadcrumb,
         item: canonical,
@@ -100,14 +118,21 @@ if (breadcrumb && Astro.url.pathname !== '/') {
   });
 }
 graph.push(...schema);
-const graphSchema = { '@context': 'https://schema.org', '@graph': graph };
+const graphSchema = { "@context": "https://schema.org", "@graph": graph };
+const languageTargets: Record<Locale, string> = translatedPage
+  ? {
+      en: localizedPath(translatedPage, "en"),
+      ta: localizedPath(translatedPage, "ta"),
+      es: localizedPath(translatedPage, "es"),
+    }
+  : { en: Astro.url.pathname, ta: "/ta/", es: "/es/" };
 ---
 
 <!doctype html>
 <html
-  lang="en"
+  lang={locale}
   data-theme="light"
-  data-home={Astro.url.pathname === '/' ? '1' : undefined}
+  data-home={translatedPage === "/" ? "1" : undefined}
 >
   <head>
     <meta charset="utf-8" />
@@ -125,8 +150,19 @@ const graphSchema = { '@context': 'https://schema.org', '@graph': graph };
       type="font/woff2"
       crossorigin
     />
+    {locale === "ta" && (
+      <link
+        rel="preload"
+        href={notoTamilFontUrl}
+        as="font"
+        type="font/woff2"
+        crossorigin
+      />
+    )}
     <script is:inline>
-      const roomQueryRequested = new URLSearchParams(window.location.search).has("room");
+      const roomQueryRequested = new URLSearchParams(
+        window.location.search,
+      ).has("room");
       let classroomSessionActive = false;
       try {
         const session = JSON.parse(
@@ -144,8 +180,9 @@ const graphSchema = { '@context': 'https://schema.org', '@graph': graph };
           session.startedAt >= 0;
       } catch {}
       const roomQueryMode = roomQueryRequested && !classroomSessionActive;
-      const leavesDevMode =
-        /^\/(?:classroom|work)\/?$/.test(window.location.pathname);
+      const leavesDevMode = /^\/(?:ta\/|es\/)?(?:classroom|work)\/?$/.test(
+        window.location.pathname,
+      );
       if (roomQueryMode) document.documentElement.dataset.room = "1";
       const devParam = new URLSearchParams(window.location.search).get("dev");
       let devEnabled = devParam === "1";
@@ -185,9 +222,8 @@ const graphSchema = { '@context': 'https://schema.org', '@graph': graph };
       try {
         const roomPage = document.documentElement.dataset.room === "1";
         const savedSettings = JSON.parse(
-          localStorage.getItem(
-            roomPage ? "gts:room-settings" : "gts:v1",
-          ) ?? "null",
+          localStorage.getItem(roomPage ? "gts:room-settings" : "gts:v1") ??
+            "null",
         );
         const themeMode = roomPage
           ? savedSettings?.themeMode
@@ -245,9 +281,25 @@ const graphSchema = { '@context': 'https://schema.org', '@graph': graph };
       } catch {}
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content={description} />
+    <meta name="description" content={pageDescription} />
     {noindex && <meta name="robots" content="noindex" />}
     <link rel="canonical" href={canonical} />
+    {translatedPage && (
+      <>
+        {(["en", "ta", "es"] as const).map((alternate) => (
+          <link
+            rel="alternate"
+            hreflang={alternate}
+            href={`https://guessthespeed.com${localizedPath(translatedPage, alternate)}`}
+          />
+        ))}
+        <link
+          rel="alternate"
+          hreflang="x-default"
+          href={`https://guessthespeed.com${localizedPath(translatedPage, "en")}`}
+        />
+      </>
+    )}
     <meta name="theme-color" content="#eceff3" />
     <meta name="color-scheme" content="light dark" />
     <link rel="icon" href="/favicon.ico" sizes="48x48" />
@@ -257,20 +309,24 @@ const graphSchema = { '@context': 'https://schema.org', '@graph': graph };
     <link rel="manifest" href="/manifest.webmanifest" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Guess the Speed" />
-    <meta property="og:title" content={title} />
-    <meta property="og:description" content={description} />
+    <meta property="og:locale" content={LOCALE_INFO[locale].ogLocale} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDescription} />
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={ogImageUrl} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content={ogImageAlt} />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content={title} />
-    <meta name="twitter:description" content={description} />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={pageDescription} />
     <meta name="twitter:image" content={ogImageUrl} />
     <meta name="twitter:image:alt" content={ogImageAlt} />
-    <title>{title}</title>
-    <script type="application/ld+json" set:html={JSON.stringify(graphSchema)}></script>
+    <title>{pageTitle}</title>
+    <script
+      type="application/ld+json"
+      set:html={JSON.stringify(graphSchema)}
+    ></script>
     {beaconToken && (
       <script
         defer
@@ -283,126 +339,331 @@ const graphSchema = { '@context': 'https://schema.org', '@graph': graph };
   <body>
     <div class="fx-layer" data-fx-layer aria-hidden="true"></div>
     <header class="wrap top">
-      <a class="logo" href="/" aria-label="Guess the Speed home">
+      <a class="logo" href={localizedPath("/", locale)} aria-label={t("header_home_aria", {}, locale)}>
         <span class="logo-badge">?</span>
         <b>guess the speed</b>
       </a>
       <div class="ctrls">
         <div class="theme-picker" data-theme-picker>
-          <button class="ctrl theme-trigger" type="button" data-theme-trigger aria-haspopup="listbox" aria-expanded="false" aria-controls="theme-menu">
+          <button
+            class="ctrl theme-trigger"
+            type="button"
+            data-theme-trigger
+            aria-haspopup="listbox"
+            aria-expanded="false"
+            aria-controls="theme-menu"
+          >
             <span class="theme-dot" aria-hidden="true"></span>
-            <span class="theme-trigger-label" data-theme-label>Auto (by date)</span>
-            <span class="sr">, change theme</span>
-            <Icon name="ph:caret-down-bold" class="theme-caret" aria-hidden="true" />
+            <span class="theme-trigger-label" data-theme-label>
+              {t("header_theme_auto", {}, locale)}
+            </span>
+            <span class="sr">, {t("header_theme_change", {}, locale)}</span>
+            <Icon
+              name="ph:caret-down-bold"
+              class="theme-caret"
+              aria-hidden="true"
+            />
           </button>
           <div class="theme-menu" id="theme-menu" data-theme-menu hidden>
-            <p class="theme-menu-title" id="theme-menu-title">Pick a theme</p>
-            <div class="theme-grid" role="listbox" aria-labelledby="theme-menu-title" data-theme-list>
-              <button class="theme-option" type="button" role="option" aria-selected="false" tabindex="-1" data-theme-option="auto" data-theme="light">
-                <span class="theme-swatch" aria-hidden="true">📅</span>
-                <span class="theme-option-text"><b>Auto (by date)</b><small data-theme-auto-hint>Follows the calendar</small></span>
+            <p class="theme-menu-title" id="theme-menu-title">
+              {t("header_theme_title", {}, locale)}
+            </p>
+            <div
+              class="theme-grid"
+              role="listbox"
+              aria-labelledby="theme-menu-title"
+              data-theme-list
+            >
+              <button
+                class="theme-option"
+                type="button"
+                role="option"
+                aria-selected="false"
+                tabindex="-1"
+                data-theme-option="auto"
+                data-theme="light"
+              >
+                <span class="theme-swatch" aria-hidden="true">
+                  📅
+                </span>
+                <span class="theme-option-text">
+                  <b>{t("header_theme_auto", {}, locale)}</b>
+                  <small data-theme-auto-hint>
+                    {t("header_theme_auto_hint", {}, locale)}
+                  </small>
+                </span>
               </button>
               {themeChoices.map(({ id, label, emoji, hint }) => (
-                <button class="theme-option" type="button" role="option" aria-selected="false" tabindex="-1" data-theme-option={id} data-theme={id}>
-                  <span class="theme-swatch" aria-hidden="true">{emoji}</span>
-                  <span class="theme-option-text"><b>{label}</b><small>{hint}</small></span>
+                <button
+                  class="theme-option"
+                  type="button"
+                  role="option"
+                  aria-selected="false"
+                  tabindex="-1"
+                  data-theme-option={id}
+                  data-theme={id}
+                >
+                  <span class="theme-swatch" aria-hidden="true">
+                    {emoji}
+                  </span>
+                  <span class="theme-option-text">
+                    <b>{label}</b>
+                    <small>{hint}</small>
+                  </span>
                 </button>
               ))}
             </div>
           </div>
         </div>
-        <button class="ctrl icon-btn" type="button" data-sound-toggle aria-label="Toggle sound" aria-pressed="true">
-          <span data-sound-on><Icon name="ph:speaker-high-fill" /></span>
-          <span data-sound-off hidden><Icon name="ph:speaker-slash-fill" /></span>
+        <button
+          class="ctrl icon-btn"
+          type="button"
+          data-sound-toggle
+          aria-label={t("header_sound_toggle", {}, locale)}
+          aria-pressed="true"
+        >
+          <span data-sound-on>
+            <Icon name="ph:speaker-high-fill" />
+          </span>
+          <span data-sound-off hidden>
+            <Icon name="ph:speaker-slash-fill" />
+          </span>
         </button>
-        <button class="ctrl icon-btn" type="button" data-tv-toggle aria-label="TV mode" title="TV mode: big screen layout" aria-pressed="false">
+        <button
+          class="ctrl icon-btn"
+          type="button"
+          data-tv-toggle
+          aria-label={t("header_tv_mode", {}, locale)}
+          title={t("header_tv_title", {}, locale)}
+          aria-pressed="false"
+        >
           <Icon name="ph:television-simple-bold" />
         </button>
-        <button class="ctrl icon-btn" type="button" data-fullscreen aria-label="Full screen" title="Full screen" aria-pressed="false" hidden>
+        <button
+          class="ctrl icon-btn"
+          type="button"
+          data-fullscreen
+          aria-label={t("header_fullscreen", {}, locale)}
+          title={t("header_fullscreen", {}, locale)}
+          aria-pressed="false"
+          hidden
+        >
           <Icon name="ph:corners-out-bold" />
         </button>
-        <a class="ctrl icon-btn how-link" href="/how-to-play/" aria-label="How to play">
+        <a
+          class="ctrl icon-btn how-link"
+          href="/how-to-play/"
+          aria-label={t("header_how_to_play", {}, locale)}
+        >
           <Icon name="ph:question-fill" />
         </a>
-        <button class="ctrl icon-btn" type="button" data-open-settings aria-label="Open settings">
+        <button
+          class="ctrl icon-btn"
+          type="button"
+          data-open-settings
+          aria-label={t("header_settings_open", {}, locale)}
+        >
           <Icon name="ph:gear-six-fill" />
         </button>
+      </div>
+      <div class="language-picker" data-language-picker>
+        <button
+          class="ctrl language-trigger"
+          type="button"
+          data-language-trigger
+          aria-label={t("language_picker_aria", {}, locale)}
+          aria-haspopup="listbox"
+          aria-expanded="false"
+          aria-controls="language-menu"
+        >
+          <Icon name="ph:globe-hemisphere-west-bold" aria-hidden="true" />
+          <span class="language-name">
+            {t(
+              `language_${locale === "en" ? "english" : locale === "ta" ? "tamil" : "spanish"}` as Parameters<
+                typeof t
+              >[0],
+              {},
+              locale,
+            )}
+          </span>
+          <span class="language-code" aria-hidden="true">{locale.toUpperCase()}</span>
+          <Icon name="ph:caret-down-bold" aria-hidden="true" />
+        </button>
+        <div
+          class="theme-menu language-menu"
+          id="language-menu"
+          data-language-menu
+          role="listbox"
+          aria-label={t("language_picker_aria", {}, locale)}
+          hidden
+        >
+          {(["en", "ta", "es"] as const).map((optionLocale) => (
+            <a
+              class="theme-option language-option"
+              href={languageTargets[optionLocale]}
+              role="option"
+              aria-selected={locale === optionLocale ? "true" : "false"}
+              aria-current={locale === optionLocale ? "true" : undefined}
+              data-language-option
+            >
+              <span class="theme-option-text">
+                <b>
+                  {t(
+                    `language_${optionLocale === "en" ? "english" : optionLocale === "ta" ? "tamil" : "spanish"}` as Parameters<
+                      typeof t
+                    >[0],
+                    {},
+                    locale,
+                  )}
+                </b>
+              </span>
+              {locale === optionLocale && (
+                <span class="language-current">
+                  {t("language_current", {}, locale)}
+                </span>
+              )}
+            </a>
+          ))}
+        </div>
       </div>
     </header>
     {modeSwitch && (
       <div class="wrap mode-bar">
-        <ModeSwitch current={modeSwitch} />
+        <ModeSwitch current={modeSwitch} locale={locale} />
       </div>
     )}
-    <dialog class="sticker-dialog" data-settings-dialog aria-labelledby="settings-title">
+    <dialog
+      class="sticker-dialog"
+      data-settings-dialog
+      aria-labelledby="settings-title"
+    >
       <div class="dialog-inner">
         <div class="dialog-head">
-          <h2 id="settings-title" class="display">Game settings</h2>
-          <button class="dialog-close" type="button" data-close-settings aria-label="Close settings"><Icon name="ph:x-bold" /></button>
+          <h2 id="settings-title" class="display">
+            {t("settings_title", {}, locale)}
+          </h2>
+          <button
+            class="dialog-close"
+            type="button"
+            data-close-settings
+            aria-label={t("settings_close", {}, locale)}
+          >
+            <Icon name="ph:x-bold" />
+          </button>
         </div>
         <form class="dialog-form" data-settings-form>
-          <label class="dialog-field">Rounds
+          <label class="dialog-field">
+            {t("settings_rounds", {}, locale)}
             <select class="dialog-select" name="rounds">
-              <option value="1">1 round</option>
-              <option value="3">3 rounds</option>
-              <option value="5">5 rounds</option>
-              <option value="7">7 rounds</option>
-              <option value="10">10 rounds</option>
-              <option value="endless">Endless</option>
+              <option value="1">
+                {t("settings_round_option", { count: 1 }, locale)}
+              </option>
+              <option value="3">
+                {t("settings_round_option", { count: 3 }, locale)}
+              </option>
+              <option value="5">
+                {t("settings_round_option", { count: 5 }, locale)}
+              </option>
+              <option value="7">
+                {t("settings_round_option", { count: 7 }, locale)}
+              </option>
+              <option value="10">
+                {t("settings_round_option", { count: 10 }, locale)}
+              </option>
+              <option value="endless">
+                {t("settings_endless", {}, locale)}
+              </option>
             </select>
           </label>
-          <label class="dialog-field">Ties
+          <label class="dialog-field">
+            {t("settings_ties", {}, locale)}
             <select class="dialog-select" name="tieMode">
-              <option value="share">Share the points</option>
-              <option value="download">Closest download breaks the tie</option>
+              <option value="share">
+                {t("settings_share_points", {}, locale)}
+              </option>
+              <option value="download">
+                {t("settings_download_tiebreak", {}, locale)}
+              </option>
             </select>
           </label>
-          <label class="dialog-field">Theme
+          <label class="dialog-field">
+            {t("settings_theme", {}, locale)}
             <select class="dialog-select" name="themeMode">
-              <option value="auto">Auto (by date)</option>
-              <option value="light">Light</option>
-              <option value="dark">Dark</option>
-              <option value="halloween">Halloween</option>
-              <option value="diwali">Diwali</option>
-              <option value="thanksgiving">Thanksgiving</option>
-              <option value="winter">Winter</option>
-              <option value="christmas">Christmas</option>
-              <option value="newyear">New Year</option>
-              <option value="pongal">Pongal</option>
-              <option value="valentines">Valentine’s Day</option>
-              <option value="holi">Holi</option>
-              <option value="easter">Easter</option>
-              <option value="eidfitr">Eid al-Fitr</option>
-              <option value="eidadha">Eid al-Adha</option>
-              <option value="lunarnewyear">Lunar New Year</option>
-              <option value="stpatricks">St. Patrick’s Day</option>
+              <option value="auto">{t("header_theme_auto", {}, locale)}</option>
+              {themeChoices.map((theme) => (
+                <option value={theme.id}>{theme.label}</option>
+              ))}
             </select>
           </label>
-          <label class="dialog-field sound-setting"><span>Sound</span><input type="checkbox" name="sound" /></label>
-          <label class="dialog-field confetti-setting"><span>Confetti<small>A quick burst when the champion is crowned.</small></span><input type="checkbox" name="confetti" /></label>
-          <label class="dialog-field aurora-setting"><span>Animated borders<small>Soft moving light around each player card.</small></span><input type="checkbox" name="animatedBorders" /></label>
+          <label class="dialog-field sound-setting">
+            <span>{t("settings_sound", {}, locale)}</span>
+            <input type="checkbox" name="sound" />
+          </label>
+          <label class="dialog-field confetti-setting">
+            <span>
+              {t("settings_confetti", {}, locale)}
+              <small>{t("settings_confetti_hint", {}, locale)}</small>
+            </span>
+            <input type="checkbox" name="confetti" />
+          </label>
+          <label class="dialog-field aurora-setting">
+            <span>
+              {t("settings_animated_borders", {}, locale)}
+              <small>{t("settings_animated_borders_hint", {}, locale)}</small>
+            </span>
+            <input type="checkbox" name="animatedBorders" />
+          </label>
           <fieldset class="dialog-plan-group">
-            <legend>Your internet plan</legend>
-            <label class="dialog-field" for="planDown">Plan download (Mbps)
-              <input class="dialog-input" id="planDown" name="planDown" type="number" min="1" max="10000" step="any" inputmode="decimal" placeholder="500" />
+            <legend>{t("settings_plan_title", {}, locale)}</legend>
+            <label class="dialog-field" for="planDown">
+              {t("settings_plan_download", {}, locale)} (Mbps)
+              <input
+                class="dialog-input"
+                id="planDown"
+                name="planDown"
+                type="number"
+                min="1"
+                max="10000"
+                step="any"
+                inputmode="decimal"
+                placeholder="500"
+              />
             </label>
-            <label class="dialog-field" for="planUp">Plan upload (Mbps)
-              <input class="dialog-input" id="planUp" name="planUp" type="number" min="1" max="10000" step="any" inputmode="decimal" placeholder="50" />
+            <label class="dialog-field" for="planUp">
+              {t("settings_plan_upload", {}, locale)} (Mbps)
+              <input
+                class="dialog-input"
+                id="planUp"
+                name="planUp"
+                type="number"
+                min="1"
+                max="10000"
+                step="any"
+                inputmode="decimal"
+                placeholder="50"
+              />
             </label>
-            <p class="dialog-plan-hint">Optional. Saved on this device only, never sent anywhere.</p>
+            <p class="dialog-plan-hint">
+              {t("settings_plan_hint", {}, locale)}
+            </p>
           </fieldset>
-          <p class="room-settings-note" data-room-settings-note hidden>Only the host can change rounds or tie rules in this room.</p>
+          <p class="room-settings-note" data-room-settings-note hidden>
+            {t("settings_room_note", {}, locale)}
+          </p>
           <div class="dialog-actions">
-            <button class="go" type="submit">Save settings</button>
+            <button class="go" type="submit">
+              {t("settings_save", {}, locale)}
+            </button>
           </div>
         </form>
       </div>
     </dialog>
     <slot />
-    <Footer />
-    <HousePromo />
+    <Footer locale={locale} translatedPage={translatedPage} />
+    <HousePromo locale={locale} />
     <script>
-      import '../scripts/header-client';
+      import "../scripts/locale-links";
+      import "../scripts/header-client";
     </script>
   </body>
 </html>

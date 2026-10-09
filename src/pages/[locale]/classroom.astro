@@ -1,0 +1,15 @@
+---
+import ClassroomPage from "../../components/ClassroomPage.astro";
+import type { Locale } from "../../lib/i18n";
+
+export function getStaticPaths() {
+  return (["ta", "es"] as const).map((locale) => ({
+    params: { locale },
+    props: { locale },
+  }));
+}
+
+const { locale } = Astro.props as { locale: Locale };
+---
+
+<ClassroomPage locale={locale} />

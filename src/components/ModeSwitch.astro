@@ -1,50 +1,57 @@
 ---
 import { Icon } from "astro-icon/components";
+import { t } from "../lib/messages";
+import { localizedPath, type Locale } from "../lib/i18n";
 
 interface Props {
   current: "game" | "classroom" | "work";
+  locale?: Locale;
 }
 
-const { current } = Astro.props;
+const { current, locale = "en" } = Astro.props;
 ---
 
-<nav class="mode-switch" aria-label="Mode" data-mode-switch>
+<nav
+  class="mode-switch"
+  aria-label={t("mode_aria", {}, locale)}
+  data-mode-switch
+>
   <a
-    href="/classroom/"
+    href={localizedPath("/classroom/", locale)}
     aria-current={current === "classroom" ? "page" : undefined}
     data-mode-option="classroom"
   >
     <Icon name="ph:chalkboard-teacher-bold" aria-hidden="true" />
-    Classroom
+    {t("mode_classroom", {}, locale)}
   </a>
   {current === "game" ? (
     <button type="button" aria-pressed="false" data-mode-option="dev">
       <Icon name="ph:code-bold" aria-hidden="true" />
-      Dev
+      {t("mode_dev", {}, locale)}
     </button>
   ) : (
-    <a href="/?dev=1" data-mode-option="dev">
+    <a href={`${localizedPath("/", locale)}?dev=1`} data-mode-option="dev">
       <Icon name="ph:code-bold" aria-hidden="true" />
-      Dev
+      {t("mode_dev", {}, locale)}
     </a>
   )}
   {current === "game" ? (
     <button type="button" aria-pressed="true" data-mode-option="game">
       <Icon name="ph:game-controller-bold" aria-hidden="true" />
-      Game
+      {t("mode_game", {}, locale)}
     </button>
   ) : (
-    <a href="/?dev=0" data-mode-option="game">
+    <a href={`${localizedPath("/", locale)}?dev=0`} data-mode-option="game">
       <Icon name="ph:game-controller-bold" aria-hidden="true" />
-      Game
+      {t("mode_game", {}, locale)}
     </a>
   )}
   <a
-    href="/work/"
+    href={localizedPath("/work/", locale)}
     aria-current={current === "work" ? "page" : undefined}
     data-mode-option="work"
   >
     <Icon name="ph:briefcase-bold" aria-hidden="true" />
-    Work
+    {t("mode_work", {}, locale)}
   </a>
 </nav>

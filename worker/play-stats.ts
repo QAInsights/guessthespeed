@@ -16,11 +16,11 @@ export class PlayStats extends DurableObject<Env> {
       try {
         body = await request.json();
       } catch {
-        return Response.json({ error: "Invalid event." }, { status: 400 });
+        return Response.json({ error: "invalid_event" }, { status: 400 });
       }
       const event = parseStatEvent(body);
       if (!event)
-        return Response.json({ error: "Invalid event." }, { status: 400 });
+        return Response.json({ error: "invalid_event" }, { status: 400 });
 
       const totals = normalizeTotals(
         await this.ctx.storage.get<unknown>(TOTALS_KEY),
@@ -34,6 +34,6 @@ export class PlayStats extends DurableObject<Env> {
       return Response.json(normalizeTotals(stored));
     }
 
-    return Response.json({ error: "Not found." }, { status: 404 });
+    return Response.json({ error: "not_found" }, { status: 404 });
   }
 }

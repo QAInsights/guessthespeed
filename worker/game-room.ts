@@ -48,7 +48,7 @@ export class GameRoom extends DurableObject<Env> {
         : Response.json({ exists: false }, { status: 404 });
     if (request.headers.get("Upgrade")?.toLowerCase() === "websocket")
       return this.connectWebSocket();
-    return Response.json({ error: "Not found." }, { status: 404 });
+    return Response.json({ error: "not_found" }, { status: 404 });
   }
 
   async webSocketMessage(
@@ -254,16 +254,13 @@ export class GameRoom extends DurableObject<Env> {
 
   private async initialize(request: Request): Promise<Response> {
     if (await this.loadRoom())
-      return Response.json(
-        { error: "Room code already exists." },
-        { status: 409 },
-      );
+      return Response.json({ error: "room_code_exists" }, { status: 409 });
     let input: unknown;
     try {
       input = await request.json();
     } catch {
       return Response.json(
-        { error: "Invalid initialization." },
+        { error: "invalid_initialization" },
         { status: 400 },
       );
     }
@@ -275,20 +272,20 @@ export class GameRoom extends DurableObject<Env> {
       !Number.isFinite(input.now)
     )
       return Response.json(
-        { error: "Invalid initialization." },
+        { error: "invalid_initialization" },
         { status: 400 },
       );
     const kind = input.kind === undefined ? "family" : input.kind;
     if (kind !== "family" && kind !== "team")
       return Response.json(
-        { error: "Invalid initialization." },
+        { error: "invalid_initialization" },
         { status: 400 },
       );
     let room: Room;
     try {
       room = createRoom(input.code, input.hostToken, input.now, kind);
     } catch {
-      return Response.json({ error: "Invalid room code." }, { status: 400 });
+      return Response.json({ error: "invalid_room_code" }, { status: 400 });
     }
     await this.ctx.storage.put(ROOM_KEY, room);
     const next = alarmToSchedule(
@@ -301,9 +298,9 @@ export class GameRoom extends DurableObject<Env> {
 
   private async connectWebSocket(): Promise<Response> {
     if (!(await this.loadRoom()))
-      return Response.json({ error: "Room not found." }, { status: 404 });
+      return Response.json({ error: "room_not_found" }, { status: 404 });
     if (!roomHasCapacity(this.ctx.getWebSockets().length))
-      return Response.json({ error: "This room is full." }, { status: 503 });
+      return Response.json({ error: "room_full" }, { status: 503 });
     const pair = new WebSocketPair();
     const client = pair[0];
     const server = pair[1];

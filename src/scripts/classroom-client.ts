@@ -27,7 +27,15 @@ import {
 } from "../lib/classroom";
 import { initialGameState, loadGame, saveGame, STORAGE_KEY } from "../lib/game";
 import { auroraFor, auroraStyleVars } from "../lib/aurora";
+import { formatNumber, localizedPath } from "../lib/i18n";
+import { initializeClientLocale, t } from "../lib/messages";
 import { $ } from "./dom";
+
+const locale = initializeClientLocale();
+const msg = (
+  key: Parameters<typeof t>[0],
+  params: Record<string, string | number | boolean> = {},
+) => t(key, params, locale);
 
 const classList = $<HTMLDivElement>("[data-class-list]");
 const classCount = $<HTMLElement>("[data-class-count]");
@@ -108,12 +116,12 @@ function createNewClassButton(): HTMLButtonElement {
   const button = document.createElement("button");
   button.className = "new-class-card";
   button.type = "button";
-  button.setAttribute("aria-label", "Create a new class");
+  button.setAttribute("aria-label", msg("classroom_ui_new_class_aria"));
   const plus = document.createElement("span");
   plus.setAttribute("aria-hidden", "true");
   plus.textContent = "+";
   const label = document.createElement("strong");
-  label.textContent = "New class";
+  label.textContent = msg("classroom_ui_new_class");
   button.append(plus, label);
   button.addEventListener("click", createClass);
   return button;
@@ -121,9 +129,12 @@ function createNewClassButton(): HTMLButtonElement {
 
 function renderClassList() {
   classList.replaceChildren();
-  classCount.textContent = `${classroomData.classes.length} ${
-    classroomData.classes.length === 1 ? "class" : "classes"
-  }`;
+  classCount.textContent = msg(
+    classroomData.classes.length === 1
+      ? "classroom_ui_class_count_one"
+      : "classroom_ui_class_count_many",
+    { count: formatNumber(classroomData.classes.length, locale) },
+  );
 
   if (!classroomData.classes.length) {
     const empty = document.createElement("section");
@@ -139,17 +150,17 @@ function renderClassList() {
     copy.className = "empty-class-copy";
     const title = document.createElement("h3");
     title.id = "empty-class-title";
-    title.textContent = "Add your first class";
+    title.textContent = msg("classroom_ui_empty_class_title");
     const steps = document.createElement("ol");
     steps.className = "empty-class-steps";
     for (const [index, label] of [
-      "Name it",
-      "Paste the list",
-      "Press start",
+      msg("classroom_ui_empty_step_name"),
+      msg("classroom_ui_empty_step_paste"),
+      msg("classroom_ui_empty_step_start"),
     ].entries()) {
       const step = document.createElement("li");
       const number = document.createElement("b");
-      number.textContent = String(index + 1);
+      number.textContent = formatNumber(index + 1, locale);
       const text = document.createElement("span");
       text.textContent = label;
       step.append(number, text);
@@ -167,9 +178,18 @@ function renderClassList() {
     card.className = "class-card";
     card.type = "button";
     card.setAttribute("aria-pressed", String(classroom.id === selectedClassId));
+    const studentCountLabel = msg(
+      classroom.students.length === 1
+        ? "classroom_ui_students_count_one"
+        : "classroom_ui_students_count_many",
+      { count: formatNumber(classroom.students.length, locale) },
+    );
     card.setAttribute(
       "aria-label",
-      `${classroom.name}, ${classroom.students.length} students`,
+      msg("classroom_ui_class_card_aria", {
+        name: classroom.name,
+        students: studentCountLabel,
+      }),
     );
 
     const face = document.createElement("span");
@@ -182,9 +202,7 @@ function renderClassList() {
     const name = document.createElement("strong");
     name.textContent = classroom.name;
     const count = document.createElement("small");
-    count.textContent = `${classroom.students.length} ${
-      classroom.students.length === 1 ? "student" : "students"
-    }`;
+    count.textContent = studentCountLabel;
     copy.append(name, count);
     card.append(face, copy);
     card.addEventListener("click", () => selectClass(classroom.id));
@@ -207,7 +225,14 @@ function renderEmojiPicker(
     button.className = "emoji-choice";
     button.type = "button";
     button.textContent = emoji;
-    button.setAttribute("aria-label", `${label} ${index + 1}: ${emoji}`);
+    button.setAttribute(
+      "aria-label",
+      msg("classroom_ui_emoji_choice_aria", {
+        label,
+        number: formatNumber(index + 1, locale),
+        emoji,
+      }),
+    );
     button.setAttribute("aria-pressed", String(emoji === selected));
     button.addEventListener("click", () => onSelect(emoji));
     target.append(button);
@@ -224,14 +249,17 @@ function updateClassEmoji(emoji: string) {
     classEmojiPicker,
     CLASSROOM_EMOJIS,
     classroom.emoji,
-    "Use class sticker",
+    msg("classroom_ui_use_class_sticker"),
     updateClassEmoji,
   );
 }
 
 function renderStudentRoster(classroom: ClassRoom) {
   studentRoster.replaceChildren();
-  studentCount.textContent = `${classroom.students.length} of ${MAX_STUDENTS}`;
+  studentCount.textContent = msg("classroom_ui_student_count_display", {
+    count: formatNumber(classroom.students.length, locale),
+    limit: formatNumber(MAX_STUDENTS, locale),
+  });
   rosterEmpty.hidden = classroom.students.length > 0;
 
   classroom.students.forEach((student) => {
@@ -239,7 +267,10 @@ function renderStudentRoster(classroom: ClassRoom) {
     chip.className = "student-chip";
     chip.type = "button";
     chip.dataset.studentId = student.id;
-    chip.setAttribute("aria-label", `Edit ${student.name}`);
+    chip.setAttribute(
+      "aria-label",
+      msg("classroom_ui_student_edit_aria", { name: student.name }),
+    );
     const face = document.createElement("span");
     face.setAttribute("aria-hidden", "true");
     face.textContent = student.emoji;
@@ -272,8 +303,8 @@ function updatePlayPanel(classroom: ClassRoom) {
   noStudentsNote.hidden = classroom.students.length > 0 && !needsTeam;
   noStudentsNote.textContent =
     classroom.students.length === 0
-      ? "Add students before starting a game."
-      : "Add one more student to make a team game.";
+      ? msg("classroom_ui_need_students_start")
+      : msg("classroom_ui_need_another_student");
 
   const blockedByRoom = roomLinkOnThisPage;
   roomStartNote.hidden = !blockedByRoom;
@@ -307,7 +338,7 @@ function renderEditor() {
     classEmojiPicker,
     CLASSROOM_EMOJIS,
     classroom.emoji,
-    "Use class sticker",
+    msg("classroom_ui_use_class_sticker"),
     updateClassEmoji,
   );
   renderStudentRoster(classroom);
@@ -329,21 +360,29 @@ function selectClass(id: string) {
 
 function newClassName(): string {
   let index = classroomData.classes.length + 1;
-  let name = `Class ${index}`;
+  let name = msg("classroom_ui_class_name_number", {
+    number: formatNumber(index, locale),
+  });
   while (
     classroomData.classes.some(
       (classroom) => classroom.name.toLowerCase() === name.toLowerCase(),
     )
   ) {
     index += 1;
-    name = `Class ${index}`;
+    name = msg("classroom_ui_class_name_number", {
+      number: formatNumber(index, locale),
+    });
   }
   return name.slice(0, 24);
 }
 
 function createClass() {
   if (classroomData.classes.length >= MAX_CLASSES) {
-    setToast(`You can save up to ${MAX_CLASSES} classes on this device.`);
+    setToast(
+      msg("classroom_ui_class_limit", {
+        limit: formatNumber(MAX_CLASSES, locale),
+      }),
+    );
     return;
   }
   const classroom: ClassRoom = {
@@ -370,7 +409,7 @@ function selectStudentEmoji(emoji: string) {
     studentEmojiPicker,
     STUDENT_FACES,
     selectedStudentFace,
-    "Use student face",
+    msg("classroom_ui_use_student_face"),
     selectStudentEmoji,
   );
 }
@@ -384,7 +423,7 @@ function openStudentEditor(student: Student) {
     studentEmojiPicker,
     STUDENT_FACES,
     selectedStudentFace,
-    "Use student face",
+    msg("classroom_ui_use_student_face"),
     selectStudentEmoji,
   );
   studentDialog.showModal();
@@ -411,7 +450,7 @@ function saveStudent(event: SubmitEvent) {
   if (!classroom || !student) return;
   const name = cleanStudentName(studentNameInput.value);
   if (!name) {
-    studentError.textContent = "Enter a student name.";
+    studentError.textContent = msg("classroom_ui_student_name_required");
     studentNameInput.focus();
     return;
   }
@@ -421,7 +460,7 @@ function saveStudent(event: SubmitEvent) {
       member.name.toLowerCase() === name.toLowerCase(),
   );
   if (duplicate) {
-    studentError.textContent = "That name is already in this class.";
+    studentError.textContent = msg("classroom_ui_student_name_duplicate");
     studentNameInput.focus();
     return;
   }
@@ -432,7 +471,7 @@ function saveStudent(event: SubmitEvent) {
   nextSpotlightPlayed = [];
   studentDialog.close();
   render();
-  setToast("Student updated.");
+  setToast(msg("classroom_ui_student_updated"));
 }
 
 function removeStudent() {
@@ -449,7 +488,7 @@ function removeStudent() {
   nextSpotlightPlayed = [];
   studentDialog.close();
   render();
-  setToast("Student removed.");
+  setToast(msg("classroom_ui_student_removed"));
 }
 
 function updateClassName() {
@@ -468,7 +507,7 @@ function updateClassName() {
       member.name.toLowerCase() === limited.toLowerCase(),
   );
   if (duplicate) {
-    setToast("A class with that name already exists.");
+    setToast(msg("classroom_ui_class_name_duplicate"));
     classNameInput.value = classroom.name;
     return;
   }
@@ -478,7 +517,14 @@ function updateClassName() {
 }
 
 function createTeamPreview(classroom: ClassRoom): Team[] {
-  return makeTeams(classroom.students, clampInput(teamCountInput, 2, 6));
+  return makeTeams(classroom.students, clampInput(teamCountInput, 2, 6)).map(
+    (team, index) => ({
+      ...team,
+      name: msg("classroom_ui_team_name_number", {
+        number: formatNumber(index + 1, locale),
+      }),
+    }),
+  );
 }
 
 function renderTeamPreview(classroom: ClassRoom) {
@@ -487,7 +533,7 @@ function renderTeamPreview(classroom: ClassRoom) {
   if (!previewTeams.length) {
     const empty = document.createElement("p");
     empty.className = "preview-placeholder";
-    empty.textContent = "Add students to preview your teams.";
+    empty.textContent = msg("classroom_ui_team_preview_empty");
     teamPreview.append(empty);
     return;
   }
@@ -504,7 +550,10 @@ function renderTeamPreview(classroom: ClassRoom) {
       const move = document.createElement("button");
       move.className = "team-member-button";
       move.type = "button";
-      move.setAttribute("aria-label", `Move ${student.name} to the next team`);
+      move.setAttribute(
+        "aria-label",
+        msg("classroom_ui_move_student_aria", { name: student.name }),
+      );
       const face = document.createElement("span");
       face.setAttribute("aria-hidden", "true");
       face.textContent = student.emoji;
@@ -564,8 +613,10 @@ function addStudents(event: SubmitEvent) {
   if (!names.length) {
     setToast(
       classroom.students.length >= MAX_STUDENTS
-        ? `This class already has the ${MAX_STUDENTS}-student limit.`
-        : "No new names to add. Check the roster and try again.",
+        ? msg("classroom_ui_class_student_limit", {
+            limit: formatNumber(MAX_STUDENTS, locale),
+          })
+        : msg("classroom_ui_no_names_added"),
     );
     return;
   }
@@ -586,24 +637,42 @@ function addStudents(event: SubmitEvent) {
   rosterText.value = "";
   persistClassroom();
   render();
+  const added = msg(
+    newStudents.length === 1
+      ? "classroom_ui_added_one"
+      : "classroom_ui_added_many",
+    { count: formatNumber(newStudents.length, locale) },
+  );
+  const duplicateSummary = msg(
+    duplicates === 1
+      ? "classroom_ui_duplicate_one"
+      : "classroom_ui_duplicate_many",
+    { count: formatNumber(duplicates, locale) },
+  );
   const limitNote = overLimit
-    ? ` ${overLimit} more ${
-        overLimit === 1 ? "name was" : "names were"
-      } skipped at the ${MAX_STUDENTS}-student limit.`
+    ? ` ${msg("classroom_ui_limit_note", {
+        count: formatNumber(overLimit, locale),
+        limit: formatNumber(MAX_STUDENTS, locale),
+      })}`
     : "";
   setToast(
-    `Added ${newStudents.length} ${
-      newStudents.length === 1 ? "student" : "students"
-    } (${duplicates} ${
-      duplicates === 1 ? "duplicate" : "duplicates"
-    } skipped).${limitNote}`,
+    msg("classroom_ui_added_summary", {
+      students: added,
+      duplicates: duplicateSummary,
+      limitNote,
+    }),
   );
 }
 
 function clearRoster() {
   const classroom = currentClass();
   if (!classroom || !classroom.students.length) return;
-  if (!window.confirm(`Clear every student from ${classroom.name}?`)) return;
+  if (
+    !window.confirm(
+      msg("classroom_ui_clear_roster_confirm", { name: classroom.name }),
+    )
+  )
+    return;
   classroom.students = [];
   classroom.spotlightPlayed = [];
   previewTeams = [];
@@ -611,13 +680,18 @@ function clearRoster() {
   nextSpotlightPlayed = [];
   persistClassroom();
   render();
-  setToast("Class list cleared.");
+  setToast(msg("classroom_ui_roster_cleared"));
 }
 
 function deleteClass() {
   const classroom = currentClass();
   if (!classroom) return;
-  if (!window.confirm(`Delete ${classroom.name} and its class list?`)) return;
+  if (
+    !window.confirm(
+      msg("classroom_ui_delete_class_confirm", { name: classroom.name }),
+    )
+  )
+    return;
   classroomData.classes = classroomData.classes.filter(
     ({ id }) => id !== classroom.id,
   );
@@ -627,13 +701,13 @@ function deleteClass() {
   nextSpotlightPlayed = [];
   persistClassroom();
   render();
-  setToast("Class deleted.");
+  setToast(msg("classroom_ui_class_deleted"));
 }
 
 function spinSpotlight() {
   const classroom = currentClass();
   if (!classroom || !classroom.students.length) {
-    setToast("Add students before spinning.");
+    setToast(msg("classroom_ui_add_before_spotlight"));
     return;
   }
   const result = pickSpotlight(
@@ -671,10 +745,10 @@ function resetSpotlight() {
   spotlightPreview.replaceChildren();
   const placeholder = document.createElement("p");
   placeholder.className = "preview-placeholder";
-  placeholder.textContent = "Spin to pick students for this round.";
+  placeholder.textContent = msg("classroom_ui_spotlight_placeholder");
   spotlightPreview.append(placeholder);
   updatePlayPanel(classroom);
-  setToast("Spotlight rotation reset.");
+  setToast(msg("classroom_ui_spotlight_reset"));
 }
 
 function exportClassFile() {
@@ -693,7 +767,7 @@ function exportClassFile() {
   link.download = `guessthespeed-classes-${date}.json`;
   link.click();
   window.setTimeout(() => URL.revokeObjectURL(url), 1000);
-  setToast("Class file downloaded.");
+  setToast(msg("classroom_ui_class_file_downloaded"));
 }
 
 async function importClassFile() {
@@ -702,14 +776,12 @@ async function importClassFile() {
   try {
     const incoming = importClassroom(await file.text());
     if (!incoming) {
-      setToast(
-        "That class file could not be read. Choose a valid class JSON file.",
-      );
+      setToast(msg("classroom_ui_class_file_invalid"));
       return;
     }
     const merged = mergeClassroom(classroomData, incoming);
     if (!isClassroomData(merged)) {
-      setToast("The class file exceeds this device's class or student limit.");
+      setToast(msg("classroom_ui_class_file_limit"));
       return;
     }
     classroomData = merged;
@@ -719,27 +791,20 @@ async function importClassFile() {
     nextSpotlightPlayed = [];
     persistClassroom();
     render();
-    setToast("Class file imported and merged with your saved classes.");
+    setToast(msg("classroom_ui_class_file_imported"));
   } catch {
-    setToast("That class file could not be opened.");
+    setToast(msg("classroom_ui_class_file_open_failed"));
   } finally {
     importInput.value = "";
   }
 }
 
 function deleteAllClassData() {
-  if (
-    !window.confirm(
-      "Delete every saved class and student roster from this device?",
-    )
-  )
-    return;
+  if (!window.confirm(msg("classroom_ui_delete_all_confirm"))) return;
   try {
     localStorage.removeItem(CLASSROOM_KEY);
   } catch {
-    setToast(
-      "The browser could not clear class data. Check its storage settings.",
-    );
+    setToast(msg("classroom_ui_storage_clear_failed"));
     return;
   }
   classroomData = { version: 1, classes: [] };
@@ -748,7 +813,7 @@ function deleteAllClassData() {
   spotlightSelection = [];
   nextSpotlightPlayed = [];
   render();
-  setToast("All class data deleted from this device.");
+  setToast(msg("classroom_ui_all_data_deleted"));
 }
 
 function startClassGame() {
@@ -756,7 +821,7 @@ function startClassGame() {
   const mode = selectedMode();
   if (!classroom || !classroom.students.length) return;
   if (roomLinkOnThisPage) {
-    setToast("Leave the room before starting a class game.");
+    setToast(msg("classroom_ui_leave_room_notice"));
     return;
   }
 
@@ -811,7 +876,7 @@ function startClassGame() {
       classroom.spotlightPlayed = nextSpotlightPlayed;
       persistClassroom();
     }
-    window.location.assign("/");
+    window.location.assign(localizedPath("/", locale));
   } catch {
     if (hasSnapshot) {
       for (const [key, value] of [
@@ -825,9 +890,7 @@ function startClassGame() {
         } catch {}
       }
     }
-    setToast(
-      "The game could not start because this browser could not save its local data.",
-    );
+    setToast(msg("classroom_ui_game_save_failed"));
   }
 }
 

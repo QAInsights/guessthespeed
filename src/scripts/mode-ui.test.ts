@@ -62,6 +62,8 @@ describe("urlWithoutDevParam", () => {
   it.each([
     ["/?dev=1", "/"],
     ["/?dev=0&tv=1#x", "/?tv=1#x"],
+    ["/ta/?dev=1", "/ta/"],
+    ["/es/?dev=0&tv=1#x", "/es/?tv=1#x"],
   ])("removes dev from %s", (href, expected) => {
     expect(urlWithoutDevParam(href)).toBe(expected);
   });

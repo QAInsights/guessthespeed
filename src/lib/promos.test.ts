@@ -1,6 +1,6 @@
 /// <reference types="node" />
 
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { pickPromo, PROMOS } from "./promos";
@@ -44,9 +44,25 @@ describe("PROMOS", () => {
   });
 
   it("keeps blurbs short and promo copy free of em dashes", () => {
+    const catalogs = Object.fromEntries(
+      ["en", "ta", "es"].map((locale) => [
+        locale,
+        JSON.parse(
+          readFileSync(
+            join(process.cwd(), "messages", `${locale}.json`),
+            "utf8",
+          ),
+        ) as Record<string, string>,
+      ]),
+    );
     for (const promo of PROMOS) {
-      expect(promo.blurb.length).toBeLessThanOrEqual(110);
       expect(Object.values(promo).join("")).not.toContain("\u2014");
+      for (const locale of ["en", "ta", "es"]) {
+        expect(catalogs[locale][promo.blurbKey].length).toBeLessThanOrEqual(
+          110,
+        );
+        expect(catalogs[locale][promo.ctaKey]).toBeTruthy();
+      }
     }
   });
 });

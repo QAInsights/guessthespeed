@@ -14,7 +14,7 @@ import {
 } from "./game";
 import { isRecord } from "./guards";
 import { MAX_NAME_LENGTH, MAX_SPEED_MBPS } from "./limits";
-import { BLOCKED_NAME_MESSAGE, isBlockedName } from "./name-filter";
+import { isBlockedName } from "./name-filter";
 import type { TieMode } from "./scoring";
 
 export const ROOM_ALPHABET = "BCDFGHJKMNPQRSTVWXZ";
@@ -170,24 +170,23 @@ export function transferHost(
 ):
   | { ok: true; room: Room; newHostClientId: string }
   | { ok: false; error: string } {
-  if (!opts.isHost)
-    return { ok: false, error: "Only the host can hand over host." };
+  if (!opts.isHost) return { ok: false, error: "host_only" };
   if (room.game.phase === "testing")
     return {
       ok: false,
-      error: "Wait for the test to finish before handing over host.",
+      error: "test_in_progress",
     };
   const player = room.game.players.find(
     (candidate) => candidate.id === opts.playerId,
   );
-  if (!player) return { ok: false, error: "That player has left the room." };
+  if (!player) return { ok: false, error: "player_left" };
   if (!opts.targetOnline)
     return {
       ok: false,
-      error: "That player's phone is offline. Try again when it reconnects.",
+      error: "player_offline",
     };
   if (player.owner === opts.clientId)
-    return { ok: false, error: "Pick a player on another device." };
+    return { ok: false, error: "different_device_required" };
   return {
     ok: true,
     room: {
@@ -208,7 +207,7 @@ export function applyAction(
   opts?: { onlineOwners?: ReadonlySet<string> },
 ): { room: Room } | { error: string } {
   if (!isRecord(action) || typeof action.type !== "string")
-    return { error: "Invalid action." };
+    return { error: "invalid_action" };
 
   const game = toGameState(room.game);
   switch (action.type) {
@@ -217,25 +216,24 @@ export function applyAction(
       const emoji = shortString(action.emoji);
       const role = shortString(action.role);
       if (name === null || emoji === null || role === null)
-        return { error: "Enter a name and choose a face." };
+        return { error: "name_and_face_required" };
       if (isBlockedName(name) || isBlockedName(role) || isBlockedName(emoji))
-        return { error: BLOCKED_NAME_MESSAGE };
-      if (game.phase === "testing")
-        return { error: "Wait for the test to finish before joining." };
+        return { error: "name_blocked" };
+      if (game.phase === "testing") return { error: "test_in_progress" };
       if (
         !isHost &&
         room.game.players.some((player) => player.owner === clientId)
       )
-        return { error: "This device already has a player in the room." };
+        return { error: "device_has_player" };
       if (room.game.players.length >= MAX_PLAYERS)
-        return { error: `A room can have up to ${MAX_PLAYERS} players.` };
+        return { error: "room_full" };
 
       let id = createPlayerId();
       while (room.game.players.some((player) => player.id === id))
         id = createPlayerId();
       const nextGame = addPlayer(game, name, emoji, role, id);
       const added = nextGame.players.find((player) => player.id === id);
-      if (!added) return { error: "Could not add this player." };
+      if (!added) return { error: "player_add_failed" };
       return {
         room: {
           ...room,
@@ -249,18 +247,16 @@ export function applyAction(
     }
     case "edit": {
       const player = findPlayer(room, action.id);
-      if (!player) return { error: "Player not found." };
-      if (player.owner !== clientId)
-        return { error: "You can only edit your own player." };
-      if (game.phase === "testing")
-        return { error: "Players cannot be edited during a test." };
+      if (!player) return { error: "player_not_found" };
+      if (player.owner !== clientId) return { error: "edit_own_only" };
+      if (game.phase === "testing") return { error: "test_in_progress" };
       const name = validName(action.name);
       const emoji = shortString(action.emoji);
       const role = shortString(action.role);
       if (name === null || emoji === null || role === null)
-        return { error: "Enter a name and choose a face." };
+        return { error: "name_and_face_required" };
       if (isBlockedName(name) || isBlockedName(role) || isBlockedName(emoji))
-        return { error: BLOCKED_NAME_MESSAGE };
+        return { error: "name_blocked" };
       return updateRoomGame(
         room,
         updatePlayer(game, player.id, { name, emoji, role }),
@@ -269,14 +265,12 @@ export function applyAction(
     }
     case "guess": {
       const player = findPlayer(room, action.id);
-      if (!player) return { error: "Player not found." };
-      if (player.owner !== clientId)
-        return { error: "You can only guess for your own player." };
-      if (game.phase !== "guessing")
-        return { error: "Guesses are closed for this round." };
+      if (!player) return { error: "player_not_found" };
+      if (player.owner !== clientId) return { error: "guess_own_only" };
+      if (game.phase !== "guessing") return { error: "guesses_closed" };
       if (!validSpeed(action.down) || !validSpeed(action.up))
         return {
-          error: `Enter speeds between 0 and ${MAX_SPEED_MBPS} Mbps.`,
+          error: "invalid_speed",
         };
       return updateRoomGame(
         room,
@@ -289,20 +283,17 @@ export function applyAction(
     }
     case "unlock": {
       const player = findPlayer(room, action.id);
-      if (!player) return { error: "Player not found." };
-      if (player.owner !== clientId)
-        return { error: "You can only unlock your own player." };
-      if (game.phase !== "guessing")
-        return { error: "Guesses are closed for this round." };
+      if (!player) return { error: "player_not_found" };
+      if (player.owner !== clientId) return { error: "unlock_own_only" };
+      if (game.phase !== "guessing") return { error: "guesses_closed" };
       return updateRoomGame(room, unlockGuess(game, player.id), now);
     }
     case "remove": {
       const player = findPlayer(room, action.id);
-      if (!player) return { error: "Player not found." };
+      if (!player) return { error: "player_not_found" };
       if (!isHost && player.owner !== clientId)
-        return { error: "You can only remove your own player." };
-      if (game.phase === "testing")
-        return { error: "Players cannot be removed during a test." };
+        return { error: "remove_own_only" };
+      if (game.phase === "testing") return { error: "test_in_progress" };
       const updated = updateRoomGame(room, removePlayer(game, player.id), now);
       return {
         room: {
@@ -315,11 +306,10 @@ export function applyAction(
       };
     }
     case "settings": {
-      if (!isHost) return { error: "Only the host can change settings." };
+      if (!isHost) return { error: "host_only" };
       if (!validRounds(action.rounds) || !validTieMode(action.tieMode))
-        return { error: "Invalid game settings." };
-      if (game.phase === "testing")
-        return { error: "Settings cannot change during a test." };
+        return { error: "invalid_settings" };
+      if (game.phase === "testing") return { error: "test_in_progress" };
       return updateRoomGame(
         room,
         {
@@ -334,14 +324,13 @@ export function applyAction(
       );
     }
     case "setTester": {
-      if (!isHost) return { error: "Only the host can choose the tester." };
-      if (game.phase === "testing")
-        return { error: "The tester cannot change during a test." };
+      if (!isHost) return { error: "host_only" };
+      if (game.phase === "testing") return { error: "test_in_progress" };
       if (
         action.id !== null &&
         !room.game.players.some((player) => player.id === action.id)
       )
-        return { error: "The selected tester is not in this room." };
+        return { error: "tester_not_found" };
       return {
         room: {
           ...room,
@@ -351,11 +340,9 @@ export function applyAction(
       };
     }
     case "rotate": {
-      if (!isHost) return { error: "Only the host can change rotation." };
-      if (game.phase === "testing")
-        return { error: "Rotation cannot change during a test." };
-      if (typeof action.on !== "boolean")
-        return { error: "Invalid rotation setting." };
+      if (!isHost) return { error: "host_only" };
+      if (game.phase === "testing") return { error: "test_in_progress" };
+      if (typeof action.on !== "boolean") return { error: "invalid_rotation" };
       return {
         room: {
           ...room,
@@ -365,30 +352,26 @@ export function applyAction(
       };
     }
     case "start": {
-      if (!canRunTest(room, clientId, isHost))
-        return { error: "Only the assigned tester can start the test." };
-      if (game.phase !== "guessing")
-        return { error: "The game is not ready to start." };
+      if (!canRunTest(room, clientId, isHost)) return { error: "tester_only" };
+      if (game.phase !== "guessing") return { error: "game_not_ready" };
       if (!game.players.some((player) => player.locked))
-        return { error: "At least one player must lock a guess first." };
+        return { error: "guess_required" };
       return updateRoomGame(room, { ...game, phase: "testing" }, now);
     }
     case "result": {
-      if (!canRunTest(room, clientId, isHost))
-        return { error: "Only the assigned tester can submit the result." };
-      if (game.phase !== "testing")
-        return { error: "There is no test in progress." };
+      if (!canRunTest(room, clientId, isHost)) return { error: "tester_only" };
+      if (game.phase !== "testing") return { error: "test_not_running" };
       if (
         (typeof action.down === "number" && action.down <= 0) ||
         (typeof action.up === "number" && action.up <= 0)
       )
-        return { error: "The speed test returned no result." };
+        return { error: "result_missing" };
       if (!validSpeed(action.down) || !validSpeed(action.up))
         return {
-          error: `Enter speeds between 0 and ${MAX_SPEED_MBPS} Mbps.`,
+          error: "invalid_speed",
         };
       if (action.ping !== undefined && !validSpeed(action.ping))
-        return { error: "Enter a valid ping." };
+        return { error: "invalid_ping" };
       const result = applyResult(game, {
         down: action.down,
         up: action.up,
@@ -398,15 +381,13 @@ export function applyAction(
     }
     case "abort": {
       if (!canRunTest(room, clientId, isHost) && !isHost)
-        return { error: "Only the tester or host can stop the test." };
-      if (game.phase !== "testing")
-        return { error: "There is no test in progress." };
+        return { error: "tester_or_host_only" };
+      if (game.phase !== "testing") return { error: "test_not_running" };
       return updateRoomGame(room, { ...game, phase: "guessing" }, now);
     }
     case "next": {
-      if (!isHost) return { error: "Only the host can advance the round." };
-      if (game.phase !== "results")
-        return { error: "The current round has no result yet." };
+      if (!isHost) return { error: "host_only" };
+      if (game.phase !== "results") return { error: "result_missing" };
       const next = nextRound(game);
       const updated = updateRoomGame(room, next, now).room;
       if ((room.rotateTester ?? false) && next.phase === "guessing") {
@@ -428,15 +409,15 @@ export function applyAction(
       return { room: updated };
     }
     case "newGame": {
-      if (!isHost) return { error: "Only the host can start a new game." };
+      if (!isHost) return { error: "host_only" };
       if (game.phase === "testing")
         return {
-          error: "Wait for the test to finish before starting a new game.",
+          error: "test_in_progress",
         };
       return updateRoomGame(room, newGame(game), now);
     }
     default:
-      return { error: "Unknown action." };
+      return { error: "unknown_action" };
   }
 }
 

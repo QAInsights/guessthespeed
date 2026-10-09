@@ -1,0 +1,1103 @@
+---
+import { Icon } from "astro-icon/components";
+import Base from "../layouts/Base.astro";
+import { ROLES } from "../lib/game";
+import { MAX_NAME_LENGTH } from "../lib/limits";
+import { TEAM_FACES } from "../lib/team";
+import { t } from "../lib/messages";
+import { LOCALE_INFO, localizedPath, type Locale } from "../lib/i18n";
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const msg = (
+  key: Parameters<typeof t>[0],
+  params: Record<string, string | number | boolean> = {},
+) => t(key, params, locale);
+const roleChoices = ROLES.map((choice) => ({
+  ...choice,
+  role: msg(`role_${choice.role.toLowerCase()}` as Parameters<typeof t>[0]),
+}));
+const teamFaceChoices = TEAM_FACES.map((choice) => ({
+  ...choice,
+  role: msg(
+    `role_${choice.role.toLowerCase().replaceAll(" ", "_").replaceAll("-", "")}` as Parameters<
+      typeof t
+    >[0],
+  ),
+}));
+const homeTitle = msg("home_title");
+const homeDescription = msg("home_description");
+const homeSchema: Record<string, unknown>[] = [
+  {
+    "@type": "WebApplication",
+    name: "Guess the Speed",
+    url: `https://guessthespeed.com${LOCALE_INFO[locale].home}`,
+    description: homeDescription,
+    applicationCategory: "GameApplication",
+    genre: ["Family game", "Party game", "Filler game"],
+    operatingSystem: "Any",
+    browserRequirements: "Requires JavaScript and a modern browser",
+    isAccessibleForFree: true,
+    inLanguage: locale,
+    offers: { "@type": "Offer", price: 0, priceCurrency: "USD" },
+    author: { "@id": "https://guessthespeed.com/#author" },
+    publisher: { "@id": "https://guessthespeed.com/#author" },
+    screenshot: [
+      "https://guessthespeed.com/screenshots/home-wide.png",
+      "https://guessthespeed.com/screenshots/home-narrow.png",
+    ],
+    featureList: [
+      "Run a real speed test against Cloudflare’s network in the browser.",
+      "Play with one or more players on one screen, with room-code games supporting up to 12 players.",
+      "Use room codes to play on separate phones.",
+      "The room server hides guesses from other players until the test result.",
+      "Award 3, 2, and 1 place points plus a spot-on bonus for each speed guess within 5%.",
+      "Require an average miss of 50% or less to earn place points.",
+      "Choose light, dark, or seasonal themes.",
+      "Play with optional sound effects.",
+      "Play without accounts or cookies.",
+      "Play a quick round in about two minutes as a filler game between longer games.",
+    ],
+  },
+];
+const overheard: { face: string; quote: string; who: string; note: string }[] =
+  [
+    {
+      face: "👩",
+      quote: msg("home_quote_parent"),
+      who: msg("home_quote_parent_who"),
+      note: msg("home_quote_round"),
+    },
+    {
+      face: "🧒",
+      quote: msg("home_quote_child"),
+      who: msg("home_quote_child_who"),
+      note: msg("home_quote_before_win"),
+    },
+    {
+      face: "🥱",
+      quote: msg("home_quote_one_more"),
+      who: msg("home_quote_everyone"),
+      note: msg("home_quote_late"),
+    },
+    {
+      face: "😎",
+      quote: msg("home_quote_grandpa"),
+      who: msg("home_quote_sister"),
+      note: msg("home_quote_strategy"),
+    },
+  ];
+---
+
+<Base
+  title={homeTitle}
+  description={homeDescription}
+  locale={locale}
+  translatedPage="/"
+  schema={homeSchema}
+  modeSwitch="game"
+>
+  <main class="wrap game-main">
+    <section class="stage mode-hero" aria-label={msg("home_hero_label")}>
+      <div class="mode-hero-left">
+        <div class="intro mode-hero-copy">
+          <div class="round mode-hero-pill" data-round-banner>
+            <Icon name="ph:flag-checkered-fill" aria-hidden="true" />
+            <span data-round-label>
+              {msg("home_round_one", { round: 1, total: 3 })}
+            </span>
+            <span class="dev-mode-pill-label" aria-hidden="true">
+              {msg("home_dev_badge")}
+            </span>
+          </div>
+          <h1 class="display mode-hero-heading" data-game-title>
+            {msg("home_game_title")}
+            <br />
+            <em data-game-team-headline>{msg("home_team_family")}</em>
+          </h1>
+          <h2 class="display mode-hero-heading dev-title" data-dev-title hidden>
+            {msg("home_dev_title")}
+          </h2>
+          <p class="mode-hero-lede" data-game-lede>
+            {msg("home_game_lede")}
+          </p>
+          <p class="dev-lede mode-hero-lede" data-dev-lede hidden>
+            {msg("home_dev_lede")}
+          </p>
+          <p class="play-stat" data-play-stat hidden>
+            <a href="/stats/">
+              <span>
+                🎉 <span data-play-stat-text></span>
+              </span>
+            </a>
+          </p>
+        </div>
+
+        <div class="stats-column mode-hero-stats">
+          <div class="stats" aria-label={msg("home_latest_results")}>
+            <div class="stat stk">
+              <span>
+                <Icon name="ph:timer-fill" />
+                {msg("home_ping")}
+              </span>
+              <div>
+                <b data-result="ping">-</b>
+                <small>ms</small>
+              </div>
+            </div>
+            <div class="stat stk">
+              <span>
+                <Icon name="ph:arrow-down-fill" />
+                {msg("home_download")}
+              </span>
+              <div class="stat-result">
+                <div>
+                  <b data-result="down">-</b>
+                  <small>Mbps</small>
+                </div>
+                <a
+                  class="plan-chip"
+                  data-plan-chip="down"
+                  href="/what-is-a-good-internet-speed/#less-than-plan"
+                  hidden
+                ></a>
+              </div>
+            </div>
+            <div class="stat stk">
+              <span>
+                <Icon name="ph:arrow-up-fill" />
+                {msg("home_upload")}
+              </span>
+              <div class="stat-result">
+                <div>
+                  <b data-result="up">-</b>
+                  <small>Mbps</small>
+                </div>
+                <a
+                  class="plan-chip"
+                  data-plan-chip="up"
+                  href="/what-is-a-good-internet-speed/#less-than-plan"
+                  hidden
+                ></a>
+              </div>
+            </div>
+          </div>
+          <button class="plan-nudge" data-plan-nudge type="button" hidden>
+            <Icon name="ph:plus-bold" aria-hidden="true" />
+            {msg("home_add_plan_nudge")}
+          </button>
+        </div>
+      </div>
+
+      <div class="mode-hero-visual">
+        <div class="gauge-card stk">
+          <div class="gauge" data-gauge>
+            <svg
+              viewBox="0 0 400 320"
+              role="img"
+              aria-label={msg("home_live_gauge")}
+            >
+              <path
+                class="track-o"
+                data-arc
+                data-cx="200"
+                data-cy="185"
+                data-r="150"
+                data-start="-120"
+                data-sweep="240"
+              ></path>
+              <path
+                class="track"
+                data-arc
+                data-cx="200"
+                data-cy="185"
+                data-r="150"
+                data-start="-120"
+                data-sweep="240"
+              ></path>
+              <path
+                class="gauge-fill"
+                data-arc
+                data-cx="200"
+                data-cy="185"
+                data-r="150"
+                data-start="-120"
+                data-sweep="240"
+              ></path>
+              <g
+                data-ticks
+                data-cx="200"
+                data-cy="185"
+                data-r="108"
+                data-start="-120"
+                data-sweep="240"
+              ></g>
+              <g class="gauge-needle">
+                <path class="needle" d="M194 185 L200 80 L206 185 Z"></path>
+                <circle class="hub" cx="200" cy="185" r="15"></circle>
+              </g>
+            </svg>
+            <div class="readout">
+              <span class="mode" data-mode>
+                {msg("home_download")}
+              </span>
+              <span class="num" data-live>
+                0
+              </span>
+              <span class="unit" data-unit>
+                Mbps
+              </span>
+            </div>
+          </div>
+          <div class="phase-status">
+            <span
+              class="live-dot"
+              data-live-dot
+              aria-hidden="true"
+              hidden
+            ></span>
+            <div class="phase" data-phase-label aria-live="polite">
+              <span data-phase-text>{msg("home_ready")}</span>
+              <span
+                class="elapsed"
+                data-elapsed
+                aria-hidden="true"
+                hidden
+              ></span>
+              <span class="slow-hint" data-slow-hint hidden>
+                {msg("game_big_file_hint")}
+              </span>
+            </div>
+          </div>
+          <div
+            class="test-progress"
+            data-test-progress
+            role="progressbar"
+            aria-label={msg("game_progress_aria")}
+            aria-valuemin="0"
+            aria-valuemax="13"
+            aria-valuenow="0"
+            hidden
+          >
+            <div class="test-progress-fill" data-progress-fill></div>
+          </div>
+          <button class="go" type="button" data-start-btn disabled>
+            <Icon name="ph:lightning-fill" />
+            <span data-start-label>{msg("home_waiting_guesses")}</span>
+          </button>
+          <p class="room-waiting" data-room-waiting hidden></p>
+          <div
+            class="winner"
+            data-winner-banner
+            hidden
+            aria-live="polite"
+          ></div>
+          <p class="error-note" data-error-note hidden></p>
+        </div>
+        <p class="tv-shortcut-hint" aria-hidden="true">
+          <span>
+            <kbd>Space</kbd> {msg("shortcut_start")}
+          </span>
+          <span>·</span>
+          <span>
+            <kbd>N</kbd> {msg("shortcut_next")}
+          </span>
+          <span>·</span>
+          <span>
+            <kbd>F</kbd> {msg("shortcut_fullscreen")}
+          </span>
+        </p>
+      </div>
+      <span
+        class="sr"
+        data-reveal-announcement
+        aria-live="polite"
+        aria-atomic="true"
+      ></span>
+      <article
+        class="wifi-history-card stk"
+        data-history-card
+        hidden
+        aria-labelledby="wifi-history-title"
+      >
+        <div class="wifi-history-head">
+          <h2 class="display" id="wifi-history-title">
+            {msg("history_title")}
+          </h2>
+          <p class="wifi-history-summary" data-history-summary></p>
+        </div>
+        <svg
+          class="wifi-history-chart"
+          data-history-chart
+          role="img"
+          viewBox="0 0 600 180"
+        ></svg>
+        <p class="wifi-history-footer">
+          <span>{msg("history_saved")}</span>
+          <button class="wifi-history-clear" type="button" data-clear-history>
+            {msg("history_clear")}
+          </button>
+        </p>
+      </article>
+    </section>
+
+    <section
+      class="room-bar stk"
+      data-room-bar
+      aria-label={msg("room_entry_title")}
+      hidden
+    >
+      <div class="room-bar-code">
+        <span>{msg("room_code_label")}</span>
+        <strong data-room-code></strong>
+      </div>
+      <div class="room-bar-actions">
+        <div class="room-picker" data-room-tester-control hidden>
+          <button
+            class="guess-button room-picker-trigger"
+            type="button"
+            data-room-tester-trigger
+            aria-label={msg("room_test_runner")}
+            aria-haspopup="listbox"
+            aria-expanded="false"
+            aria-controls="room-tester-menu"
+          >
+            <span>{msg("room_test_runner")}</span>
+            <strong data-room-tester-value>{msg("room_this_screen")}</strong>
+            <Icon name="ph:caret-down-bold" aria-hidden="true" />
+          </button>
+          <div
+            class="room-picker-menu"
+            id="room-tester-menu"
+            data-room-tester-menu
+            role="listbox"
+            aria-label={msg("room_test_runner")}
+            hidden
+          ></div>
+        </div>
+        <div class="room-picker" data-room-host-control hidden>
+          <button
+            class="guess-button room-picker-trigger"
+            type="button"
+            data-room-host-trigger
+            aria-label={msg("room_handover_host")}
+            aria-haspopup="listbox"
+            aria-expanded="false"
+            aria-controls="room-host-menu"
+          >
+            <span>{msg("room_handover_host")}</span>
+            <strong data-room-host-value>{msg("room_choose_player")}</strong>
+            <Icon name="ph:caret-down-bold" aria-hidden="true" />
+          </button>
+          <div
+            class="room-picker-menu"
+            id="room-host-menu"
+            data-room-host-menu
+            role="listbox"
+            aria-label={msg("room_choose_new_host")}
+            hidden
+          ></div>
+        </div>
+        <span class="room-tester-chip" data-room-tester-chip hidden></span>
+        <label class="room-rotate-toggle" data-room-rotate-control hidden>
+          <input type="checkbox" role="switch" data-room-rotate-toggle />
+          <span class="room-rotate-track" aria-hidden="true"></span>
+          <span>{msg("room_rotate_round")}</span>
+        </label>
+        <button
+          class="guess-button room-stop-test"
+          type="button"
+          data-room-stop-test
+          hidden
+        >
+          {msg("room_stop_test")}
+        </button>
+        <button class="guess-button" type="button" data-show-room-qr>
+          {msg("room_show_qr")}
+        </button>
+        <button class="guess-button" type="button" data-copy-room-link>
+          {msg("room_copy_link")}
+        </button>
+        <span class="room-connection" data-room-connection aria-live="polite">
+          {msg("room_connection_reconnecting")}
+        </span>
+        <a class="ghost" href={LOCALE_INFO[locale].home} data-leave-room>
+          {msg("room_leave")}
+        </a>
+      </div>
+    </section>
+
+    <section class="dev-console" aria-labelledby="dev-console-title">
+      <div class="dev-console-head">
+        <div>
+          <h2 class="display" id="dev-console-title">
+            {msg("dev_title")}
+          </h2>
+          <p>{msg("dev_description")}</p>
+        </div>
+        <div class="dev-export">
+          <button class="guess-button" type="button" data-copy-json>
+            {msg("dev_copy_json")}
+          </button>
+          <button class="guess-button" type="button" data-download-json>
+            {msg("dev_download_json")}
+          </button>
+          <span data-copy-status aria-live="polite"></span>
+        </div>
+      </div>
+      <div class="dev-panels">
+        <article class="dev-panel stk" data-panel="connection">
+          <h3>{msg("dev_connection")}</h3>
+          <div data-connection-content>
+            <p>{msg("dev_choose_mode")}</p>
+          </div>
+        </article>
+        <article class="dev-panel stk" data-panel="summary">
+          <h3>{msg("dev_summary")}</h3>
+          <div data-summary-content>
+            <p>{msg("dev_run_test_prompt")}</p>
+          </div>
+        </article>
+        <article class="dev-panel stk" data-panel="latency">
+          <h3>{msg("dev_latency")}</h3>
+          <div data-latency-content>
+            <p>{msg("dev_latency_prompt")}</p>
+          </div>
+        </article>
+        <article class="dev-panel stk dev-panel-wide" data-panel="requests">
+          <h3>{msg("dev_requests")}</h3>
+          <div data-requests-content>
+            <p>{msg("dev_requests_prompt")}</p>
+          </div>
+        </article>
+        <article class="dev-panel stk dev-panel-wide" data-panel="percentile">
+          <h3>{msg("dev_percentile")}</h3>
+          <div data-percentile-content>
+            <p>{msg("dev_percentile_prompt")}</p>
+          </div>
+        </article>
+        <article class="dev-panel stk" data-panel="config">
+          <h3>{msg("dev_config")}</h3>
+          <div data-config-content></div>
+        </article>
+        <article class="dev-panel stk" data-panel="browser">
+          <h3>{msg("dev_browser")}</h3>
+          <div data-browser-content></div>
+        </article>
+      </div>
+    </section>
+
+    <aside class="locale-hint stk" data-locale-hint hidden>
+      <p data-locale-hint-copy="ta">
+        <a href="/ta/">{msg("language_hint_ta")}</a>
+      </p>
+      <p data-locale-hint-copy="es">
+        <a href="/es/">{msg("language_hint_es")}</a>
+      </p>
+      <button
+        type="button"
+        data-dismiss-locale-hint
+        aria-label={msg("language_hint_dismiss")}
+      >
+        ×
+      </button>
+    </aside>
+
+    <section
+      class="room-entry stk"
+      data-room-entry
+      aria-labelledby="room-entry-title"
+    >
+      <div class="room-entry-copy">
+        <span class="room-kicker">{msg("room_entry_title")}</span>
+        <h2 class="display" id="room-entry-title">
+          {msg("room_entry_heading")}
+        </h2>
+        <p>{msg("room_entry_text")}</p>
+        <p class="room-work-link">
+          <a href={localizedPath("/work/", locale)}>{msg("room_team_link")}</a>
+        </p>
+      </div>
+      <div class="room-entry-actions">
+        <button class="go" type="button" data-create-room>
+          {msg("room_create")}
+        </button>
+        <form class="room-join-form" data-home-join-form>
+          <label class="sr" for="room-code-input">
+            {msg("room_code_label")}
+          </label>
+          <input
+            class="dialog-input"
+            id="room-code-input"
+            name="code"
+            type="text"
+            maxlength="9"
+            inputmode="text"
+            autocomplete="off"
+            placeholder={msg("room_code_placeholder")}
+          />
+          <button class="guess-button" type="submit">
+            {msg("room_join_code")}
+          </button>
+        </form>
+        <p
+          class="room-entry-error"
+          data-room-entry-error
+          role="status"
+          hidden
+        ></p>
+      </div>
+    </section>
+
+    <section aria-labelledby="players-heading" data-game-section>
+      <aside
+        class="classroom-session-banner stk"
+        data-classroom-banner
+        aria-label={msg("mode_classroom")}
+        hidden
+      >
+        <div class="classroom-session-copy">
+          <p
+            class="classroom-session-chip"
+            data-classroom-chip
+            aria-live="polite"
+          ></p>
+          <p class="classroom-session-note" data-classroom-room-note hidden>
+            {msg("classroom_room_note")}
+          </p>
+        </div>
+        <div class="classroom-session-actions">
+          <a class="guess-button" href={localizedPath("/classroom/", locale)}>
+            {msg("classroom_menu")}
+          </a>
+          <button
+            class="ghost classroom-end-button"
+            type="button"
+            data-end-class
+          >
+            {msg("classroom_end")}
+          </button>
+        </div>
+      </aside>
+      <div class="sec-head">
+        <h2 id="players-heading" class="display">
+          {msg("home_player_section")}
+        </h2>
+        <div class="section-actions">
+          <button class="ghost" type="button" data-reset>
+            {msg("home_reset_scores")}
+          </button>
+          <div
+            class="seg"
+            data-view-toggle
+            aria-label={msg("home_player_view")}
+          >
+            <button type="button" data-view="grid" aria-pressed="true">
+              <Icon name="ph:squares-four-fill" />
+              {msg("home_cards")}
+            </button>
+            <button type="button" data-view="table" aria-pressed="false">
+              <Icon name="ph:list-bold" />
+              {msg("home_table")}
+            </button>
+          </div>
+        </div>
+      </div>
+      <div data-players aria-live="polite">
+        <div class="p-empty">
+          <span>🏁</span>
+          <p>{msg("home_add_first_player")}</p>
+        </div>
+      </div>
+
+      <button
+        class="guess-button tv-add-toggle"
+        type="button"
+        data-tv-add-toggle
+        aria-expanded="false"
+        aria-controls="add-player-form"
+        hidden
+      >
+        <Icon name="ph:plus-bold" />
+        {msg("home_add_player")}
+      </button>
+      <form class="add stk" id="add-player-form" data-add-form>
+        <div>
+          <label class="lbl" for="player-name">
+            {msg("home_player_name")}
+          </label>
+          <input
+            id="player-name"
+            name="name"
+            maxlength={MAX_NAME_LENGTH}
+            autocomplete="off"
+            placeholder={msg("home_name_placeholder")}
+            required
+          />
+          <p class="room-join-error" data-add-error role="status" hidden></p>
+        </div>
+        <fieldset class="role-fieldset">
+          <legend class="lbl">{msg("home_pick_face")}</legend>
+          <div data-emoji-picker>
+            {roleChoices.map((choice, index) => (
+              <label title={choice.role}>
+                <input
+                  type="radio"
+                  name="emoji"
+                  value={index}
+                  checked={index === 0}
+                />
+                <span>{choice.emoji}</span>
+                <small>{choice.role}</small>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+        <button class="go" type="submit">
+          <Icon name="ph:plus-bold" />
+          {msg("home_add_player")}
+        </button>
+      </form>
+    </section>
+
+    <section class="how" aria-labelledby="how-round-heading">
+      <div>
+        <h2 id="how-round-heading" class="display">
+          {msg("home_round_how_title")}
+        </h2>
+        <ol>
+          <li>
+            <b>1</b>
+            <span>{msg("home_round_step_one")}</span>
+          </li>
+          <li>
+            <b>2</b>
+            <span>{msg("home_round_step_two")}</span>
+          </li>
+          <li>
+            <b>3</b>
+            <span>{msg("home_round_step_three")}</span>
+          </li>
+        </ol>
+        <p class="learn-more">
+          {msg("home_learn_more")}{" "}
+          <a href="/how-it-works/">{msg("footer_how_it_works")}</a>,{" "}
+          <a href="/internet-speed-101/">{msg("footer_internet_101")}</a>,{" "}
+          <a href="/speed-test-game/">{msg("footer_speed_test_game")}</a>,{" "}
+          <a href="/family-game-night-ideas/">
+            {msg("footer_game_night_ideas")}
+          </a>
+          , {msg("home_more_and")}{" "}
+          <a href="/internet-speed-lesson-for-kids/">
+            {msg("footer_classroom_lesson")}
+          </a>
+          .
+        </p>
+      </div>
+      <p class="note stk">
+        <strong>{msg("home_why_both")}</strong> {msg("home_why_both_text")}
+      </p>
+    </section>
+
+    <section class="overheard" aria-labelledby="overheard-title">
+      <div class="overheard-head">
+        <span class="overheard-kicker">{msg("home_overheard")}</span>
+        <h2 id="overheard-title" class="display">
+          {msg("home_reviews_title")}
+        </h2>
+        <p>{msg("home_reviews_intro")}</p>
+      </div>
+      <div class="overheard-grid">
+        {overheard.map((q) => (
+          <figure class="quote-card stk">
+            <blockquote>
+              <p>{q.quote}</p>
+            </blockquote>
+            <figcaption>
+              <span class="quote-face" aria-hidden="true">
+                {q.face}
+              </span>
+              <span>
+                <b>{q.who}</b>
+                <small>{q.note}</small>
+              </span>
+            </figcaption>
+          </figure>
+        ))}
+      </div>
+    </section>
+
+    <aside class="story-teaser note stk" aria-labelledby="story-teaser-title">
+      <h2 id="story-teaser-title">{msg("home_story_title")}</h2>
+      <p>{msg("home_story_text")}</p>
+      <a href="/story/">{msg("home_story_link")}</a>
+    </aside>
+
+    <aside class="classroom-teaser stk" aria-label={msg("mode_classroom")}>
+      <p>
+        {msg("home_classroom_teaser")}{" "}
+        <a href={localizedPath("/classroom/", locale)}>{msg("home_classroom_link")}</a>.
+      </p>
+    </aside>
+  </main>
+
+  <dialog
+    class="sticker-dialog"
+    data-guess-dialog
+    aria-labelledby="guess-title"
+  >
+    <div class="dialog-inner">
+      <div class="dialog-head">
+        <h2 id="guess-title" class="display">
+          {msg("dialog_guess_title")}
+        </h2>
+        <button
+          class="dialog-close"
+          type="button"
+          data-close-guess
+          aria-label={msg("dialog_guess_close")}
+        >
+          <Icon name="ph:x-bold" />
+        </button>
+      </div>
+      <div class="guess-person">
+        <span data-guess-emoji>🙂</span>
+        <b data-guess-player>{msg("room_role_player")}</b>
+      </div>
+      <form class="dialog-form" data-guess-form>
+        <label class="dialog-field">
+          {msg("home_download")}
+          <input
+            class="dialog-input"
+            name="down"
+            type="number"
+            inputmode="decimal"
+            min="0"
+            step="any"
+            placeholder={msg("dialog_download_guess")}
+          />
+          <small>{msg("dialog_download_help")}</small>
+        </label>
+        <label class="dialog-field">
+          {msg("home_upload")}
+          <input
+            class="dialog-input"
+            name="up"
+            type="number"
+            inputmode="decimal"
+            min="0"
+            step="any"
+            placeholder={msg("dialog_download_guess")}
+          />
+          <small>{msg("dialog_upload_help")}</small>
+        </label>
+        <p class="guess-hint">{msg("dialog_guess_hidden")}</p>
+        <div class="dialog-actions">
+          <button class="go" type="submit">
+            <Icon name="ph:lock-key-fill" />
+            {msg("dialog_lock_guess")}
+          </button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <dialog
+    class="sticker-dialog"
+    data-start-confirm-dialog
+    aria-labelledby="start-confirm-title"
+  >
+    <div class="dialog-inner">
+      <div class="dialog-head">
+        <h2 id="start-confirm-title" class="display">
+          {msg("dialog_start_anyway_title")}
+        </h2>
+      </div>
+      <p class="start-confirm-message" data-start-confirm-message></p>
+      <p class="start-confirm-note">{msg("dialog_start_anyway_note")}</p>
+      <div class="dialog-actions">
+        <button class="go" type="button" data-start-anyway>
+          {msg("dialog_start_anyway")}
+        </button>
+        <button class="guess-button" type="button" data-wait-for-them>
+          {msg("dialog_wait_for_them")}
+        </button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog
+    class="sticker-dialog room-join-dialog"
+    data-room-join-dialog
+    aria-labelledby="room-join-title"
+  >
+    <div class="dialog-inner">
+      <div class="dialog-head">
+        <h2 id="room-join-title" class="display">
+          {msg("dialog_join_title")}
+        </h2>
+        <a
+          class="dialog-close"
+          href={LOCALE_INFO[locale].home}
+          aria-label={msg("dialog_leave_room")}
+        >
+          <Icon name="ph:x-bold" />
+        </a>
+      </div>
+      <p class="room-join-code">
+        <span data-room-word>{msg("dialog_room_code", { code: "" })}</span>
+        <strong data-room-join-code></strong>
+      </p>
+      <form class="dialog-form" data-room-join-form>
+        <label class="dialog-field">
+          {msg("dialog_your_name")}
+          <input
+            class="dialog-input"
+            name="name"
+            type="text"
+            maxlength={MAX_NAME_LENGTH}
+            autocomplete="off"
+            required
+          />
+        </label>
+        <fieldset class="edit-role-fieldset">
+          <legend class="lbl">{msg("dialog_pick_face")}</legend>
+          <div data-room-emoji-picker>
+            <div data-room-face-set="family">
+              {roleChoices.map((choice, index) => (
+                <label title={choice.role}>
+                  <input
+                    type="radio"
+                    name="emoji"
+                    value={index}
+                    checked={index === 0}
+                  />
+                  <span>{choice.emoji}</span>
+                  <small>{choice.role}</small>
+                </label>
+              ))}
+            </div>
+            <div data-room-face-set="team" hidden>
+              {teamFaceChoices.map((choice, index) => (
+                <label title={choice.role}>
+                  <input type="radio" name="emoji" value={index} />
+                  <span>{choice.emoji}</span>
+                  <small>{choice.role}</small>
+                </label>
+              ))}
+            </div>
+          </div>
+        </fieldset>
+        <p
+          class="room-join-error"
+          data-room-join-error
+          role="status"
+          hidden
+        ></p>
+        <div class="dialog-actions">
+          <button class="go" type="submit">
+            <Icon name="ph:user-plus-fill" />
+            {msg("dialog_join_game")}
+          </button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <dialog
+    class="sticker-dialog"
+    data-room-host-dialog
+    aria-labelledby="room-host-title"
+  >
+    <div class="dialog-inner">
+      <div class="dialog-head">
+        <h2 id="room-host-title" class="display">
+          {msg("dialog_host_title")}
+        </h2>
+        <button
+          class="dialog-close"
+          type="button"
+          data-close-host-transfer
+          aria-label={msg("dialog_host_close")}
+        >
+          <Icon name="ph:x-bold" />
+        </button>
+      </div>
+      <p data-room-host-message></p>
+      <div class="dialog-actions">
+        <button class="go" type="button" data-confirm-host-transfer>
+          {msg("dialog_host_confirm")}
+        </button>
+        <button class="guess-button" type="button" data-cancel-host-transfer>
+          {msg("dialog_cancel")}
+        </button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog
+    class="sticker-dialog room-qr-dialog"
+    data-room-qr-dialog
+    aria-labelledby="room-qr-title"
+  >
+    <div class="dialog-inner">
+      <div class="dialog-head">
+        <h2 id="room-qr-title" class="display">
+          {msg("dialog_scan_join")}
+        </h2>
+        <button
+          class="dialog-close"
+          type="button"
+          data-close-room-qr
+          aria-label={msg("dialog_qr_close")}
+        >
+          <Icon name="ph:x-bold" />
+        </button>
+      </div>
+      <div class="room-qr-image" data-room-qr-image></div>
+      <p class="room-qr-code">
+        {msg("dialog_room_code_label")} <strong data-room-qr-code></strong>
+      </p>
+      <button class="go" type="button" data-copy-room-qr-link>
+        {msg("dialog_copy_link")}
+      </button>
+    </div>
+  </dialog>
+
+  <dialog
+    class="sticker-dialog room-ended-dialog"
+    data-room-ended-dialog
+    aria-labelledby="room-ended-title"
+  >
+    <div class="dialog-inner">
+      <div class="dialog-head">
+        <h2 id="room-ended-title" class="display">
+          {msg("dialog_room_ended")}
+        </h2>
+        <button
+          class="dialog-close"
+          type="button"
+          data-close-room-ended
+          aria-label={msg("dialog_room_ended_close")}
+        >
+          <Icon name="ph:x-bold" />
+        </button>
+      </div>
+      <p>{msg("dialog_room_expiry")}</p>
+      <a class="go" href={LOCALE_INFO[locale].home}>
+        {msg("dialog_local_game")}
+      </a>
+    </div>
+  </dialog>
+
+  <dialog class="sticker-dialog" data-edit-dialog aria-labelledby="edit-title">
+    <div class="dialog-inner">
+      <div class="dialog-head">
+        <h2 id="edit-title" class="display">
+          {msg("dialog_edit_title")}
+        </h2>
+        <button
+          class="dialog-close"
+          type="button"
+          data-close-edit
+          aria-label={msg("dialog_edit_close")}
+        >
+          <Icon name="ph:x-bold" />
+        </button>
+      </div>
+      <form class="dialog-form" data-edit-form>
+        <label class="dialog-field">
+          {msg("home_player_name")}
+          <input
+            class="dialog-input"
+            name="name"
+            type="text"
+            maxlength={MAX_NAME_LENGTH}
+            autocomplete="off"
+            required
+          />
+        </label>
+        <fieldset class="edit-role-fieldset">
+          <legend class="lbl">{msg("home_pick_face")}</legend>
+          <div data-emoji-picker>
+            {roleChoices.map((choice, index) => (
+              <label title={choice.role}>
+                <input type="radio" name="emoji" value={index} />
+                <span>{choice.emoji}</span>
+                <small>{choice.role}</small>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+        <p class="room-join-error" data-edit-error role="status" hidden></p>
+        <div class="dialog-actions">
+          <button class="guess-button" type="button" data-cancel-edit>
+            {msg("dialog_cancel")}
+          </button>
+          <button class="go" type="submit">
+            {msg("dialog_save_player")}
+          </button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <dialog
+    class="champion-dialog"
+    data-champion-dialog
+    aria-labelledby="champion-title"
+  >
+    <div class="dialog-inner">
+      <div
+        class="champion-confetti"
+        data-champion-confetti
+        aria-hidden="true"
+      ></div>
+      <div class="dialog-head">
+        <h2
+          id="champion-title"
+          class="champion-title display"
+          data-champion-title
+        >
+          {msg("dialog_champion_title")}
+        </h2>
+        <button
+          class="dialog-close"
+          type="button"
+          data-close-champion
+          aria-label={msg("dialog_champion_close")}
+        >
+          <Icon name="ph:x-bold" />
+        </button>
+      </div>
+      <p class="champion-intro" data-champion-message></p>
+      <div class="podium" data-podium></div>
+      <div class="champion-actions">
+        <button class="go" type="button" data-play-again>
+          <Icon name="ph:arrow-counter-clockwise-bold" />
+          {msg("dialog_play_again")}
+        </button>
+        <button class="guess-button" type="button" data-share-result>
+          <Icon name="ph:share-network-bold" />
+          {msg("dialog_share_result")}
+        </button>
+        <p class="share-status" data-share-status aria-live="polite"></p>
+      </div>
+    </div>
+  </dialog>
+
+  <script>
+    import "../scripts/room-client";
+    import "../scripts/game-client";
+    import "../scripts/dev-client";
+    import "../scripts/history-client";
+    import { loadPlayStat } from "../scripts/stats-client";
+
+    requestAnimationFrame(() => {
+      window.setTimeout(() => void loadPlayStat(), 0);
+    });
+  </script>
+</Base>

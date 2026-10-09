@@ -15,9 +15,91 @@ import {
 import { escapeHtml } from "../lib/html";
 import { loadPlan, planPercent } from "../lib/plan";
 import { $ } from "./dom";
+import { formatNumber } from "../lib/i18n";
+import { initializeClientLocale, t } from "../lib/messages";
 
 type BrowserDetails = Record<string, string | number | boolean>;
 type Direction = "download" | "upload";
+
+const locale = initializeClientLocale();
+const msg = (
+  key: Parameters<typeof t>[0],
+  params: Record<string, string | number | boolean> = {},
+) => t(key, params, locale);
+const devLabels: Record<string, Parameters<typeof t>[0]> = {
+  "Cloudflare colo": "dev_cloudflare_colo",
+  City: "dev_city",
+  Country: "dev_country",
+  ASN: "dev_asn",
+  Network: "dev_network",
+  "IP address": "dev_ip_address",
+  "IP version": "dev_ip_version",
+  "HTTP protocol": "dev_http_protocol",
+  "TLS version": "dev_tls_version",
+  WARP: "dev_warp",
+  "Edge RTT": "dev_edge_rtt",
+  "Minimum edge RTT": "dev_min_edge_rtt",
+  Download: "dev_download",
+  Upload: "dev_upload",
+  "Plan download": "dev_plan_download",
+  "Plan upload": "dev_plan_upload",
+  "Median ping": "dev_median_ping",
+  Jitter: "dev_jitter",
+  "Total duration": "dev_total_duration",
+  "Number of requests": "dev_request_count",
+  "Bandwidth requests": "dev_bandwidth_requests",
+  "Bandwidth percentile": "dev_bandwidth_percentile",
+  "AIM experience scores": "dev_aim_scores",
+  Minimum: "dev_minimum",
+  Median: "dev_median",
+  Maximum: "dev_maximum",
+  Direction: "dev_direction",
+  Size: "dev_size",
+  Duration: "dev_duration",
+  "Server time": "dev_server_time",
+  "Transfer bytes": "dev_transfer_bytes",
+  Counted: "dev_counted",
+  "Run offset": "dev_run_offset",
+  "Download endpoint": "dev_download_endpoint",
+  "Upload endpoint": "dev_upload_endpoint",
+  "Latency percentile": "dev_latency_percentile",
+  "Minimum counted duration": "dev_min_counted_duration",
+  "Finish request duration": "dev_finish_request_duration",
+  "Stall timeout": "dev_stall_timeout",
+  "Measured at": "dev_measured_at",
+  userAgent: "dev_browser_user_agent",
+  effectiveType: "dev_browser_effective_type",
+  downlinkMbps: "dev_browser_downlink",
+  rttMs: "dev_browser_rtt",
+  saveData: "dev_browser_save_data",
+  connection: "dev_browser_connection",
+  hardwareConcurrency: "dev_browser_hardware_concurrency",
+  deviceMemoryGB: "dev_browser_device_memory",
+  screen: "dev_browser_screen",
+  timezone: "dev_browser_timezone",
+  language: "dev_browser_language",
+  online: "dev_browser_online",
+  streaming: "dev_score_streaming",
+  gaming: "dev_score_gaming",
+  rtc: "dev_score_rtc",
+  excellent: "dev_classification_excellent",
+  good: "dev_classification_good",
+  fair: "dev_classification_fair",
+  poor: "dev_classification_poor",
+};
+const devText = (value: unknown): string => {
+  if (typeof value === "number") return formatNumber(value, locale);
+  if (typeof value === "boolean") return msg(value ? "dev_yes" : "dev_no");
+  const text = String(value);
+  const key = devLabels[text] ?? devLabels[text.toLowerCase()];
+  if (key) return msg(key);
+  if (text === "unavailable") return msg("dev_unavailable");
+  if (text === "not exposed by this browser") return msg("dev_not_exposed");
+  if (text === "not available yet") return msg("dev_not_available_yet");
+  if (text === "in progress") return msg("dev_in_progress");
+  if (text === "n/a") return msg("dev_unavailable");
+  return text;
+};
 
 let connection: ConnectionInfo | null = null;
 let connectionLoading = false;
@@ -75,34 +157,30 @@ function readBrowserDetails(): BrowserDetails {
 
 function displayValue(value: unknown, digits = 2): string {
   if (typeof value === "number") {
-    if (!Number.isFinite(value)) return "unavailable";
-    return new Intl.NumberFormat(undefined, {
-      maximumFractionDigits: digits,
-    }).format(value);
+    if (!Number.isFinite(value)) return msg("dev_unavailable");
+    return formatNumber(value, locale, { maximumFractionDigits: digits });
   }
   if (value === null || value === undefined || value === "")
-    return "unavailable";
-  return String(value);
+    return msg("dev_unavailable");
+  return devText(value);
 }
 
 function renderPairs(entries: [string, unknown][]): string {
   return `<dl class="dev-kv">${entries
     .map(
       ([label, value]) =>
-        `<dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd>`,
+        `<dt>${escapeHtml(devText(label))}</dt><dd>${escapeHtml(devText(value))}</dd>`,
     )
     .join("")}</dl>`;
 }
 
 function renderConnection() {
   if (connectionLoading) {
-    connectionContent.innerHTML =
-      "<p>Checking the Cloudflare connection...</p>";
+    connectionContent.innerHTML = `<p>${escapeHtml(msg("dev_checking_connection"))}</p>`;
     return;
   }
   if (!connection) {
-    connectionContent.innerHTML =
-      "<p>Choose Dev in the Game / Dev switch at the top of the home screen to check this connection.</p>";
+    connectionContent.innerHTML = `<p>${escapeHtml(msg("dev_choose_mode"))}</p>`;
     return;
   }
   const ip = showIp ? connection.ip : maskIp(connection.ip);
@@ -133,12 +211,10 @@ function renderConnection() {
   connectionContent.innerHTML = `<dl class="dev-kv">${entries
     .map(([label, value]) =>
       label === "IP address"
-        ? `<dt>${escapeHtml(label)}</dt><dd class="dev-ip-value"><span>${escapeHtml(value)}</span><button class="dev-ip-control" type="button" data-toggle-ip aria-label="${showIp ? "Hide" : "Show"} IP address">${showIp ? "Hide" : "Show"}</button></dd>`
-        : `<dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd>`,
+        ? `<dt>${escapeHtml(devText(label))}</dt><dd class="dev-ip-value"><span>${escapeHtml(devText(value))}</span><button class="dev-ip-control" type="button" data-toggle-ip aria-label="${msg(showIp ? "dev_ip_hide" : "dev_ip_show")} ${msg("dev_ip_address")}">${msg(showIp ? "dev_ip_hide" : "dev_ip_show")}</button></dd>`
+        : `<dt>${escapeHtml(devText(label))}</dt><dd>${escapeHtml(devText(value))}</dd>`,
     )
-    .join(
-      "",
-    )}</dl><p class="dev-privacy-note">Shown only on this screen. Never stored or sent anywhere.</p>`;
+    .join("")}</dl><p class="dev-privacy-note">${msg("dev_privacy")}</p>`;
 }
 
 function getSummaryValue(
@@ -153,7 +229,7 @@ function getSummaryValue(
 
 function renderSummary() {
   if (!details) {
-    summaryContent.innerHTML = "<p>Run a speed test to see results.</p>";
+    summaryContent.innerHTML = `<p>${msg("dev_run_test_prompt")}</p>`;
     return;
   }
   const down = getSummaryValue(details, "download");
@@ -171,8 +247,8 @@ function renderSummary() {
   );
   const planValue = (planned: number | null, pct: number | null) =>
     planned === null
-      ? "not set"
-      : `${planned.toLocaleString(undefined, { maximumFractionDigits: 0 })} Mbps${pct === null ? "" : ` (this run ${pct}%)`}`;
+      ? msg("dev_not_set")
+      : `${formatNumber(planned, locale, { maximumFractionDigits: 0 })} Mbps${pct === null ? "" : ` (${msg("dev_this_run", { percent: formatNumber(pct, locale) })})`}`;
   const latency = getSummaryValue(details, "latency");
   const jitter = getSummaryValue(details, "jitter");
   const duration =
@@ -181,7 +257,7 @@ function renderSummary() {
     .map((key) => {
       const score = details?.scores?.[key];
       return score
-        ? `${key}: ${score.classificationName} (${score.points} pts)`
+        ? `${devText(key)}: ${devText(score.classificationName)} (${formatNumber(score.points, locale)} pts)`
         : null;
     })
     .filter((value): value is string => value !== null);
@@ -209,7 +285,7 @@ function renderSummary() {
     [
       "Total duration",
       duration === undefined
-        ? "in progress"
+        ? msg("dev_in_progress")
         : `${displayValue(duration / 1000)} s`,
     ],
     ["Number of requests", bandwidthRequests + details.latencyPoints.length],
@@ -220,8 +296,8 @@ function renderSummary() {
       scores.length
         ? scores.join("; ")
         : details.totalDurationMs !== undefined
-          ? "Not measured (needs loaded latency and packet loss)"
-          : "not available yet",
+          ? msg("dev_not_measured")
+          : msg("dev_not_available_yet"),
     ],
   ]);
 }
@@ -240,19 +316,19 @@ function sparkline(values: number[]): string {
       return `${x.toFixed(1)},${y.toFixed(1)}`;
     })
     .join(" ");
-  return `<svg class="dev-sparkline" viewBox="0 0 ${width} ${height}" role="img" aria-label="Latency samples sparkline"><polyline points="${points}" fill="none" stroke="var(--accent)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" /></svg>`;
+  return `<svg class="dev-sparkline" viewBox="0 0 ${width} ${height}" role="img" aria-label="${msg("dev_sparkline_aria")}"><polyline points="${points}" fill="none" stroke="var(--accent)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" /></svg>`;
 }
 
 function renderLatency() {
   if (!details || !details.latencyPoints.length) {
-    latencyContent.innerHTML = "<p>Latency samples will appear here.</p>";
+    latencyContent.innerHTML = `<p>${msg("dev_latency_prompt")}</p>`;
     return;
   }
   const values = details.latencyPoints;
   const rows = values
     .map(
       (value, index) =>
-        `<tr><td>${index + 1}</td><td>${index === 0 ? "Warm-up ping" : `Sample ${index + 1}`}</td><td>${displayValue(value)} ms</td></tr>`,
+        `<tr><td>${formatNumber(index + 1, locale)}</td><td>${index === 0 ? msg("dev_warmup_ping") : msg("dev_sample", { number: formatNumber(index + 1, locale) })}</td><td>${displayValue(value)} ms</td></tr>`,
     )
     .join("");
   const jitter = getSummaryValue(details, "jitter");
@@ -264,7 +340,7 @@ function renderLatency() {
       "Jitter",
       jitter === undefined ? "unavailable" : `${displayValue(jitter)} ms`,
     ],
-  ])}${sparkline(values)}<div class="dev-data-table-wrap"><table class="dev-data-table dev-table-compact"><thead><tr><th>#</th><th>Sample</th><th>Ping</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  ])}${sparkline(values)}<div class="dev-data-table-wrap"><table class="dev-data-table dev-table-compact"><thead><tr><th>#</th><th>${msg("dev_sample_header")}</th><th>${msg("dev_ping")}</th></tr></thead><tbody>${rows}</tbody></table></div>`;
 }
 
 interface RequestRow {
@@ -295,16 +371,16 @@ function renderRequestBars(rows: RequestRow[]): string {
       const x = index * 14 + 2;
       const y = baseline - barHeight;
       const color = direction === "download" ? "var(--accent)" : "var(--ink)";
-      return `<rect x="${x}" y="${y.toFixed(1)}" width="9" height="${barHeight.toFixed(1)}" rx="2" fill="${color}"><title>${escapeHtml(direction)}: ${displayValue(point.bps / 1e6)} Mbps</title></rect>`;
+      return `<rect x="${x}" y="${y.toFixed(1)}" width="9" height="${barHeight.toFixed(1)}" rx="2" fill="${color}"><title>${msg(direction === "download" ? "dev_download_direction" : "dev_upload_direction")}: ${displayValue(point.bps / 1e6)} Mbps</title></rect>`;
     })
     .join("");
-  return `<svg class="dev-bars" viewBox="0 0 ${width} ${height}" role="img" aria-label="Mbps per request bar chart">${bars}</svg><p>Download <span style="color:var(--accent)" aria-hidden="true">■</span> · Upload <span style="color:var(--ink)" aria-hidden="true">■</span></p>`;
+  return `<svg class="dev-bars" viewBox="0 0 ${width} ${height}" role="img" aria-label="${msg("dev_bar_chart_aria")}">${bars}</svg><p>${msg("dev_download_direction")} <span style="color:var(--accent)" aria-hidden="true">■</span> · ${msg("dev_upload_direction")} <span style="color:var(--ink)" aria-hidden="true">■</span></p>`;
 }
 
 function renderRequests() {
   const rows = requestRows();
   if (!rows.length) {
-    requestsContent.innerHTML = "<p>Bandwidth requests will appear here.</p>";
+    requestsContent.innerHTML = `<p>${msg("dev_requests_prompt")}</p>`;
     return;
   }
   const counted = new Set([
@@ -320,10 +396,10 @@ function renderRequests() {
   const body = rows
     .map(({ direction, point }, index) => {
       const elapsedMs = Date.parse(point.measTime) - details!.startedAt;
-      return `<tr><td>${index + 1}</td><td>${escapeHtml(direction)}</td><td>${sizeLabel(point.bytes)}</td><td>${displayValue(point.duration)} ms</td><td>${point.serverTime === -1 ? "n/a" : `${displayValue(point.serverTime)} ms`}</td><td>${displayValue(point.ping)} ms</td><td>${displayValue(point.transferSize, 0)}</td><td>${displayValue(point.bps / 1e6)} Mbps</td><td>${counted.has(point) ? "yes" : "no"}</td><td>${displayValue(elapsedMs / 1000)} s</td></tr>`;
+      return `<tr><td>${formatNumber(index + 1, locale)}</td><td>${msg(direction === "download" ? "dev_download_direction" : "dev_upload_direction")}</td><td>${sizeLabel(point.bytes, locale)}</td><td>${displayValue(point.duration)} ms</td><td>${point.serverTime === -1 ? msg("dev_unavailable") : `${displayValue(point.serverTime)} ms`}</td><td>${displayValue(point.ping)} ms</td><td>${displayValue(point.transferSize, 0)}</td><td>${displayValue(point.bps / 1e6)} Mbps</td><td>${counted.has(point) ? msg("dev_yes") : msg("dev_no")}</td><td>${displayValue(elapsedMs / 1000)} s</td></tr>`;
     })
     .join("");
-  requestsContent.innerHTML = `${renderRequestBars(rows)}<div class="dev-data-table-wrap"><table class="dev-data-table"><thead><tr><th>#</th><th>Direction</th><th>Size</th><th>Duration</th><th>Server time</th><th>Ping</th><th>Transfer bytes</th><th>Mbps</th><th>Counted</th><th>Run offset</th></tr></thead><tbody>${body}</tbody></table></div>`;
+  requestsContent.innerHTML = `${renderRequestBars(rows)}<div class="dev-data-table-wrap"><table class="dev-data-table"><thead><tr><th>#</th><th>${msg("dev_direction")}</th><th>${msg("dev_size")}</th><th>${msg("dev_duration")}</th><th>${msg("dev_server_time")}</th><th>${msg("dev_ping")}</th><th>${msg("dev_transfer_bytes")}</th><th>Mbps</th><th>${msg("dev_counted")}</th><th>${msg("dev_run_offset")}</th></tr></thead><tbody>${body}</tbody></table></div>`;
 }
 
 function formatPercentile(
@@ -337,7 +413,7 @@ function formatPercentile(
     .slice()
     .sort((a, b) => a.bps - b.bps);
   if (!counted.length)
-    return `<div class="dev-subsection"><h4>${direction === "download" ? "Download" : "Upload"}</h4><p>No counted samples yet.</p></div>`;
+    return `<div class="dev-subsection"><h4>${msg(direction === "download" ? "dev_download_direction" : "dev_upload_direction")}</h4><p>${msg("dev_no_counted_samples")}</p></div>`;
   const values = counted.map((point) => point.bps);
   const estimate = percentile(values, SPEED_TEST_CONFIG.bandwidthPercentile);
   const position = (counted.length - 1) * SPEED_TEST_CONFIG.bandwidthPercentile;
@@ -347,7 +423,7 @@ function formatPercentile(
   const rows = counted
     .map(
       (point, index) =>
-        `<tr class="${highlighted.has(index) ? "dev-highlight" : ""}"><td>${index + 1}</td><td>${sizeLabel(point.bytes)}</td><td>${displayValue(point.duration)} ms</td><td>${displayValue(point.bps / 1e6)} Mbps</td><td>${escapeHtml(point.measTime)}</td></tr>`,
+        `<tr class="${highlighted.has(index) ? "dev-highlight" : ""}"><td>${formatNumber(index + 1, locale)}</td><td>${sizeLabel(point.bytes, locale)}</td><td>${displayValue(point.duration)} ms</td><td>${displayValue(point.bps / 1e6)} Mbps</td><td>${escapeHtml(point.measTime)}</td></tr>`,
     )
     .join("");
   const matches =
@@ -356,17 +432,19 @@ function formatPercentile(
       0.001;
   const comparison =
     libraryValue === undefined
-      ? "Library value pending"
+      ? msg("dev_library_pending")
       : matches
-        ? "matches library"
-        : `Recomputed ${displayValue(estimate / 1e6)} Mbps · Library ${displayValue(libraryValue / 1e6)} Mbps`;
-  return `<div class="dev-subsection"><h4>${direction === "download" ? "Download" : "Upload"} · P${SPEED_TEST_CONFIG.bandwidthPercentile * 100}</h4><p>Counted samples sorted by Mbps. Highlighted row${highlighted.size > 1 ? "s" : ""} show where the percentile lands. ${escapeHtml(comparison)}</p><div class="dev-data-table-wrap"><table class="dev-data-table"><thead><tr><th>#</th><th>Size</th><th>Duration</th><th>Mbps</th><th>Measured at</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+        ? msg("dev_matches_library")
+        : msg("dev_recomputed", {
+            estimate: displayValue(estimate / 1e6),
+            library: displayValue(libraryValue / 1e6),
+          });
+  return `<div class="dev-subsection"><h4>${msg(direction === "download" ? "dev_download_direction" : "dev_upload_direction")} · P${formatNumber(SPEED_TEST_CONFIG.bandwidthPercentile * 100, locale)}</h4><p>${msg("dev_counted_sorted", { comparison: escapeHtml(comparison) })}</p><div class="dev-data-table-wrap"><table class="dev-data-table"><thead><tr><th>#</th><th>${msg("dev_size")}</th><th>${msg("dev_duration")}</th><th>Mbps</th><th>${msg("dev_measured_at")}</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
 }
 
 function renderPercentiles() {
   if (!details) {
-    percentileContent.innerHTML =
-      "<p>Counted samples and the final percentile will appear here.</p>";
+    percentileContent.innerHTML = `<p>${msg("dev_percentile_prompt")}</p>`;
     return;
   }
   percentileContent.innerHTML = `${formatPercentile("download", details.download)}${formatPercentile("upload", details.upload)}`;
@@ -377,9 +455,13 @@ function readableMeasurement(
   index: number,
 ): string {
   if (measurement.type === "latency")
-    return `Ping · ${measurement.numPackets} ${measurement.numPackets === 1 ? "packet" : "packets"}${index === 0 ? " · warm-up" : ""}`;
-  const direction = measurement.type === "download" ? "Download" : "Upload";
-  return `${direction} · ${sizeLabel(measurement.bytes)} × ${measurement.count}${"bypassMinDuration" in measurement ? " · warm-up" : ""}`;
+    return `${msg("dev_ping")} · ${msg(measurement.numPackets === 1 ? "dev_packet" : "dev_packets", { count: formatNumber(measurement.numPackets, locale) })}${index === 0 ? ` · ${msg("dev_warmup")}` : ""}`;
+  const direction = msg(
+    measurement.type === "download"
+      ? "dev_download_direction"
+      : "dev_upload_direction",
+  );
+  return `${direction} · ${sizeLabel(measurement.bytes, locale)} × ${formatNumber(measurement.count, locale)}${"bypassMinDuration" in measurement ? ` · ${msg("dev_warmup")}` : ""}`;
 }
 
 function renderConfig() {
@@ -389,19 +471,28 @@ function renderConfig() {
   configContent.innerHTML = `${renderPairs([
     ["Download endpoint", SPEED_TEST_CONFIG.downloadEndpoint],
     ["Upload endpoint", SPEED_TEST_CONFIG.uploadEndpoint],
-    ["Latency percentile", `P${SPEED_TEST_CONFIG.latencyPercentile * 100}`],
-    ["Bandwidth percentile", `P${SPEED_TEST_CONFIG.bandwidthPercentile * 100}`],
+    [
+      "Latency percentile",
+      `P${formatNumber(SPEED_TEST_CONFIG.latencyPercentile * 100, locale)}`,
+    ],
+    [
+      "Bandwidth percentile",
+      `P${formatNumber(SPEED_TEST_CONFIG.bandwidthPercentile * 100, locale)}`,
+    ],
     [
       "Minimum counted duration",
-      `${SPEED_TEST_CONFIG.bandwidthMinRequestDuration} ms`,
+      `${formatNumber(SPEED_TEST_CONFIG.bandwidthMinRequestDuration, locale)} ms`,
     ],
     [
       "Finish request duration",
-      `${SPEED_TEST_CONFIG.bandwidthFinishRequestDuration} ms`,
+      `${formatNumber(SPEED_TEST_CONFIG.bandwidthFinishRequestDuration, locale)} ms`,
     ],
-    ["Stall timeout", `${SPEED_TEST_CONFIG.stallTimeoutMs / 1000} s`],
+    [
+      "Stall timeout",
+      `${formatNumber(SPEED_TEST_CONFIG.stallTimeoutMs / 1000, locale)} s`,
+    ],
     ["@cloudflare/speedtest", SPEED_TEST_CONFIG.libraryVersion],
-  ])}<details open><summary>Measurement list (${SPEED_TEST_MEASUREMENTS.length} steps)</summary><ol>${measurements}</ol></details>`;
+  ])}<details open><summary>${msg("dev_measurement_list", { count: formatNumber(SPEED_TEST_MEASUREMENTS.length, locale) })}</summary><ol>${measurements}</ol></details>`;
 }
 
 function renderBrowser() {
@@ -491,9 +582,9 @@ copyButton.addEventListener("click", async () => {
   if (!run) return;
   try {
     await navigator.clipboard.writeText(JSON.stringify(run, null, 2));
-    copyStatus.textContent = "Copied";
+    copyStatus.textContent = msg("dev_copy_success");
   } catch {
-    copyStatus.textContent = "Could not copy";
+    copyStatus.textContent = msg("dev_copy_failed");
   }
   window.setTimeout(() => {
     copyStatus.textContent = "";

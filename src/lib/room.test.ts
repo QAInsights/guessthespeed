@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 import { englishDataset } from "obscenity";
 import { applyResult, initialGameState, type GameState } from "./game";
 import { MAX_SPEED_MBPS } from "./limits";
-import { BLOCKED_NAME_MESSAGE } from "./name-filter";
 import {
   applyAction,
   canRunTest,
@@ -238,7 +237,7 @@ describe("host transfer", () => {
       }),
     ).toEqual({
       ok: false,
-      error: "Only the host can hand over host.",
+      error: "host_only",
     });
     expect(
       transferHost(testingRoom, {
@@ -247,11 +246,11 @@ describe("host transfer", () => {
       }),
     ).toEqual({
       ok: false,
-      error: "Wait for the test to finish before handing over host.",
+      error: "test_in_progress",
     });
     expect(transferHost(room, options)).toEqual({
       ok: false,
-      error: "That player has left the room.",
+      error: "player_left",
     });
     expect(
       transferHost(room, {
@@ -260,7 +259,7 @@ describe("host transfer", () => {
       }),
     ).toEqual({
       ok: false,
-      error: "Pick a player on another device.",
+      error: "different_device_required",
     });
   });
 
@@ -303,7 +302,7 @@ describe("host transfer", () => {
       }),
     ).toEqual({
       ok: false,
-      error: "That player's phone is offline. Try again when it reconnects.",
+      error: "player_offline",
     });
     expect(room.hostToken).toBe("secret-host-token");
   });
@@ -334,7 +333,7 @@ describe("host transfer", () => {
         },
         900,
       ),
-    ).toEqual({ error: "Unknown action." });
+    ).toEqual({ error: "unknown_action" });
   });
 });
 
@@ -536,12 +535,12 @@ describe("team rooms", () => {
     room = withGuess(room, firstId, 100, 20);
     expect(
       applyAction(room, firstId, false, { type: "rotate", on: false }, 2),
-    ).toEqual({ error: "Only the host can change rotation." });
+    ).toEqual({ error: "host_only" });
     room = act(room, hostId, true, { type: "rotate", on: false });
     room = act(room, hostId, true, { type: "start" });
     expect(
       applyAction(room, hostId, true, { type: "rotate", on: true }, 4),
-    ).toEqual({ error: "Rotation cannot change during a test." });
+    ).toEqual({ error: "test_in_progress" });
     room = act(room, hostId, true, {
       type: "result",
       down: 100,
@@ -604,7 +603,7 @@ describe("room actions and views", () => {
     );
 
     expect("error" in result).toBe(true);
-    if ("error" in result) expect(result.error).toBe(BLOCKED_NAME_MESSAGE);
+    if ("error" in result) expect(result.error).toBe("name_blocked");
     expect(room.game.players).toHaveLength(0);
   });
 
@@ -627,7 +626,7 @@ describe("room actions and views", () => {
     );
 
     expect("error" in result).toBe(true);
-    if ("error" in result) expect(result.error).toBe(BLOCKED_NAME_MESSAGE);
+    if ("error" in result) expect(result.error).toBe("name_blocked");
     expect(playerByOwner(room, firstId).name === "First").toBe(true);
   });
 
@@ -643,7 +642,7 @@ describe("room actions and views", () => {
     );
 
     expect("error" in result).toBe(true);
-    if ("error" in result) expect(result.error).toBe(BLOCKED_NAME_MESSAGE);
+    if ("error" in result) expect(result.error).toBe("name_blocked");
     expect(room.game.players).toHaveLength(0);
   });
 
@@ -690,7 +689,7 @@ describe("room actions and views", () => {
 
     expect(accepted).not.toHaveProperty("error");
     expect(rejected).toEqual({
-      error: `Enter speeds between 0 and ${MAX_SPEED_MBPS} Mbps.`,
+      error: "invalid_speed",
     });
   });
 
@@ -790,14 +789,14 @@ describe("room actions and views", () => {
         },
         500,
       ),
-    ).toEqual({ error: "You can only edit your own player." });
+    ).toEqual({ error: "edit_own_only" });
     room = withGuess(room, firstId, 12, 4);
     expect(playerByOwner(room, firstId).locked).toBe(true);
     room = act(room, firstId, false, { type: "unlock", id: own.id });
     expect(playerByOwner(room, firstId).locked).toBe(false);
     expect(
       applyAction(room, firstId, false, { type: "remove", id: other.id }, 600),
-    ).toEqual({ error: "You can only remove your own player." });
+    ).toEqual({ error: "remove_own_only" });
     room = act(room, firstId, false, { type: "remove", id: own.id });
     expect(room.game.players.some((player) => player.id === own.id)).toBe(
       false,
@@ -836,7 +835,7 @@ describe("room actions and views", () => {
         { type: "setTester", id: tester.id },
         600,
       ),
-    ).toEqual({ error: "Only the host can choose the tester." });
+    ).toEqual({ error: "host_only" });
     expect(
       applyAction(
         room,
@@ -845,7 +844,7 @@ describe("room actions and views", () => {
         { type: "setTester", id: "missing-player" },
         600,
       ),
-    ).toEqual({ error: "The selected tester is not in this room." });
+    ).toEqual({ error: "tester_not_found" });
 
     room = act(room, hostId, true, { type: "setTester", id: tester.id });
     expect(room.testerId).toBe(tester.id);
@@ -857,7 +856,7 @@ describe("room actions and views", () => {
     room = act(room, firstId, false, { type: "start" });
     expect(
       applyAction(room, hostId, true, { type: "setTester", id: null }, 700),
-    ).toEqual({ error: "The tester cannot change during a test." });
+    ).toEqual({ error: "test_in_progress" });
   });
 
   it("lets only the assigned player run a test while keeping a host abort safety net", () => {
@@ -867,7 +866,7 @@ describe("room actions and views", () => {
     room = act(room, hostId, true, { type: "setTester", id: tester.id });
 
     expect(applyAction(room, hostId, true, { type: "start" }, 700)).toEqual({
-      error: "Only the assigned tester can start the test.",
+      error: "tester_only",
     });
     expect(
       applyAction(room, secondId, false, { type: "start" }, 700),
@@ -969,7 +968,7 @@ describe("room actions and views", () => {
         { type: "join", name: "Extra", emoji: "🧑", role: "Friend" },
         2,
       ),
-    ).toEqual({ error: "This device already has a player in the room." });
+    ).toEqual({ error: "device_has_player" });
 
     for (let index = 1; index < MAX_PLAYERS; index += 1) {
       room = addPlayer(room, `host-${index}`, true, `Host ${index}`);
@@ -983,7 +982,7 @@ describe("room actions and views", () => {
         { type: "join", name: "Too many", emoji: "🧑", role: "Friend" },
         100,
       ),
-    ).toEqual({ error: `A room can have up to ${MAX_PLAYERS} players.` });
+    ).toEqual({ error: "room_full" });
   });
 
   it("rejects malformed actions, invalid names, oversized labels, unknown IDs, and out-of-range speeds", () => {
@@ -1020,13 +1019,13 @@ describe("room actions and views", () => {
         },
         700,
       ),
-    ).toEqual({ error: "Player not found." });
+    ).toEqual({ error: "player_not_found" });
   });
 
   it("requires a locked guess before the host can start", () => {
     const room = joinedRoom();
     expect(applyAction(room, hostId, true, { type: "start" }, 900)).toEqual({
-      error: "At least one player must lock a guess first.",
+      error: "guess_required",
     });
     const lockedRoom = withGuess(room, firstId, 40, 12);
     expect(act(lockedRoom, hostId, true, { type: "start" }).game.phase).toBe(
@@ -1039,7 +1038,7 @@ describe("room actions and views", () => {
     room = withGuess(room, firstId, 40, 12);
     room = act(room, hostId, true, { type: "start" });
     expect(applyAction(room, hostId, true, { type: "newGame" }, 900)).toEqual({
-      error: "Wait for the test to finish before starting a new game.",
+      error: "test_in_progress",
     });
   });
 
@@ -1094,7 +1093,7 @@ describe("room actions and views", () => {
         { type: "result", down: 0, up: 20 },
         room.updatedAt + 1,
       ),
-    ).toEqual({ error: "The speed test returned no result." });
+    ).toEqual({ error: "result_missing" });
     expect(
       applyAction(
         room,
@@ -1103,7 +1102,7 @@ describe("room actions and views", () => {
         { type: "result", down: 20, up: 0 },
         room.updatedAt + 1,
       ),
-    ).toEqual({ error: "The speed test returned no result." });
+    ).toEqual({ error: "result_missing" });
     expect(
       applyAction(
         room,
@@ -1112,7 +1111,7 @@ describe("room actions and views", () => {
         { type: "result", down: -1, up: 20 },
         room.updatedAt + 1,
       ),
-    ).toEqual({ error: "The speed test returned no result." });
+    ).toEqual({ error: "result_missing" });
     expect(
       applyAction(
         room,
@@ -1121,7 +1120,7 @@ describe("room actions and views", () => {
         { type: "result", down: 20, up: -1 },
         room.updatedAt + 1,
       ),
-    ).toEqual({ error: "The speed test returned no result." });
+    ).toEqual({ error: "result_missing" });
     expect(room.game.phase).toBe("testing");
     expect(room.game.players[0].guess).toEqual({ down: 0, up: 0 });
   });
