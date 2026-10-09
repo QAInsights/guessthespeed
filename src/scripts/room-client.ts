@@ -3,10 +3,67 @@ import {
   type ClientAction,
   type RoomView,
 } from "../lib/room";
-import { BLOCKED_NAME_MESSAGE, isBlockedName } from "../lib/name-filter";
+import { isBlockedName } from "../lib/name-filter";
 import { isRecord } from "../lib/guards";
 import { loadSession } from "../lib/classroom";
 import { queryOptional } from "./dom";
+import { initializeClientLocale, t } from "../lib/messages";
+import { LOCALE_INFO } from "../lib/i18n";
+import { MAX_SPEED_MBPS } from "../lib/limits";
+
+const locale = initializeClientLocale();
+const msg = (
+  key: Parameters<typeof t>[0],
+  params: Record<string, string | number | boolean> = {},
+) => t(key, params, locale);
+const roomErrorKeys: Record<string, Parameters<typeof t>[0]> = {
+  host_only: "room_error_host_only",
+  test_in_progress: "room_error_test_in_progress",
+  player_left: "room_error_player_left",
+  player_offline: "room_error_player_offline",
+  different_device_required: "room_error_other_device",
+  invalid_action: "room_error_unknown",
+  name_and_face_required: "room_error_name_required",
+  name_blocked: "room_error_name_blocked",
+  device_has_player: "game_device_full",
+  room_full: "game_room_full",
+  player_add_failed: "room_error_player_add",
+  player_not_found: "room_error_player_not_found",
+  edit_own_only: "room_error_edit_own",
+  guess_own_only: "room_error_guess_own",
+  guesses_closed: "room_error_guesses_closed",
+  invalid_speed: "game_speed_value_invalid",
+  unlock_own_only: "room_error_unlock_own",
+  remove_own_only: "room_error_remove_own",
+  invalid_settings: "room_error_invalid_settings",
+  tester_not_found: "room_error_tester_missing",
+  invalid_rotation: "room_error_invalid_rotation",
+  tester_only: "room_error_tester_only",
+  game_not_ready: "room_error_game_not_ready",
+  guess_required: "game_need_test_guess",
+  test_not_running: "game_wait_test",
+  result_missing: "room_error_result_missing",
+  invalid_ping: "game_ping_invalid",
+  tester_or_host_only: "room_error_tester_or_host",
+  unknown_action: "room_error_unknown",
+  invalid_room_code: "room_join_code_invalid",
+  room_not_found: "room_join_code_not_found",
+  room_error_reconnecting: "room_error_reconnecting",
+  room_error_check_failed: "room_error_check_failed",
+  room_error_join_failed: "room_error_join_failed",
+  room_copy_failed: "room_copy_failed",
+  room_code_exists: "room_error_code_exists",
+  room_creation_failed: "room_error_creation_failed",
+  room_code_unavailable: "room_error_code_unavailable",
+  request_body_too_large: "room_error_request_too_large",
+  room_ended: "room_status_ended",
+  not_found: "room_error_not_found",
+};
+
+function localizedError(code: string): string {
+  const key = roomErrorKeys[code] ?? "room_error_unknown";
+  return msg(key, { maximum: MAX_SPEED_MBPS });
+}
 
 export interface RoomProgress {
   type: "progress";
@@ -83,7 +140,7 @@ export function canRunRoomTest(): boolean {
 
 export function sendRoomAction(action: ClientAction): boolean {
   if (!socket || socket.readyState !== WebSocket.OPEN) {
-    showRoomError("You are reconnecting. Try again in a moment.");
+    showRoomError("room_error_reconnecting");
     return false;
   }
   socket.send(JSON.stringify(action));
@@ -101,7 +158,7 @@ export function sendRoomProgress(progress: Omit<RoomProgress, "type">): void {
 }
 
 function roomLink(): string {
-  return `${window.location.origin}/?room=${roomCode ?? ""}`;
+  return `${window.location.origin}${LOCALE_INFO[locale].home}?room=${roomCode ?? ""}`;
 }
 
 function roomPageUrl(code: string): string {
@@ -110,10 +167,11 @@ function roomPageUrl(code: string): string {
   if (mockMode === "1" || mockMode === "slow" || mockMode === "stall")
     query.set("mock", mockMode);
   query.set("room", code);
-  return `/?${query.toString()}`;
+  return `${LOCALE_INFO[locale].home}?${query.toString()}`;
 }
 
-function showRoomError(message: string): void {
+function showRoomError(code: string): void {
+  const message = localizedError(code);
   const joinError = queryOptional<HTMLElement>("[data-room-join-error]");
   if (joinError) {
     joinError.textContent = message;
@@ -127,8 +185,8 @@ function showRoomError(message: string): void {
 }
 
 function setConnectionStatus(status: string): void {
-  if (hostAnnouncementTimer && status === "Connected") return;
-  if (hostAnnouncementTimer && status !== "You're the host now") {
+  if (hostAnnouncementTimer && status === msg("room_status_connected")) return;
+  if (hostAnnouncementTimer && status !== msg("room_status_host_now")) {
     window.clearTimeout(hostAnnouncementTimer);
     hostAnnouncementTimer = 0;
   }
@@ -139,10 +197,10 @@ function setConnectionStatus(status: string): void {
 function announceNewHost(): void {
   if (hostAnnouncementTimer) window.clearTimeout(hostAnnouncementTimer);
   hostAnnouncementTimer = 0;
-  setConnectionStatus("You're the host now");
+  setConnectionStatus(msg("room_status_host_now"));
   hostAnnouncementTimer = window.setTimeout(() => {
     hostAnnouncementTimer = 0;
-    if (latestView?.isHost) setConnectionStatus("Connected");
+    if (latestView?.isHost) setConnectionStatus(msg("room_status_connected"));
   }, 4000);
 }
 
@@ -314,12 +372,12 @@ function updateRoomTesterControls(view: RoomView): void {
       : view.players.find((player) => player.id === view.testerId);
   const selectedLabel = tester
     ? `${tester.emoji} ${tester.name}`
-    : "This screen";
+    : msg("room_this_screen");
   value.textContent = selectedLabel;
 
   if (view.isHost) {
     const options = [
-      { id: null, emoji: "🖥️", name: "This screen" },
+      { id: null, emoji: "🖥️", name: msg("room_this_screen") },
       ...view.players
         .filter((player) => !player.mine)
         .map((player) => ({
@@ -365,14 +423,18 @@ function updateRoomTesterControls(view: RoomView): void {
   }
   if (teamRoom) {
     chip.textContent = tester
-      ? `This round: guess ${tester.emoji} ${tester.name}'s Wi-Fi`
-      : "This round: guess the host screen's Wi-Fi";
+      ? msg("room_this_round_player", {
+          player: `${tester.emoji} ${tester.name}`,
+        })
+      : msg("room_this_round_host");
   } else if (view.canRunTest) {
-    chip.textContent = "Your phone runs the test";
+    chip.textContent = msg("room_test_runs_you");
   } else if (!tester) {
-    chip.textContent = "Test runs on: The host's screen";
+    chip.textContent = msg("room_test_runs_host");
   } else {
-    chip.textContent = `Test runs on: ${tester.emoji} ${tester.name}`;
+    chip.textContent = msg("room_test_runs_player", {
+      player: `${tester.emoji} ${tester.name}`,
+    });
   }
 }
 
@@ -384,7 +446,9 @@ function showHostTransferDialog(player: RoomView["players"][number]): void {
   );
   if (!dialog || !message || !cancelButton) return;
   pendingHostPlayerId = player.id;
-  message.textContent = `Make ${player.name}'s phone the host? This screen loses host controls.`;
+  message.textContent = msg("room_host_transfer_confirm", {
+    name: player.name,
+  });
   if (!dialog.open) dialog.showModal();
   cancelButton.focus();
 }
@@ -400,7 +464,7 @@ function updateRoomHostControls(view: RoomView): void {
     view.isHost && view.phase !== "testing" && eligiblePlayers.length > 0;
   picker.hidden = !canTransfer;
   trigger.disabled = !canTransfer;
-  value.textContent = "Choose a player";
+  value.textContent = msg("room_choose_player");
   if (!canTransfer) {
     closeRoomPickerMenu("[data-room-host-trigger]", "[data-room-host-menu]");
     return;
@@ -438,7 +502,7 @@ function showEndedRoom(): void {
   if (ended) return;
   ended = true;
   window.clearTimeout(reconnectTimer);
-  setConnectionStatus("Room ended");
+  setConnectionStatus(msg("room_status_ended"));
   if (socket && socket.readyState < WebSocket.CLOSING) socket.close();
   const dialog = queryOptional<HTMLDialogElement>("[data-room-ended-dialog]");
   if (dialog && !dialog.open) dialog.showModal();
@@ -448,7 +512,7 @@ function scheduleReconnect(): void {
   if (ended || !isRoom || !roomCode) return;
   const delay = Math.min(1000 * 2 ** reconnectAttempt, 10_000);
   reconnectAttempt += 1;
-  setConnectionStatus("Reconnecting...");
+  setConnectionStatus(msg("room_status_reconnecting"));
   window.clearTimeout(reconnectTimer);
   reconnectTimer = window.setTimeout(() => {
     void checkThenConnect();
@@ -465,7 +529,7 @@ async function checkThenConnect(): Promise<void> {
       showEndedRoom();
       return;
     }
-    if (!response.ok) throw new Error("Room check failed");
+    if (!response.ok) throw new Error("room_not_found");
     connect();
   } catch {
     scheduleReconnect();
@@ -485,7 +549,7 @@ function connect(): void {
   socket = nextSocket;
   nextSocket.addEventListener("open", () => {
     if (socket !== nextSocket) return;
-    setConnectionStatus("Connecting...");
+    setConnectionStatus(msg("room_status_connecting"));
     const hello: { type: "hello"; clientId: string; hostToken?: string } = {
       type: "hello",
       clientId: stableClientId(),
@@ -535,7 +599,7 @@ function connect(): void {
       }
       updateRoomTesterControls(latestView);
       updateRoomHostControls(latestView);
-      setConnectionStatus("Connected");
+      setConnectionStatus(msg("room_status_connected"));
       if (
         !latestView.isHost &&
         !latestView.players.some((player) => player.mine)
@@ -554,7 +618,7 @@ function connect(): void {
       return;
     }
     if (message.type === "error" && typeof message.message === "string") {
-      if (message.message.toLowerCase().includes("room has ended")) {
+      if (message.message === "room_ended") {
         showEndedRoom();
         return;
       }
@@ -570,7 +634,8 @@ function connect(): void {
     scheduleReconnect();
   });
   nextSocket.addEventListener("error", () => {
-    if (socket === nextSocket && !ended) setConnectionStatus("Reconnecting...");
+    if (socket === nextSocket && !ended)
+      setConnectionStatus(msg("room_status_reconnecting"));
   });
 }
 
@@ -597,7 +662,7 @@ function renderQrCode(): void {
     qr.make();
     const image = document.createElement("img");
     image.src = qr.createDataURL(8, 2);
-    image.alt = `QR code to join room ${roomCode}`;
+    image.alt = msg("room_qr_alt", { code: roomCode });
     imageRoot.replaceChildren(image);
     if (codeText) codeText.textContent = roomCode.split("").join(" ");
   });
@@ -611,14 +676,12 @@ async function copyRoomLink(): Promise<void> {
   try {
     await navigator.clipboard.writeText(roomLink());
     for (const button of copyButtons) {
-      const original = button.textContent ?? "Copy link";
-      button.textContent = "Copied";
+      const original = button.textContent ?? msg("room_copy_link");
+      button.textContent = msg("room_copied");
       window.setTimeout(() => (button.textContent = original), 1600);
     }
   } catch {
-    showRoomError(
-      "Could not copy the link. Please copy it from the address bar.",
-    );
+    showRoomError("room_copy_failed");
   }
 }
 
@@ -628,7 +691,7 @@ async function joinWithCode(form: HTMLFormElement): Promise<void> {
   const error = queryOptional<HTMLElement>("[data-room-entry-error]");
   if (!code) {
     if (error) {
-      error.textContent = "Enter a valid six-letter room code.";
+      error.textContent = msg("room_join_code_invalid");
       error.hidden = false;
     }
     return;
@@ -638,14 +701,14 @@ async function joinWithCode(form: HTMLFormElement): Promise<void> {
   if (error) error.hidden = true;
   try {
     const response = await fetch(`/api/rooms/${code}`);
-    if (response.status === 404)
-      throw new Error("That room could not be found.");
-    if (!response.ok) throw new Error("Could not check that room right now.");
+    if (response.status === 404) throw new Error("room_not_found");
+    if (!response.ok) throw new Error("room_error_check_failed");
     window.location.assign(roomPageUrl(code));
   } catch (failure) {
     if (error) {
-      error.textContent =
-        failure instanceof Error ? failure.message : "Could not join the room.";
+      error.textContent = localizedError(
+        failure instanceof Error ? failure.message : "room_error_join_failed",
+      );
       error.hidden = false;
     }
     if (button) button.disabled = false;
@@ -659,7 +722,7 @@ async function createRoom(kind: "family" | "team" = "family"): Promise<void> {
   const error = queryOptional<HTMLElement>("[data-room-entry-error]");
   if (button) {
     button.disabled = true;
-    button.textContent = "Creating...";
+    button.textContent = msg("room_creating");
   }
   if (error) error.hidden = true;
   try {
@@ -675,21 +738,22 @@ async function createRoom(kind: "family" | "team" = "family"): Promise<void> {
       typeof body.code !== "string" ||
       typeof body.hostToken !== "string"
     )
-      throw new Error("Could not create a room. Please try again.");
+      throw new Error("room_creation_failed");
     const code = normalizeRoomCode(body.code);
-    if (!code) throw new Error("The server returned an invalid room code.");
+    if (!code) throw new Error("invalid_room_code");
     localStorage.setItem(`gts:host:${code}`, body.hostToken);
     window.location.assign(roomPageUrl(code));
   } catch (failure) {
     if (error) {
-      error.textContent =
-        failure instanceof Error ? failure.message : "Could not create a room.";
+      error.textContent = localizedError(
+        failure instanceof Error ? failure.message : "room_creation_failed",
+      );
       error.hidden = false;
     }
     if (button) {
       button.disabled = false;
       button.textContent =
-        kind === "team" ? "Start a team room" : "Create a room";
+        kind === "team" ? msg("room_start_team") : msg("room_create");
     }
   }
 }
@@ -839,7 +903,7 @@ if (isRoom) {
       const roleChoice = roles[selected]?.closest("label");
       const roleName =
         roleChoice?.querySelector("small")?.textContent?.slice(0, 16) ??
-        "Player";
+        msg("room_role_player");
       const emoji =
         roleChoice?.querySelector("span")?.textContent?.slice(0, 16) ?? "🧑";
       if (!name.trim()) {
@@ -848,7 +912,7 @@ if (isRoom) {
       }
       if (isBlockedName(name)) {
         if (joinError) {
-          joinError.textContent = BLOCKED_NAME_MESSAGE;
+          joinError.textContent = msg("room_error_name_blocked");
           joinError.hidden = false;
         }
         nameInput.focus();

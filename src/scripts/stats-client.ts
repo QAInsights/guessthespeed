@@ -1,17 +1,23 @@
 import {
-  formatPlayStat,
   normalizeTotals,
+  playStatRounds,
   type PlayTotals,
   type PlayMode,
   type StatEvent,
 } from "../lib/stats";
+import { formatNumber, LOCALE_INFO } from "../lib/i18n";
+import { initializeClientLocale, t } from "../lib/messages";
 
-const integerFormat = new Intl.NumberFormat("en-US");
-const oneDecimalFormat = new Intl.NumberFormat("en-US", {
-  minimumFractionDigits: 1,
-  maximumFractionDigits: 1,
-});
-const percentFormat = new Intl.NumberFormat("en-US", {
+const locale = initializeClientLocale();
+const integerFormat = new Intl.NumberFormat(LOCALE_INFO[locale].numberLocale);
+const oneDecimalFormat = new Intl.NumberFormat(
+  LOCALE_INFO[locale].numberLocale,
+  {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  },
+);
+const percentFormat = new Intl.NumberFormat(LOCALE_INFO[locale].numberLocale, {
   maximumFractionDigits: 1,
 });
 
@@ -179,11 +185,15 @@ export async function loadPlayStat(): Promise<void> {
     for (const element of elements) {
       const text = element.querySelector<HTMLElement>("[data-play-stat-text]");
       if (!text) continue;
-      const formatted = formatPlayStat(totals, {
-        short: element.hasAttribute("data-play-stat-short"),
-      });
-      if (!formatted) continue;
-      text.textContent = formatted;
+      const count = playStatRounds(normalizeTotals(totals));
+      if (count === null) continue;
+      text.textContent = t(
+        element.hasAttribute("data-play-stat-short")
+          ? "play_stat_short"
+          : "play_stat_long",
+        { rounds: formatNumber(count, locale) },
+        locale,
+      );
       element.hidden = false;
     }
   } catch {

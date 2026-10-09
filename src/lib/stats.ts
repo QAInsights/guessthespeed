@@ -235,14 +235,7 @@ export function addStatEvent(totals: PlayTotals, event: StatEvent): PlayTotals {
   };
 }
 
-export function formatPlayStat(
-  totals: PlayTotals | null,
-  options: { short?: boolean } = {},
-): string | null {
+export function playStatRounds(totals: PlayTotals | null): number | null {
   if (!totals || totals.rounds < STAT_DISPLAY_MIN_ROUNDS) return null;
-  const rounds = new Intl.NumberFormat("en-US").format(totals.rounds);
-  const roundNoun = totals.rounds === 1 ? "round" : "rounds";
-  return options.short
-    ? `${rounds} ${roundNoun} so far`
-    : `${rounds} ${roundNoun} played so far`;
+  return totals.rounds;
 }

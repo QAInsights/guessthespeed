@@ -34,29 +34,29 @@ export default {
 
       const match = url.pathname.match(/^\/api\/rooms\/([^/]+)(\/ws)?$/);
       if (!match || request.method !== "GET")
-        return jsonResponse({ error: "Not found." }, 404);
+        return jsonResponse({ error: "not_found" }, 404);
 
       let inputCode: string;
       try {
         inputCode = decodeURIComponent(match[1]);
       } catch {
-        return jsonResponse({ error: "Invalid room code." }, 400);
+        return jsonResponse({ error: "invalid_room_code" }, 400);
       }
       const code = normalizeRoomCode(inputCode);
-      if (!code) return jsonResponse({ error: "Invalid room code." }, 400);
+      if (!code) return jsonResponse({ error: "invalid_room_code" }, 400);
 
       const stub = env.ROOMS.get(env.ROOMS.idFromName(code));
       if (match[2]) {
         if (request.headers.get("Upgrade")?.toLowerCase() !== "websocket")
-          return jsonResponse({ error: "WebSocket upgrade required." }, 426);
+          return jsonResponse({ error: "websocket_upgrade_required" }, 426);
         const origin = request.headers.get("Origin");
         if (!isAllowedWebSocketOrigin(origin, url.host))
-          return jsonResponse({ error: "Origin not allowed." }, 403);
+          return jsonResponse({ error: "origin_not_allowed" }, 403);
         return stub.fetch(request);
       }
 
       const response = await stub.fetch("https://room.internal/check");
-      if (!response.ok) return jsonResponse({ error: "Room not found." }, 404);
+      if (!response.ok) return jsonResponse({ error: "room_not_found" }, 404);
       return jsonResponse({ exists: true });
     }
     return env.ASSETS.fetch(request);
@@ -71,26 +71,23 @@ async function handleStats(request: Request, env: Env): Promise<Response> {
       .trim()
       .toLowerCase();
     if (contentType !== "application/json")
-      return jsonResponse(
-        { error: "Content-Type must be application/json." },
-        400,
-      );
+      return jsonResponse({ error: "content_type_json_required" }, 400);
 
     if (declaredBodyTooLarge(request.headers.get("content-length"), 256))
-      return jsonResponse({ error: "Request body is too large." }, 413);
+      return jsonResponse({ error: "request_body_too_large" }, 413);
 
     const body = await request.text();
     if (utf8LengthExceeds(body, 256))
-      return jsonResponse({ error: "Request body is too large." }, 413);
+      return jsonResponse({ error: "request_body_too_large" }, 413);
 
     let input: unknown;
     try {
       input = JSON.parse(body);
     } catch {
-      return jsonResponse({ error: "Invalid JSON." }, 400);
+      return jsonResponse({ error: "invalid_json" }, 400);
     }
     const event = parseStatEvent(input);
-    if (!event) return jsonResponse({ error: "Invalid event." }, 400);
+    if (!event) return jsonResponse({ error: "invalid_event" }, 400);
 
     const stub = env.STATS.get(env.STATS.idFromName("global"));
     try {
@@ -116,10 +113,10 @@ async function handleStats(request: Request, env: Env): Promise<Response> {
       const stub = env.STATS.get(env.STATS.idFromName("global"));
       const response = await stub.fetch("https://stats.internal/totals");
       if (!response.ok)
-        return jsonResponse({ error: "Could not load play totals." }, 503);
+        return jsonResponse({ error: "play_totals_unavailable" }, 503);
       totals = await response.json();
     } catch {
-      return jsonResponse({ error: "Could not load play totals." }, 503);
+      return jsonResponse({ error: "play_totals_unavailable" }, 503);
     }
 
     const response = jsonResponse(totals);
@@ -131,15 +128,15 @@ async function handleStats(request: Request, env: Env): Promise<Response> {
     return response;
   }
 
-  return jsonResponse({ error: "Method not allowed." }, 405);
+  return jsonResponse({ error: "method_not_allowed" }, 405);
 }
 
 async function createRoom(request: Request, env: Env): Promise<Response> {
   if (declaredBodyTooLarge(request.headers.get("content-length"), 64))
-    return jsonResponse({ error: "Request body is too large." }, 413);
+    return jsonResponse({ error: "request_body_too_large" }, 413);
   const body = await request.text();
   if (utf8LengthExceeds(body, 64))
-    return jsonResponse({ error: "Request body is too large." }, 413);
+    return jsonResponse({ error: "request_body_too_large" }, 413);
   const kind: RoomKind = parseRoomKind(body);
 
   for (let attempt = 0; attempt < 5; attempt += 1) {
@@ -157,7 +154,7 @@ async function createRoom(request: Request, env: Env): Promise<Response> {
     });
     if (response.status === 201) return jsonResponse({ code, hostToken }, 201);
     if (response.status !== 409)
-      return jsonResponse({ error: "Could not create a room." }, 503);
+      return jsonResponse({ error: "room_creation_failed" }, 503);
   }
-  return jsonResponse({ error: "Could not find an available room code." }, 503);
+  return jsonResponse({ error: "room_code_unavailable" }, 503);
 }

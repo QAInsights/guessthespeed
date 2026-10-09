@@ -1,81 +1,123 @@
 ---
-import { Icon } from 'astro-icon/components';
+import { Icon } from "astro-icon/components";
+import { LOCALE_INFO, type Locale } from "../lib/i18n";
+import { t } from "../lib/messages";
 
+interface Props {
+  locale?: Locale;
+  translatedHome?: boolean;
+}
+
+const { locale = "en", translatedHome = false } = Astro.props;
 const columns = [
   {
-    title: 'Play',
+    title: t("footer_play", {}, locale),
     links: [
-      { href: '/speed-test-game/', label: 'Speed test game' },
-      { href: '/family-game-night-ideas/', label: 'Game night ideas' },
-      { href: '/work/', label: 'Team icebreaker' },
-      { href: '/classroom/', label: 'Classroom mode' },
-      { href: '/internet-speed-lesson-for-kids/', label: 'Classroom lesson' },
+      {
+        href: "/speed-test-game/",
+        label: t("footer_speed_test_game", {}, locale),
+      },
+      {
+        href: "/family-game-night-ideas/",
+        label: t("footer_game_night_ideas", {}, locale),
+      },
+      { href: "/work/", label: t("footer_team_icebreaker", {}, locale) },
+      { href: "/classroom/", label: t("footer_classroom_mode", {}, locale) },
+      {
+        href: "/internet-speed-lesson-for-kids/",
+        label: t("footer_classroom_lesson", {}, locale),
+      },
     ],
   },
   {
-    title: 'Learn',
+    title: t("footer_learn", {}, locale),
     links: [
-      { href: '/how-to-play/', label: 'How to play' },
-      { href: '/how-it-works/', label: 'How it works' },
-      { href: '/internet-speed-101/', label: 'Internet speed 101' },
-      { href: '/what-is-a-good-internet-speed/', label: 'Good internet speed' },
+      { href: "/how-to-play/", label: t("footer_how_to_play", {}, locale) },
+      { href: "/how-it-works/", label: t("footer_how_it_works", {}, locale) },
+      {
+        href: "/internet-speed-101/",
+        label: t("footer_internet_101", {}, locale),
+      },
+      {
+        href: "/what-is-a-good-internet-speed/",
+        label: t("footer_good_speed", {}, locale),
+      },
     ],
   },
   {
-    title: 'Tools',
+    title: t("footer_tools", {}, locale),
     links: [
-      { href: '/am-i-getting-the-speed-i-pay-for/', label: 'Plan speed check' },
-      { href: '/how-much-internet-speed-do-i-need/', label: 'Speed calculator' },
-      { href: '/mbps-to-mbs/', label: 'Mbps to MB/s' },
+      {
+        href: "/am-i-getting-the-speed-i-pay-for/",
+        label: t("footer_plan_speed_check", {}, locale),
+      },
+      {
+        href: "/how-much-internet-speed-do-i-need/",
+        label: t("footer_speed_calculator", {}, locale),
+      },
+      { href: "/mbps-to-mbs/", label: t("footer_mbps_to_mbs", {}, locale) },
     ],
   },
   {
-    title: 'About',
+    title: t("footer_about", {}, locale),
     links: [
-      { href: '/story/', label: 'Our story' },
-      { href: '/stats/', label: 'Live stats' },
-      { href: '/privacy/', label: 'Privacy' },
+      { href: "/story/", label: t("footer_our_story", {}, locale) },
+      { href: "/stats/", label: t("footer_live_stats", {}, locale) },
+      { href: "/privacy/", label: t("footer_privacy", {}, locale) },
     ],
   },
 ];
 
 const projects = [
-  { href: 'https://qainsights.com', label: 'QAInsights' },
-  { href: 'https://dosa.dev', label: 'dosa.dev' },
-  { href: 'https://ai.dosa.dev', label: 'ai.dosa.dev' },
-  { href: 'https://iamspeed.dev', label: 'iamspeed.dev' },
+  { href: "https://qainsights.com", label: "QAInsights" },
+  { href: "https://dosa.dev", label: "dosa.dev" },
+  { href: "https://ai.dosa.dev", label: "ai.dosa.dev" },
+  { href: "https://iamspeed.dev", label: "iamspeed.dev" },
 ];
 ---
 
 <footer>
   <div class="wrap foot">
     <div class="foot-brand">
-      <a class="foot-logo" href="/" aria-label="Guess the Speed home">
-        <span class="logo-badge" aria-hidden="true">?</span>
+      <a
+        class="foot-logo"
+        href="/"
+        aria-label={t("header_home_aria", {}, locale)}
+      >
+        <span class="logo-badge" aria-hidden="true">
+          ?
+        </span>
         <b>guess the speed</b>
       </a>
-      <p>
-        The internet speed guessing game for family game night, classrooms and
-        team calls. Free, no accounts, and scores stay on this device.
-      </p>
+      <p>{t("footer_description", {}, locale)}</p>
       <div class="foot-actions">
-        <a href="https://buymeacoffee.com/qainsights" target="_blank" rel="noopener">
+        <a
+          href="https://buymeacoffee.com/qainsights"
+          target="_blank"
+          rel="noopener"
+        >
           <Icon name="ph:coffee-fill" aria-hidden="true" />
-          Buy me a coffee
+          {t("footer_buy_coffee", {}, locale)}
         </a>
-        <a href="https://github.com/QAInsights/guessthespeed" target="_blank" rel="noopener">
+        <a
+          href="https://github.com/QAInsights/guessthespeed"
+          target="_blank"
+          rel="noopener"
+        >
           <Icon name="ph:github-logo-fill" aria-hidden="true" />
-          GitHub
+          {t("footer_github", {}, locale)}
         </a>
       </div>
     </div>
-    <nav class="foot-nav" aria-label="Footer">
+    <nav class="foot-nav" aria-label={t("footer_aria", {}, locale)}>
       {columns.map((column) => (
         <div class="foot-col">
           <h2>{column.title}</h2>
           <ul>
             {column.links.map((link) => (
-              <li><a href={link.href}>{link.label}</a></li>
+              <li>
+                <a href={link.href}>{link.label}</a>
+              </li>
             ))}
           </ul>
         </div>
@@ -83,12 +125,43 @@ const projects = [
     </nav>
   </div>
   <div class="wrap foot-base">
-    <p>© 2026 Guess the Speed. Made by NaveenKumar for game night with his kids.</p>
-    <nav class="foot-projects" aria-label="More projects">
-      <span>More projects</span>
+    <p>{t("footer_copyright", {}, locale)}</p>
+    <nav
+      class="foot-projects"
+      aria-label={t("footer_projects_aria", {}, locale)}
+    >
+      <span>{t("footer_more_projects", {}, locale)}</span>
       {projects.map((project) => (
-        <a href={project.href} rel="noopener">{project.label}</a>
+        <a href={project.href} rel="noopener">
+          {project.label}
+        </a>
       ))}
     </nav>
   </div>
+  <nav
+    class="wrap footer-languages"
+    aria-label={t("language_picker_aria", {}, locale)}
+  >
+    {(["en", "ta", "es"] as const).map((optionLocale) => (
+      <a
+        href={
+          translatedHome
+            ? LOCALE_INFO[optionLocale].home
+            : optionLocale === "en"
+              ? Astro.url.pathname
+              : LOCALE_INFO[optionLocale].home
+        }
+        lang={optionLocale}
+        aria-current={locale === optionLocale ? "page" : undefined}
+      >
+        {t(
+          `language_${optionLocale === "en" ? "english" : optionLocale === "ta" ? "tamil" : "spanish"}` as Parameters<
+            typeof t
+          >[0],
+          {},
+          locale,
+        )}
+      </a>
+    ))}
+  </nav>
 </footer>

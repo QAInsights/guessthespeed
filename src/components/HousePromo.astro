@@ -1,44 +1,52 @@
 ---
 import { Icon } from "astro-icon/components";
 import { PROMOS } from "../lib/promos";
+import { t } from "../lib/messages";
+import type { Locale } from "../lib/i18n";
+
+interface Props {
+  locale?: Locale;
+}
+
+const { locale = "en" } = Astro.props;
+const promoText = (key: string) =>
+  t(key as Parameters<typeof t>[0], {}, locale);
 ---
 
 <aside
   class="house-promo stk"
   data-house-promo
   hidden
-  aria-label="More from the maker"
+  aria-label={promoText("promo_aria")}
 >
-  {
-    PROMOS.map((promo) => (
-      <div class="promo-card" data-promo-id={promo.id} hidden>
-        <a class="promo-link" href={promo.href} target="_blank" rel="noopener">
-          <img
-            class:list={{ "promo-image-tiled": Boolean(promo.tile) }}
-            src={promo.image}
-            alt=""
-            width="56"
-            height="56"
-            loading="lazy"
-            decoding="async"
-            style={promo.tile ? `--promo-tile: ${promo.tile}` : undefined}
-          />
-          <span class="promo-kicker">More from the maker</span>
-          <b class="promo-title">{promo.title}</b>
-          <span class="promo-blurb">{promo.blurb}</span>
-          <span class="promo-cta">
-            {promo.cta} <span aria-hidden="true">→</span>
-          </span>
-          <span class="sr">(opens in a new tab)</span>
-        </a>
-      </div>
-    ))
-  }
+  {PROMOS.map((promo) => (
+    <div class="promo-card" data-promo-id={promo.id} hidden>
+      <a class="promo-link" href={promo.href} target="_blank" rel="noopener">
+        <img
+          class:list={{ "promo-image-tiled": Boolean(promo.tile) }}
+          src={promo.image}
+          alt=""
+          width="56"
+          height="56"
+          loading="lazy"
+          decoding="async"
+          style={promo.tile ? `--promo-tile: ${promo.tile}` : undefined}
+        />
+        <span class="promo-kicker">{promoText("promo_kicker")}</span>
+        <b class="promo-title">{promo.title}</b>
+        <span class="promo-blurb">{promoText(promo.blurbKey)}</span>
+        <span class="promo-cta">
+          {promoText(promo.ctaKey)} <span aria-hidden="true">→</span>
+        </span>
+        <span class="sr">{promoText("promo_new_tab")}</span>
+      </a>
+    </div>
+  ))}
   <button
     type="button"
     class="promo-close"
     data-promo-close
-    aria-label="Close"
+    aria-label={promoText("promo_close")}
   >
     <Icon name="ph:x-bold" />
   </button>

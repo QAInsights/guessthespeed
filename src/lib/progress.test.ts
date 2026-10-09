@@ -16,16 +16,16 @@ describe("sizeLabel", () => {
 
 describe("phaseText", () => {
   it.each([
-    ["ping", undefined, "Pinging Cloudflare"],
-    ["ping", 1e5, "Pinging Cloudflare"],
-    ["down", undefined, "Measuring download"],
-    ["down", 1e7, "Measuring download: 10 MB files"],
-    ["up", undefined, "Measuring upload"],
-    ["up", 2.5e7, "Measuring upload: 25 MB files"],
-  ] as [Phase, number | undefined, string][])(
-    "formats the %s phase",
+    ["ping", undefined, { phase: "ping" }],
+    ["ping", 1e5, { phase: "ping", bytes: 1e5 }],
+    ["down", undefined, { phase: "down" }],
+    ["down", 1e7, { phase: "down", bytes: 1e7 }],
+    ["up", undefined, { phase: "up" }],
+    ["up", 2.5e7, { phase: "up", bytes: 2.5e7 }],
+  ] as [Phase, number | undefined, { phase: Phase; bytes?: number }][])(
+    "returns data for the %s phase",
     (phase, bytes, expected) => {
-      expect(phaseText(phase, bytes)).toBe(expected);
+      expect(phaseText(phase, bytes)).toEqual(expected);
     },
   );
 });

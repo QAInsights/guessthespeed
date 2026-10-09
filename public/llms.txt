@@ -17,6 +17,8 @@
 ## Pages
 
 - [Play Guess the Speed](https://guessthespeed.com/)
+- [Guess the Speed in Tamil](https://guessthespeed.com/ta/)
+- [Guess the Speed in Spanish](https://guessthespeed.com/es/)
 - [Our story](https://guessthespeed.com/story/)
 - [Live stats](https://guessthespeed.com/stats/) shows aggregate totals for rounds, games, guesses, spot-on guesses, average download, closest misses, and play modes.
 - [How to play](https://guessthespeed.com/how-to-play/)

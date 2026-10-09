@@ -2,6 +2,8 @@
 
 Guess the Speed is a family game-night app. Players privately guess download and upload speed, run a real speed test, and score points for the closest estimates. The game runs in a browser with no account. A round takes about two minutes, so it also works as a quick filler game between longer games.
 
+The home game is also available in Tamil at https://guessthespeed.com/ta/ and Spanish at https://guessthespeed.com/es/. Other guides and content pages are currently in English.
+
 ## How to play
 
 1. Add each player with a name and role face.

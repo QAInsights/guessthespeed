@@ -2,9 +2,9 @@ import { describe, expect, it } from "vitest";
 import {
   addStatEvent,
   EMPTY_TOTALS,
-  formatPlayStat,
   normalizeTotals,
   parseStatEvent,
+  playStatRounds,
   roomStatMode,
   roundStatEvent,
   STAT_DOWN_CAP,
@@ -314,34 +314,16 @@ describe("roundStatEvent", () => {
   });
 });
 
-describe("formatPlayStat", () => {
+describe("playStatRounds", () => {
   it("hides zero-round totals", () => {
-    expect(formatPlayStat(totals())).toBeNull();
-    expect(formatPlayStat(null)).toBeNull();
+    expect(playStatRounds(totals())).toBeNull();
+    expect(playStatRounds(null)).toBeNull();
   });
 
-  it("formats one round in singular form", () => {
-    const oneRound = totals({ rounds: 1, games: 1, guesses: 2 });
-    expect(formatPlayStat(oneRound)).toBe("1 round played so far");
-    expect(formatPlayStat(oneRound, { short: true })).toBe("1 round so far");
-  });
-
-  it("formats multiple rounds in plural form", () => {
-    expect(formatPlayStat(totals({ rounds: 2, games: 1, guesses: 2 }))).toBe(
-      "2 rounds played so far",
-    );
+  it("returns the number of rounds to format in the active locale", () => {
+    expect(playStatRounds(totals({ rounds: 1, games: 1, guesses: 2 }))).toBe(1);
     expect(
-      formatPlayStat(totals({ rounds: 1234, games: 20, guesses: 150 })),
-    ).toBe("1,234 rounds played so far");
-    expect(
-      formatPlayStat(totals({ rounds: 1234, games: 20, guesses: 150 }), {
-        short: true,
-      }),
-    ).toBe("1,234 rounds so far");
-    expect(
-      formatPlayStat(totals({ rounds: 2, games: 1, guesses: 2 }), {
-        short: true,
-      }),
-    ).toBe("2 rounds so far");
+      playStatRounds(totals({ rounds: 1234, games: 20, guesses: 150 })),
+    ).toBe(1234);
   });
 });

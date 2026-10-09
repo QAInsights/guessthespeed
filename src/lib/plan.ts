@@ -63,16 +63,6 @@ export function planTone(pct: number): "good" | "ok" | "low" {
   return pct >= 80 ? "good" : pct >= 50 ? "ok" : "low";
 }
 
-export function formatPlanChip(pct: number, planned: number): string {
-  return `${pct}% of your ${planned.toLocaleString(undefined, {
-    maximumFractionDigits: 0,
-  })} Mbps plan`;
-}
-
-export function formatPlanChipShort(pct: number): string {
-  return `${pct}% of plan`;
-}
-
 export function loadPlan(storage?: PlanStorageLike): InternetPlan {
   try {
     const target =

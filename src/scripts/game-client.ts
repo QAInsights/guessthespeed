@@ -9,7 +9,6 @@ import {
   nextRound,
   pendingGuessers,
   removePlayer,
-  startAnywayMessage,
   unlockGuess,
   saveGame,
   STORAGE_KEY,
@@ -19,7 +18,7 @@ import {
   type GameSettings,
   type Player,
 } from "../lib/game";
-import { BLOCKED_NAME_MESSAGE, isBlockedName } from "../lib/name-filter";
+import { isBlockedName } from "../lib/name-filter";
 import { auroraFor, auroraStyleVars } from "../lib/aurora";
 import { BACKUP_KEY, clearSession, loadSession } from "../lib/classroom";
 import {
@@ -28,7 +27,7 @@ import {
   StalledError,
   type Phase,
 } from "../lib/speedtest";
-import { phaseText, SLOW_HINT_MS } from "../lib/progress";
+import { phaseText, sizeLabel, SLOW_HINT_MS } from "../lib/progress";
 import { themes, themeForDate, type ThemeId } from "../lib/themes";
 import { playCue } from "../lib/sound";
 import {
@@ -54,18 +53,13 @@ import {
 import { roundStatEvent } from "../lib/stats";
 import { sendStat } from "./stats-client";
 import { recordSpeedSample } from "./history-client";
-import {
-  formatPlanChip,
-  formatPlanChipShort,
-  hasPlan,
-  loadPlan,
-  planPercent,
-  planTone,
-} from "../lib/plan";
+import { hasPlan, loadPlan, planPercent, planTone } from "../lib/plan";
 import { describeTarget, isOverlayOpen, shortcutAction } from "./shortcuts";
 import { escapeHtml } from "../lib/html";
 import { $, $$ } from "./dom";
-import { emptyPlayerMarkup } from "./player-empty-state";
+import { playerEmptyState } from "./player-empty-state";
+import { initializeClientLocale, t } from "../lib/messages";
+import { formatNumber, type Locale } from "../lib/i18n";
 import {
   REVEAL_SUSPENSE_MS,
   REVEAL_SWING_MS,
@@ -73,6 +67,11 @@ import {
 } from "./gauge-reveal";
 
 type ClientPlayer = Player & { mine?: boolean };
+const locale: Locale = initializeClientLocale();
+const msg = (
+  key: Parameters<typeof t>[0],
+  params: Record<string, string | number | boolean> = {},
+) => t(key, params, locale);
 type ClientGameState = Omit<GameState, "players"> & {
   players: ClientPlayer[];
   isRoomHost?: boolean;
@@ -205,8 +204,7 @@ function endClass() {
     document.dispatchEvent(new CustomEvent("gts:classroom-change"));
     window.location.assign("/");
   } catch {
-    errorNote.textContent =
-      "The class could not end because this browser could not restore its saved game.";
+    errorNote.textContent = msg("classroom_end_failed");
   }
 }
 
@@ -214,7 +212,9 @@ function configureClassroomMode() {
   if (!classroomSession) return;
   classroomBanner.hidden = false;
   classroomChip.textContent = `🏫 ${classroomSession.className} · ${
-    classroomSession.mode === "teams" ? "Team game" : "Spotlight"
+    classroomSession.mode === "teams"
+      ? msg("classroom_team_game")
+      : msg("classroom_spotlight")
   }`;
   roomEntry.hidden = true;
   classroomTeaser.hidden = true;
@@ -289,7 +289,7 @@ function initializeGauge() {
     text.setAttribute("text-anchor", "middle");
     text.setAttribute("dominant-baseline", "middle");
     text.setAttribute("class", "tick");
-    text.textContent = String(value);
+    text.textContent = formatNumber(value, locale);
     ticksGroup.append(text);
   }
   $$<SVGPathElement>("[data-arc]").forEach((path) => {
@@ -343,23 +343,23 @@ function renderPlayerCard(player: ClientPlayer, index: number) {
   const concealed = roomMode && !mine && !revealed;
   const guessAction = revealed
     ? `<div class="p-results">
-        <span>Download guess: ${player.guess.down === null ? "No guess" : `${player.guess.down.toLocaleString()} Mbps`}</span>
-        <span>Upload guess: ${player.guess.up === null ? "No guess" : `${player.guess.up.toLocaleString()} Mbps`}</span>
-        <span>${miss === null || miss === undefined ? "No guess this round" : `${(miss * 100).toFixed(1)}% average miss${tooFar ? ", too far for place points" : ""}`}</span>
+        <span>${msg("game_download_guess")}: ${player.guess.down === null ? msg("game_no_guess") : `${formatNumber(player.guess.down, locale)} Mbps`}</span>
+        <span>${msg("game_upload_guess")}: ${player.guess.up === null ? msg("game_no_guess") : `${formatNumber(player.guess.up, locale)} Mbps`}</span>
+        <span>${miss === null || miss === undefined ? msg("game_no_guess_this_round") : msg("game_average_miss", { percent: formatNumber(miss * 100, locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) })}${tooFar ? `, ${msg("game_too_far_points")}` : ""}</span>
       </div>
       <div class="p-actions">
         <span class="points-pill">${medal ? `${medal} ` : ""}${formatPointAward(roundResult?.total ?? 0)}</span>
-        ${roundResult?.bonus ? `<span class="bonus-pill">Spot on! +${roundResult.bonus}</span>` : ""}
+        ${roundResult?.bonus ? `<span class="bonus-pill">${msg("game_spot_on_points", { points: formatNumber(roundResult.bonus, locale) })}</span>` : ""}
       </div>`
     : concealed
-      ? `<div class="p-actions"><span class="room-status-pill">${locked ? "🔒 Locked in" : "Thinking"}</span></div>`
+      ? `<div class="p-actions"><span class="room-status-pill">${locked ? `🔒 ${msg("game_locked_in")}` : msg("game_thinking")}</span></div>`
       : locked
-        ? `<div class="p-actions"><button type="button" class="locked-pill" data-guess="${escapeHtml(player.id)}" ${isTesting() ? "disabled" : ""}><span aria-hidden="true">🔒</span>Locked in <small>Change</small></button>${roomMode ? `<button class="room-unlock" type="button" data-unlock="${escapeHtml(player.id)}" ${isTesting() ? "disabled" : ""}>Unlock</button>` : ""}</div>`
-        : `<div class="p-actions"><button type="button" class="guess-button" data-guess="${escapeHtml(player.id)}" ${isTesting() ? "disabled" : ""}>Guess</button></div>`;
+        ? `<div class="p-actions"><button type="button" class="locked-pill" data-guess="${escapeHtml(player.id)}" ${isTesting() ? "disabled" : ""}><span aria-hidden="true">🔒</span>${msg("game_locked_in")} <small>${msg("game_change")}</small></button>${roomMode ? `<button class="room-unlock" type="button" data-unlock="${escapeHtml(player.id)}" ${isTesting() ? "disabled" : ""}>${msg("game_unlock")}</button>` : ""}</div>`
+        : `<div class="p-actions"><button type="button" class="guess-button" data-guess="${escapeHtml(player.id)}" ${isTesting() ? "disabled" : ""}>${msg("game_guess")}</button></div>`;
   return `<article class="p-card has-aurora ${winnerClass}" style="--card-index:${index};${auroraStyleVars(auroraFor(player.id))}">
-    ${mine ? `<button class="p-edit" type="button" data-edit="${escapeHtml(player.id)}" aria-label="Edit ${escapeHtml(player.name)}" ${isTesting() ? "disabled" : ""}><span aria-hidden="true">✎</span></button>` : ""}
-    ${canRemove ? `<button class="p-rm" type="button" data-remove="${escapeHtml(player.id)}" aria-label="Remove ${escapeHtml(player.name)}" ${isTesting() ? "disabled" : ""}>×</button>` : ""}
-    <div class="p-head">${roleFor(player)}<div class="p-score"><b>${displayedScore}</b><span>${displayedScore === 1 ? "pt" : "pts"}</span></div></div>
+    ${mine ? `<button class="p-edit" type="button" data-edit="${escapeHtml(player.id)}" aria-label="${msg("game_edit_player", { name: escapeHtml(player.name) })}" ${isTesting() ? "disabled" : ""}><span aria-hidden="true">✎</span></button>` : ""}
+    ${canRemove ? `<button class="p-rm" type="button" data-remove="${escapeHtml(player.id)}" aria-label="${msg("game_remove_player", { name: escapeHtml(player.name) })}" ${isTesting() ? "disabled" : ""}>×</button>` : ""}
+    <div class="p-head">${roleFor(player)}<div class="p-score"><b>${formatNumber(displayedScore, locale)}</b><span>${formatScoreLabel(displayedScore)}</span></div></div>
     ${guessAction}
   </article>`;
 }
@@ -390,23 +390,29 @@ function renderPlayerTable(player: ClientPlayer, index: number) {
     : " ";
   const roundStatus = revealed
     ? miss === null || miss === undefined
-      ? "No guess"
-      : `${(miss * 100).toFixed(1)}% miss${tooFar ? " (too far)" : ""}`
+      ? msg("game_no_guess")
+      : msg("game_round_miss", {
+          percent: formatNumber(miss * 100, locale, {
+            minimumFractionDigits: 1,
+            maximumFractionDigits: 1,
+          }),
+          tooFar: tooFar ? msg("game_too_far_short") : "",
+        })
     : roomMode && !mine
-      ? `<span class="room-status-pill">${player.locked ? "🔒 Locked in" : "Thinking"}</span>`
+      ? `<span class="room-status-pill">${player.locked ? `🔒 ${msg("game_locked_in")}` : msg("game_thinking")}</span>`
       : player.locked
-        ? `<span class="p-table-round"><button class="locked-pill" type="button" data-guess="${escapeHtml(player.id)}" ${state.phase !== "guessing" || isTesting() ? "disabled" : ""}>🔒 Locked in <small>Change</small></button>${roomMode ? `<button class="room-unlock" type="button" data-unlock="${escapeHtml(player.id)}" ${isTesting() ? "disabled" : ""}>Unlock</button>` : ""}</span>`
-        : `<button class="guess-button" type="button" data-guess="${escapeHtml(player.id)}" ${state.phase !== "guessing" || isTesting() ? "disabled" : ""}>Guess</button>`;
+        ? `<span class="p-table-round"><button class="locked-pill" type="button" data-guess="${escapeHtml(player.id)}" ${state.phase !== "guessing" || isTesting() ? "disabled" : ""}>🔒 ${msg("game_locked_in")} <small>${msg("game_change")}</small></button>${roomMode ? `<button class="room-unlock" type="button" data-unlock="${escapeHtml(player.id)}" ${isTesting() ? "disabled" : ""}>${msg("game_unlock")}</button>` : ""}</span>`
+        : `<button class="guess-button" type="button" data-guess="${escapeHtml(player.id)}" ${state.phase !== "guessing" || isTesting() ? "disabled" : ""}>${msg("game_guess")}</button>`;
   return `<tr class="${place === 1 && revealed ? "is-winner" : ""}" style="--card-index:${index}">
-    <td class="p-pos">${medal}${index + 1}</td>
+    <td class="p-pos">${medal}${formatNumber(index + 1, locale)}</td>
     <td><span class="p-emoji">${escapeHtml(player.emoji)}</span><span class="p-name">${escapeHtml(player.name)}</span><span class="p-role">${escapeHtml(player.role)}</span></td>
-    <td>${revealed ? (player.guess.down === null ? "No guess" : `${player.guess.down.toLocaleString()} Mbps`) : "Hidden"}</td>
-    <td>${revealed ? (player.guess.up === null ? "No guess" : `${player.guess.up.toLocaleString()} Mbps`) : "Hidden"}</td>
+    <td>${revealed ? (player.guess.down === null ? msg("game_no_guess") : `${formatNumber(player.guess.down, locale)} Mbps`) : msg("game_hidden")}</td>
+    <td>${revealed ? (player.guess.up === null ? msg("game_no_guess") : `${formatNumber(player.guess.up, locale)} Mbps`) : msg("game_hidden")}</td>
     <td>${roundStatus}</td>
-    <td class="p-score">${formatScoreLabel(displayedScore)}</td>
+    <td class="p-score">${formatNumber(displayedScore, locale)} <span>${formatScoreLabel(displayedScore)}</span></td>
     <td><div class="p-table-actions">
-      ${mine ? `<button class="p-edit" type="button" data-edit="${escapeHtml(player.id)}" aria-label="Edit ${escapeHtml(player.name)}" ${isTesting() ? "disabled" : ""}><span aria-hidden="true">✎</span></button>` : ""}
-      ${canRemove ? `<button class="p-rm" type="button" data-remove="${escapeHtml(player.id)}" aria-label="Remove ${escapeHtml(player.name)}" ${isTesting() ? "disabled" : ""}>×</button>` : ""}
+      ${mine ? `<button class="p-edit" type="button" data-edit="${escapeHtml(player.id)}" aria-label="${msg("game_edit_player", { name: escapeHtml(player.name) })}" ${isTesting() ? "disabled" : ""}><span aria-hidden="true">✎</span></button>` : ""}
+      ${canRemove ? `<button class="p-rm" type="button" data-remove="${escapeHtml(player.id)}" aria-label="${msg("game_remove_player", { name: escapeHtml(player.name) })}" ${isTesting() ? "disabled" : ""}>×</button>` : ""}
     </div></td>
   </tr>`;
 }
@@ -419,10 +425,11 @@ function renderPlayers() {
     );
   });
   if (!state.players.length) {
-    playerContainer.innerHTML = emptyPlayerMarkup(roomMode, roomStateReceived);
+    const emptyState = playerEmptyState(roomMode, roomStateReceived);
+    playerContainer.innerHTML = `<div class="p-empty"><span>${emptyState === "joining" ? "📡" : "🏁"}</span><p>${msg(emptyState === "joining" ? "room_joining" : "home_add_first_player")}</p></div>`;
   } else if (state.view === "table") {
     playerContainer.innerHTML = `<div class="p-table-wrap"><table class="p-table">
-      <thead><tr><th>#</th><th>Player</th><th>Download</th><th>Upload</th><th>Round status</th><th>Score</th><th><span class="sr">Player actions</span></th></tr></thead>
+      <thead><tr><th>#</th><th>${msg("home_player_name")}</th><th>${msg("home_download")}</th><th>${msg("home_upload")}</th><th>${msg("game_round_status")}</th><th>${msg("game_score")}</th><th><span class="sr">${msg("game_player_actions")}</span></th></tr></thead>
       <tbody>${state.players.map(renderPlayerTable).join("")}</tbody>
     </table></div>`;
   } else {
@@ -464,16 +471,19 @@ function renderPlayers() {
 
 function currentRoundLabel() {
   return state.settings.rounds === "endless"
-    ? `Round ${state.round}`
-    : `Round ${state.round} of ${state.settings.rounds}`;
+    ? msg("game_round_current", { round: formatNumber(state.round, locale) })
+    : msg("home_round_one", {
+        round: formatNumber(state.round, locale),
+        total: formatNumber(state.settings.rounds, locale),
+      });
 }
 
 function formatPointAward(points: number) {
-  return `+${points} ${points === 1 ? "point" : "points"}`;
+  return msg("game_points_award", { points: formatNumber(points, locale) });
 }
 
 function formatScoreLabel(points: number) {
-  return `${points} ${points === 1 ? "pt" : "pts"}`;
+  return msg("game_score_short", { points: formatNumber(points, locale) });
 }
 
 function renderWinner() {
@@ -503,32 +513,33 @@ function renderWinner() {
       : undefined;
     if (closest && closestPlayer) {
       const bonusNote = scores.some((score) => score.bonus > 0)
-        ? " Spot-on bonuses still count."
+        ? ` ${msg("game_spot_on_still_counts")}`
         : "";
-      banner.innerHTML = `<span class="wb-emoji">${escapeHtml(closestPlayer.emoji)}</span><span><b>Nobody landed within 50% this round</b>, so no place points. Closest was ${escapeHtml(closestPlayer.name)} at ${(closest.miss! * 100).toFixed(1)}% off.${bonusNote}</span>`;
+      banner.innerHTML = `<span class="wb-emoji">${escapeHtml(closestPlayer.emoji)}</span><span>${msg("game_no_place_points", { name: escapeHtml(closestPlayer.name), percent: formatNumber(closest.miss! * 100, locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) })}${bonusNote}</span>`;
     } else {
-      banner.innerHTML =
-        '<span class="wb-emoji">🤔</span><span>No locked guesses this round. Everyone can try again next round.</span>';
+      banner.innerHTML = `<span class="wb-emoji">🤔</span><span>${msg("game_no_locked_guesses")}</span>`;
     }
   } else {
     const names = winners.map(({ player }) => escapeHtml(player.name));
     const message =
       names.length > 1
-        ? `${joinNames(names)} tie for the win`
-        : `${names[0]} wins the round`;
+        ? msg("game_winner_tie", { names: joinNames(names, locale) })
+        : msg("game_winner_one", { name: names[0] });
     const totals = winners.map(({ score }) => score.total);
     const awards =
       winners.length === 1
-        ? ` and gets ${formatPointAward(totals[0])}`
+        ? ` ${msg("game_winner_points", { points: formatNumber(totals[0], locale) })}`
         : totals.every((total) => total === totals[0])
-          ? ` and each get ${formatPointAward(totals[0])}`
+          ? ` ${msg("game_each_points", { points: formatNumber(totals[0], locale) })}`
           : `: ${winners
-              .map(
-                ({ player, score }) =>
-                  `${escapeHtml(player.name)} gets ${formatPointAward(score.total)}`,
+              .map(({ player, score }) =>
+                msg("game_named_points", {
+                  name: escapeHtml(player.name),
+                  points: formatNumber(score.total, locale),
+                }),
               )
               .join("; ")}`;
-    banner.innerHTML = `<span class="wb-emoji">${escapeHtml(winners[0].player.emoji)}</span><span><b>${message}</b>${awards}. Nice guessing!</span>`;
+    banner.innerHTML = `<span class="wb-emoji">${escapeHtml(winners[0].player.emoji)}</span><span><b>${message}</b>${awards}. ${msg("game_nice_guessing")}</span>`;
   }
   banner.hidden = false;
 }
@@ -566,8 +577,12 @@ function updatePlanComparisons() {
       chip.classList.remove("plan-chip-good", "plan-chip-ok", "plan-chip-low");
       continue;
     }
-    const fullLabel = formatPlanChip(pct, planned);
-    chip.textContent = formatPlanChipShort(pct);
+    const formattedPercent = formatNumber(pct, locale);
+    const fullLabel = msg("plan_chip_long", {
+      percent: formattedPercent,
+      planned: formatNumber(planned, locale, { maximumFractionDigits: 0 }),
+    });
+    chip.textContent = msg("plan_chip_short", { percent: formattedPercent });
     chip.setAttribute("aria-label", fullLabel);
     chip.title = fullLabel;
     chip.classList.remove("plan-chip-good", "plan-chip-ok", "plan-chip-low");
@@ -593,9 +608,10 @@ document.addEventListener("gts:dev-change", updatePlanComparisons);
 document.addEventListener("gts:classroom-change", updatePlanComparisons);
 
 function formatSpeed(value: number) {
-  return value >= 100
-    ? value.toLocaleString(undefined, { maximumFractionDigits: 1 })
-    : value.toFixed(1);
+  return formatNumber(value, locale, {
+    minimumFractionDigits: value < 100 ? 1 : 0,
+    maximumFractionDigits: 1,
+  });
 }
 
 async function playGaugeReveal(
@@ -609,7 +625,7 @@ async function playGaugeReveal(
   const announcement = $<HTMLElement>("[data-reveal-announcement]");
   const gauge = $<HTMLElement>("[data-gauge]");
   const finalSpeed = formatSpeed(down);
-  mode.textContent = "Download";
+  mode.textContent = msg("home_download");
   unit.textContent = "Mbps";
 
   return new Promise((resolve) => {
@@ -647,7 +663,9 @@ async function playGaugeReveal(
         live.classList.add("is-revealed");
       }
       if (!signal.aborted && state.phase === "results" && actual?.down === down)
-        announcement.textContent = `Download speed: ${finalSpeed} Mbps.`;
+        announcement.textContent = msg("game_download_announcement", {
+          speed: finalSpeed,
+        });
       resolve();
     };
 
@@ -733,49 +751,51 @@ function syncControls() {
     (host && isRevealed() && state.phase === "results");
   waiting.textContent = waitingForGuess
     ? host
-      ? "Start unlocks once someone locks in a guess. Tap Guess on your phone, or add a player on this screen."
-      : "Start unlocks once someone locks in a guess."
+      ? msg("game_waiting_for_guess_host")
+      : msg("game_waiting_for_guess")
     : isRevealed() && state.phase === "results"
-      ? "Waiting for the host to continue."
+      ? msg("game_waiting_host_continue")
       : state.phase === "testing"
         ? assignedTester
-          ? `${assignedTester.name} is running the speed test.`
-          : "The host is running the speed test."
+          ? msg("game_tester_running", { name: assignedTester.name })
+          : msg("game_host_running")
         : assignedTester
           ? document.documentElement.dataset.roomKind === "team"
-            ? `Waiting for ${assignedTester.name} to start their test.`
-            : `Waiting for ${assignedTester.name} to start the test.`
+            ? msg("game_waiting_tester", { name: assignedTester.name })
+            : msg("game_waiting_tester", { name: assignedTester.name })
           : document.documentElement.dataset.roomKind === "team"
-            ? "Waiting for the host to start their test."
-            : "Waiting for the host to start the test.";
+            ? msg("game_waiting_host_test")
+            : msg("game_waiting_host_test");
   const resetButton = $<HTMLButtonElement>("[data-reset]");
-  resetButton.textContent = roomMode ? "New game" : "Reset scores";
+  resetButton.textContent = roomMode
+    ? msg("game_new_game")
+    : msg("home_reset_scores");
   resetButton.hidden = roomMode && !host;
   syncTVAddForm();
   $<HTMLSpanElement>("[data-start-label]").textContent = revealPending
-    ? "Testing..."
+    ? msg("game_testing")
     : devMode
       ? testing
-        ? "Testing..."
-        : "Run speed test"
+        ? msg("game_testing")
+        : msg("game_run_test")
       : state.phase === "testing"
-        ? "Testing..."
+        ? msg("game_testing")
         : isRevealed()
-          ? "Round complete"
+          ? msg("game_round_complete")
           : state.players.some((player) => player.locked)
-            ? "Start the speed test"
-            : "Waiting for guesses";
+            ? msg("game_start_test")
+            : msg("home_waiting_guesses");
   $<HTMLSpanElement>("[data-phase-text]").textContent = revealPending
-    ? "Drumroll..."
+    ? msg("home_drumroll")
     : devMode
       ? testing
-        ? "Pinging Cloudflare"
-        : "Ready when you are"
+        ? msg("game_phase_ping_files")
+        : msg("home_ready")
       : state.phase === "testing"
-        ? "Pinging Cloudflare"
+        ? msg("game_phase_ping_files")
         : isRevealed()
-          ? "Results are in"
-          : "Ready when you are";
+          ? msg("game_results_in")
+          : msg("home_ready");
   $<HTMLButtonElement>("[data-reset]").disabled = testing;
   $<HTMLInputElement>("#player-name").disabled = testing;
   $$<HTMLInputElement>("[data-emoji-picker] input").forEach((input) => {
@@ -800,22 +820,32 @@ function renderChampion() {
   $<HTMLButtonElement>("[data-play-again]").hidden = roomMode && !isRoomHost();
   const teamRoom = document.documentElement.dataset.roomKind === "team";
   $<HTMLHeadingElement>("[data-champion-title]").textContent = teamRoom
-    ? "Best Wi-Fi guesser on the team!"
-    : "Game night champion!";
+    ? msg("game_team_champion_title")
+    : msg("dialog_champion_title");
   const sorted = [...state.players].sort((a, b) => b.score - a.score);
   const topScore = sorted[0]?.score ?? 0;
   const champions = sorted.filter((player) => player.score === topScore);
   $<HTMLParagraphElement>("[data-champion-message]").textContent = teamRoom
     ? champions.length > 1
-      ? `${joinNames(champions.map((player) => player.name))} are the team's speed champions!`
+      ? msg("game_team_champions", {
+          names: joinNames(
+            champions.map((player) => player.name),
+            locale,
+          ),
+        })
       : champions.length
-        ? `${champions[0].name} is the team's speed champion!`
-        : "Thanks for playing together!"
+        ? msg("game_team_champion", { name: champions[0].name })
+        : msg("game_thanks_for_playing")
     : champions.length > 1
-      ? `${joinNames(champions.map((player) => player.name))} tie for the win!`
+      ? msg("game_champions_tie", {
+          names: joinNames(
+            champions.map((player) => player.name),
+            locale,
+          ),
+        })
       : champions.length
-        ? `${champions[0].name} is this game night’s speed champion!`
-        : "Thanks for playing together!";
+        ? msg("game_champion", { name: champions[0].name })
+        : msg("game_thanks_for_playing");
   $<HTMLDivElement>("[data-podium]").innerHTML = buildPodiumEntries(
     state.players,
   )
@@ -851,8 +881,8 @@ function renderChampion() {
 function render() {
   const teamRoom = document.documentElement.dataset.roomKind === "team";
   $<HTMLElement>("[data-game-team-headline]").textContent = teamRoom
-    ? "Beat the team."
-    : "Beat the family.";
+    ? msg("home_team_team")
+    : msg("home_team_family");
   renderPlayers();
   renderWinner();
   $<HTMLSpanElement>("[data-round-label]").textContent = currentRoundLabel();
@@ -874,8 +904,8 @@ function render() {
     nextButton.textContent =
       state.settings.rounds !== "endless" &&
       state.round >= state.settings.rounds
-        ? "See the champion"
-        : "Next round";
+        ? msg("game_see_champion")
+        : msg("shortcut_next");
     const nextRoundButton = $<HTMLButtonElement>("[data-next-round]");
     if (roomMode && !isRoomHost()) nextRoundButton.hidden = true;
     else nextRoundButton?.removeAttribute("hidden");
@@ -923,10 +953,22 @@ function openEdit(id: string) {
 function setPhase(phase: Phase, bytes?: number) {
   document.documentElement.dataset.phase = phase;
   $<HTMLSpanElement>("[data-mode]").textContent =
-    phase === "ping" ? "Ping" : phase === "up" ? "Upload" : "Download";
+    phase === "ping"
+      ? msg("home_ping")
+      : phase === "up"
+        ? msg("home_upload")
+        : msg("home_download");
   $<HTMLSpanElement>("[data-unit]").textContent =
     phase === "ping" ? "ms" : "Mbps";
-  $<HTMLSpanElement>("[data-phase-text]").textContent = phaseText(phase, bytes);
+  const phaseData = phaseText(phase, bytes);
+  const label = msg(`game_phase_${phaseData.phase}` as Parameters<typeof t>[0]);
+  $<HTMLSpanElement>("[data-phase-text]").textContent =
+    phaseData.bytes === undefined
+      ? label
+      : msg("game_phase_size", {
+          stage: label,
+          size: sizeLabel(phaseData.bytes, locale),
+        });
 }
 
 function setProgress(step: number, steps: number) {
@@ -948,7 +990,7 @@ function setRemoteTesting(active: boolean) {
       if (!reduceMotion) liveDot.classList.add("is-live");
       elapsedLabel.hidden = false;
       const updateElapsed = () => {
-        elapsedLabel.textContent = `· ${Math.floor((Date.now() - roomStartedAt) / 1000)} s`;
+        elapsedLabel.textContent = `· ${formatNumber(Math.floor((Date.now() - roomStartedAt) / 1000), locale)} s`;
       };
       updateElapsed();
       roomElapsedTimer = window.setInterval(updateElapsed, 1000);
@@ -1118,7 +1160,7 @@ async function startTest() {
   let lastRoomSentPhase: Phase | null = null;
   const startedAt = lastUpdateAt;
   const updateElapsed = () => {
-    elapsedLabel.textContent = `· ${Math.floor((Date.now() - startedAt) / 1000)} s`;
+    elapsedLabel.textContent = `· ${formatNumber(Math.floor((Date.now() - startedAt) / 1000), locale)} s`;
   };
   progressBar.hidden = false;
   progressBar.setAttribute("aria-valuenow", "0");
@@ -1189,8 +1231,7 @@ async function startTest() {
           ? { signal: roomRunController.signal }
           : undefined,
     );
-    if (!hasUsableRoundResult(actual))
-      throw new Error("The speed test returned no result.");
+    if (!hasUsableRoundResult(actual)) throw new Error("game_test_no_result");
     if (!isMockMode() && !roomRunController?.signal.aborted) {
       recordSpeedSample({
         at: Date.now(),
@@ -1206,7 +1247,7 @@ async function startTest() {
       document.documentElement.dataset.phase = state.history.length
         ? "done"
         : "idle";
-      $<HTMLSpanElement>("[data-mode]").textContent = "Download";
+      $<HTMLSpanElement>("[data-mode]").textContent = msg("home_download");
       $<HTMLSpanElement>("[data-unit]").textContent = "Mbps";
     } else if (roomMode) {
       const resultAction: Extract<ClientAction, { type: "result" }> = {
@@ -1218,12 +1259,11 @@ async function startTest() {
       pendingRoomResult = resultAction;
       if (store.send(resultAction)) pendingRoomResult = null;
       else {
-        errorNote.textContent =
-          "The result could not reach the room. Reconnect and try again.";
+        errorNote.textContent = msg("game_room_send_failed");
         errorNote.hidden = false;
       }
       document.documentElement.dataset.phase = "done";
-      $<HTMLSpanElement>("[data-mode]").textContent = "Download";
+      $<HTMLSpanElement>("[data-mode]").textContent = msg("home_download");
       $<HTMLSpanElement>("[data-unit]").textContent = "Mbps";
     } else {
       latestPing = actual.ping;
@@ -1243,7 +1283,7 @@ async function startTest() {
         );
       persist();
       document.documentElement.dataset.phase = "done";
-      $<HTMLSpanElement>("[data-mode]").textContent = "Download";
+      $<HTMLSpanElement>("[data-mode]").textContent = msg("home_download");
       $<HTMLSpanElement>("[data-unit]").textContent = "Mbps";
       revealPending = true;
       revealDown = actual.down;
@@ -1256,7 +1296,7 @@ async function startTest() {
         ? "done"
         : "idle";
       setGauge(0);
-      $<HTMLSpanElement>("[data-mode]").textContent = "Download";
+      $<HTMLSpanElement>("[data-mode]").textContent = msg("home_download");
       $<HTMLSpanElement>("[data-unit]").textContent = "Mbps";
       render();
       return;
@@ -1269,14 +1309,14 @@ async function startTest() {
     }
     errorNote.textContent =
       error instanceof StalledError
-        ? "The test stalled with no data for 45 seconds. Check your connection and press Start to try again."
-        : "The speed test hiccuped. Try again?";
+        ? msg("game_stalled")
+        : msg("game_test_hiccup");
     errorNote.hidden = false;
     document.documentElement.dataset.phase = state.history.length
       ? "done"
       : "idle";
     setGauge(0);
-    $<HTMLSpanElement>("[data-mode]").textContent = "Download";
+    $<HTMLSpanElement>("[data-mode]").textContent = msg("home_download");
     $<HTMLSpanElement>("[data-unit]").textContent = "Mbps";
     render();
   } finally {
@@ -1348,8 +1388,7 @@ document.addEventListener("gts:room-state", (event) => {
     return;
   }
   if (recovery.action !== "abort") return;
-  errorNote.textContent =
-    "The last test was interrupted. Press Start to run it again.";
+  errorNote.textContent = msg("game_interrupted");
   errorNote.hidden = false;
   store.send({ type: "abort" });
 });
@@ -1431,7 +1470,7 @@ $<HTMLFormElement>("[data-edit-form]").addEventListener("submit", (event) => {
     return;
   }
   if (roomMode && isBlockedName(name)) {
-    editError.textContent = BLOCKED_NAME_MESSAGE;
+    editError.textContent = msg("room_error_name_blocked");
     editError.hidden = false;
     nameInput.focus();
     return;
@@ -1518,7 +1557,13 @@ $<HTMLFormElement>("[data-guess-form]").addEventListener("submit", (event) => {
 startButton.addEventListener("click", () => {
   const message =
     !isDevMode() && state.phase === "guessing"
-      ? startAnywayMessage(state.players)
+      ? pendingGuessers(state.players).length
+        ? msg("game_missing_guesses", {
+            names: pendingGuessers(state.players)
+              .map((player) => player.name)
+              .join(", "),
+          })
+        : null
       : null;
   if (!message) {
     void startTest();
@@ -1558,7 +1603,7 @@ addForm.addEventListener("submit", (event) => {
   const name = nameInput.value;
   if (!name.trim()) return;
   if (roomMode && isBlockedName(name)) {
-    addError.textContent = BLOCKED_NAME_MESSAGE;
+    addError.textContent = msg("room_error_name_blocked");
     addError.hidden = false;
     nameInput.focus();
     return;
@@ -1669,11 +1714,11 @@ async function shareResult() {
     audience,
   };
   const fullText = buildShareText(input);
-  const payload = buildSharePayload(input);
+  const payload = buildSharePayload({ ...input, locale });
   if (typeof navigator.share === "function") {
     try {
       await navigator.share({
-        title: "Guess the Speed",
+        title: msg("home_title"),
         text: payload.text,
         url: payload.url,
       });
@@ -1693,11 +1738,11 @@ async function shareResult() {
     await navigator.clipboard.writeText(fullText);
     setShareStatus(
       audience === "team"
-        ? "Copied! Paste it in your team chat."
-        : "Copied! Paste it in your family chat.",
+        ? msg("game_share_team_copied")
+        : msg("game_share_family_copied"),
     );
   } catch {
-    setShareStatus("Could not share from this browser.");
+    setShareStatus(msg("game_share_failed"));
   }
 }
 
@@ -1713,7 +1758,7 @@ const nextButton = document.createElement("button");
 nextButton.type = "button";
 nextButton.className = "go next-round";
 nextButton.dataset.nextRound = "";
-nextButton.textContent = "Next round";
+nextButton.textContent = msg("shortcut_next");
 nextButton.hidden = true;
 nextButton.addEventListener("click", () => {
   if (roomMode) {

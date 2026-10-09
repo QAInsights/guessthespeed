@@ -6,6 +6,14 @@ import {
   type SpeedSample,
 } from "../lib/history";
 import { loadPlan } from "../lib/plan";
+import { formatNumber, LOCALE_INFO } from "../lib/i18n";
+import { initializeClientLocale, t } from "../lib/messages";
+
+const locale = initializeClientLocale();
+const msg = (
+  key: Parameters<typeof t>[0],
+  params: Record<string, string | number | boolean> = {},
+) => t(key, params, locale);
 
 const card = document.querySelector<HTMLElement>("[data-history-card]");
 const chart = document.querySelector<SVGSVGElement>("[data-history-chart]");
@@ -24,7 +32,7 @@ function readHistory(): SpeedSample[] {
 }
 
 function formatSampleTime(at: number): string {
-  return new Date(at).toLocaleString(undefined, {
+  return new Date(at).toLocaleString(LOCALE_INFO[locale].numberLocale, {
     weekday: "short",
     month: "short",
     day: "numeric",
@@ -38,16 +46,23 @@ function renderChart(samples: SpeedSample[]) {
   const comparison = compareLatest(samples);
   const latest = samples.at(-1)!;
   const previous = samples.at(-2)!;
-  const latestDown = Math.round(latest.down);
-  const previousDown = Math.round(previous.down);
+  const latestDown = formatNumber(Math.round(latest.down), locale);
+  const previousDown = formatNumber(Math.round(previous.down), locale);
   const planDown = loadPlan().down;
   const formattedPlan =
     planDown === null
       ? null
-      : planDown.toLocaleString(undefined, { maximumFractionDigits: 0 });
+      : formatNumber(planDown, locale, { maximumFractionDigits: 0 });
   chart.setAttribute(
     "aria-label",
-    `Download speed history. Latest: ${latestDown} Mbps. Previous: ${previousDown} Mbps.${formattedPlan === null ? "" : ` Plan: ${formattedPlan} Mbps.`}`,
+    msg("history_aria", {
+      latest: latestDown,
+      previous: previousDown,
+      plan:
+        formattedPlan === null
+          ? ""
+          : ` ${msg("history_plan", { plan: formattedPlan })}.`,
+    }),
   );
   chart.replaceChildren();
 
@@ -77,7 +92,11 @@ function renderChart(samples: SpeedSample[]) {
     const y = baseline - barHeight;
     const group = document.createElementNS(svgNamespace, "g");
     const title = document.createElementNS(svgNamespace, "title");
-    title.textContent = `${formatSampleTime(sample.at)} · ${sample.down} Mbps download · ${sample.up} Mbps upload`;
+    title.textContent = msg("history_sample_title", {
+      time: formatSampleTime(sample.at),
+      down: formatNumber(sample.down, locale),
+      up: formatNumber(sample.up, locale),
+    });
     group.append(title);
 
     const bar = document.createElementNS(svgNamespace, "rect");
@@ -100,7 +119,7 @@ function renderChart(samples: SpeedSample[]) {
     value.setAttribute("x", (x + barWidth / 2).toFixed(1));
     value.setAttribute("y", String(Math.max(18, y - 8)));
     value.setAttribute("text-anchor", "middle");
-    value.textContent = String(Math.round(sample.down));
+    value.textContent = formatNumber(Math.round(sample.down), locale);
     group.append(value);
     chart.append(group);
   });
@@ -120,15 +139,22 @@ function renderChart(samples: SpeedSample[]) {
     label.setAttribute("x", String(width - right));
     label.setAttribute("y", String(Math.max(14, y - 6)));
     label.setAttribute("text-anchor", "end");
-    label.textContent = `Plan ${formattedPlan}`;
+    label.textContent = msg("history_plan", { plan: formattedPlan });
     chart.append(label);
   }
 
   if (summary && comparison) {
     summary.textContent =
       comparison.direction === "same"
-        ? "Same speed as last time"
-        : `${Math.abs(comparison.delta)} Mbps ${comparison.direction} than last time`;
+        ? msg("history_same")
+        : msg("history_delta", {
+            delta: formatNumber(Math.abs(comparison.delta), locale),
+            direction: msg(
+              comparison.direction === "faster"
+                ? "history_faster"
+                : "history_slower",
+            ),
+          });
   }
 }
 

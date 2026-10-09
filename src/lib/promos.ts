@@ -1,10 +1,10 @@
 export interface Promo {
   id: string;
   title: string;
-  blurb: string;
+  blurbKey: string;
+  ctaKey: string;
   href: string;
   image: string;
-  cta: string;
   tile?: string;
 }
 
@@ -12,37 +12,34 @@ export const PROMOS: Promo[] = [
   {
     id: "quick-links",
     title: "Quick Links",
-    blurb:
-      "Kanban-style bookmarks and to-dos for Chrome. Local-first, lightning-fast search, zero telemetry.",
+    blurbKey: "promo_quick_links",
+    ctaKey: "promo_add_chrome",
     href: "https://chromewebstore.google.com/detail/quick-links/jcpngbilapanldphljagkbkjkmkmeiii",
     image: "/promos/quick-links.png",
-    cta: "Add to Chrome",
   },
   {
     id: "prompticon",
     title: "Prompticon",
-    blurb: "One-click replies for your favorite AI chats, right inside Chrome.",
+    blurbKey: "promo_prompticon",
+    ctaKey: "promo_add_chrome",
     href: "https://chromewebstore.google.com/detail/prompticon/niofgdlmoogjllonnpdhmajdginmcnke",
     image: "/promos/prompticon.svg",
-    cta: "Add to Chrome",
   },
   {
     id: "visual-vibes",
     title: "Visual Vibes",
-    blurb:
-      "Premium photo booth rentals for weddings, parties and corporate events around Cincinnati.",
+    blurbKey: "promo_visual_vibes",
+    ctaKey: "promo_see_booth",
     href: "https://www.visualvibes.pics/",
     image: "/promos/visual-vibes.png",
-    cta: "See the booth",
   },
   {
     id: "dosa",
     title: "ai.dosa.dev",
-    blurb:
-      "A hand-curated directory of 300+ AI coding tools: IDEs, agents and assistants.",
+    blurbKey: "promo_dosa",
+    ctaKey: "promo_explore_tools",
     href: "https://ai.dosa.dev/",
     image: "/promos/ai-dosa.svg",
-    cta: "Explore tools",
     tile: "#0a0a0a",
   },
 ];

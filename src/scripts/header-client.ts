@@ -8,7 +8,9 @@ import { loadPlan, savePlan, type InternetPlan } from "../lib/plan";
 import { describeTarget, isOverlayOpen, shortcutAction } from "./shortcuts";
 import { modeSwitchHidden, urlWithoutDevParam } from "./mode-ui";
 import { $ } from "./dom";
+import { initializeClientLocale, t } from "../lib/messages";
 
+const locale = initializeClientLocale();
 const themePicker = $<HTMLDivElement>("[data-theme-picker]");
 const themeTrigger = $<HTMLButtonElement>("[data-theme-trigger]");
 const themeMenu = $<HTMLDivElement>("[data-theme-menu]");
@@ -23,6 +25,19 @@ const soundOn = $<HTMLSpanElement>("[data-sound-on]");
 const soundOff = $<HTMLSpanElement>("[data-sound-off]");
 const tvButton = $<HTMLButtonElement>("[data-tv-toggle]");
 const fullscreenButton = $<HTMLButtonElement>("[data-fullscreen]");
+const languageTrigger = document.querySelector<HTMLButtonElement>(
+  "[data-language-trigger]",
+);
+const languageMenu = document.querySelector<HTMLElement>(
+  "[data-language-menu]",
+);
+const languageOptions = Array.from(
+  document.querySelectorAll<HTMLAnchorElement>("[data-language-option]"),
+);
+const localeHint = document.querySelector<HTMLElement>("[data-locale-hint]");
+const localeHintDismiss = document.querySelector<HTMLButtonElement>(
+  "[data-dismiss-locale-hint]",
+);
 const settingsButton = $<HTMLButtonElement>("[data-open-settings]");
 const settingsDialog = $<HTMLDialogElement>("[data-settings-dialog]");
 const closeSettingsButton = $<HTMLButtonElement>("[data-close-settings]");
@@ -63,7 +78,7 @@ let devMode =
   !roomMode && !classroomMode && document.documentElement.dataset.dev === "1";
 let tvMode = document.documentElement.dataset.tv === "1";
 let activeTheme: ThemeId = "light";
-const homePage = window.location.pathname === "/";
+const homePage = document.documentElement.dataset.home === "1";
 type WakeLockSentinelLike = {
   release(): Promise<void>;
   addEventListener?(
@@ -82,6 +97,52 @@ const coarsePointer = window.matchMedia("(pointer: coarse)").matches;
 const tvLayoutQuery = window.matchMedia("(min-width: 900px)");
 const classroomPage = window.location.pathname === "/classroom/";
 const workPage = window.location.pathname === "/work/";
+
+function syncLocaleHint() {
+  if (!localeHint) return;
+  const dismissed = (() => {
+    try {
+      return localStorage.getItem("gts:locale-hint-dismissed") === "1";
+    } catch {
+      return false;
+    }
+  })();
+  const preferred = navigator.languages
+    .map((language) => language.toLowerCase().split("-")[0])
+    .find((language) => language === "ta" || language === "es");
+  const hidden =
+    !homePage ||
+    locale !== "en" ||
+    dismissed ||
+    !preferred ||
+    tvMode ||
+    devMode ||
+    testing ||
+    new URLSearchParams(location.search).has("test");
+  localeHint.hidden = hidden;
+  localeHint
+    .querySelectorAll<HTMLElement>("[data-locale-hint-copy]")
+    .forEach((copy) => {
+      copy.hidden = hidden || copy.dataset.localeHintCopy !== preferred;
+    });
+}
+
+function closeLanguageMenu(returnFocus = false) {
+  if (!languageMenu || !languageTrigger || languageMenu.hidden) return;
+  languageMenu.hidden = true;
+  languageTrigger.setAttribute("aria-expanded", "false");
+  if (returnFocus) languageTrigger.focus();
+}
+
+function openLanguageMenu() {
+  if (!languageMenu || !languageTrigger) return;
+  languageMenu.hidden = false;
+  languageTrigger.setAttribute("aria-expanded", "true");
+  const selected = languageOptions.find(
+    (option) => option.getAttribute("aria-selected") === "true",
+  );
+  (selected ?? languageOptions[0])?.focus();
+}
 
 function syncAudioUnlock() {
   if (settings.sound) {
@@ -120,7 +181,7 @@ function syncModeSwitch() {
       option.classList.toggle("is-disabled", blockedByClassroom);
       if (blockedByClassroom) {
         option.setAttribute("aria-disabled", "true");
-        option.setAttribute("title", "End class to switch modes");
+        option.setAttribute("title", t("classroom_end_to_switch", {}, locale));
       } else {
         option.removeAttribute("aria-disabled");
         option.removeAttribute("title");
@@ -182,9 +243,13 @@ function syncFullscreenControl() {
   fullscreenButton.setAttribute("aria-pressed", String(active));
   fullscreenButton.setAttribute(
     "aria-label",
-    active ? "Exit full screen" : "Full screen",
+    active
+      ? t("header_fullscreen_exit", {}, locale)
+      : t("header_fullscreen", {}, locale),
   );
-  fullscreenButton.title = active ? "Exit full screen" : "Full screen";
+  fullscreenButton.title = active
+    ? t("header_fullscreen_exit", {}, locale)
+    : t("header_fullscreen", {}, locale);
 }
 
 function syncTVControls() {
@@ -326,8 +391,14 @@ function syncThemePicker() {
       option.dataset.theme = activeTheme;
   });
   themeLabel.textContent =
-    mode === "auto" ? "Auto (by date)" : themes[mode].label;
-  themeAutoHint.textContent = `Now: ${themes[activeTheme].label}`;
+    mode === "auto"
+      ? t("header_theme_auto", {}, locale)
+      : t(`theme_${mode}` as Parameters<typeof t>[0], {}, locale);
+  themeAutoHint.textContent = t(
+    "header_theme_now",
+    { theme: t(`theme_${activeTheme}` as Parameters<typeof t>[0], {}, locale) },
+    locale,
+  );
   themeTrigger.disabled = testing;
   if (testing) closeThemeMenu(false);
 }
@@ -378,10 +449,13 @@ function syncControls() {
   soundButton.setAttribute("aria-pressed", String(settings.sound));
   soundButton.setAttribute(
     "aria-label",
-    settings.sound ? "Turn sound off" : "Turn sound on",
+    settings.sound
+      ? t("header_sound_off", {}, locale)
+      : t("header_sound_on", {}, locale),
   );
   soundOn.hidden = !settings.sound;
   soundOff.hidden = settings.sound;
+  syncLocaleHint();
 }
 
 function saveSettings(patch: Partial<GameSettings>, playSound = false) {
@@ -443,6 +517,59 @@ themeTrigger.addEventListener("keydown", (event) => {
   if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
   event.preventDefault();
   openThemeMenu(event.key === "ArrowUp" ? "last" : "selected");
+});
+
+languageTrigger?.addEventListener("click", () => {
+  if (languageMenu?.hidden) openLanguageMenu();
+  else closeLanguageMenu();
+});
+languageMenu?.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") {
+    event.preventDefault();
+    closeLanguageMenu(true);
+    return;
+  }
+  if (event.key === "Tab") {
+    closeLanguageMenu(false);
+    return;
+  }
+  const index = languageOptions.indexOf(
+    document.activeElement as HTMLAnchorElement,
+  );
+  const steps: Record<string, number> = { ArrowDown: 1, ArrowUp: -1 };
+  let next: number | null = null;
+  if (event.key in steps) next = index < 0 ? 0 : index + steps[event.key];
+  else if (event.key === "Home") next = 0;
+  else if (event.key === "End") next = languageOptions.length - 1;
+  if (next === null || languageOptions.length === 0) return;
+  event.preventDefault();
+  languageOptions[
+    Math.min(Math.max(next, 0), languageOptions.length - 1)
+  ]?.focus();
+});
+document.addEventListener("pointerdown", (event) => {
+  if (
+    languageMenu &&
+    !languageMenu.hidden &&
+    !event
+      .composedPath()
+      .some(
+        (target) =>
+          target instanceof Node &&
+          (target === languageMenu ||
+            target === languageTrigger ||
+            languageMenu.contains(target)),
+      )
+  )
+    closeLanguageMenu(false);
+});
+localeHintDismiss?.addEventListener("click", () => {
+  try {
+    localStorage.setItem("gts:locale-hint-dismissed", "1");
+  } catch {
+    // Keep the hint dismissible for this page view when storage is unavailable.
+  }
+  syncLocaleHint();
 });
 
 themeOptions.forEach((option) => {
@@ -541,9 +668,13 @@ modeOptions.forEach((option) => {
 document.addEventListener("gts:dev-change", (event) => {
   devMode = (event as CustomEvent<boolean>).detail;
   syncModeSwitch();
+  syncLocaleHint();
 });
 
-document.addEventListener("gts:tv-change", syncModeSwitch);
+document.addEventListener("gts:tv-change", () => {
+  syncModeSwitch();
+  syncLocaleHint();
+});
 document.addEventListener("gts:classroom-change", syncModeSwitch);
 
 settingsForm.addEventListener("submit", (event) => {
@@ -624,6 +755,7 @@ settingsForm.addEventListener("submit", (event) => {
 document.addEventListener("gts:testing-change", (event) => {
   testing = (event as CustomEvent<boolean>).detail;
   syncControls();
+  syncLocaleHint();
 });
 
 document.addEventListener("gts:room-state", (event) => {
@@ -664,6 +796,7 @@ requestAnimationFrame(() => {
 syncAudioUnlock();
 syncModeSwitch();
 syncControls();
+syncLocaleHint();
 document.documentElement.dataset.aurora = settings.animatedBorders ? "1" : "0";
 if (tvMode) {
   void acquireScreenWakeLock();
