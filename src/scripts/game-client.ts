@@ -62,6 +62,12 @@ import { playerEmptyState } from "./player-empty-state";
 import { initializeClientLocale, t } from "../lib/messages";
 import { formatNumber, type Locale } from "../lib/i18n";
 import {
+  GUESS_PICKS,
+  stepGuess,
+  type GuessDirection,
+} from "../lib/guess-picks";
+import { hasDistinctRole } from "../lib/player-role";
+import {
   REVEAL_SUSPENSE_MS,
   REVEAL_SWING_MS,
   revealProgress,
@@ -146,6 +152,7 @@ reduceMotionQuery.addEventListener("change", (event) => {
   reduceMotion = event.matches;
 });
 const guessDialog = $<HTMLDialogElement>("[data-guess-dialog]");
+const guessForm = $<HTMLFormElement>("[data-guess-form]");
 const startConfirmDialog = $<HTMLDialogElement>("[data-start-confirm-dialog]");
 const startConfirmMessage = $<HTMLParagraphElement>(
   "[data-start-confirm-message]",
@@ -318,8 +325,14 @@ function initializeGauge() {
   });
 }
 
+function playerRoleMarkup(player: Pick<Player, "name" | "role">) {
+  return hasDistinctRole(player.name, player.role)
+    ? `<span class="p-role">${escapeHtml(player.role)}</span>`
+    : "";
+}
+
 function roleFor(player: Player) {
-  return `<span class="p-emoji" aria-hidden="true">${escapeHtml(player.emoji)}</span><div><h3 class="p-name">${escapeHtml(player.name)}</h3><span class="p-role">${escapeHtml(player.role)}</span></div>`;
+  return `<span class="p-emoji" aria-hidden="true">${escapeHtml(player.emoji)}</span><div><h3 class="p-name">${escapeHtml(player.name)}</h3>${playerRoleMarkup(player)}</div>`;
 }
 
 function renderPlayerCard(player: ClientPlayer, index: number) {
@@ -426,7 +439,7 @@ function renderPlayerTable(player: ClientPlayer, index: number) {
         : `<button class="guess-button" type="button" data-guess="${escapeHtml(player.id)}" ${state.phase !== "guessing" || isTesting() ? "disabled" : ""}>${msg("game_guess")}</button>`;
   return `<tr class="${place === 1 && revealed ? "is-winner" : ""}" style="--card-index:${index}">
     <td class="p-pos">${medal}${formatNumber(index + 1, locale)}</td>
-    <td><span class="p-emoji">${escapeHtml(player.emoji)}</span><span class="p-name">${escapeHtml(player.name)}</span><span class="p-role">${escapeHtml(player.role)}</span></td>
+    <td><span class="p-emoji">${escapeHtml(player.emoji)}</span><span class="p-name">${escapeHtml(player.name)}</span>${playerRoleMarkup(player)}</td>
     <td>${revealed ? (player.guess.down === null ? msg("game_no_guess") : `${formatNumber(player.guess.down, locale)} Mbps`) : msg("game_hidden")}</td>
     <td>${revealed ? (player.guess.up === null ? msg("game_no_guess") : `${formatNumber(player.guess.up, locale)} Mbps`) : msg("game_hidden")}</td>
     <td>${roundStatus}</td>
@@ -946,6 +959,74 @@ function render() {
   }
 }
 
+function syncGuessPickState(direction: GuessDirection) {
+  const input = guessForm.elements.namedItem(
+    direction,
+  ) as HTMLInputElement | null;
+  if (!input) return;
+
+  const currentValue =
+    input.value.trim() === "" ? Number.NaN : Number(input.value);
+  const buttons = $$<HTMLButtonElement>(
+    `[data-guess-picks="${direction}"] [data-guess-value]`,
+  );
+
+  for (const button of buttons) {
+    button.setAttribute(
+      "aria-pressed",
+      String(
+        Number.isFinite(currentValue) &&
+          currentValue === Number(button.dataset.guessValue),
+      ),
+    );
+  }
+}
+
+function renderGuessPicks() {
+  const plan = loadPlan();
+
+  for (const direction of ["down", "up"] as const) {
+    const group = $<HTMLDivElement>(`[data-guess-picks="${direction}"]`);
+    if (!group) continue;
+
+    group.replaceChildren();
+
+    const addPick = (
+      value: number,
+      label: string,
+      isPlan = false,
+      includeValue = true,
+    ) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = `guess-pick${isPlan ? " is-plan" : ""}`;
+      button.dataset.guessValue = String(value);
+      button.dataset.guessPick = direction;
+      button.setAttribute("aria-pressed", "false");
+      button.innerHTML = `<span>${escapeHtml(label)}</span>${
+        includeValue ? `<b>${escapeHtml(formatNumber(value, locale))}</b>` : ""
+      }`;
+      group.append(button);
+    };
+
+    const planValue = plan[direction];
+    if (planValue !== null) {
+      addPick(
+        planValue,
+        msg("guess_plan_pick", { speed: formatNumber(planValue, locale) }),
+        true,
+        false,
+      );
+    }
+
+    for (const pick of GUESS_PICKS[direction]) {
+      addPick(pick.value, msg(pick.label), false);
+    }
+
+    syncGuessPickState(direction);
+  }
+}
+
 function openGuess(id: string) {
   if (state.phase !== "guessing") return;
   const player = state.players.find((candidate) => candidate.id === id);
@@ -953,11 +1034,12 @@ function openGuess(id: string) {
   activePlayerId = player.id;
   $<HTMLSpanElement>("[data-guess-emoji]").textContent = player.emoji;
   $<HTMLElement>("[data-guess-player]").textContent = player.name;
-  const form = $<HTMLFormElement>("[data-guess-form]");
+  const form = guessForm;
   (form.elements.namedItem("down") as HTMLInputElement).value =
     player.guess.down === null ? "" : String(player.guess.down);
   (form.elements.namedItem("up") as HTMLInputElement).value =
     player.guess.up === null ? "" : String(player.guess.up);
+  renderGuessPicks();
   if (guessDialog.open) guessDialog.close();
   guessDialog.showModal();
   (form.elements.namedItem("down") as HTMLInputElement).focus();
@@ -1539,7 +1621,48 @@ $<HTMLFormElement>("[data-edit-form]").addEventListener("submit", (event) => {
   editDialog.close();
   render();
 });
-$<HTMLFormElement>("[data-guess-form]").addEventListener("submit", (event) => {
+guessForm.addEventListener("click", (event) => {
+  if (!(event.target instanceof Element)) return;
+
+  const pick = event.target.closest<HTMLButtonElement>("[data-guess-pick]");
+  if (pick) {
+    const direction = pick.dataset.guessPick;
+    if (direction !== "down" && direction !== "up") return;
+    const input = guessForm.elements.namedItem(
+      direction,
+    ) as HTMLInputElement | null;
+    if (!input) return;
+    input.value = pick.dataset.guessValue ?? "";
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    return;
+  }
+
+  const stepper = event.target.closest<HTMLButtonElement>("[data-guess-step]");
+  if (!stepper) return;
+  const direction = stepper.dataset.guessField;
+  const change = Number(stepper.dataset.guessStep);
+  if (
+    (direction !== "down" && direction !== "up") ||
+    (change !== -1 && change !== 1)
+  ) {
+    return;
+  }
+  const input = guessForm.elements.namedItem(
+    direction,
+  ) as HTMLInputElement | null;
+  if (!input) return;
+  input.value = String(stepGuess(input.value, change));
+  input.dispatchEvent(new Event("input", { bubbles: true }));
+});
+
+guessForm.addEventListener("input", (event) => {
+  if (!(event.target instanceof HTMLInputElement)) return;
+  if (event.target.name === "down" || event.target.name === "up") {
+    syncGuessPickState(event.target.name);
+  }
+});
+
+guessForm.addEventListener("submit", (event) => {
   event.preventDefault();
   if (!activePlayerId) return;
   const form = event.currentTarget as HTMLFormElement;

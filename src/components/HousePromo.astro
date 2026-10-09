@@ -63,10 +63,14 @@ const promoText = (key: string) =>
       : null;
 
     if (card) {
-      card.hidden = false;
-      aside.hidden = false;
-
       const root = document.documentElement;
+      const shouldDelayHomeBar =
+        root.dataset.home === "1" &&
+        window.matchMedia("(max-width: 1300px)").matches &&
+        window.scrollY < 120;
+      card.hidden = false;
+      aside.hidden = shouldDelayHomeBar;
+
       const updateHeight = () => {
         const isVisible =
           !aside.hidden &&
@@ -81,6 +85,16 @@ const promoText = (key: string) =>
           isVisible ? `${reservedHeight + 1}px` : "0px",
         );
       };
+
+      if (shouldDelayHomeBar) {
+        const revealOnScroll = () => {
+          if (window.scrollY < 120) return;
+          aside.hidden = false;
+          window.removeEventListener("scroll", revealOnScroll);
+          updateHeight();
+        };
+        window.addEventListener("scroll", revealOnScroll, { passive: true });
+      }
 
       aside
         .querySelector<HTMLButtonElement>("[data-promo-close]")

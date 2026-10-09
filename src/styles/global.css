@@ -1240,12 +1240,13 @@ html[data-room="1"] .mode-bar {
   line-height: 1.5;
 }
 
-.intro .play-stat {
+.mode-hero-visual .play-stat {
   display: inline-flex;
   align-items: center;
   width: fit-content;
   max-width: 100%;
-  margin: 18px 0 0;
+  justify-self: center;
+  margin: 8px 0 20px;
   padding: 7px 12px;
   border: 2.5px solid var(--ink);
   border-radius: 7px;
@@ -1258,9 +1259,9 @@ html[data-room="1"] .mode-bar {
   transform: rotate(-2deg);
 }
 
-.intro .play-stat[hidden],
+.mode-hero-visual .play-stat[hidden],
 .story-stat[hidden],
-html[data-dev="1"] .intro .play-stat {
+html[data-dev="1"] .mode-hero-visual .play-stat {
   display: none;
 }
 
@@ -1280,13 +1281,13 @@ html[data-dev="1"] .intro .play-stat {
   transform: rotate(-1deg);
 }
 
-.intro .play-stat a,
+.mode-hero-visual .play-stat a,
 .story-stat a {
   color: inherit;
   text-decoration: none;
 }
 
-.intro .play-stat a:hover,
+.mode-hero-visual .play-stat a:hover,
 .story-stat a:hover {
   text-decoration: underline;
   text-underline-offset: 3px;
@@ -5636,6 +5637,12 @@ html[data-dev="1"] .dev-mode-pill-label {
   }
 }
 
+@media (min-width: 981px) {
+  .stage.mode-hero .mode-hero-visual .play-stat {
+    justify-self: start;
+  }
+}
+
 @media (min-width: 900px) {
   html[data-tv="1"][data-home="1"] .mode-hero-left,
   html[data-tv="1"][data-home="1"] .mode-hero-visual {
@@ -5647,16 +5654,16 @@ html[data-dev="1"] .dev-mode-pill-label {
   }
 
   html[data-tv="1"][data-home="1"] .mode-hero-visual .tv-shortcut-hint {
+    order: 3;
+  }
+
+  html[data-tv="1"][data-home="1"] .mode-hero-visual .play-stat {
     order: 2;
   }
 
   html[data-tv="1"][data-home="1"] .mode-hero-stats {
-    order: 3;
+    order: 4;
     transform: translateY(-12px);
-  }
-
-  html[data-tv="1"][data-home="1"] .intro .play-stat {
-    margin-left: 12px;
   }
 }
 
@@ -5862,6 +5869,186 @@ html[data-dev="1"] .dev-mode-pill-label {
 
 .gauge-card .go {
   white-space: nowrap;
+}
+
+[data-guess-dialog] {
+  overflow: hidden;
+}
+
+[data-guess-dialog] .guess-dialog-inner {
+  display: flex;
+  max-height: min(calc(90dvh - 4px), 836px);
+  min-height: 0;
+  flex-direction: column;
+  padding: 16px clamp(16px, 4vw, 24px);
+  overflow: hidden;
+}
+
+[data-guess-dialog] .dialog-head,
+[data-guess-dialog] .guess-person,
+[data-guess-dialog] .guess-dialog-actions {
+  flex: none;
+}
+
+[data-guess-dialog] .guess-person {
+  margin-bottom: 10px;
+}
+
+.guess-dialog-scroll {
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 2px;
+}
+
+.guess-mbps-note {
+  margin: 0 0 10px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.guess-mbps-note a {
+  color: var(--ink);
+  font-weight: 800;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 2px;
+}
+
+.guess-dialog-form {
+  gap: 10px;
+}
+
+.guess-field {
+  display: grid;
+  min-width: 0;
+  gap: 6px;
+}
+
+.guess-field > label {
+  font-weight: 800;
+}
+
+.guess-input-control {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
+  align-items: center;
+  gap: 8px;
+}
+
+.guess-input-control .dialog-input {
+  appearance: textfield;
+  -moz-appearance: textfield;
+  min-width: 0;
+  text-align: center;
+}
+
+.guess-input-control .dialog-input::-webkit-inner-spin-button,
+.guess-input-control .dialog-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.guess-stepper {
+  display: inline-grid;
+  width: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  place-items: center;
+  padding: 0;
+  border: 2px solid var(--ink);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: 2px 2px 0 var(--shadow);
+  color: var(--ink);
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.guess-stepper svg {
+  display: block;
+}
+
+.guess-stepper:focus-visible,
+.guess-pick:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.guess-picks {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.guess-pick {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 10px;
+  border: 1px solid #d5dfc1;
+  border-radius: 999px;
+  background: #eef5df;
+  color: var(--on-pastel);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+  overflow-wrap: normal;
+}
+
+.guess-pick.is-plan {
+  border-color: #e4d19c;
+  background: #fff3cf;
+}
+
+.guess-pick[aria-pressed="true"] {
+  border-color: var(--ink);
+  background: var(--accent);
+  box-shadow: 2px 2px 0 var(--shadow);
+  color: var(--on-accent);
+}
+
+.guess-dialog-actions {
+  margin-top: 8px;
+  padding-top: 10px;
+  border-top: 1px solid color-mix(in srgb, var(--ink) 18%, transparent);
+  background: var(--surface);
+}
+
+.guess-dialog-actions .go {
+  width: 100%;
+}
+
+@media (max-width: 420px) {
+  .classroom-page {
+    overflow-x: clip;
+  }
+
+  .stage.mode-hero {
+    row-gap: 0;
+  }
+
+  .stage.mode-hero .gauge-card {
+    padding-bottom: 4px;
+  }
+
+  .mode-hero .mode-hero-lede {
+    line-height: 1.25;
+  }
+}
+
+@media (max-width: 370px) {
+  html[lang="ta"] .stage.mode-hero .mode-hero-visual .gauge {
+    margin-bottom: -15vw;
+    transform: scale(0.8);
+    transform-origin: top center;
+  }
 }
 
 .go.is-neutral:hover:not(:disabled) {
