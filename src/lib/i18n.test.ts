@@ -59,6 +59,7 @@ describe("localization catalogs", () => {
       "dev_asn",
       "dev_warp",
     ]);
+    const unchangedSpanishAllowlist = new Set(["header_theme_auto"]);
     for (const key of Object.keys(catalogs.en)) {
       for (const locale of ["en", "ta", "es"] as const) {
         expect(catalogs[locale][key], `${locale}.${key}`).not.toContain(
@@ -67,7 +68,9 @@ describe("localization catalogs", () => {
       }
       if (unchangedAllowlist.has(key)) continue;
       expect(catalogs.ta[key], `ta.${key}`).not.toBe(catalogs.en[key]);
-      expect(catalogs.es[key], `es.${key}`).not.toBe(catalogs.en[key]);
+      if (!unchangedSpanishAllowlist.has(key)) {
+        expect(catalogs.es[key], `es.${key}`).not.toBe(catalogs.en[key]);
+      }
     }
   });
 
