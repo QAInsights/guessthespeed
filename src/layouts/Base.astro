@@ -619,21 +619,21 @@ const languageTargets: Record<Locale, string> = translatedPage
           </label>
           <label class="dialog-field sound-setting">
             <span>{t("settings_sound", {}, locale)}</span>
-            <input type="checkbox" name="sound" />
+            <input type="checkbox" name="sound" role="switch" />
           </label>
           <label class="dialog-field confetti-setting">
             <span>
               {t("settings_confetti", {}, locale)}
               <small>{t("settings_confetti_hint", {}, locale)}</small>
             </span>
-            <input type="checkbox" name="confetti" />
+            <input type="checkbox" name="confetti" role="switch" />
           </label>
           <label class="dialog-field aurora-setting">
             <span>
               {t("settings_animated_borders", {}, locale)}
               <small>{t("settings_animated_borders_hint", {}, locale)}</small>
             </span>
-            <input type="checkbox" name="animatedBorders" />
+            <input type="checkbox" name="animatedBorders" role="switch" />
           </label>
           <fieldset class="dialog-plan-group">
             <legend>{t("settings_plan_title", {}, locale)}</legend>

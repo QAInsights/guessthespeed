@@ -1915,6 +1915,7 @@ html[data-revealing="1"] .gauge-needle {
 [data-players] {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  align-items: start;
   gap: 20px;
 }
 
@@ -2098,19 +2099,28 @@ html:not([data-aurora="0"]) .is-winner.has-aurora {
 
 .p-actions {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
   margin-top: 12px;
+  min-width: 0;
 }
 
 .p-card-guess-actions {
   display: flex;
   flex-wrap: wrap;
+  flex: 1 1 auto;
   align-items: center;
   gap: 8px;
   min-width: 0;
+}
+
+.p-card-guess-actions > * {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
 .guess-button,
@@ -2165,14 +2175,18 @@ html:not([data-aurora="0"]) .is-winner.has-aurora {
   height: 44px;
   flex: none;
   place-items: center;
-  border: 2px solid var(--ink);
+  border: 0;
   border-radius: 50%;
-  background: var(--surface);
-  color: var(--ink);
+  background: transparent;
+  color: var(--muted);
   font-size: 19px;
   font-weight: 800;
   line-height: 1;
   opacity: 1;
+  box-shadow: none;
+  transition:
+    background-color 120ms ease,
+    color 120ms ease;
 }
 
 .p-rm {
@@ -2181,11 +2195,29 @@ html:not([data-aurora="0"]) .is-winner.has-aurora {
   height: 44px;
   flex: none;
   place-items: center;
-  border: 2px solid var(--ink);
+  border: 0;
   border-radius: 50%;
-  background: var(--surface);
-  color: var(--ink);
+  background: transparent;
+  color: var(--muted);
   opacity: 1;
+  box-shadow: none;
+  transition:
+    background-color 120ms ease,
+    color 120ms ease;
+}
+
+.p-edit:hover,
+.p-rm:hover,
+.p-edit:focus-visible,
+.p-rm:focus-visible {
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  color: var(--ink);
+}
+
+.p-edit:focus-visible,
+.p-rm:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .p-table-wrap {
@@ -3728,12 +3760,6 @@ dialog::backdrop {
   background: var(--bg);
 }
 
-.sound-setting input {
-  width: 22px;
-  height: 22px;
-  accent-color: var(--accent);
-}
-
 .confetti-setting,
 .aurora-setting {
   grid-template-columns: 1fr auto;
@@ -3757,11 +3783,54 @@ dialog::backdrop {
   font-weight: 600;
 }
 
-.confetti-setting input,
-.aurora-setting input {
-  width: 22px;
-  height: 22px;
-  accent-color: var(--accent);
+.sound-setting input[type="checkbox"],
+.confetti-setting input[type="checkbox"],
+.aurora-setting input[type="checkbox"] {
+  position: relative;
+  width: 42px;
+  height: 24px;
+  flex: none;
+  margin: 0;
+  padding: 2px;
+  appearance: none;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: var(--bg);
+  cursor: pointer;
+  transition: background-color 120ms ease;
+}
+
+.sound-setting input[type="checkbox"]::before,
+.confetti-setting input[type="checkbox"]::before,
+.aurora-setting input[type="checkbox"]::before {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--ink);
+  content: "";
+  transition: transform 120ms ease;
+}
+
+.sound-setting input[type="checkbox"]:checked,
+.confetti-setting input[type="checkbox"]:checked,
+.aurora-setting input[type="checkbox"]:checked {
+  background: var(--accent);
+}
+
+.sound-setting input[type="checkbox"]:checked::before,
+.confetti-setting input[type="checkbox"]:checked::before,
+.aurora-setting input[type="checkbox"]:checked::before {
+  transform: translateX(16px);
+}
+
+.sound-setting input[type="checkbox"]:focus-visible,
+.confetti-setting input[type="checkbox"]:focus-visible,
+.aurora-setting input[type="checkbox"]:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
 }
 
 .guess-hint {
