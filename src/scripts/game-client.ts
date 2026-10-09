@@ -353,6 +353,9 @@ function renderPlayerCard(player: ClientPlayer, index: number) {
   ]
     .filter(Boolean)
     .join("");
+  const playerToolsMarkup = playerTools
+    ? `<div class="p-card-tools">${playerTools}</div>`
+    : "";
   const guessAction = revealed
     ? `<div class="p-results">
         <span>${msg("game_download_guess")}: ${player.guess.down === null ? msg("game_no_guess") : `${formatNumber(player.guess.down, locale)} Mbps`}</span>
@@ -360,18 +363,20 @@ function renderPlayerCard(player: ClientPlayer, index: number) {
         <span>${miss === null || miss === undefined ? msg("game_no_guess_this_round") : msg("game_average_miss", { percent: formatNumber(miss * 100, locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) })}${tooFar ? `, ${msg("game_too_far_points")}` : ""}</span>
       </div>
       <div class="p-actions">
-        <span class="points-pill ${points > 0 ? "is-positive" : "is-zero"}">${medal ? `${medal} ` : ""}${formatPointAward(points)}</span>
-        ${roundResult?.bonus ? `<span class="bonus-pill">${msg("game_spot_on_points", { points: formatNumber(roundResult.bonus, locale) })}</span>` : ""}
+        <div class="p-card-guess-actions">
+          <span class="points-pill ${points > 0 ? "is-positive" : "is-zero"}">${medal ? `${medal} ` : ""}${formatPointAward(points)}</span>
+          ${roundResult?.bonus ? `<span class="bonus-pill">${msg("game_spot_on_points", { points: formatNumber(roundResult.bonus, locale) })}</span>` : ""}
+        </div>
+        ${playerToolsMarkup}
       </div>`
     : concealed
-      ? `<div class="p-actions"><span class="room-status-pill">${locked ? `🔒 ${msg("game_locked_in")}` : msg("game_thinking")}</span></div>`
+      ? `<div class="p-actions"><div class="p-card-guess-actions"><span class="room-status-pill">${locked ? `🔒 ${msg("game_locked_in")}` : msg("game_thinking")}</span></div>${playerToolsMarkup}</div>`
       : locked
-        ? `<div class="p-actions"><button type="button" class="locked-pill" data-guess="${escapeHtml(player.id)}" ${isTesting() ? "disabled" : ""}><span aria-hidden="true">🔒</span>${msg("game_locked_in")} <small>${msg("game_change")}</small></button>${roomMode ? `<button class="room-unlock" type="button" data-unlock="${escapeHtml(player.id)}" ${isTesting() ? "disabled" : ""}>${msg("game_unlock")}</button>` : ""}</div>`
-        : `<div class="p-actions"><button type="button" class="guess-button" data-guess="${escapeHtml(player.id)}" ${isTesting() ? "disabled" : ""}>${msg("game_guess")}</button></div>`;
+        ? `<div class="p-actions"><div class="p-card-guess-actions"><button type="button" class="locked-pill" aria-label="${msg("game_locked_in")}, ${msg("game_change")}" data-guess="${escapeHtml(player.id)}" ${isTesting() ? "disabled" : ""}><span aria-hidden="true">🔒</span>${msg("game_locked_in")}</button>${roomMode ? `<button class="room-unlock" type="button" data-unlock="${escapeHtml(player.id)}" ${isTesting() ? "disabled" : ""}>${msg("game_unlock")}</button>` : ""}</div>${playerToolsMarkup}</div>`
+        : `<div class="p-actions"><div class="p-card-guess-actions"><button type="button" class="guess-button" data-guess="${escapeHtml(player.id)}" ${isTesting() ? "disabled" : ""}>${msg("game_guess")}</button></div>${playerToolsMarkup}</div>`;
   return `<article class="p-card has-aurora ${winnerClass}" style="--card-index:${index};${auroraStyleVars(auroraFor(player.id))}">
     <div class="p-head">${roleFor(player)}<div class="p-score"><b>${formatNumber(displayedScore, locale)}</b><span>${formatScoreLabel(displayedScore)}</span></div></div>
     ${guessAction}
-    ${playerTools ? `<div class="p-card-tools">${playerTools}</div>` : ""}
   </article>`;
 }
 

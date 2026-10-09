@@ -2105,6 +2105,14 @@ html:not([data-aurora="0"]) .is-winner.has-aurora {
   margin-top: 12px;
 }
 
+.p-card-guess-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
 .guess-button,
 .locked-pill,
 .points-pill,
@@ -2148,7 +2156,7 @@ html:not([data-aurora="0"]) .is-winner.has-aurora {
   align-items: center;
   justify-content: flex-end;
   gap: 8px;
-  margin-top: 12px;
+  flex: none;
 }
 
 .p-edit {
