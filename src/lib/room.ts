@@ -15,7 +15,12 @@ import {
 import { isRecord } from "./guards";
 import { MAX_NAME_LENGTH, MAX_SPEED_MBPS } from "./limits";
 import { isBlockedName } from "./name-filter";
-import type { TieMode } from "./scoring";
+import {
+  applyRaceTiming,
+  DEFAULT_SCORING_SETTINGS,
+  scoreRound,
+  type TieMode,
+} from "./scoring";
 
 export const ROOM_ALPHABET = "BCDFGHJKMNPQRSTVWXZ";
 export const ROOM_CODE_LENGTH = 6;
@@ -27,6 +32,7 @@ export type RoomKind = "family" | "team";
 
 export interface RoomPlayer extends Player {
   owner: string;
+  guessedAt?: number | null;
 }
 
 export interface Room {
@@ -35,9 +41,11 @@ export interface Room {
   testerId: string | null;
   kind?: RoomKind;
   rotateTester?: boolean;
+  race?: boolean;
   game: Omit<GameState, "players" | "settings" | "view"> & {
     players: RoomPlayer[];
     settings: Pick<GameSettings, "rounds" | "tieMode">;
+    raceStartedAt?: number;
   };
   updatedAt: number;
 }
@@ -51,6 +59,7 @@ export type ClientAction =
   | { type: "settings"; rounds: GameSettings["rounds"]; tieMode: TieMode }
   | { type: "setTester"; id: string | null }
   | { type: "rotate"; on: boolean }
+  | { type: "race"; on: boolean }
   | { type: "transferHost"; id: string }
   | { type: "start" }
   | { type: "result"; down: number; up: number; ping?: number }
@@ -67,6 +76,7 @@ export interface RoomView extends Omit<
   testerId: string | null;
   kind: RoomKind;
   rotateTester: boolean;
+  race: boolean;
   canRunTest: boolean;
   players: (Player & { mine: boolean })[];
   settings: Pick<GameSettings, "rounds" | "tieMode">;
@@ -117,6 +127,26 @@ export function normalizeRoomCode(input: string): string | null {
     [...code].every((letter) => ROOM_ALPHABET.includes(letter))
     ? code
     : null;
+}
+
+export function progressRelayPayload(
+  message: Record<string, unknown>,
+  race: boolean,
+): Record<string, string | number> | null {
+  if (!["ping", "down", "up"].includes(String(message.phase))) return null;
+  const progress: Record<string, string | number> = {
+    type: "progress",
+    phase: String(message.phase),
+  };
+  const keys = race
+    ? ["step", "steps"]
+    : ["mbps", "pingMs", "step", "steps", "bytes"];
+  for (const key of keys) {
+    const value = message[key];
+    if (typeof value === "number" && Number.isFinite(value) && value >= 0)
+      progress[key] = value;
+  }
+  return progress;
 }
 
 export function createRoom(
@@ -267,26 +297,61 @@ export function applyAction(
       const player = findPlayer(room, action.id);
       if (!player) return { error: "player_not_found" };
       if (player.owner !== clientId) return { error: "guess_own_only" };
-      if (game.phase !== "guessing") return { error: "guesses_closed" };
+      if (game.phase === "results" || game.phase === "champion")
+        return { error: room.race ? "race_closed" : "guesses_closed" };
+      if (game.phase !== "guessing" && !(room.race && game.phase === "testing"))
+        return { error: "guesses_closed" };
       if (!validSpeed(action.down) || !validSpeed(action.up))
         return {
           error: "invalid_speed",
         };
-      return updateRoomGame(
-        room,
-        lockGuess(game, player.id, {
-          down: action.down,
-          up: action.up,
-        }),
-        now,
+      if (!room.race)
+        return updateRoomGame(
+          room,
+          lockGuess(game, player.id, {
+            down: action.down,
+            up: action.up,
+          }),
+          now,
+        );
+      const guessingGame = lockGuess(
+        { ...game, phase: "guessing" },
+        player.id,
+        { down: action.down, up: action.up },
       );
+      const nextGame = {
+        ...guessingGame,
+        phase: game.phase,
+        players: guessingGame.players.map((candidate) =>
+          candidate.id === player.id
+            ? { ...candidate, guessedAt: now }
+            : candidate,
+        ),
+      };
+      return updateRoomGame(room, nextGame, now);
     }
     case "unlock": {
       const player = findPlayer(room, action.id);
       if (!player) return { error: "player_not_found" };
       if (player.owner !== clientId) return { error: "unlock_own_only" };
-      if (game.phase !== "guessing") return { error: "guesses_closed" };
-      return updateRoomGame(room, unlockGuess(game, player.id), now);
+      if (game.phase !== "guessing" && !(room.race && game.phase === "testing"))
+        return { error: "guesses_closed" };
+      if (!room.race)
+        return updateRoomGame(room, unlockGuess(game, player.id), now);
+      const unlocked = unlockGuess({ ...game, phase: "guessing" }, player.id);
+      return updateRoomGame(
+        room,
+        {
+          ...unlocked,
+          phase: game.phase,
+          players: unlocked.players.map((candidate) =>
+            candidate.id === player.id
+              ? { ...candidate, guessedAt: null }
+              : candidate,
+          ),
+        },
+        now,
+      );
     }
     case "remove": {
       const player = findPlayer(room, action.id);
@@ -351,12 +416,28 @@ export function applyAction(
         },
       };
     }
+    case "race": {
+      if (!isHost) return { error: "host_only" };
+      if (game.phase === "testing") return { error: "test_in_progress" };
+      if (typeof action.on !== "boolean") return { error: "invalid_rotation" };
+      return {
+        room: {
+          ...room,
+          race: action.on,
+          updatedAt: now,
+        },
+      };
+    }
     case "start": {
       if (!canRunTest(room, clientId, isHost)) return { error: "tester_only" };
       if (game.phase !== "guessing") return { error: "game_not_ready" };
-      if (!game.players.some((player) => player.locked))
+      if (!room.race && !game.players.some((player) => player.locked))
         return { error: "guess_required" };
-      return updateRoomGame(room, { ...game, phase: "testing" }, now);
+      return room.race
+        ? updateRoomGame(room, { ...game, phase: "testing" }, now, {
+            raceStartedAt: now,
+          })
+        : updateRoomGame(room, { ...game, phase: "testing" }, now);
     }
     case "result": {
       if (!canRunTest(room, clientId, isHost)) return { error: "tester_only" };
@@ -372,24 +453,95 @@ export function applyAction(
         };
       if (action.ping !== undefined && !validSpeed(action.ping))
         return { error: "invalid_ping" };
-      const result = applyResult(game, {
+      const actual = {
         down: action.down,
         up: action.up,
         ...(action.ping === undefined ? {} : { ping: action.ping }),
-      });
+      };
+      if (room.race) {
+        const scores = scoreRound(
+          game.players.map((player) => ({
+            id: player.id,
+            guess: player.locked ? player.guess : { down: null, up: null },
+          })),
+          actual,
+          {
+            ...DEFAULT_SCORING_SETTINGS,
+            tieMode: game.settings.tieMode,
+            placePoints: [30, 20, 10],
+          },
+        );
+        const raceScores = applyRaceTiming(
+          scores,
+          room.game.players,
+          room.game.raceStartedAt,
+          now,
+        );
+        const scoreById = new Map(raceScores.map((score) => [score.id, score]));
+        const nextGame = {
+          ...game,
+          players: game.players.map((player) => ({
+            ...player,
+            score: player.score + (scoreById.get(player.id)?.total ?? 0),
+            guessedAt: null,
+          })),
+          history: [
+            ...game.history,
+            {
+              round: game.round,
+              actual,
+              scores: raceScores,
+            },
+          ],
+          phase: "results" as const,
+        };
+        return updateRoomGame(room, nextGame, now, { raceStartedAt: null });
+      }
+      const result = applyResult(game, actual);
       return updateRoomGame(room, result.state, now);
     }
     case "abort": {
       if (!canRunTest(room, clientId, isHost) && !isHost)
         return { error: "tester_or_host_only" };
       if (game.phase !== "testing") return { error: "test_not_running" };
-      return updateRoomGame(room, { ...game, phase: "guessing" }, now);
+      return updateRoomGame(
+        room,
+        {
+          ...game,
+          phase: "guessing",
+          ...(room.race
+            ? {
+                players: game.players.map((player) => ({
+                  ...player,
+                  guessedAt: null,
+                })),
+              }
+            : {}),
+        },
+        now,
+        { ...(room.race ? { raceStartedAt: null } : {}) },
+      );
     }
     case "next": {
       if (!isHost) return { error: "host_only" };
       if (game.phase !== "results") return { error: "result_missing" };
       const next = nextRound(game);
-      const updated = updateRoomGame(room, next, now).room;
+      const updated = updateRoomGame(
+        room,
+        {
+          ...next,
+          ...(room.race
+            ? {
+                players: next.players.map((player) => ({
+                  ...player,
+                  guessedAt: null,
+                })),
+              }
+            : {}),
+        },
+        now,
+        room.race ? { raceStartedAt: null } : {},
+      ).room;
       if ((room.rotateTester ?? false) && next.phase === "guessing") {
         const onlineOwners =
           opts?.onlineOwners ??
@@ -414,7 +566,23 @@ export function applyAction(
         return {
           error: "test_in_progress",
         };
-      return updateRoomGame(room, newGame(game), now);
+      const next = newGame(game);
+      return updateRoomGame(
+        room,
+        {
+          ...next,
+          ...(room.race
+            ? {
+                players: next.players.map((player) => ({
+                  ...player,
+                  guessedAt: null,
+                })),
+              }
+            : {}),
+        },
+        now,
+        room.race ? { raceStartedAt: null } : {},
+      );
     }
     default:
       return { error: "unknown_action" };
@@ -434,15 +602,20 @@ export function viewFor(
     testerId: room.testerId ?? null,
     kind: room.kind ?? "family",
     rotateTester: room.rotateTester ?? false,
+    race: room.race ?? false,
     canRunTest: canRunTest(room, clientId, isHost),
-    players: room.game.players.map(({ owner, ...player }) => ({
-      ...player,
-      guess:
-        reveal || owner === clientId
-          ? { ...player.guess }
-          : { down: null, up: null },
-      mine: owner === clientId,
-    })),
+    players: room.game.players.map((roomPlayer) => {
+      const { owner, ...player } = roomPlayer;
+      delete player.guessedAt;
+      return {
+        ...player,
+        guess:
+          reveal || owner === clientId
+            ? { ...player.guess }
+            : { down: null, up: null },
+        mine: owner === clientId,
+      };
+    }),
     settings: {
       rounds: room.game.settings.rounds,
       tieMode: room.game.settings.tieMode,
@@ -524,6 +697,7 @@ function updateRoomGame(
   room: Room,
   game: GameState,
   now: number,
+  options: { raceStartedAt?: number | null } = {},
 ): { room: Room } {
   const owners = new Map(
     room.game.players.map((player) => [player.id, player.owner]),
@@ -534,10 +708,22 @@ function updateRoomGame(
       testerId: room.testerId ?? null,
       updatedAt: now,
       game: {
-        players: game.players.map((player) => ({
-          ...player,
-          owner: owners.get(player.id) ?? "",
-        })),
+        players: game.players.map((player) => {
+          const original = room.game.players.find(
+            (candidate) => candidate.id === player.id,
+          );
+          const guessedAt = Object.prototype.hasOwnProperty.call(
+            player,
+            "guessedAt",
+          )
+            ? (player as Player & { guessedAt?: number | null }).guessedAt
+            : original?.guessedAt;
+          return {
+            ...player,
+            owner: owners.get(player.id) ?? "",
+            ...(guessedAt === undefined ? {} : { guessedAt }),
+          };
+        }),
         settings: {
           rounds: game.settings.rounds,
           tieMode: game.settings.tieMode,
@@ -545,6 +731,14 @@ function updateRoomGame(
         round: game.round,
         history: game.history.slice(-ROOM_HISTORY_MAX),
         phase: game.phase,
+        ...("raceStartedAt" in options
+          ? options.raceStartedAt === null ||
+            options.raceStartedAt === undefined
+            ? {}
+            : { raceStartedAt: options.raceStartedAt }
+          : room.game.raceStartedAt === undefined
+            ? {}
+            : { raceStartedAt: room.game.raceStartedAt }),
       },
     },
   };

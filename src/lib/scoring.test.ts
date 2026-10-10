@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { scoreRound, type ScoringSettings } from "./scoring";
+import { applyRaceTiming, scoreRound, type ScoringSettings } from "./scoring";
 
 const defaults: ScoringSettings = {
   tieMode: "share",
@@ -234,5 +234,77 @@ describe("scoreRound", () => {
       defaults,
     );
     expect(scores.map(({ place }) => place)).toEqual([1, 1]);
+  });
+});
+
+describe("applyRaceTiming", () => {
+  const [baseScore] = scoreRound([player("racer", 100, 20)], actual, {
+    ...defaults,
+    placePoints: [30, 20, 10],
+  });
+
+  it.each([
+    [0, 0.5, 25],
+    [50, 0.75, 38],
+    [100, 1, 50],
+  ])("applies timing at %s%% of the test", (at, timingBonus, total) => {
+    const [score] = applyRaceTiming(
+      [baseScore],
+      [{ id: "racer", guessedAt: at }],
+      0,
+      100,
+    );
+    expect(score).toMatchObject({ basePoints: 50, timingBonus, total });
+  });
+
+  it("gives pre-start or missing guesses the minimum timing bonus", () => {
+    const [preStart] = applyRaceTiming(
+      [baseScore],
+      [{ id: "racer", guessedAt: 99 }],
+      100,
+      200,
+    );
+    const [missing] = applyRaceTiming(
+      [baseScore],
+      [{ id: "racer", guessedAt: null }],
+      100,
+      200,
+    );
+    expect(preStart.timingBonus).toBe(0.5);
+    expect(missing.timingBonus).toBe(0.5);
+  });
+
+  it("uses a full timing bonus when the race has zero duration", () => {
+    const [score] = applyRaceTiming(
+      [baseScore],
+      [{ id: "racer", guessedAt: 100 }],
+      100,
+      100,
+    );
+    expect(score.timingBonus).toBe(1);
+  });
+
+  it("rounds multiplied race totals to whole points", () => {
+    const [score] = applyRaceTiming(
+      [{ ...baseScore, placePoints: 30, bonus: 0 }],
+      [{ id: "racer", guessedAt: 50 }],
+      0,
+      100,
+    );
+    expect(score).toMatchObject({
+      basePoints: 30,
+      timingBonus: 0.75,
+      total: 23,
+    });
+  });
+
+  it("keeps a missing guess at zero points", () => {
+    const noGuess = scoreRound([player("racer", null, null)], actual, {
+      ...defaults,
+      placePoints: [30, 20, 10],
+    });
+    const [score] = applyRaceTiming(noGuess, [], 0, 100);
+    expect(score).toMatchObject({ basePoints: 0, total: 0 });
+    expect(score.timingBonus).toBeUndefined();
   });
 });

@@ -32,6 +32,7 @@ const roomErrorKeys: Record<string, Parameters<typeof t>[0]> = {
   edit_own_only: "room_error_edit_own",
   guess_own_only: "room_error_guess_own",
   guesses_closed: "room_error_guesses_closed",
+  race_closed: "room_error_race_closed",
   invalid_speed: "game_speed_value_invalid",
   unlock_own_only: "room_error_unlock_own",
   remove_own_only: "room_error_remove_own",
@@ -172,6 +173,13 @@ function roomPageUrl(code: string): string {
 
 function showRoomError(code: string): void {
   const message = localizedError(code);
+  if (code === "race_closed") {
+    const notice = queryOptional<HTMLElement>("[data-error-note]");
+    if (notice) {
+      notice.textContent = message;
+      notice.hidden = false;
+    }
+  }
   const joinError = queryOptional<HTMLElement>("[data-room-join-error]");
   if (joinError) {
     joinError.textContent = message;
@@ -329,6 +337,11 @@ function updateRoomFacePicker(kind: RoomView["kind"] | undefined): void {
 }
 
 function updateRoomTesterControls(view: RoomView): void {
+  document.documentElement.dataset.race = String(view.race === true);
+  const raceRule = queryOptional<HTMLElement>("[data-room-race-rule]");
+  if (raceRule) raceRule.hidden = view.race !== true;
+  const raceBadge = queryOptional<HTMLElement>("[data-race-badge]");
+  if (raceBadge) raceBadge.hidden = view.race !== true;
   const teamRoom = view.kind === "team";
   if (teamRoom) document.documentElement.dataset.roomKind = "team";
   else delete document.documentElement.dataset.roomKind;
@@ -358,6 +371,13 @@ function updateRoomTesterControls(view: RoomView): void {
   if (rotateToggle) {
     rotateToggle.checked = view.rotateTester;
     rotateToggle.disabled = view.phase === "testing";
+  }
+  const raceControl = queryOptional<HTMLElement>("[data-room-race-control]");
+  const raceToggle = queryOptional<HTMLInputElement>("[data-room-race-toggle]");
+  if (raceControl) raceControl.hidden = !view.isHost;
+  if (raceToggle) {
+    raceToggle.checked = view.race === true;
+    raceToggle.disabled = view.phase === "testing";
   }
   if (view.phase === "testing")
     closeRoomPickerMenu(
@@ -769,6 +789,7 @@ function isRoomView(value: unknown): value is RoomView {
       value.kind === "team") &&
     (value.rotateTester === undefined ||
       typeof value.rotateTester === "boolean") &&
+    (value.race === undefined || typeof value.race === "boolean") &&
     typeof value.canRunTest === "boolean" &&
     Array.isArray(value.players) &&
     value.players.every(
@@ -848,6 +869,13 @@ if (isRoom) {
     const input = event.currentTarget as HTMLInputElement;
     sendRoomAction({ type: "rotate", on: input.checked });
   });
+  queryOptional<HTMLInputElement>("[data-room-race-toggle]")?.addEventListener(
+    "change",
+    (event) => {
+      const input = event.currentTarget as HTMLInputElement;
+      sendRoomAction({ type: "race", on: input.checked });
+    },
+  );
   queryOptional<HTMLButtonElement>("[data-room-stop-test]")?.addEventListener(
     "click",
     () => {

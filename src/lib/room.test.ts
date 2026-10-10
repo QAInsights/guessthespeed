@@ -12,6 +12,7 @@ import {
   nextTesterId,
   normalizeRoomCode,
   parseTransferHostAction,
+  progressRelayPayload,
   ROOM_ALPHABET,
   ROOM_CODE_LENGTH,
   ROOM_HISTORY_MAX,
@@ -587,6 +588,179 @@ describe("team rooms", () => {
       kind: "family",
       rotateTester: false,
     });
+  });
+});
+
+describe("race rooms", () => {
+  function raceRoom(): Room {
+    return act(joinedRoom(), hostId, true, { type: "race", on: true }, 110);
+  }
+
+  it("keeps race off by default and allows only the host to toggle it between tests", () => {
+    const room = joinedRoom();
+    expect(viewFor(room, hostId, true).race).toBe(false);
+    expect(
+      applyAction(room, firstId, false, { type: "race", on: true }, 110),
+    ).toEqual({ error: "host_only" });
+    const enabled = act(room, hostId, true, { type: "race", on: true }, 111);
+    expect(enabled.race).toBe(true);
+    const testing = act(enabled, hostId, true, { type: "start" }, 112);
+    expect(
+      applyAction(testing, hostId, true, { type: "race", on: false }, 113),
+    ).toEqual({ error: "test_in_progress" });
+  });
+
+  it("starts a race with no locked guesses and records the server start time", () => {
+    const started = act(raceRoom(), hostId, true, { type: "start" }, 120);
+    expect(started.game).toMatchObject({
+      phase: "testing",
+      raceStartedAt: 120,
+    });
+  });
+
+  it("allows locking, changing, and unlocking guesses during testing", () => {
+    let room = act(raceRoom(), hostId, true, { type: "start" }, 120);
+    const player = playerByOwner(room, firstId);
+    room = act(
+      room,
+      firstId,
+      false,
+      { type: "guess", id: player.id, down: 100, up: 20 },
+      130,
+    );
+    expect(room.game.players.find(({ id }) => id === player.id)).toMatchObject({
+      locked: true,
+      guessedAt: 130,
+    });
+    expect(room.game.raceStartedAt).toBe(120);
+    room = act(
+      room,
+      firstId,
+      false,
+      { type: "guess", id: player.id, down: 110, up: 21 },
+      140,
+    );
+    expect(room.game.players.find(({ id }) => id === player.id)).toMatchObject({
+      guess: { down: 110, up: 21 },
+      guessedAt: 140,
+    });
+    room = act(room, firstId, false, { type: "unlock", id: player.id }, 150);
+    expect(room.game.players.find(({ id }) => id === player.id)).toMatchObject({
+      locked: false,
+      guessedAt: null,
+    });
+  });
+
+  it("rejects guesses and unlocks during testing when race is off", () => {
+    let room = withGuess(joinedRoom(), firstId, 100, 20);
+    room = act(room, hostId, true, { type: "start" });
+    const player = playerByOwner(room, firstId);
+    expect(
+      applyAction(
+        room,
+        firstId,
+        false,
+        { type: "guess", id: player.id, down: 100, up: 20 },
+        120,
+      ),
+    ).toEqual({ error: "guesses_closed" });
+    expect(
+      applyAction(room, firstId, false, { type: "unlock", id: player.id }, 120),
+    ).toEqual({ error: "guesses_closed" });
+  });
+
+  it("returns race_closed for guesses after a race result", () => {
+    let room = act(raceRoom(), hostId, true, { type: "start" }, 120);
+    const player = playerByOwner(room, firstId);
+    room = act(
+      room,
+      firstId,
+      false,
+      { type: "guess", id: player.id, down: 100, up: 20 },
+      150,
+    );
+    room = act(room, hostId, true, { type: "result", down: 100, up: 20 }, 220);
+    expect(
+      applyAction(
+        room,
+        firstId,
+        false,
+        { type: "guess", id: player.id, down: 90, up: 18 },
+        221,
+      ),
+    ).toEqual({ error: "race_closed" });
+    expect(room.game.raceStartedAt).toBeUndefined();
+    expect(room.game.players.every(({ guessedAt }) => guessedAt === null)).toBe(
+      true,
+    );
+  });
+
+  it("resets timing on abort while keeping locked guesses", () => {
+    let room = act(raceRoom(), hostId, true, { type: "start" }, 120);
+    const player = playerByOwner(room, firstId);
+    room = act(
+      room,
+      firstId,
+      false,
+      { type: "guess", id: player.id, down: 100, up: 20 },
+      130,
+    );
+    room = act(room, hostId, true, { type: "abort" }, 140);
+    expect(room.game.phase).toBe("guessing");
+    expect(room.game.raceStartedAt).toBeUndefined();
+    expect(room.game.players.find(({ id }) => id === player.id)).toMatchObject({
+      locked: true,
+      guess: { down: 100, up: 20 },
+      guessedAt: null,
+    });
+  });
+
+  it("carries guessedAt and raceStartedAt through updateRoomGame", () => {
+    let room = act(raceRoom(), hostId, true, { type: "start" }, 120);
+    const player = playerByOwner(room, firstId);
+    room = act(
+      room,
+      firstId,
+      false,
+      { type: "guess", id: player.id, down: 100, up: 20 },
+      130,
+    );
+    expect(room.game.raceStartedAt).toBe(120);
+    expect(
+      room.game.players.find(({ id }) => id === player.id)?.guessedAt,
+    ).toBe(130);
+    expect(viewFor(room, firstId, false).players[1]).not.toHaveProperty(
+      "guessedAt",
+    );
+  });
+
+  it("strips live measurements from race progress relay payloads only", () => {
+    const message = {
+      phase: "down",
+      mbps: 88,
+      pingMs: 12,
+      step: 7,
+      steps: 13,
+      bytes: 1024,
+    };
+    expect(progressRelayPayload(message, true)).toEqual({
+      type: "progress",
+      phase: "down",
+      step: 7,
+      steps: 13,
+    });
+    expect(progressRelayPayload(message, false)).toEqual({
+      type: "progress",
+      phase: "down",
+      mbps: 88,
+      pingMs: 12,
+      step: 7,
+      steps: 13,
+      bytes: 1024,
+    });
+    expect(
+      progressRelayPayload({ ...message, phase: "invalid" }, true),
+    ).toBeNull();
   });
 });
 

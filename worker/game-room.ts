@@ -4,6 +4,7 @@ import {
   canRunTest,
   createRoom,
   parseTransferHostAction,
+  progressRelayPayload,
   ROOM_TTL_MS,
   transferHost,
   viewFor,
@@ -364,17 +365,8 @@ export class GameRoom extends DurableObject<Env> {
     }
     this.progressCount += 1;
     if (this.progressCount > MAX_PROGRESS_PER_SECOND) return;
-    if (!["ping", "down", "up"].includes(String(message.phase))) return;
-
-    const progress: Record<string, string | number> = {
-      type: "progress",
-      phase: String(message.phase),
-    };
-    for (const key of ["mbps", "pingMs", "step", "steps", "bytes"]) {
-      const value = message[key];
-      if (typeof value === "number" && Number.isFinite(value) && value >= 0)
-        progress[key] = value;
-    }
+    const progress = progressRelayPayload(message, room.race ?? false);
+    if (!progress) return;
     const serialized = JSON.stringify(progress);
     for (const socket of this.ctx.getWebSockets()) {
       if (socket === sender || !getAttachment(socket)) continue;
