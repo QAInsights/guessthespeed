@@ -603,8 +603,6 @@ function renderResultCard() {
   const meta: string[] = [];
   if (connection?.colo && connection.colo !== "unavailable")
     meta.push(`<b>${escapeHtml(connection.colo)}</b>`);
-  if (connection?.city && connection.city !== "unavailable")
-    meta.push(escapeHtml(connection.city));
   const location = meta.length ? meta.join(" ") : "";
   const duration = `${escapeHtml(displayValue(completedDetails.totalDurationMs / 1000))} s`;
   const requestCount =

@@ -4268,10 +4268,19 @@ html[data-classroom="1"] .dev-result {
 
 .dev-result-plan .plan-chip {
   max-width: 100%;
+  min-height: var(--btn-h);
+  height: auto;
+  white-space: normal;
+  text-align: left;
 }
 
 .dev-result-plan .plan-nudge {
   margin: 0;
+  max-width: 100%;
+  min-height: var(--btn-h);
+  height: auto;
+  white-space: normal;
+  text-align: left;
 }
 
 .dev-result-side {
@@ -4416,6 +4425,29 @@ html[data-classroom="1"] .dev-result {
 
 .dev-result[data-state="running"] :is(.dev-result-main, .dev-result-side) {
   opacity: 0.45;
+}
+
+.dev-result[data-state="running"] .dev-result-value {
+  background: none;
+  color: var(--muted);
+}
+
+.dev-result[data-state="running"] .dev-bar i {
+  transition: none;
+}
+
+html[lang="ta"]
+  :is(.dev-result-label, .dev-result-unit, .dev-result-sub, .dev-result-meta) {
+  font-family:
+    "Figtree Variable", Figtree, "Noto Sans Tamil Variable", "Noto Sans Tamil",
+    system-ui, sans-serif;
+}
+
+html[lang="ta"]
+  :is(.dev-use, .dev-result-row-value > span:first-child, .dev-result-value) {
+  font-family:
+    "Bricolage Grotesque Variable", "Noto Sans Tamil Variable",
+    "Noto Sans Tamil", sans-serif;
 }
 
 @media (forced-colors: active) {
