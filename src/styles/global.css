@@ -515,6 +515,8 @@ html[data-room="1"] .dev-console {
   --aurora-3: #38d9a9;
   --aurora-4: #74c0fc;
   --aurora-5: #da77f2;
+  --gauge-glow-down: color-mix(in srgb, var(--accent) 55%, transparent);
+  --gauge-glow-up: rgb(110 120 255 / 50%);
   color-scheme: dark;
 }
 
@@ -533,6 +535,8 @@ html[data-room="1"] .dev-console {
   --aurora-3: #7cff6b;
   --aurora-4: #ffd23f;
   --aurora-5: #ff4f7b;
+  --gauge-glow-down: color-mix(in srgb, var(--accent) 55%, transparent);
+  --gauge-glow-up: rgb(110 120 255 / 50%);
   color-scheme: dark;
 }
 
@@ -551,6 +555,8 @@ html[data-room="1"] .dev-console {
   --aurora-3: #ff3d8b;
   --aurora-4: #ffe08a;
   --aurora-5: #c77dff;
+  --gauge-glow-down: color-mix(in srgb, var(--accent) 55%, transparent);
+  --gauge-glow-up: rgb(110 120 255 / 50%);
   color-scheme: dark;
 }
 
@@ -586,6 +592,8 @@ html[data-room="1"] .dev-console {
   --aurora-3: #7aa7ff;
   --aurora-4: #b8a6ff;
   --aurora-5: #e8f7ff;
+  --gauge-glow-down: color-mix(in srgb, var(--accent) 55%, transparent);
+  --gauge-glow-up: rgb(110 120 255 / 50%);
   color-scheme: dark;
 }
 
@@ -604,6 +612,8 @@ html[data-room="1"] .dev-console {
   --aurora-3: #ffd166;
   --aurora-4: #f5f5f5;
   --aurora-5: #2ab673;
+  --gauge-glow-down: color-mix(in srgb, var(--accent) 55%, transparent);
+  --gauge-glow-up: rgb(110 120 255 / 50%);
   color-scheme: dark;
 }
 
@@ -622,6 +632,8 @@ html[data-room="1"] .dev-console {
   --aurora-3: #7df9ff;
   --aurora-4: #b388ff;
   --aurora-5: #ffffff;
+  --gauge-glow-down: color-mix(in srgb, var(--accent) 55%, transparent);
+  --gauge-glow-up: rgb(110 120 255 / 50%);
   color-scheme: dark;
 }
 
@@ -708,6 +720,8 @@ html[data-room="1"] .dev-console {
   --aurora-3: #f6e7b0;
   --aurora-4: #8fb8ff;
   --aurora-5: #c9a0ff;
+  --gauge-glow-down: color-mix(in srgb, var(--accent) 55%, transparent);
+  --gauge-glow-up: rgb(110 120 255 / 50%);
   color-scheme: dark;
 }
 
@@ -743,6 +757,8 @@ html[data-room="1"] .dev-console {
   --aurora-3: #ff8c42;
   --aurora-4: #ffe7a0;
   --aurora-5: #ff6f91;
+  --gauge-glow-down: color-mix(in srgb, var(--accent) 55%, transparent);
+  --gauge-glow-up: rgb(110 120 255 / 50%);
   color-scheme: dark;
 }
 
@@ -1317,6 +1333,11 @@ html[data-dev="1"] .mode-hero-visual .play-stat {
   width: 100%;
   max-width: 470px;
   margin: 0 auto;
+  container-type: inline-size;
+  --gauge-down-1: color-mix(in oklab, var(--accent), #ffb02e 40%);
+  --gauge-down-2: color-mix(in oklab, var(--accent), #ff2d6f 40%);
+  --gauge-up-1: #7b61ff;
+  --gauge-up-2: #22c3ee;
 }
 
 .gauge svg {
@@ -1329,40 +1350,67 @@ html[data-dev="1"] .mode-hero-visual .play-stat {
   fill: none;
   stroke: var(--soft);
   stroke-linecap: round;
-  stroke-width: 30;
-}
-
-.track-o {
-  fill: none;
-  stroke: var(--ink);
-  stroke-linecap: round;
-  stroke-width: 36;
+  stroke-width: 18;
 }
 
 .gauge-fill {
   fill: none;
-  stroke: var(--accent);
+  stroke: url(#gauge-grad-down);
   stroke-dasharray: 100 101;
   stroke-dashoffset: calc(100 - 100 * var(--p, 0));
   stroke-linecap: round;
-  stroke-width: 30;
+  stroke-width: 18;
+  filter: drop-shadow(0 0 10px var(--gauge-glow-down, transparent));
   transition: stroke-dashoffset 0.12s linear;
 }
 
 [data-phase="up"] .gauge-fill {
+  stroke: url(#gauge-grad-up);
+  filter: drop-shadow(0 0 10px var(--gauge-glow-up, transparent));
+}
+
+#gauge-grad-down stop:first-child {
+  stop-color: var(--gauge-down-1);
+}
+
+#gauge-grad-down stop:last-child {
+  stop-color: var(--gauge-down-2);
+}
+
+#gauge-grad-up stop:first-child {
+  stop-color: var(--gauge-up-1);
+}
+
+#gauge-grad-up stop:last-child {
+  stop-color: var(--gauge-up-2);
+}
+
+[data-gauge][data-empty] .gauge-fill {
+  opacity: 0;
+}
+
+.gauge-tick {
   stroke: var(--ink);
+  stroke-linecap: round;
+  opacity: 0.55;
+}
+
+.gauge-tick.is-minor {
+  opacity: 0.18;
 }
 
 .tick {
   fill: var(--muted);
   font:
-    700 15px "Bricolage Grotesque Variable",
+    600 13px "Figtree Variable",
+    Figtree,
     sans-serif;
+  font-variant-numeric: tabular-nums;
 }
 
 .gauge-needle {
   transform: rotate(var(--rotation, -120deg));
-  transform-origin: 200px 185px;
+  transform-origin: 200px 190px;
   transition: transform 0.12s linear;
 }
 
@@ -1370,20 +1418,24 @@ html[data-revealing="1"] .gauge-needle {
   transition: none;
 }
 
-.needle {
-  fill: var(--ink);
+.gauge-knob {
+  fill: var(--surface);
+  stroke: var(--gauge-down-2);
+  stroke-width: 5;
 }
 
-.hub {
-  fill: var(--accent);
-  stroke: var(--ink);
-  stroke-width: 5;
+[data-phase="up"] .gauge-knob {
+  stroke: var(--gauge-up-2);
+}
+
+.gauge-knob-dot {
+  fill: var(--ink);
 }
 
 .readout {
   position: absolute;
   right: 0;
-  bottom: 0;
+  top: 30%;
   left: 0;
   display: flex;
   flex-direction: column;
@@ -1391,19 +1443,40 @@ html[data-revealing="1"] .gauge-needle {
 }
 
 .readout .mode {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--soft);
   color: var(--muted);
-  font-size: 0.875rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
+.mode-dot {
+  width: 7px;
+  height: 7px;
+  flex: none;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--gauge-down-1), var(--gauge-down-2));
+}
+
+[data-phase="up"] .mode-dot {
+  background: linear-gradient(135deg, var(--gauge-up-1), var(--gauge-up-2));
+}
+
 .readout .num {
-  font:
-    800 64px/1 "Bricolage Grotesque Variable",
-    sans-serif;
-  font-variation-settings: "wdth" 75;
+  margin-top: 10px;
+  font-family: "Bricolage Grotesque Variable", sans-serif;
+  font-size: min(68px, 15cqi);
+  font-weight: 700;
+  font-variation-settings: "wdth" 85;
   font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+  line-height: 1;
   text-align: center;
 }
 
@@ -1445,7 +1518,8 @@ html[data-revealing="1"] .gauge-needle {
 .readout .unit {
   color: var(--muted);
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 600;
+  margin-top: 4px;
 }
 
 .phase-status {
@@ -4412,18 +4486,6 @@ html[data-dev="1"] .dev-console {
     max-width: 380px;
   }
 
-  .readout .num {
-    font-size: 48px;
-  }
-
-  .readout .mode {
-    font-size: 10px;
-  }
-
-  .readout .unit {
-    font-size: 12px;
-  }
-
   .tick {
     font-size: 14px;
   }
@@ -4732,7 +4794,7 @@ html[data-dev="1"] .dev-console {
     min-height: 0;
     align-self: center;
     justify-self: center;
-    aspect-ratio: 5 / 4;
+    aspect-ratio: 4 / 3;
     container-type: size;
   }
 
@@ -4740,7 +4802,7 @@ html[data-dev="1"] .dev-console {
     width: auto;
     height: 100%;
     max-height: 100%;
-    aspect-ratio: 5 / 4;
+    aspect-ratio: 4 / 3;
   }
 
   html[data-tv="1"][data-home="1"] .readout .mode {
@@ -4757,7 +4819,8 @@ html[data-dev="1"] .dev-console {
   }
 
   html[data-tv="1"][data-home="1"] .readout {
-    bottom: clamp(26px, 9cqi, 82px);
+    top: 30%;
+    bottom: auto;
   }
 
   html[data-tv="1"][data-home="1"] .phase {
@@ -5798,15 +5861,6 @@ html[data-dev="1"] .dev-mode-pill-label {
 .mode-hero-pill {
   min-height: 44px;
   font-size: 0.875rem;
-}
-
-.readout .mode {
-  font-size: 0.875rem;
-  letter-spacing: 0.04em;
-}
-
-.readout .unit {
-  font-size: 0.8125rem;
 }
 
 .stat span {
