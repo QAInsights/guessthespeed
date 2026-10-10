@@ -12,8 +12,11 @@ import {
   type SerializableBandwidthPoint,
   type SpeedDetails,
 } from "../lib/speedtest";
+import { loadDevRun, saveDevRun } from "../lib/devrun";
 import { escapeHtml } from "../lib/html";
-import { loadPlan, planPercent } from "../lib/plan";
+import { devUseChecks, type DevUse, pingBarFill } from "../lib/devresult";
+import { gaugePosition } from "../lib/gauge";
+import { loadPlan, planPercent, planTone } from "../lib/plan";
 import { $ } from "./dom";
 import { formatNumber } from "../lib/i18n";
 import { initializeClientLocale, t } from "../lib/messages";
@@ -107,6 +110,8 @@ let showIp = false;
 let details: SpeedDetails | null = null;
 let browserDetails = readBrowserDetails();
 let connectionRequest = 0;
+let hasCompletedRun = false;
+let devRunActive = false;
 
 const connectionContent = $<HTMLDivElement>("[data-connection-content]");
 const summaryContent = $<HTMLDivElement>("[data-summary-content]");
@@ -118,6 +123,23 @@ const browserContent = $<HTMLDivElement>("[data-browser-content]");
 const copyButton = $<HTMLButtonElement>("[data-copy-json]");
 const downloadButton = $<HTMLButtonElement>("[data-download-json]");
 const copyStatus = $<HTMLSpanElement>("[data-copy-status]");
+const resultCard = $<HTMLElement>("[data-dev-result]");
+const resultDown = $<HTMLElement>("[data-dev-result-down]");
+const resultUp = $<HTMLElement>("[data-dev-result-up]");
+const resultUpBar = $<HTMLElement>("[data-dev-result-up-bar]");
+const resultPing = $<HTMLElement>("[data-dev-result-ping]");
+const resultJitter = $<HTMLElement>("[data-dev-result-jitter]");
+const resultPingBar = $<HTMLElement>("[data-dev-result-ping-bar]");
+const resultPlan = $<HTMLElement>("[data-dev-result-plan]");
+const resultUses = $<HTMLUListElement>("[data-dev-result-uses]");
+const resultMeta = $<HTMLParagraphElement>("[data-dev-result-meta]");
+const resultCopyButton = $<HTMLButtonElement>("[data-dev-result-copy]");
+const devUseMessages: Record<DevUse, Parameters<typeof t>[0]> = {
+  streaming4k: "dev_use_streaming4k",
+  videoCalls: "dev_use_video_calls",
+  gaming: "dev_use_gaming",
+  bigUploads: "dev_use_big_uploads",
+};
 
 function isDevMode() {
   return document.documentElement.dataset.dev === "1";
@@ -499,12 +521,117 @@ function renderBrowser() {
   browserContent.innerHTML = renderPairs(Object.entries(browserDetails));
 }
 
+function renderResultCard() {
+  if (!isDevMode() || !hasCompletedRun) {
+    resultCard.hidden = true;
+    resultCard.removeAttribute("data-state");
+    return;
+  }
+
+  resultCard.hidden = false;
+  if (devRunActive) resultCard.dataset.state = "running";
+  else resultCard.removeAttribute("data-state");
+
+  const completedDetails = details;
+  if (
+    devRunActive ||
+    !completedDetails ||
+    completedDetails.totalDurationMs === undefined
+  ) {
+    resultDown.textContent = "–";
+    resultUp.textContent = "–";
+    resultPing.textContent = "–";
+    resultJitter.textContent = "";
+    resultUpBar.style.width = "0%";
+    resultPingBar.style.width = "0%";
+    resultPlan.innerHTML = "";
+    resultUses.innerHTML = "";
+    resultMeta.innerHTML = "";
+    return;
+  }
+
+  const down = getSummaryValue(completedDetails, "download");
+  const up = getSummaryValue(completedDetails, "upload");
+  const ping = getSummaryValue(completedDetails, "latency");
+  const jitter = getSummaryValue(completedDetails, "jitter");
+  const downMbps = down === undefined ? undefined : down / 1e6;
+  const upMbps = up === undefined ? undefined : up / 1e6;
+
+  const formatMbps = (value: number | undefined) =>
+    value === undefined
+      ? "–"
+      : formatNumber(value, locale, {
+          maximumFractionDigits: value >= 100 ? 0 : 1,
+        });
+  const formatMilliseconds = (value: number | undefined) =>
+    value === undefined
+      ? "–"
+      : formatNumber(value, locale, { maximumFractionDigits: 1 });
+
+  resultDown.textContent = formatMbps(downMbps);
+  resultUp.textContent = formatMbps(upMbps);
+  resultPing.textContent = formatMilliseconds(ping);
+  resultJitter.textContent =
+    jitter === undefined
+      ? ""
+      : `· ${msg("dev_jitter")} ${formatMilliseconds(jitter)}`;
+  resultUpBar.style.width =
+    upMbps === undefined ? "0%" : `${gaugePosition(upMbps) * 100}%`;
+  resultPingBar.style.width =
+    ping === undefined ? "0%" : `${pingBarFill(ping) * 100}%`;
+
+  const plan = loadPlan();
+  const percent = planPercent(downMbps, plan.down);
+  if (plan.down !== null && percent !== null) {
+    const label = msg("plan_chip_long", {
+      percent: formatNumber(percent, locale),
+      planned: formatNumber(plan.down, locale, { maximumFractionDigits: 0 }),
+    });
+    resultPlan.innerHTML = `<a class="plan-chip plan-chip-${planTone(percent)}" href="/what-is-a-good-internet-speed/#less-than-plan">${escapeHtml(label)}</a>`;
+  } else {
+    resultPlan.innerHTML = `<button class="plan-nudge" type="button" data-dev-result-plan-nudge>${escapeHtml(msg("dev_result_set_plan"))}</button>`;
+  }
+
+  resultUses.innerHTML = devUseChecks({ downMbps, upMbps, pingMs: ping })
+    .map((check) => {
+      const notEnough = check.ok
+        ? ""
+        : `<span class="dev-result-visually-hidden">${escapeHtml(msg("dev_use_not_enough"))}</span>`;
+      return `<li class="dev-use ${check.ok ? "is-ok" : "is-miss"}"><span aria-hidden="true">${check.ok ? "✓" : "–"}</span>${escapeHtml(msg(devUseMessages[check.key]))}${notEnough}</li>`;
+    })
+    .join("");
+
+  const meta: string[] = [];
+  if (connection?.colo && connection.colo !== "unavailable")
+    meta.push(`<b>${escapeHtml(connection.colo)}</b>`);
+  const location = meta.length ? meta.join(" ") : "";
+  const duration = `${escapeHtml(displayValue(completedDetails.totalDurationMs / 1000))} s`;
+  const requestCount =
+    completedDetails.download.length +
+    completedDetails.upload.length +
+    completedDetails.latencyPoints.length;
+  const requests = escapeHtml(
+    msg("dev_result_requests", {
+      count: formatNumber(requestCount, locale),
+    }),
+  );
+  resultMeta.innerHTML = [location, duration, requests]
+    .filter(Boolean)
+    .map((value) => `<span>${value}</span>`)
+    .join('<span class="sep" aria-hidden="true">•</span>');
+}
+
 function renderResults() {
+  if (details?.totalDurationMs !== undefined) {
+    hasCompletedRun = true;
+    devRunActive = false;
+  }
   renderSummary();
   renderLatency();
   renderRequests();
   renderPercentiles();
   syncExportButtons();
+  renderResultCard();
 }
 
 function buildRunExport(): Record<string, unknown> | null {
@@ -534,6 +661,7 @@ function syncExportButtons() {
   const available = Boolean(details?.totalDurationMs !== undefined);
   copyButton.disabled = !available;
   downloadButton.disabled = !available;
+  resultCopyButton.disabled = !available;
 }
 
 async function loadConnectionInfo() {
@@ -566,6 +694,7 @@ async function loadConnectionInfo() {
     if (request === connectionRequest && isDevMode()) {
       connectionLoading = false;
       renderConnection();
+      renderResultCard();
     }
   }
 }
@@ -577,18 +706,49 @@ connectionContent.addEventListener("click", (event) => {
   renderConnection();
 });
 
-copyButton.addEventListener("click", async () => {
+let copyStatusTimer = 0;
+let resultCopyRestoreTimer = 0;
+
+async function copyRunJson() {
   const run = buildRunExport();
   if (!run) return;
+  let copied = false;
   try {
     await navigator.clipboard.writeText(JSON.stringify(run, null, 2));
     copyStatus.textContent = msg("dev_copy_success");
+    copied = true;
   } catch {
     copyStatus.textContent = msg("dev_copy_failed");
   }
-  window.setTimeout(() => {
+  window.clearTimeout(copyStatusTimer);
+  copyStatusTimer = window.setTimeout(() => {
     copyStatus.textContent = "";
   }, 1800);
+  if (copied) {
+    resultCopyButton.textContent = msg("dev_copy_success");
+    window.clearTimeout(resultCopyRestoreTimer);
+    resultCopyRestoreTimer = window.setTimeout(() => {
+      resultCopyButton.textContent = msg("dev_copy_json");
+    }, 1800);
+  }
+}
+
+copyButton.addEventListener("click", () => void copyRunJson());
+resultCopyButton.addEventListener("click", () => void copyRunJson());
+
+resultCard.addEventListener("click", (event) => {
+  const target = event.target as HTMLElement;
+  if (!target.closest("[data-dev-result-plan-nudge]")) return;
+  $<HTMLButtonElement>("[data-open-settings]").click();
+  $<HTMLInputElement>("#planDown").focus();
+});
+
+document.addEventListener("gts:plan-change", () => renderResultCard());
+
+document.addEventListener("gts:testing-change", (event) => {
+  if ((event as CustomEvent<boolean>).detail || !devRunActive) return;
+  devRunActive = false;
+  renderResultCard();
 });
 
 downloadButton.addEventListener("click", () => {
@@ -614,15 +774,21 @@ document.addEventListener("gts:dev-change", (event) => {
   if (enabled) {
     browserDetails = readBrowserDetails();
     renderBrowser();
+    if (isDevMode() && details === null) details = loadDevRun();
+    renderResults();
     void loadConnectionInfo();
   } else {
     connectionRequest += 1;
     connectionLoading = false;
+    hasCompletedRun = false;
+    devRunActive = false;
+    renderResultCard();
   }
 });
 
 document.addEventListener("gts:dev-run-start", () => {
   if (!isDevMode()) return;
+  devRunActive = true;
   details = null;
   browserDetails = readBrowserDetails();
   renderBrowser();
@@ -633,11 +799,13 @@ document.addEventListener("gts:dev-run-start", () => {
 document.addEventListener("gts:dev-details", (event) => {
   if (!isDevMode()) return;
   details = (event as CustomEvent<SpeedDetails>).detail;
+  saveDevRun(details);
   renderResults();
 });
 
 renderConfig();
 renderBrowser();
 renderConnection();
+if (isDevMode() && details === null) details = loadDevRun();
 renderResults();
 if (isDevMode()) void loadConnectionInfo();

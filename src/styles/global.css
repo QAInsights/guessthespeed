@@ -498,6 +498,12 @@ html[data-room="1"] .dev-console {
   --aurora-3: #2ec4b6;
   --aurora-4: #4c6ef5;
   --aurora-5: #e64980;
+  --gauge-down-1: color-mix(in oklab, var(--accent), #ffb02e 40%);
+  --gauge-down-2: color-mix(in oklab, var(--accent), #ff2d6f 40%);
+  --gauge-up-1: #7b61ff;
+  --gauge-up-2: #22c3ee;
+  --ping-1: #2ec4b6;
+  --ping-2: #4c6ef5;
   --r: 14px;
   color-scheme: light;
 }
@@ -1340,10 +1346,6 @@ html[data-dev="1"] .mode-hero-visual .play-stat {
   max-width: 470px;
   margin: 0 auto;
   container-type: inline-size;
-  --gauge-down-1: color-mix(in oklab, var(--accent), #ffb02e 40%);
-  --gauge-down-2: color-mix(in oklab, var(--accent), #ff2d6f 40%);
-  --gauge-up-1: #7b61ff;
-  --gauge-up-2: #22c3ee;
 }
 
 .gauge svg {
@@ -4159,6 +4161,308 @@ html[data-dev="1"] .dev-console {
   display: block;
 }
 
+.dev-result {
+  display: none;
+  min-width: 0;
+  margin: 0 0 36px;
+  padding: 20px 22px;
+  border: var(--card-border) solid var(--ink);
+  border-radius: var(--r);
+  background: var(--surface);
+  box-shadow: var(--card-shadow);
+}
+
+html[data-dev="1"] .dev-result:not([hidden]) {
+  display: block;
+}
+
+html[data-room="1"] .dev-result,
+html[data-classroom="1"] .dev-result {
+  display: none !important;
+}
+
+.dev-result-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.dev-result-top {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  gap: 20px;
+}
+
+.dev-result-main {
+  min-width: 0;
+  padding-right: 20px;
+  border-right: 2px dashed var(--soft);
+}
+
+.dev-result-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-family: Figtree, sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.dev-dot {
+  width: 8px;
+  height: 8px;
+  flex: 0 0 8px;
+  border-radius: 50%;
+}
+
+.dev-dot.down {
+  background: linear-gradient(90deg, var(--gauge-down-1), var(--gauge-down-2));
+}
+
+.dev-dot.up {
+  background: linear-gradient(90deg, var(--gauge-up-1), var(--gauge-up-2));
+}
+
+.dev-dot.ping {
+  background: linear-gradient(90deg, var(--ping-1), var(--ping-2));
+}
+
+.dev-result-value-line,
+.dev-result-row-value {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  min-width: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.dev-result-value {
+  font-family: "Bricolage Grotesque Variable", sans-serif;
+  font-size: clamp(56px, 7vw, 88px);
+  font-weight: 700;
+  line-height: 1;
+  background: linear-gradient(90deg, var(--gauge-down-1), var(--gauge-down-2));
+  background-clip: text;
+  color: transparent;
+}
+
+.dev-result-unit {
+  color: var(--muted);
+  font-family: Figtree, sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.dev-result-plan {
+  min-height: var(--btn-h);
+  margin-top: 4px;
+}
+
+.dev-result-plan .plan-chip {
+  max-width: 100%;
+  min-height: var(--btn-h);
+  height: auto;
+  white-space: normal;
+  text-align: left;
+}
+
+.dev-result-plan .plan-nudge {
+  margin: 0;
+  max-width: 100%;
+  min-height: var(--btn-h);
+  height: auto;
+  white-space: normal;
+  text-align: left;
+}
+
+.dev-result-side {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  justify-content: center;
+  gap: 14px;
+}
+
+.dev-result-row {
+  display: grid;
+  min-width: 0;
+  gap: 6px;
+}
+
+.dev-result-row-copy {
+  display: grid;
+  gap: 3px;
+}
+
+.dev-result-row-value {
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.dev-result-row-value > span:first-child {
+  color: var(--ink);
+  font-family: "Bricolage Grotesque Variable", sans-serif;
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.dev-result-sub {
+  color: var(--muted);
+  font-family: Figtree, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.dev-bar {
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--soft);
+}
+
+.dev-bar i {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  transition: width 0.5s ease;
+}
+
+.dev-bar.up i {
+  background: linear-gradient(90deg, var(--gauge-up-1), var(--gauge-up-2));
+}
+
+.dev-bar.ping i {
+  background: linear-gradient(90deg, var(--ping-1), var(--ping-2));
+}
+
+.dev-result-uses {
+  display: flex;
+  min-height: 46px;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 18px 0 0;
+  padding: 16px 0 0;
+  border-top: 2px dashed var(--soft);
+  list-style: none;
+}
+
+.dev-use {
+  display: inline-flex;
+  min-height: 28px;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-family: "Bricolage Grotesque Variable", sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.dev-use.is-ok {
+  background: color-mix(in srgb, var(--ping-1) 22%, var(--surface));
+  color: var(--ink);
+}
+
+.dev-use.is-miss {
+  background: var(--soft);
+  color: var(--muted);
+}
+
+.dev-result-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 2px dashed var(--soft);
+}
+
+.dev-result-meta {
+  display: flex;
+  flex-basis: 100%;
+  min-height: 1.4em;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.dev-result-meta b {
+  color: var(--ink);
+  font-weight: 800;
+}
+
+.dev-result-meta .sep {
+  color: var(--muted);
+}
+
+.dev-result-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.dev-result-actions .guess-button {
+  text-decoration: none;
+}
+
+.dev-result[data-state="running"] :is(.dev-result-main, .dev-result-side) {
+  opacity: 0.45;
+}
+
+.dev-result[data-state="running"] .dev-result-value {
+  background: none;
+  color: var(--muted);
+}
+
+.dev-result[data-state="running"] .dev-bar i {
+  transition: none;
+}
+
+html[lang="ta"]
+  :is(.dev-result-label, .dev-result-unit, .dev-result-sub, .dev-result-meta) {
+  font-family:
+    "Figtree Variable", Figtree, "Noto Sans Tamil Variable", "Noto Sans Tamil",
+    system-ui, sans-serif;
+}
+
+html[lang="ta"]
+  :is(.dev-use, .dev-result-row-value > span:first-child, .dev-result-value) {
+  font-family:
+    "Bricolage Grotesque Variable", "Noto Sans Tamil Variable",
+    "Noto Sans Tamil", sans-serif;
+}
+
+@media (forced-colors: active) {
+  .dev-result-value {
+    background: none;
+    color: CanvasText;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dev-bar i {
+    transition: none;
+  }
+}
+
 .dev-console-head {
   display: flex;
   flex-wrap: wrap;
@@ -5676,8 +5980,64 @@ html[data-dev="1"] .dev-mode-pill-label {
     order: 3;
   }
 
+  .dev-result {
+    grid-column: 1;
+    order: 3;
+  }
+
   .work-hero .work-hero-sticker {
     transform: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .dev-result {
+    padding: 18px 16px;
+  }
+
+  .dev-result-top {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+  }
+
+  .dev-result-main {
+    padding-right: 0;
+    padding-bottom: 14px;
+    border-right: 0;
+    border-bottom: 2px dashed var(--soft);
+  }
+
+  .dev-result-value {
+    font-size: 64px;
+  }
+
+  .dev-result-side {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .dev-result-row-value > span:first-child {
+    font-size: 28px;
+  }
+
+  .dev-result-uses {
+    min-height: 118px;
+  }
+
+  .dev-result-foot {
+    align-items: flex-start;
+  }
+
+  .dev-result-meta {
+    min-height: 2.8em;
+    flex-basis: 100%;
+  }
+}
+
+@media (max-width: 374px) {
+  .dev-result-uses {
+    min-height: 154px;
   }
 }
 
