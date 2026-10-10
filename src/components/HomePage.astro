@@ -129,6 +129,82 @@ const overheard: { face: string; quote: string; who: string; note: string }[] =
           </p>
         </div>
 
+        <article
+          class="dev-result stk"
+          data-dev-result
+          hidden
+          aria-labelledby="dev-result-title"
+          aria-live="polite"
+        >
+          <h2 class="dev-result-visually-hidden" id="dev-result-title">
+            {msg("dev_result_title")}
+          </h2>
+          <div class="dev-result-top">
+            <div class="dev-result-main">
+              <span class="dev-result-label">
+                <span class="dev-dot down" aria-hidden="true"></span>
+                {msg("home_download")}
+              </span>
+              <div class="dev-result-value-line">
+                <span class="dev-result-value" data-dev-result-down>
+                  –
+                </span>
+                <span class="dev-result-unit">Mbps</span>
+              </div>
+              <div class="dev-result-plan" data-dev-result-plan></div>
+            </div>
+            <div class="dev-result-side">
+              <div class="dev-result-row">
+                <div class="dev-result-row-copy">
+                  <span class="dev-result-label">
+                    <span class="dev-dot up" aria-hidden="true"></span>
+                    {msg("home_upload")}
+                  </span>
+                  <div class="dev-result-row-value">
+                    <span data-dev-result-up>–</span>
+                    <span class="dev-result-unit">Mbps</span>
+                  </div>
+                </div>
+                <div class="dev-bar up" aria-hidden="true">
+                  <i data-dev-result-up-bar></i>
+                </div>
+              </div>
+              <div class="dev-result-row">
+                <div class="dev-result-row-copy">
+                  <span class="dev-result-label">
+                    <span class="dev-dot ping" aria-hidden="true"></span>
+                    {msg("home_ping")}
+                  </span>
+                  <div class="dev-result-row-value">
+                    <span data-dev-result-ping>–</span>
+                    <span class="dev-result-unit">ms</span>
+                    <small
+                      class="dev-result-sub"
+                      data-dev-result-jitter
+                    ></small>
+                  </div>
+                </div>
+                <div class="dev-bar ping" aria-hidden="true">
+                  <i data-dev-result-ping-bar></i>
+                </div>
+              </div>
+            </div>
+          </div>
+          <ul class="dev-result-uses" data-dev-result-uses></ul>
+          <footer class="dev-result-foot">
+            <p class="dev-result-meta" data-dev-result-meta></p>
+            <div class="dev-result-actions">
+              <button class="guess-button" type="button" data-dev-result-copy>
+                {msg("dev_copy_json")}
+              </button>
+              <a class="guess-button" href="#dev-console">
+                <Icon name="ph:arrow-down-bold" aria-hidden="true" />
+                {msg("dev_result_diagnostics")}
+              </a>
+            </div>
+          </footer>
+        </article>
+
         <div class="stats-column mode-hero-stats">
           <div class="stats" aria-label={msg("home_latest_results")}>
             <div class="stat stk">
@@ -204,13 +280,7 @@ const overheard: { face: string; quote: string; who: string; note: string }[] =
                   <stop offset="0"></stop>
                   <stop offset="1"></stop>
                 </linearGradient>
-                <linearGradient
-                  id="gauge-grad-up"
-                  x1="0"
-                  y1="0"
-                  x2="1"
-                  y2="0"
-                >
+                <linearGradient id="gauge-grad-up" x1="0" y1="0" x2="1" y2="0">
                   <stop offset="0"></stop>
                   <stop offset="1"></stop>
                 </linearGradient>
@@ -242,7 +312,12 @@ const overheard: { face: string; quote: string; who: string; note: string }[] =
               ></g>
               <g class="gauge-needle">
                 <circle class="gauge-knob" cx="200" cy="40" r="13"></circle>
-                <circle class="gauge-knob-dot" cx="200" cy="40" r="3.5"></circle>
+                <circle
+                  class="gauge-knob-dot"
+                  cx="200"
+                  cy="40"
+                  r="3.5"
+                ></circle>
               </g>
             </svg>
             <div class="readout">
@@ -443,7 +518,11 @@ const overheard: { face: string; quote: string; who: string; note: string }[] =
       </div>
     </section>
 
-    <section class="dev-console" aria-labelledby="dev-console-title">
+    <section
+      class="dev-console"
+      id="dev-console"
+      aria-labelledby="dev-console-title"
+    >
       <div class="dev-console-head">
         <div>
           <h2 class="display" id="dev-console-title">
@@ -752,7 +831,10 @@ const overheard: { face: string; quote: string; who: string; note: string }[] =
     <aside class="classroom-teaser stk" aria-label={msg("mode_classroom")}>
       <p>
         {msg("home_classroom_teaser")}{" "}
-        <a href={localizedPath("/classroom/", locale)}>{msg("home_classroom_link")}</a>.
+        <a href={localizedPath("/classroom/", locale)}>
+          {msg("home_classroom_link")}
+        </a>
+        .
       </p>
     </aside>
   </main>
@@ -778,8 +860,8 @@ const overheard: { face: string; quote: string; who: string; note: string }[] =
       </div>
       <div class="guess-person">
         <span data-guess-emoji>🙂</span>
-          <b data-guess-player>{msg("room_role_player")}</b>
-        </div>
+        <b data-guess-player>{msg("room_role_player")}</b>
+      </div>
       <div class="guess-dialog-scroll">
         <p class="guess-mbps-note">
           {msg("guess_mbps_explainer")}{" "}

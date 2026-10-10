@@ -28,6 +28,7 @@ import {
   type Phase,
 } from "../lib/speedtest";
 import { phaseText, sizeLabel, SLOW_HINT_MS } from "../lib/progress";
+import { gaugePosition } from "../lib/gauge";
 import { themes, themeForDate, type ThemeId } from "../lib/themes";
 import { playCue } from "../lib/sound";
 import {
@@ -96,6 +97,7 @@ interface GameStore {
 
 const classroomSession = loadSession();
 const classroomMode = classroomSession !== null;
+if (classroomMode) document.documentElement.dataset.classroom = "1";
 const roomMode = isRoomMode();
 let roomStateReceived = false;
 const localStore: GameStore = {
@@ -123,6 +125,7 @@ let gaugeTarget = 0;
 let gaugeReadoutValue: number | undefined;
 let animationFrame = 0;
 let runInProgress = false;
+let devRunCompleted = false;
 let revealPending = false;
 let activeRevealController: AbortController | null = null;
 let activeRoomTestController: AbortController | null = null;
@@ -281,19 +284,6 @@ function applyGaugeProgress(gauge: HTMLElement, progress: number) {
   gauge.style.setProperty("--p", progress.toFixed(4));
   gauge.style.setProperty("--rotation", `${-120 + 240 * progress}deg`);
   gauge.toggleAttribute("data-empty", progress < 0.004);
-}
-
-function gaugePosition(value: number): number {
-  const ticks = [0, 5, 10, 25, 50, 100, 250, 500, 1000];
-  if (value <= 0) return 0;
-  if (value >= 1000) return 1;
-  let segment = 0;
-  while (ticks[segment + 1] < value) segment += 1;
-  return (
-    (segment +
-      (value - ticks[segment]) / (ticks[segment + 1] - ticks[segment])) /
-    (ticks.length - 1)
-  );
 }
 
 function initializeGauge() {
@@ -846,7 +836,9 @@ function syncControls() {
     : devMode
       ? testing
         ? msg("game_testing")
-        : msg("game_run_test")
+        : devRunCompleted
+          ? msg("game_run_again")
+          : msg("game_run_test")
       : state.phase === "testing"
         ? msg("game_testing")
         : isRevealed()
@@ -862,7 +854,9 @@ function syncControls() {
     : devMode
       ? testing
         ? msg("game_phase_ping_files")
-        : msg("home_ready")
+        : devRunCompleted
+          ? msg("dev_phase_done")
+          : msg("home_ready")
       : state.phase === "testing"
         ? msg("game_phase_ping_files")
         : isRevealed()
@@ -1385,6 +1379,7 @@ async function startTest() {
     }
     setProgress(steps, steps);
     if (devRun) {
+      devRunCompleted = true;
       if (!isMockMode()) sendStat({ kind: "dev" });
       setGauge(actual.down, actual.down);
       document.documentElement.dataset.phase = state.history.length
@@ -1561,6 +1556,7 @@ document.addEventListener("gts:room-settings-change", (event) => {
 });
 
 document.addEventListener("gts:dev-change", (event) => {
+  devRunCompleted = false;
   if ((event as CustomEvent<boolean>).detail) {
     if (guessDialog.open) guessDialog.close();
     if (editDialog.open) editDialog.close();
