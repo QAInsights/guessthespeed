@@ -5915,25 +5915,10 @@ html[data-dev="1"] .dev-mode-pill-label {
 }
 
 .go.is-neutral {
-  min-height: var(--btn-h);
-  padding-right: 16px;
-  padding-left: 16px;
   border-color: var(--ink);
   background: var(--surface);
   box-shadow: var(--btn-shadow);
   color: var(--ink);
-  opacity: 1;
-  font-size: 15px;
-}
-
-.go.is-neutral:disabled {
-  border-style: solid;
-  border-color: var(--ink);
-  background: var(--surface);
-  box-shadow: var(--btn-shadow);
-  color: var(--ink);
-  opacity: 1;
-  cursor: default;
 }
 
 .gauge-card .go {
