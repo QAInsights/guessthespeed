@@ -301,23 +301,22 @@ const activities: {
 
   .stepper-button {
     display: grid;
-    width: 44px;
-    height: 44px;
+    width: var(--btn-h);
+    height: var(--btn-h);
     place-items: center;
-    border: 2.5px solid var(--ink);
+    border: var(--btn-border) solid var(--ink);
     border-radius: 50%;
-    background: var(--bg);
+    background: var(--surface);
+    box-shadow: var(--btn-shadow);
     color: var(--ink);
-    font-size: 25px;
-    font-weight: 900;
-    line-height: 1;
+    font: 800 20px/1 "Bricolage Grotesque Variable", sans-serif;
   }
 
   .stepper-button:focus-visible,
   .converter-input:focus-visible,
   .converter-select:focus-visible {
-    outline: 3px solid var(--accent);
-    outline-offset: 3px;
+    outline: var(--focus-ring);
+    outline-offset: var(--focus-offset);
   }
 
   .activity-count {

@@ -594,23 +594,31 @@ const faqSchema = {
     color: var(--ink);
     text-align: left;
     transition:
-      transform 0.12s ease,
-      box-shadow 0.12s ease,
-      background 0.12s ease;
-  }
-
-  .class-picker :global(.class-card:nth-child(3n + 1)) {
-    transform: rotate(-0.7deg);
-  }
-
-  .class-picker :global(.class-card:nth-child(3n + 2)) {
-    transform: rotate(0.7deg);
+      transform 0.08s,
+      box-shadow 0.08s,
+      background-color 0.15s;
   }
 
   .class-picker :global(.class-card:hover),
   .class-picker :global(.new-class-card:hover) {
-    transform: translate(-2px, -2px) rotate(0);
-    box-shadow: 7px 7px 0 var(--shadow);
+    box-shadow: var(--btn-shadow-hover);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .class-picker :global(.class-card:hover),
+    .class-picker :global(.new-class-card:hover) {
+      transform: translate(-1px, -1px);
+    }
+
+    .class-picker :global(.class-card:active),
+    .class-picker :global(.new-class-card:active) {
+      transform: translate(3px, 3px);
+    }
+  }
+
+  .class-picker :global(.class-card:active),
+  .class-picker :global(.new-class-card:active) {
+    box-shadow: 0 0 0 var(--shadow);
   }
 
   .class-picker :global(.class-card[aria-pressed="true"]) {
@@ -754,17 +762,11 @@ const faqSchema = {
     color: var(--on-accent);
     font-size: 1.05rem;
     font-weight: 900;
-    transform: rotate(1deg);
   }
 
   .class-picker :global(.empty-classes .new-class-card span) {
     border-color: var(--on-accent);
     background: transparent;
-  }
-
-  .class-picker :global(.empty-classes .new-class-card:hover) {
-    transform: translate(-2px, -2px) rotate(0);
-    box-shadow: 7px 7px 0 var(--shadow);
   }
 
   .classroom-toast {
@@ -831,8 +833,8 @@ const faqSchema = {
   .roster-form button:focus-visible,
   .quiet-button:focus-visible,
   .text-button:focus-visible {
-    outline: 3px solid #e99c13;
-    outline-offset: 3px;
+    outline: var(--focus-ring);
+    outline-offset: var(--focus-offset);
   }
 
   .emoji-field {
@@ -858,16 +860,17 @@ const faqSchema = {
     width: 48px;
     height: 48px;
     place-items: center;
-    border: 2px solid var(--ink);
-    border-radius: 14px;
-    background: var(--bg);
+    border: var(--btn-border) solid var(--ink);
+    border-radius: 50%;
+    background: var(--surface);
     font-size: 1.45rem;
   }
 
   .emoji-picker :global(.emoji-choice[aria-pressed="true"]) {
-    border-color: var(--on-pastel);
-    background: #fff0ad;
-    box-shadow: 2px 2px 0 var(--shadow);
+    border-color: var(--ink);
+    background: var(--accent);
+    box-shadow: none;
+    color: var(--on-accent);
   }
 
   .roster-form {
@@ -891,20 +894,7 @@ const faqSchema = {
   }
 
   .classroom-secondary {
-    min-height: 50px;
     justify-self: start;
-    padding: 9px 18px;
-    border: 2.5px solid var(--on-pastel);
-    border-radius: 999px;
-    background: #fff1b8;
-    box-shadow: 3px 3px 0 var(--shadow);
-    color: var(--on-pastel);
-    font: 850 1rem "Bricolage Grotesque Variable", sans-serif;
-  }
-
-  .classroom-secondary:hover {
-    transform: translate(-1px, -1px);
-    box-shadow: 5px 5px 0 var(--shadow);
   }
 
   .roster-heading {
@@ -936,22 +926,18 @@ const faqSchema = {
     min-height: 48px;
     align-items: center;
     gap: 7px;
-    padding: 7px 11px;
-    border: 2px solid var(--ink);
-    border-radius: 999px;
-    background: var(--bg);
-    box-shadow: 2px 2px 0 var(--shadow);
+    padding: 0 12px;
+    border: var(--btn-border) solid var(--ink);
+    border-radius: var(--btn-radius);
+    background: var(--surface);
+    box-shadow: none;
     color: var(--ink);
-    font-size: 0.88rem;
+    font-size: 14px;
     font-weight: 800;
   }
 
   .student-roster :global(.student-chip span) {
     font-size: 1.2rem;
-  }
-
-  .student-roster :global(.student-chip:hover) {
-    transform: rotate(-1deg) translateY(-1px);
   }
 
   .roster-empty,
@@ -968,18 +954,21 @@ const faqSchema = {
 
   .quiet-button {
     display: inline-flex;
-    min-height: 48px;
+    min-height: var(--btn-h);
     align-items: center;
     justify-content: center;
-    padding: 8px 14px;
-    border: 2px solid var(--ink);
-    border-radius: 12px;
-    background: var(--bg);
+    padding: 0 16px;
+    border: var(--btn-border) solid var(--ink);
+    border-radius: var(--btn-radius);
+    background: var(--surface);
+    box-shadow: var(--btn-shadow);
     color: var(--ink);
-    font: 800 0.9rem "Figtree Variable", sans-serif;
+    font: 800 15px/1 "Bricolage Grotesque Variable", sans-serif;
   }
 
   .danger-button {
+    border-color: var(--danger-ink);
+    box-shadow: 3px 3px 0 var(--danger-ink);
     color: var(--danger-ink);
   }
 
@@ -1263,15 +1252,20 @@ const faqSchema = {
   }
 
   .text-button {
-    min-height: 48px;
+    display: inline-flex;
+    min-height: var(--btn-h);
+    align-items: center;
+    justify-content: center;
     margin-top: 6px;
-    padding: 8px 4px;
+    padding: 0 8px;
     border: 0;
+    border-radius: var(--btn-radius);
     background: transparent;
+    box-shadow: none;
     color: var(--ink);
-    font-weight: 850;
+    font: 800 14px/1 "Bricolage Grotesque Variable", sans-serif;
     text-decoration: underline;
-    text-underline-offset: 3px;
+    text-underline-offset: 4px;
   }
 
   .no-students-note {
@@ -1450,12 +1444,6 @@ const faqSchema = {
 
   .classroom-dialog .dialog-actions {
     justify-content: space-between;
-  }
-
-  .classroom-dialog .dialog-actions .go {
-    min-height: 48px;
-    padding: 8px 18px;
-    font-size: 1rem;
   }
 
   .dialog-error {
