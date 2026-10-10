@@ -21,6 +21,7 @@ import {
 import { isBlockedName } from "../lib/name-filter";
 import { auroraFor, auroraStyleVars } from "../lib/aurora";
 import { BACKUP_KEY, clearSession, loadSession } from "../lib/classroom";
+import { loadDevRun } from "../lib/devrun";
 import {
   runSpeedTest,
   SpeedTestCancelledError,
@@ -141,6 +142,18 @@ let shareStatusTimer = 0;
 let hasAppliedRoomView = false;
 const isDevMode = () =>
   !roomMode && !classroomMode && document.documentElement.dataset.dev === "1";
+function restoreDevRun() {
+  if (!isDevMode()) return;
+  const details = loadDevRun();
+  if (!details) return;
+
+  devRunCompleted = true;
+  const downloadBps = details.finalDownBps ?? details.summary.download;
+  if (typeof downloadBps === "number" && Number.isFinite(downloadBps)) {
+    const downloadMbps = downloadBps / 1e6;
+    setGauge(downloadMbps, downloadMbps);
+  }
+}
 const isMockMode = () =>
   new URLSearchParams(window.location.search).has("mock");
 const isTesting = () =>
@@ -1558,6 +1571,7 @@ document.addEventListener("gts:room-settings-change", (event) => {
 document.addEventListener("gts:dev-change", (event) => {
   devRunCompleted = false;
   if ((event as CustomEvent<boolean>).detail) {
+    restoreDevRun();
     if (guessDialog.open) guessDialog.close();
     if (editDialog.open) editDialog.close();
     if (championDialog.open) championDialog.close();
@@ -2006,4 +2020,5 @@ if (state.history.length) {
   setResultText("ping", lastRound.actual.ping);
   setGauge(lastRound.actual.down, lastRound.actual.down);
 }
+restoreDevRun();
 render();

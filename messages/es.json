@@ -426,7 +426,7 @@
   "history_faster": "más rápido",
   "history_slower": "más lento",
   "dev_title": "Diagnóstico de velocidad",
-  "dev_description": "Mediciones en vivo de este navegador. Solo se conserva en memoria la ejecución más reciente.",
+  "dev_description": "Mediciones en vivo de este navegador. Solo se conserva la ejecución más reciente, y solo en esta pestaña.",
   "dev_copy_json": "Copiar JSON",
   "dev_result_title": "Resultados de la última prueba",
   "dev_result_diagnostics": "Diagnóstico",

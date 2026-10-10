@@ -426,7 +426,7 @@
   "history_faster": "faster",
   "history_slower": "slower",
   "dev_title": "Speed test diagnostics",
-  "dev_description": "Live measurements from this browser. Only the latest run is kept in memory.",
+  "dev_description": "Live measurements from this browser. Only the latest run is kept, and only in this tab.",
   "dev_copy_json": "Copy JSON",
   "dev_result_title": "Latest run results",
   "dev_result_diagnostics": "Diagnostics",

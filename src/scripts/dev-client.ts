@@ -12,6 +12,7 @@ import {
   type SerializableBandwidthPoint,
   type SpeedDetails,
 } from "../lib/speedtest";
+import { loadDevRun, saveDevRun } from "../lib/devrun";
 import { escapeHtml } from "../lib/html";
 import { devUseChecks, type DevUse, pingBarFill } from "../lib/devresult";
 import { gaugePosition } from "../lib/gauge";
@@ -773,6 +774,8 @@ document.addEventListener("gts:dev-change", (event) => {
   if (enabled) {
     browserDetails = readBrowserDetails();
     renderBrowser();
+    if (isDevMode() && details === null) details = loadDevRun();
+    renderResults();
     void loadConnectionInfo();
   } else {
     connectionRequest += 1;
@@ -796,11 +799,13 @@ document.addEventListener("gts:dev-run-start", () => {
 document.addEventListener("gts:dev-details", (event) => {
   if (!isDevMode()) return;
   details = (event as CustomEvent<SpeedDetails>).detail;
+  saveDevRun(details);
   renderResults();
 });
 
 renderConfig();
 renderBrowser();
 renderConnection();
+if (isDevMode() && details === null) details = loadDevRun();
 renderResults();
 if (isDevMode()) void loadConnectionInfo();
