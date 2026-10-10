@@ -271,11 +271,16 @@ function tweenGauge() {
 function renderGauge() {
   const progress = gaugePosition(gaugeValue);
   const gauge = $<HTMLElement>("[data-gauge]");
-  gauge.style.setProperty("--p", progress.toFixed(4));
-  gauge.style.setProperty("--rotation", `${-120 + 240 * progress}deg`);
+  applyGaugeProgress(gauge, progress);
   const live = $<HTMLSpanElement>("[data-live]");
   if (!revealPending)
     live.textContent = formatSpeed(gaugeReadoutValue ?? gaugeValue);
+}
+
+function applyGaugeProgress(gauge: HTMLElement, progress: number) {
+  gauge.style.setProperty("--p", progress.toFixed(4));
+  gauge.style.setProperty("--rotation", `${-120 + 240 * progress}deg`);
+  gauge.toggleAttribute("data-empty", progress < 0.004);
 }
 
 function gaugePosition(value: number): number {
@@ -294,11 +299,35 @@ function gaugePosition(value: number): number {
 function initializeGauge() {
   const ticksGroup = $<SVGGElement>("[data-ticks]");
   const ticks = [0, 5, 10, 25, 50, 100, 250, 500, 1000];
-  for (const [index, value] of ticks.entries()) {
-    const angle = ((-120 + (240 * index) / (ticks.length - 1)) * Math.PI) / 180;
+  const cx = Number(ticksGroup.dataset.cx);
+  const cy = Number(ticksGroup.dataset.cy);
+  const start = Number(ticksGroup.dataset.start);
+  const sweep = Number(ticksGroup.dataset.sweep);
+  const point = (angle: number, radius: number) => [
+    cx + radius * Math.sin((angle * Math.PI) / 180),
+    cy - radius * Math.cos((angle * Math.PI) / 180),
+  ];
+  for (let index = 0; index <= (ticks.length - 1) * 5; index += 1) {
+    const angle = start + (sweep * index) / ((ticks.length - 1) * 5);
+    const major = index % 5 === 0;
+    const [innerRadius, outerRadius] = major ? [118, 132] : [125, 132];
+    const [x1, y1] = point(angle, innerRadius);
+    const [x2, y2] = point(angle, outerRadius);
+    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    line.setAttribute("x1", String(x1));
+    line.setAttribute("y1", String(y1));
+    line.setAttribute("x2", String(x2));
+    line.setAttribute("y2", String(y2));
+    line.setAttribute("stroke-width", major ? "2" : "1.5");
+    line.setAttribute("class", `gauge-tick${major ? "" : " is-minor"}`);
+    ticksGroup.append(line);
+
+    if (!major) continue;
+    const value = ticks[index / 5];
+    const [x, y] = point(angle, 190);
     const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-    text.setAttribute("x", String(200 + 108 * Math.sin(angle)));
-    text.setAttribute("y", String(185 - 108 * Math.cos(angle)));
+    text.setAttribute("x", String(x));
+    text.setAttribute("y", String(y));
     text.setAttribute("text-anchor", "middle");
     text.setAttribute("dominant-baseline", "middle");
     text.setAttribute("class", "tick");
@@ -714,8 +743,7 @@ async function playGaugeReveal(
     gaugeValue = 0;
     gaugeTarget = 0;
     gaugeReadoutValue = 0;
-    gauge.style.setProperty("--p", "0");
-    gauge.style.setProperty("--rotation", "-120deg");
+    applyGaugeProgress(gauge, 0);
     live.classList.remove("is-revealed", "is-suspense");
     live.setAttribute("aria-hidden", "true");
     results.forEach((element) => element.setAttribute("aria-hidden", "true"));
@@ -736,8 +764,7 @@ async function playGaugeReveal(
       if (settled) return;
       const elapsed = now - startedAt;
       const progress = revealProgress(elapsed, target);
-      gauge.style.setProperty("--p", progress.toFixed(4));
-      gauge.style.setProperty("--rotation", `${-120 + 240 * progress}deg`);
+      applyGaugeProgress(gauge, progress);
       if (elapsed < REVEAL_SWING_MS) {
         frame = requestAnimationFrame(updateGauge);
         return;
