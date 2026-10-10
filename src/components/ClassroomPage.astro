@@ -456,26 +456,26 @@ const faqSchema = {
     justify-content: space-between;
     gap: 16px;
     padding: 12px 17px;
-    border: 2.5px solid var(--on-pastel);
-    border-radius: 18px;
+    border: var(--card-border) solid var(--on-pastel);
+    border-radius: var(--r);
     background: var(--surface);
-    box-shadow: 5px 5px 0 var(--shadow);
+    box-shadow: var(--card-shadow);
     color: var(--on-pastel);
   }
 
   .classroom-team-sticker-rockets {
     background: #fff1b8;
-    transform: rotate(-5deg) translateX(-8px);
+    transform: translateX(-8px);
   }
 
   .classroom-team-sticker-lightning {
     background: #e3f5fa;
-    transform: rotate(3deg) translateX(18px);
+    transform: translateX(18px);
   }
 
   .classroom-team-sticker-dolphins {
     background: #f3e9ff;
-    transform: rotate(-2deg) translateX(2px);
+    transform: translateX(2px);
   }
 
   .classroom-team-name {
@@ -512,10 +512,9 @@ const faqSchema = {
     padding: 10px 18px;
     border-color: var(--on-pastel);
     background: #e8f7cf;
-    box-shadow: 4px 4px 0 var(--shadow);
+    box-shadow: var(--card-shadow);
     color: var(--on-pastel);
     font-size: 1rem;
-    transform: rotate(-1deg);
   }
 
   .privacy-sticker span {
@@ -587,30 +586,38 @@ const faqSchema = {
     align-items: center;
     gap: 14px;
     padding: 18px;
-    border: 2.5px solid var(--ink);
-    border-radius: 20px;
+    border: var(--card-border) solid var(--ink);
+    border-radius: var(--r);
     background: var(--surface);
-    box-shadow: 4px 4px 0 var(--shadow);
+    box-shadow: var(--card-shadow);
     color: var(--ink);
     text-align: left;
     transition:
-      transform 0.12s ease,
-      box-shadow 0.12s ease,
-      background 0.12s ease;
-  }
-
-  .class-picker :global(.class-card:nth-child(3n + 1)) {
-    transform: rotate(-0.7deg);
-  }
-
-  .class-picker :global(.class-card:nth-child(3n + 2)) {
-    transform: rotate(0.7deg);
+      transform 0.08s,
+      box-shadow 0.08s,
+      background-color 0.15s;
   }
 
   .class-picker :global(.class-card:hover),
   .class-picker :global(.new-class-card:hover) {
-    transform: translate(-2px, -2px) rotate(0);
-    box-shadow: 7px 7px 0 var(--shadow);
+    box-shadow: var(--card-shadow-raised);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .class-picker :global(.class-card:hover),
+    .class-picker :global(.new-class-card:hover) {
+      transform: translate(-1px, -1px);
+    }
+
+    .class-picker :global(.class-card:active),
+    .class-picker :global(.new-class-card:active) {
+      transform: translate(3px, 3px);
+    }
+  }
+
+  .class-picker :global(.class-card:active),
+  .class-picker :global(.new-class-card:active) {
+    box-shadow: 0 0 0 var(--shadow);
   }
 
   .class-picker :global(.class-card[aria-pressed="true"]) {
@@ -697,12 +704,11 @@ const faqSchema = {
     width: 76px;
     height: 76px;
     place-items: center;
-    border: 2.5px solid var(--on-pastel);
-    border-radius: 22px;
+    border: var(--card-border) solid var(--on-pastel);
+    border-radius: var(--r);
     background: #fff;
-    box-shadow: 3px 3px 0 var(--shadow);
+    box-shadow: var(--card-shadow);
     font-size: 3rem;
-    transform: rotate(-7deg);
   }
 
   .class-picker :global(.empty-class-copy) {
@@ -750,21 +756,19 @@ const faqSchema = {
     border-style: solid;
     border-color: var(--on-accent);
     background: var(--accent);
-    box-shadow: 4px 4px 0 var(--shadow);
+    box-shadow: var(--card-shadow);
     color: var(--on-accent);
     font-size: 1.05rem;
     font-weight: 900;
-    transform: rotate(1deg);
+  }
+
+  .class-picker :global(.empty-classes .new-class-card:hover) {
+    box-shadow: var(--card-shadow-raised);
   }
 
   .class-picker :global(.empty-classes .new-class-card span) {
     border-color: var(--on-accent);
     background: transparent;
-  }
-
-  .class-picker :global(.empty-classes .new-class-card:hover) {
-    transform: translate(-2px, -2px) rotate(0);
-    box-shadow: 7px 7px 0 var(--shadow);
   }
 
   .classroom-toast {
@@ -777,10 +781,10 @@ const faqSchema = {
   .classroom-toast:not(:empty) {
     margin: 0 0 14px;
     padding: 12px 16px;
-    border: 2px solid var(--on-pastel);
-    border-radius: 14px;
+    border: var(--card-border) solid var(--on-pastel);
+    border-radius: var(--r);
     background: #e8f7cf;
-    box-shadow: 3px 3px 0 var(--shadow);
+    box-shadow: var(--card-shadow);
   }
 
   .classroom-workspace {
@@ -831,8 +835,8 @@ const faqSchema = {
   .roster-form button:focus-visible,
   .quiet-button:focus-visible,
   .text-button:focus-visible {
-    outline: 3px solid #e99c13;
-    outline-offset: 3px;
+    outline: var(--focus-ring);
+    outline-offset: var(--focus-offset);
   }
 
   .emoji-field {
@@ -858,16 +862,17 @@ const faqSchema = {
     width: 48px;
     height: 48px;
     place-items: center;
-    border: 2px solid var(--ink);
-    border-radius: 14px;
-    background: var(--bg);
+    border: var(--btn-border) solid var(--ink);
+    border-radius: 50%;
+    background: var(--surface);
     font-size: 1.45rem;
   }
 
   .emoji-picker :global(.emoji-choice[aria-pressed="true"]) {
-    border-color: var(--on-pastel);
-    background: #fff0ad;
-    box-shadow: 2px 2px 0 var(--shadow);
+    border-color: var(--ink);
+    background: var(--accent);
+    box-shadow: none;
+    color: var(--on-accent);
   }
 
   .roster-form {
@@ -891,20 +896,7 @@ const faqSchema = {
   }
 
   .classroom-secondary {
-    min-height: 50px;
     justify-self: start;
-    padding: 9px 18px;
-    border: 2.5px solid var(--on-pastel);
-    border-radius: 999px;
-    background: #fff1b8;
-    box-shadow: 3px 3px 0 var(--shadow);
-    color: var(--on-pastel);
-    font: 850 1rem "Bricolage Grotesque Variable", sans-serif;
-  }
-
-  .classroom-secondary:hover {
-    transform: translate(-1px, -1px);
-    box-shadow: 5px 5px 0 var(--shadow);
   }
 
   .roster-heading {
@@ -936,22 +928,18 @@ const faqSchema = {
     min-height: 48px;
     align-items: center;
     gap: 7px;
-    padding: 7px 11px;
-    border: 2px solid var(--ink);
-    border-radius: 999px;
-    background: var(--bg);
-    box-shadow: 2px 2px 0 var(--shadow);
+    padding: 0 12px;
+    border: var(--btn-border) solid var(--ink);
+    border-radius: var(--btn-radius);
+    background: var(--surface);
+    box-shadow: none;
     color: var(--ink);
-    font-size: 0.88rem;
+    font-size: 14px;
     font-weight: 800;
   }
 
   .student-roster :global(.student-chip span) {
     font-size: 1.2rem;
-  }
-
-  .student-roster :global(.student-chip:hover) {
-    transform: rotate(-1deg) translateY(-1px);
   }
 
   .roster-empty,
@@ -968,18 +956,21 @@ const faqSchema = {
 
   .quiet-button {
     display: inline-flex;
-    min-height: 48px;
+    min-height: var(--btn-h);
     align-items: center;
     justify-content: center;
-    padding: 8px 14px;
-    border: 2px solid var(--ink);
-    border-radius: 12px;
-    background: var(--bg);
+    padding: 0 16px;
+    border: var(--btn-border) solid var(--ink);
+    border-radius: var(--btn-radius);
+    background: var(--surface);
+    box-shadow: var(--btn-shadow);
     color: var(--ink);
-    font: 800 0.9rem "Figtree Variable", sans-serif;
+    font: 800 15px/1 "Bricolage Grotesque Variable", sans-serif;
   }
 
   .danger-button {
+    border-color: var(--danger-ink);
+    box-shadow: 3px 3px 0 var(--danger-ink);
     color: var(--danger-ink);
   }
 
@@ -1084,24 +1075,22 @@ const faqSchema = {
   .team-preview :global(.team-card) {
     min-width: 0;
     padding: 12px;
-    border: 2px solid var(--on-pastel);
-    border-radius: 15px;
+    border: var(--card-border) solid var(--on-pastel);
+    border-radius: var(--r);
     --card-fill: #fff5ce;
     background: #fff5ce;
-    box-shadow: 3px 3px 0 var(--shadow);
+    box-shadow: var(--card-shadow);
     color: var(--on-pastel);
   }
 
   .team-preview :global(.team-card:nth-child(3n + 2)) {
     --card-fill: #e3f5fa;
     background: #e3f5fa;
-    transform: rotate(0.4deg);
   }
 
   .team-preview :global(.team-card:nth-child(3n + 3)) {
     --card-fill: #f3e9ff;
     background: #f3e9ff;
-    transform: rotate(-0.4deg);
   }
 
   :global(html:not([data-aurora="0"]) .team-preview .team-card.has-aurora) {
@@ -1241,12 +1230,12 @@ const faqSchema = {
   @keyframes spotlight-pop {
     from {
       opacity: 0;
-      transform: scale(0.55) rotate(-8deg);
+      transform: scale(0.55);
     }
 
     to {
       opacity: 1;
-      transform: scale(1) rotate(0);
+      transform: scale(1);
     }
   }
 
@@ -1263,15 +1252,20 @@ const faqSchema = {
   }
 
   .text-button {
-    min-height: 48px;
+    display: inline-flex;
+    min-height: var(--btn-h);
+    align-items: center;
+    justify-content: center;
     margin-top: 6px;
-    padding: 8px 4px;
+    padding: 0 8px;
     border: 0;
+    border-radius: var(--btn-radius);
     background: transparent;
+    box-shadow: none;
     color: var(--ink);
-    font-weight: 850;
+    font: 800 14px/1 "Bricolage Grotesque Variable", sans-serif;
     text-decoration: underline;
-    text-underline-offset: 3px;
+    text-underline-offset: 4px;
   }
 
   .no-students-note {
@@ -1452,12 +1446,6 @@ const faqSchema = {
     justify-content: space-between;
   }
 
-  .classroom-dialog .dialog-actions .go {
-    min-height: 48px;
-    padding: 8px 18px;
-    font-size: 1rem;
-  }
-
   .dialog-error {
     min-height: 0;
     margin: 0;
@@ -1504,7 +1492,7 @@ const faqSchema = {
     .class-picker :global(.empty-class-face) {
       width: 58px;
       height: 58px;
-      border-radius: 17px;
+      border-radius: var(--r);
       font-size: 2.3rem;
     }
 

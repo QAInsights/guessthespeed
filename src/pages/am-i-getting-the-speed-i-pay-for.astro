@@ -186,10 +186,10 @@ const faqSchema = {
     gap: 18px;
     margin: 0 0 24px;
     padding: clamp(20px, 4vw, 36px);
-    border: 3px solid var(--ink);
-    border-radius: 20px;
+    border: var(--card-border) solid var(--ink);
+    border-radius: var(--r);
     background: var(--surface);
-    box-shadow: 7px 7px 0 var(--shadow);
+    box-shadow: var(--card-shadow);
   }
 
   .plan-check-intro h2 {
@@ -225,9 +225,10 @@ const faqSchema = {
   .plan-check-result {
     display: block;
     padding: 16px 18px;
-    border: 2px solid var(--ink);
-    border-radius: 14px;
+    border: var(--card-border) solid var(--ink);
+    border-radius: var(--r);
     background: var(--soft);
+    box-shadow: var(--card-shadow);
     color: var(--ink);
     font-size: clamp(19px, 3vw, 25px);
     font-weight: 900;
