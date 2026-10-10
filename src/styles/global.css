@@ -273,28 +273,25 @@
   min-height: 48px;
   align-items: center;
   padding: 8px 10px;
-  border: 2px solid var(--ink);
-  border-radius: 12px;
-  background: var(--bg);
-  box-shadow: 2px 2px 0 var(--shadow);
+  border: var(--btn-border) solid var(--ink);
+  border-radius: var(--btn-radius);
+  background: var(--surface);
+  box-shadow: var(--btn-shadow);
   color: var(--ink);
   cursor: pointer;
   font: inherit;
   gap: 10px;
   text-align: left;
-  transition:
-    transform 0.12s ease,
-    box-shadow 0.12s ease;
+  transition: transform 0.08s, box-shadow 0.08s, background-color 0.15s;
 }
 
 .room-picker-option:hover {
-  box-shadow: 4px 4px 0 var(--shadow);
-  transform: translate(-1px, -1px);
+  box-shadow: var(--btn-shadow-hover);
 }
 
 .room-picker-option:focus-visible {
-  outline: 3px solid var(--ink);
-  outline-offset: 2px;
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
 }
 
 .room-picker-option[aria-selected="true"] {
@@ -323,22 +320,17 @@
 .room-tester-chip {
   display: inline-flex;
   max-width: 100%;
-  min-height: 40px;
+  min-height: var(--btn-h);
   align-items: center;
-  padding: 8px 12px;
-  border: 1.5px dashed var(--line);
-  border-radius: 999px;
+  padding: 0 12px;
+  border: var(--btn-border) solid var(--ink);
+  border-radius: var(--btn-radius);
   background: var(--surface);
   color: var(--ink);
-  font-size: 0.82rem;
-  font-weight: 850;
+  font:
+    800 14px/1 "Bricolage Grotesque Variable",
+    sans-serif;
   overflow-wrap: anywhere;
-}
-
-.room-stop-test {
-  border-color: #9b3229;
-  background: #ffe9e5;
-  color: var(--on-pastel);
 }
 
 .room-connection {
@@ -491,6 +483,14 @@ html[data-room="1"] .dev-console {
   --danger-ink: #8c1d18;
   --soft: #dfe3ea;
   --shadow: #16171b;
+  --btn-border: 2px;
+  --btn-radius: 999px;
+  --btn-shadow: 3px 3px 0 var(--shadow);
+  --btn-shadow-hover: 4px 4px 0 var(--shadow);
+  --btn-h: 44px;
+  --btn-h-lg: 56px;
+  --focus-ring: 3px solid var(--accent);
+  --focus-offset: 3px;
   --aurora-1: #ff5a36;
   --aurora-2: #ffb020;
   --aurora-3: #2ec4b6;
@@ -919,33 +919,41 @@ h3,
 }
 
 .ctrl {
-  height: 44px;
+  height: var(--btn-h);
+  min-height: var(--btn-h);
   padding: 0 14px;
-  border: 2.5px solid var(--ink);
-  border-radius: 12px;
+  border: var(--btn-border) solid var(--ink);
+  border-radius: var(--btn-radius);
   background: var(--surface);
-  box-shadow: 3px 3px 0 var(--shadow);
-  font-weight: 700;
-}
-
-.ctrl:active,
-.icon-btn:active {
-  transform: translate(2px, 2px);
-  box-shadow: 1px 1px 0 var(--shadow);
+  box-shadow: var(--btn-shadow);
+  color: var(--ink);
+  font:
+    800 14px/1 "Bricolage Grotesque Variable",
+    sans-serif;
 }
 
 .icon-btn {
-  display: grid;
-  width: 44px;
-  padding: 0;
-  place-items: center;
-  font-size: 20px;
+  display: inline-flex;
+  width: auto;
+  min-width: var(--btn-h);
+  height: var(--btn-h);
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 10px;
   text-decoration: none;
 }
 
+.icon-btn:not(:has(.ctrl-label)) {
+  width: var(--btn-h);
+  padding: 0;
+  border-radius: 50%;
+}
+
 .icon-btn svg {
-  width: 21px;
-  height: 21px;
+  width: 18px;
+  height: 18px;
+  flex: none;
 }
 
 .icon-btn[data-tv-toggle][aria-pressed="true"],
@@ -976,7 +984,6 @@ h3,
 
 .theme-trigger:disabled {
   cursor: not-allowed;
-  opacity: 0.55;
 }
 
 .theme-trigger-label {
@@ -1057,28 +1064,25 @@ h3,
   min-height: 54px;
   align-items: center;
   padding: 8px 10px;
-  border: 2px solid var(--ink);
-  border-radius: 12px;
-  background: var(--bg);
-  box-shadow: 2px 2px 0 var(--shadow);
+  border: var(--btn-border) solid var(--ink);
+  border-radius: var(--btn-radius);
+  background: var(--surface);
+  box-shadow: var(--btn-shadow);
   color: var(--ink);
   cursor: pointer;
   font: inherit;
   gap: 10px;
   text-align: left;
-  transition:
-    transform 0.12s ease,
-    box-shadow 0.12s ease;
+  transition: transform 0.08s, box-shadow 0.08s, background-color 0.15s;
 }
 
 .theme-option:hover {
-  box-shadow: 4px 4px 0 var(--shadow);
-  transform: translate(-1px, -1px);
+  box-shadow: var(--btn-shadow-hover);
 }
 
 .theme-option:focus-visible {
-  outline: 3px solid var(--picker-ring);
-  outline-offset: 2px;
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
 }
 
 .theme-option[aria-selected="true"] {
@@ -1173,13 +1177,13 @@ footer {
   display: flex;
   width: fit-content;
   align-items: center;
-  gap: 3px;
+  gap: 4px;
   margin: 0;
   padding: 4px;
-  border: 2.5px solid var(--ink);
-  border-radius: 999px;
+  border: var(--btn-border) solid var(--ink);
+  border-radius: var(--btn-radius);
   background: var(--surface);
-  box-shadow: 4px 4px 0 var(--shadow);
+  box-shadow: var(--btn-shadow);
 }
 
 .mode-switch :is(button, a) {
@@ -1187,10 +1191,10 @@ footer {
   align-items: center;
   justify-content: center;
   gap: 7px;
-  min-height: 44px;
+  min-height: var(--btn-h);
   padding: 7px 14px;
-  border: 2px solid transparent;
-  border-radius: 999px;
+  border: var(--btn-border) solid transparent;
+  border-radius: var(--btn-radius);
   background: transparent;
   color: var(--ink);
   font:
@@ -1203,20 +1207,19 @@ footer {
 .mode-switch :is(button[aria-pressed="true"], [aria-current="page"]) {
   border-color: var(--ink);
   background: var(--accent);
-  box-shadow: 2px 2px 0 var(--shadow);
+  box-shadow: none;
   color: var(--on-accent);
 }
 
 .mode-switch .is-disabled {
   cursor: not-allowed;
-  opacity: 0.45;
 }
 
 .mode-switch :is(button, a):focus-visible {
   position: relative;
   z-index: 1;
-  outline: 3px solid var(--ink);
-  outline-offset: 3px;
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
 }
 
 .mode-switch svg {
@@ -1602,35 +1605,46 @@ html[data-revealing="1"] .gauge-needle {
 
 .go {
   display: inline-flex;
-  min-height: 58px;
+  min-height: var(--btn-h-lg);
   align-items: center;
   justify-content: center;
   gap: 10px;
-  padding: 0 30px;
-  border: 2.5px solid var(--ink);
-  border-radius: 999px;
+  padding: 0 28px;
+  border: var(--btn-border) solid var(--ink);
+  border-radius: var(--btn-radius);
   background: var(--accent);
-  box-shadow: 4px 4px 0 var(--shadow);
+  box-shadow: var(--btn-shadow);
   color: var(--on-accent);
   font:
-    800 22px "Bricolage Grotesque Variable",
+    800 19px/1 "Bricolage Grotesque Variable",
     sans-serif;
-  transition: transform 0.08s;
-}
-
-.go:hover:not(:disabled) {
-  transform: translate(-1px, -1px) rotate(-1deg);
-  box-shadow: 6px 6px 0 var(--shadow);
-}
-
-.go:active:not(:disabled) {
-  transform: translate(3px, 3px);
-  box-shadow: 1px 1px 0 var(--shadow);
+  text-decoration: none;
 }
 
 .go svg {
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
+  flex: none;
+}
+
+.add .go,
+.room-entry-actions > .go,
+.work-room-actions > .go,
+.dialog-actions .go,
+.champion-actions .go {
+  min-height: var(--btn-h);
+  padding-right: 20px;
+  padding-left: 20px;
+  font-size: 15px;
+}
+
+.add .go svg,
+.room-entry-actions > .go svg,
+.work-room-actions > .go svg,
+.dialog-actions .go svg,
+.champion-actions .go svg {
+  width: 18px;
+  height: 18px;
 }
 
 .stats-column {
@@ -1741,18 +1755,24 @@ html[data-revealing="1"] .gauge-needle {
 }
 
 .wifi-history-clear {
-  padding: 2px 0;
+  min-height: var(--btn-h);
+  padding: 0 8px;
   border: 0;
+  border-radius: var(--btn-radius);
   background: transparent;
+  box-shadow: none;
   color: var(--ink);
-  font: inherit;
+  font:
+    800 14px/1 "Bricolage Grotesque Variable",
+    sans-serif;
   text-decoration: underline;
+  text-underline-offset: 4px;
   cursor: pointer;
 }
 
 .wifi-history-clear:focus-visible {
-  outline: 3px solid var(--ink);
-  outline-offset: 3px;
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
 }
 
 @media (min-width: 600px) {
@@ -1830,13 +1850,17 @@ html[data-revealing="1"] .gauge-needle {
 .plan-chip {
   display: inline-flex;
   max-width: 100%;
+  min-height: var(--btn-h);
+  align-items: center;
   justify-content: center;
-  padding: 4px 8px;
-  border: 2px solid var(--on-pastel);
-  border-radius: 999px;
-  color: var(--on-pastel);
-  font-size: 12px;
-  font-weight: 900;
+  padding: 0 12px;
+  border: var(--btn-border) solid var(--ink);
+  border-radius: var(--btn-radius);
+  background: var(--surface);
+  color: var(--ink);
+  font:
+    800 14px/1 "Bricolage Grotesque Variable",
+    sans-serif;
   line-height: 1.15;
   text-align: center;
   text-decoration: none;
@@ -1847,16 +1871,13 @@ html[data-revealing="1"] .gauge-needle {
   display: none;
 }
 
-.plan-chip-good {
-  background: #b9edc8;
-}
-
+.plan-chip-good,
 .plan-chip-ok {
-  background: #ffe08a;
+  background: var(--surface);
 }
 
 .plan-chip-low {
-  background: #ffc5bd;
+  background: var(--surface);
 }
 
 .plan-nudge {
@@ -1867,15 +1888,16 @@ html[data-revealing="1"] .gauge-needle {
   align-self: center;
   gap: 5px;
   margin: 0;
-  padding: 6px 8px;
-  border: 2px solid var(--ink);
-  border-radius: 999px;
+  min-height: var(--btn-h);
+  padding: 0 12px;
+  border: var(--btn-border) solid var(--ink);
+  border-radius: var(--btn-radius);
   background: var(--surface);
-  box-shadow: 3px 3px 0 var(--shadow);
+  box-shadow: var(--btn-shadow);
   color: var(--ink);
-  font: inherit;
-  font-size: 12px;
-  font-weight: 700;
+  font:
+    800 14px/1 "Bricolage Grotesque Variable",
+    sans-serif;
   text-align: center;
   white-space: nowrap;
   cursor: pointer;
@@ -1887,14 +1909,9 @@ html[data-revealing="1"] .gauge-needle {
   flex: none;
 }
 
-.plan-nudge:hover {
-  box-shadow: 4px 4px 0 var(--shadow);
-  transform: translate(-1px, -1px);
-}
-
 .plan-nudge:focus-visible {
-  outline: 3px solid var(--ink);
-  outline-offset: 3px;
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
 }
 
 .plan-nudge[hidden] {
@@ -1956,35 +1973,55 @@ html[data-revealing="1"] .gauge-needle {
 
 .seg {
   display: inline-flex;
-  overflow: hidden;
-  border: 2.5px solid var(--ink);
-  border-radius: 12px;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  border: var(--btn-border) solid var(--ink);
+  border-radius: var(--btn-radius);
   background: var(--surface);
+  box-shadow: var(--btn-shadow);
 }
 
 .seg button {
-  display: flex;
+  display: inline-flex;
+  min-height: var(--btn-h);
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  padding: 8px 14px;
-  border: 0;
+  padding: 0 10px;
+  border: var(--btn-border) solid transparent;
+  border-radius: var(--btn-radius);
   background: transparent;
-  font-weight: 800;
+  color: var(--ink);
+  font:
+    800 14px/1 "Bricolage Grotesque Variable",
+    sans-serif;
 }
 
 .seg button[aria-pressed="true"] {
-  background: var(--ink);
-  color: var(--bg);
+  border-color: var(--ink);
+  background: var(--accent);
+  box-shadow: none;
+  color: var(--on-accent);
 }
 
 .ghost,
 .link-button {
+  display: inline-flex;
+  min-height: var(--btn-h);
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
   border: 0;
-  background: none;
+  border-radius: var(--btn-radius);
+  background: transparent;
+  box-shadow: none;
   color: var(--muted);
-  font-weight: 800;
+  font:
+    800 14px/1 "Bricolage Grotesque Variable",
+    sans-serif;
   text-decoration: underline;
-  text-underline-offset: 3px;
+  text-underline-offset: 4px;
 }
 
 [data-players] {
@@ -2127,9 +2164,19 @@ html:not([data-aurora="0"]) .is-winner.has-aurora {
 }
 
 .classroom-session-chip {
+  display: inline-flex;
+  max-width: 100%;
+  min-height: var(--btn-h);
+  align-items: center;
   margin: 0;
-  font-size: clamp(17px, 2vw, 22px);
-  font-weight: 900;
+  padding: 0 12px;
+  border: var(--btn-border) solid var(--ink);
+  border-radius: var(--btn-radius);
+  background: var(--surface);
+  color: var(--ink);
+  font:
+    800 14px/1 "Bricolage Grotesque Variable",
+    sans-serif;
 }
 
 .classroom-session-copy {
@@ -2148,11 +2195,6 @@ html:not([data-aurora="0"]) .is-winner.has-aurora {
   flex-wrap: wrap;
   align-items: center;
   gap: 10px;
-}
-
-.classroom-session-actions .guess-button,
-.classroom-session-actions .classroom-end-button {
-  min-height: 48px;
 }
 
 .p-score {
@@ -2201,7 +2243,38 @@ html[lang] .p-actions .p-card-guess-actions > * {
   word-break: normal;
 }
 
-.guess-button,
+.guess-button {
+  display: inline-flex;
+  min-height: var(--btn-h);
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 16px;
+  border: var(--btn-border) solid var(--ink);
+  border-radius: var(--btn-radius);
+  background: var(--surface);
+  box-shadow: var(--btn-shadow);
+  color: var(--ink);
+  font:
+    800 15px/1 "Bricolage Grotesque Variable",
+    sans-serif;
+  text-decoration: none;
+}
+
+.classroom-end-button {
+  min-height: var(--btn-h);
+  padding: 0 16px;
+  border: var(--btn-border) solid var(--ink);
+  border-radius: var(--btn-radius);
+  background: var(--surface);
+  box-shadow: var(--btn-shadow);
+  color: var(--ink);
+  font:
+    800 15px/1 "Bricolage Grotesque Variable",
+    sans-serif;
+  text-decoration: none;
+}
+
 .locked-pill,
 .points-pill,
 .bonus-pill {
@@ -2211,9 +2284,8 @@ html[lang] .p-actions .p-card-guess-actions > * {
   justify-content: center;
   gap: 6px;
   padding: 6px 12px;
-  border: 2px solid var(--ink);
-  border-radius: 999px;
-  background: var(--bg);
+  border: var(--btn-border) solid var(--ink);
+  border-radius: var(--btn-radius);
   color: var(--ink);
   font-size: 14px;
   font-weight: 800;
@@ -2254,18 +2326,16 @@ html[lang] .p-actions .p-card-guess-actions > * {
   height: 44px;
   flex: none;
   place-items: center;
-  border: 0;
+  border: var(--btn-border) solid var(--ink);
   border-radius: 50%;
-  background: transparent;
-  color: var(--muted);
-  font-size: 19px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 18px;
   font-weight: 800;
   line-height: 1;
   opacity: 1;
-  box-shadow: none;
-  transition:
-    background-color 120ms ease,
-    color 120ms ease;
+  box-shadow: var(--btn-shadow);
+  cursor: pointer;
 }
 
 .p-rm {
@@ -2274,15 +2344,13 @@ html[lang] .p-actions .p-card-guess-actions > * {
   height: 44px;
   flex: none;
   place-items: center;
-  border: 0;
+  border: var(--btn-border) solid var(--ink);
   border-radius: 50%;
-  background: transparent;
-  color: var(--muted);
+  background: var(--surface);
+  color: var(--ink);
   opacity: 1;
-  box-shadow: none;
-  transition:
-    background-color 120ms ease,
-    color 120ms ease;
+  box-shadow: var(--btn-shadow);
+  cursor: pointer;
 }
 
 .p-edit svg,
@@ -2297,13 +2365,13 @@ html[lang] .p-actions .p-card-guess-actions > * {
 .p-rm:hover,
 .p-edit:focus-visible,
 .p-rm:focus-visible {
-  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  background: var(--soft);
   color: var(--ink);
 }
 
 .p-edit:focus-visible,
 .p-rm:focus-visible {
-  outline: 3px solid var(--accent);
+  outline: var(--focus-ring);
   outline-offset: 2px;
 }
 
@@ -2482,7 +2550,6 @@ html[lang] .p-actions .p-card-guess-actions > * {
 
 [data-emoji-picker] input:checked + span,
 [data-room-emoji-picker] input:checked + span {
-  transform: rotate(-6deg) scale(1.05);
   border-color: var(--ink);
   background: var(--accent);
 }
@@ -2490,12 +2557,6 @@ html[lang] .p-actions .p-card-guess-actions > * {
 [data-emoji-picker] input:focus-visible + span,
 [data-room-emoji-picker] input:focus-visible + span {
   outline: 3px solid var(--accent);
-}
-
-.add .go {
-  min-height: 48px;
-  padding: 0 22px;
-  font-size: 18px;
 }
 
 .how {
@@ -2889,35 +2950,28 @@ html[lang] .p-actions .p-card-guess-actions > * {
   top: 7px;
   right: 7px;
   display: grid;
-  width: 32px;
-  min-width: 32px;
-  height: 32px;
+  width: var(--btn-h);
+  min-width: var(--btn-h);
+  height: var(--btn-h);
   place-items: center;
   padding: 0;
-  border: 2px solid var(--ink);
+  border: var(--btn-border) solid var(--ink);
   border-radius: 50%;
   background: var(--surface);
-  box-shadow: 2px 2px 0 var(--shadow);
+  box-shadow: var(--btn-shadow);
   color: var(--ink);
   cursor: pointer;
 }
 
 .promo-close svg {
-  width: 14px;
-  height: 14px;
-}
-
-.promo-close:hover {
-  transform: rotate(8deg);
+  width: 18px;
+  height: 18px;
 }
 
 @media screen and (min-width: 1301px) {
   .promo-close {
     top: -12px;
     right: -12px;
-    width: 30px;
-    min-width: 30px;
-    height: 30px;
   }
 }
 
@@ -2988,11 +3042,8 @@ html[lang] .p-actions .p-card-guess-actions > * {
   .promo-close {
     top: 50%;
     right: 5px;
-    transform: translateY(-50%);
-  }
-
-  .promo-close:hover {
-    transform: translateY(-50%) rotate(8deg);
+    translate: 0 -50%;
+    transform: none;
   }
 
   html:not([data-tv="1"]):not([data-dev="1"]):not([data-phase="ping"]):not(
@@ -3264,7 +3315,7 @@ footer {
 
 .language-trigger {
   display: inline-flex;
-  min-height: 42px;
+  min-height: var(--btn-h);
   align-items: center;
   gap: 7px;
   padding: 0 10px;
@@ -3674,23 +3725,19 @@ dialog::backdrop {
 
 .dialog-close {
   display: grid;
-  width: 44px;
-  height: 44px;
+  width: var(--btn-h);
+  height: var(--btn-h);
   flex: none;
   place-items: center;
-  border: 2.5px solid var(--ink);
-  border-radius: 12px;
+  border: var(--btn-border) solid var(--ink);
+  border-radius: 50%;
   background: var(--surface);
-  box-shadow: 3px 3px 0 var(--shadow);
+  box-shadow: var(--btn-shadow);
   color: var(--ink);
-  font-size: 20px;
-  font-weight: 900;
+  font:
+    800 20px/1 "Bricolage Grotesque Variable",
+    sans-serif;
   text-decoration: none;
-}
-
-.dialog-close:active {
-  transform: translate(2px, 2px);
-  box-shadow: 1px 1px 0 var(--shadow);
 }
 
 .dialog-close:focus {
@@ -3698,8 +3745,8 @@ dialog::backdrop {
 }
 
 .dialog-close:focus-visible {
-  outline: 3px solid var(--accent);
-  outline-offset: 3px;
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
 }
 
 .dialog-close svg {
@@ -3764,12 +3811,6 @@ dialog::backdrop {
   margin-top: 8px;
 }
 
-.dialog-actions .go {
-  min-height: 48px;
-  padding: 0 22px;
-  font-size: 18px;
-}
-
 [data-start-confirm-dialog] .dialog-inner {
   display: grid;
   gap: 10px;
@@ -3792,12 +3833,6 @@ dialog::backdrop {
   font-size: 16px;
   font-weight: 700;
   line-height: 1.5;
-}
-
-[data-start-confirm-dialog] .dialog-actions .guess-button {
-  min-height: 48px;
-  padding: 0 18px;
-  font-size: 18px;
 }
 
 .edit-role-fieldset {
@@ -4092,12 +4127,6 @@ dialog::backdrop {
   gap: 14px;
 }
 
-.champion-actions .go {
-  min-height: 48px;
-  padding: 0 20px;
-  font-size: 18px;
-}
-
 .champion-actions .share-status {
   flex-basis: 100%;
   min-height: 1.4em;
@@ -4378,11 +4407,11 @@ html[data-dev="1"] .dev-console {
 
   .mode-switch :is(button, a) {
     flex: 1 0 auto;
-    min-height: 44px;
+    min-height: var(--btn-h);
     gap: 4px;
     padding-right: 6px;
     padding-left: 6px;
-    font-size: 12px;
+    font-size: 14px;
     text-align: center;
   }
 
@@ -4435,12 +4464,12 @@ html[data-dev="1"] .dev-console {
 
   .language-trigger .language-code {
     display: inline;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 800;
   }
 
   .ctrl {
-    height: 40px;
+    height: var(--btn-h);
   }
 
   .theme-picker {
@@ -4466,7 +4495,7 @@ html[data-dev="1"] .dev-console {
   }
 
   .icon-btn {
-    width: 39px;
+    width: var(--btn-h);
   }
 
   .stage {
@@ -4488,12 +4517,6 @@ html[data-dev="1"] .dev-console {
 
   .tick {
     font-size: 14px;
-  }
-
-  .go {
-    min-height: 52px;
-    padding: 0 23px;
-    font-size: 20px;
   }
 
   .stats {
@@ -4519,8 +4542,8 @@ html[data-dev="1"] .dev-console {
   }
 
   .plan-chip {
-    padding: 3px 4px;
-    font-size: 10px;
+    padding: 0 8px;
+    font-size: 13px;
   }
 
   .sec-head {
@@ -4715,7 +4738,7 @@ html[data-dev="1"] .dev-console {
 
   html[data-tv="1"][data-home="1"] .classroom-session-chip {
     overflow: hidden;
-    font-size: clamp(16px, 1.4vw, 22px);
+    font-size: 14px;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
@@ -4733,9 +4756,6 @@ html[data-dev="1"] .dev-console {
   html[data-tv="1"][data-home="1"]
     .classroom-session-actions
     .classroom-end-button {
-    min-height: 44px;
-    padding: 6px 11px;
-    font-size: clamp(13px, 0.95vw, 16px);
     white-space: nowrap;
   }
 
@@ -4873,8 +4893,8 @@ html[data-dev="1"] .dev-console {
 
   html[data-tv="1"][data-home="1"] .plan-chip {
     max-width: 30vw;
-    padding: 7px 14px;
-    font-size: clamp(14px, 1.2cqi, 20px);
+    padding: 0 12px;
+    font-size: 14px;
   }
 
   html[data-tv="1"][data-home="1"] .stat span {
@@ -5008,9 +5028,6 @@ html[data-dev="1"] .dev-console {
 
   html[data-tv="1"][data-home="1"] .add .go {
     grid-column: auto;
-    min-height: 48px;
-    padding: 0 18px;
-    font-size: 18px;
   }
 
   html[data-tv="1"][data-home="1"] .tv-add-toggle:not([hidden]) {
@@ -5162,13 +5179,6 @@ html[data-dev="1"] .dev-console {
     font-size: clamp(21px, 1.5vw, 27px);
   }
 
-  html[data-tv="1"] [data-start-confirm-dialog] .dialog-actions .go,
-  html[data-tv="1"] [data-start-confirm-dialog] .dialog-actions .guess-button {
-    min-height: 68px;
-    padding-right: 30px;
-    padding-left: 30px;
-    font-size: clamp(22px, 1.6vw, 29px);
-  }
 }
 
 .work-page {
@@ -5281,14 +5291,6 @@ html[data-dev="1"] .dev-console {
 
 .work-room-actions > .go {
   justify-self: start;
-  min-height: 52px;
-  padding-right: 21px;
-  padding-left: 21px;
-}
-
-.work-room-actions > .go svg {
-  width: 19px;
-  height: 19px;
 }
 
 .work-room-actions .room-join-form > button {
@@ -5518,8 +5520,8 @@ html[data-dev="1"] .dev-console {
   }
 
   .mode-switch {
-    gap: 0;
-    padding: 3px;
+    gap: 4px;
+    padding: 4px;
   }
 
   .mode-switch :is(button, a) {
@@ -5581,21 +5583,21 @@ html[data-dev="1"] .dev-console {
 
 .mode-hero-pill {
   display: inline-flex;
-  min-height: 34px;
+  min-height: var(--btn-h);
   align-items: center;
   gap: 8px;
   width: fit-content;
   margin: 0 0 12px;
   padding: 0 12px;
-  border: 2px solid var(--ink);
-  border-radius: 999px;
+  border: var(--btn-border) solid var(--ink);
+  border-radius: var(--btn-radius);
   background: var(--surface);
-  box-shadow: 3px 3px 0 var(--shadow);
+  box-shadow: none;
   color: var(--ink);
-  font-size: 13px;
-  font-weight: 900;
+  font:
+    800 14px/1 "Bricolage Grotesque Variable",
+    sans-serif;
   line-height: 1;
-  transform: none;
 }
 
 .mode-hero-pill svg {
@@ -5749,13 +5751,13 @@ html[data-dev="1"] .dev-mode-pill-label {
 .icon-btn {
   display: inline-flex;
   width: auto;
-  min-width: 44px;
-  height: 44px;
+  min-width: var(--btn-h);
+  height: var(--btn-h);
   align-items: center;
   justify-content: center;
   gap: 8px;
   padding: 0 10px;
-  font-size: 0.875rem;
+  font-size: 14px;
   white-space: nowrap;
 }
 
@@ -5768,13 +5770,14 @@ html[data-dev="1"] .dev-mode-pill-label {
 }
 
 .ctrl-label {
-  font-size: 0.875rem;
-  font-weight: 750;
+  font-size: 14px;
+  font-weight: 800;
 }
 
 .language-trigger {
-  min-width: 44px;
-  min-height: 44px;
+  min-width: var(--btn-h);
+  min-height: var(--btn-h);
+  font-size: 14px;
 }
 
 .settings-nav {
@@ -5786,17 +5789,18 @@ html[data-dev="1"] .dev-mode-pill-label {
 .settings-nav-row {
   display: flex;
   width: 100%;
-  min-height: 56px;
+  min-height: var(--btn-h-lg);
   align-items: center;
   gap: 12px;
   padding: 8px 12px;
-  border: 2px solid var(--ink);
-  border-radius: 12px;
+  border: var(--btn-border) solid var(--ink);
+  border-radius: var(--btn-radius);
   background: var(--surface);
-  box-shadow: 3px 3px 0 var(--shadow);
+  box-shadow: var(--btn-shadow);
   color: var(--ink);
-  font: inherit;
-  font-weight: 800;
+  font:
+    800 14px/1.25 "Bricolage Grotesque Variable",
+    sans-serif;
   text-align: left;
   text-decoration: none;
   cursor: pointer;
@@ -5820,8 +5824,8 @@ html[data-dev="1"] .dev-mode-pill-label {
 }
 
 .settings-nav-row:focus-visible {
-  outline: 3px solid var(--accent);
-  outline-offset: 3px;
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
 }
 
 .settings-switch {
@@ -5854,13 +5858,13 @@ html[data-dev="1"] .dev-mode-pill-label {
 }
 
 .mode-switch :is(button, a) {
-  min-height: 44px;
-  font-size: 0.9375rem;
+  min-height: var(--btn-h);
+  font-size: 15px;
 }
 
 .mode-hero-pill {
-  min-height: 44px;
-  font-size: 0.875rem;
+  min-height: var(--btn-h);
+  font-size: 14px;
 }
 
 .stat span {
@@ -5872,14 +5876,14 @@ html[data-dev="1"] .dev-mode-pill-label {
 }
 
 .plan-chip {
-  min-height: 44px;
+  min-height: var(--btn-h);
   align-items: center;
-  font-size: 0.875rem;
+  font-size: 14px;
 }
 
 .plan-nudge {
-  min-height: 44px;
-  font-size: 0.875rem;
+  min-height: var(--btn-h);
+  font-size: 14px;
 }
 
 .wifi-history-footer {
@@ -5887,9 +5891,9 @@ html[data-dev="1"] .dev-mode-pill-label {
 }
 
 .wifi-history-clear {
-  min-height: 44px;
-  padding: 6px 0;
-  font-size: 0.875rem;
+  min-height: var(--btn-h);
+  padding: 0 8px;
+  font-size: 14px;
 }
 
 .p-role,
@@ -5906,19 +5910,30 @@ html[data-dev="1"] .dev-mode-pill-label {
   opacity: 1;
 }
 
-.guess-button,
 .locked-pill {
-  min-height: 44px;
-  font-size: 0.9375rem;
+  min-height: var(--btn-h);
 }
 
-.go.is-neutral,
-.go.is-neutral:disabled {
+.go.is-neutral {
+  min-height: var(--btn-h);
+  padding-right: 16px;
+  padding-left: 16px;
   border-color: var(--ink);
   background: var(--surface);
-  box-shadow: 4px 4px 0 var(--shadow);
+  box-shadow: var(--btn-shadow);
   color: var(--ink);
   opacity: 1;
+  font-size: 15px;
+}
+
+.go.is-neutral:disabled {
+  border-style: solid;
+  border-color: var(--ink);
+  background: var(--surface);
+  box-shadow: var(--btn-shadow);
+  color: var(--ink);
+  opacity: 1;
+  cursor: default;
 }
 
 .gauge-card .go {
@@ -5986,15 +6001,29 @@ html[data-dev="1"] .dev-mode-pill-label {
 
 .guess-input-control {
   display: grid;
-  grid-template-columns: 44px minmax(0, 1fr) 44px;
-  align-items: center;
-  gap: 8px;
+  grid-template-columns: var(--btn-h) minmax(0, 1fr) var(--btn-h);
+  align-items: stretch;
+  gap: 0;
+  min-height: var(--btn-h);
+  border: var(--btn-border) solid var(--ink);
+  border-radius: var(--btn-radius);
+  background: var(--surface);
+  box-shadow: var(--btn-shadow);
+  overflow: hidden;
 }
 
 .guess-input-control .dialog-input {
   appearance: textfield;
   -moz-appearance: textfield;
+  min-height: var(--btn-h);
   min-width: 0;
+  padding: 0 8px;
+  border: 0;
+  border-right: var(--btn-border) solid var(--ink);
+  border-left: var(--btn-border) solid var(--ink);
+  border-radius: 0;
+  background: var(--bg);
+  box-shadow: none;
   text-align: center;
 }
 
@@ -6006,18 +6035,19 @@ html[data-dev="1"] .dev-mode-pill-label {
 
 .guess-stepper {
   display: inline-grid;
-  width: 44px;
-  min-width: 44px;
-  min-height: 44px;
+  width: var(--btn-h);
+  min-width: var(--btn-h);
+  min-height: var(--btn-h);
   place-items: center;
   padding: 0;
-  border: 2px solid var(--ink);
-  border-radius: 12px;
+  border: 0;
+  border-radius: 0;
   background: var(--surface);
-  box-shadow: 2px 2px 0 var(--shadow);
+  box-shadow: none;
   color: var(--ink);
-  font-size: 24px;
-  font-weight: 900;
+  font:
+    800 20px/1 "Bricolage Grotesque Variable",
+    sans-serif;
   line-height: 1;
 }
 
@@ -6027,8 +6057,13 @@ html[data-dev="1"] .dev-mode-pill-label {
 
 .guess-stepper:focus-visible,
 .guess-pick:focus-visible {
-  outline: 3px solid var(--accent);
-  outline-offset: 2px;
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+.guess-input-control:focus-within {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
 }
 
 .guess-picks {
@@ -6040,32 +6075,28 @@ html[data-dev="1"] .dev-mode-pill-label {
 
 .guess-pick {
   display: inline-flex;
-  min-height: 44px;
+  min-height: var(--btn-h);
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 0 10px;
-  border: 1px solid #d5dfc1;
-  border-radius: 999px;
-  background: #eef5df;
-  color: var(--on-pastel);
-  font-size: 13px;
+  padding: 0 12px;
+  border: var(--btn-border) solid var(--ink);
+  border-radius: var(--btn-radius);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 14px;
   font-weight: 800;
+  font-family: "Bricolage Grotesque Variable", sans-serif;
   line-height: 1;
   white-space: nowrap;
   overflow-wrap: normal;
 }
 
-.guess-pick.is-plan {
-  border-color: #e4d19c;
-  background: #fff3cf;
-}
-
 .guess-pick[aria-pressed="true"] {
   border-color: var(--ink);
-  background: var(--accent);
-  box-shadow: 2px 2px 0 var(--shadow);
-  color: var(--on-accent);
+  background: var(--ink);
+  box-shadow: none;
+  color: var(--surface);
 }
 
 .guess-dialog-actions {
@@ -6105,18 +6136,8 @@ html[data-dev="1"] .dev-mode-pill-label {
   }
 }
 
-.go.is-neutral:hover:not(:disabled) {
-  transform: none;
-  box-shadow: 4px 4px 0 var(--shadow);
-}
-
-.go.is-neutral:disabled {
-  cursor: default;
-}
-
 .points-pill,
 .bonus-pill {
-  border: 0;
   box-shadow: none;
   font-size: 0.875rem;
 }
@@ -6145,22 +6166,17 @@ html[data-dev="1"] .dev-mode-pill-label {
   font-size: 0.875rem;
 }
 
-.classroom-session-actions .guess-button,
-.classroom-session-actions .classroom-end-button {
-  min-height: 48px;
-}
-
 .seg button {
-  min-height: 44px;
-  font-size: 0.875rem;
+  min-height: var(--btn-h);
+  font-size: 14px;
 }
 
 .section-actions [data-reset] {
   display: inline-flex;
-  min-height: 44px;
+  min-height: var(--btn-h);
   align-items: center;
-  padding: 8px 10px;
-  font-size: 0.875rem;
+  padding: 0 8px;
+  font-size: 14px;
 }
 
 [data-emoji-picker] span,
@@ -6185,11 +6201,6 @@ html[data-dev="1"] .dev-mode-pill-label {
   display: inline-flex;
   min-height: 44px;
   align-items: center;
-}
-
-.room-entry-actions > .go,
-.room-join-form > button {
-  min-height: 44px;
 }
 
 .room-join-form > button {
@@ -6218,26 +6229,7 @@ html[data-dev="1"] .dev-mode-pill-label {
 }
 
 .promo-close {
-  width: 44px;
-  min-width: 44px;
-  height: 44px;
-  border: 0;
-  background: transparent;
-  box-shadow: none;
-}
-
-.promo-close::before {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 32px;
-  height: 32px;
-  border: 2px solid var(--ink);
   border-radius: 50%;
-  background: var(--surface);
-  box-shadow: 2px 2px 0 var(--shadow);
-  content: "";
-  transform: translate(-50%, -50%);
 }
 
 .promo-close svg {
@@ -6337,10 +6329,8 @@ summary {
   font-size: 0.875rem;
 }
 
-.next-round,
-.champion-actions .go,
-.dev-export button {
-  min-height: 44px;
+.next-round {
+  min-height: var(--btn-h);
 }
 
 .room-bar-code > span,
@@ -6528,8 +6518,9 @@ summary {
 
 @media (max-width: 380px) {
   .icon-btn[data-open-settings] {
-    width: 44px;
+    width: var(--btn-h);
     padding: 0;
+    border-radius: 50%;
   }
 
   .icon-btn[data-open-settings] .ctrl-label {
@@ -6539,7 +6530,7 @@ summary {
 
 @media (max-width: 420px) {
   .mode-switch {
-    gap: 1px;
+    gap: 4px;
   }
 
   .mode-switch :is(button, a) {
@@ -6557,4 +6548,247 @@ summary {
     min-width: 44px;
     height: 44px;
   }
+}
+
+.go,
+.guess-button,
+.ctrl,
+.icon-btn,
+.language-trigger,
+.theme-trigger,
+.dialog-close,
+.plan-nudge,
+.guess-pick,
+.quiet-button,
+.classroom-end-button,
+.danger-button,
+.text-button,
+.wifi-history-clear,
+.stepper-button,
+.settings-nav-row,
+.student-chip,
+.promo-close,
+.mode-switch,
+.seg,
+.mode-switch :is(button, a),
+.seg button,
+.guess-input-control {
+  transition: transform 0.08s, box-shadow 0.08s, background-color 0.15s;
+}
+
+:is(
+    .go,
+    .guess-button,
+    .ctrl,
+    .icon-btn,
+    .language-trigger,
+    .theme-trigger,
+    .dialog-close,
+    .plan-nudge,
+    .guess-pick,
+    .quiet-button,
+    .classroom-end-button,
+    .danger-button,
+    .text-button,
+    .wifi-history-clear,
+    .stepper-button,
+    .settings-nav-row,
+    .student-chip,
+    .promo-close,
+    .ghost:not(.classroom-end-button),
+    .link-button,
+    .mode-switch :is(button, a),
+    .seg button
+  ):focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  :is(
+      .go,
+      .guess-button,
+      .ctrl,
+      .icon-btn,
+      .language-trigger,
+      .theme-trigger,
+      .dialog-close,
+      .plan-nudge,
+      .guess-pick,
+      .quiet-button,
+      .classroom-end-button,
+      .danger-button,
+      .stepper-button,
+      .settings-nav-row,
+      .student-chip,
+      .promo-close,
+      .mode-switch :is(button, a),
+      .seg button
+    ):not(:disabled):not([aria-disabled="true"]):hover {
+    transform: translate(-1px, -1px);
+    box-shadow: var(--btn-shadow-hover);
+  }
+
+  .guess-input-control:has(
+      .guess-stepper:hover:not(:disabled):not([aria-disabled="true"])
+    ) {
+    transform: translate(-1px, -1px);
+    box-shadow: var(--btn-shadow-hover);
+  }
+
+  .guess-stepper:hover:not(:disabled):not([aria-disabled="true"]) {
+    background: var(--soft);
+  }
+
+  .ghost:not(.classroom-end-button):hover:not(:disabled):not(
+      [aria-disabled="true"]
+    ),
+  .link-button:hover:not(:disabled):not([aria-disabled="true"]),
+  .text-button:hover:not(:disabled):not([aria-disabled="true"]),
+  .wifi-history-clear:hover:not(:disabled):not([aria-disabled="true"]) {
+    transform: none;
+    box-shadow: none;
+    background: var(--soft);
+    text-decoration: none;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  :is(
+      .go,
+      .guess-button,
+      .ctrl,
+      .icon-btn,
+      .language-trigger,
+      .theme-trigger,
+      .dialog-close,
+      .plan-nudge,
+      .guess-pick,
+      .quiet-button,
+      .classroom-end-button,
+      .danger-button,
+      .text-button,
+      .wifi-history-clear,
+      .stepper-button,
+      .settings-nav-row,
+      .student-chip,
+      .promo-close,
+      .ghost:not(.classroom-end-button),
+      .link-button,
+      .mode-switch :is(button, a),
+      .seg button
+    ):not(:disabled):not([aria-disabled="true"]):active {
+    transform: translate(3px, 3px);
+    box-shadow: 0 0 0 var(--shadow);
+  }
+
+  .guess-input-control:has(
+      .guess-stepper:active:not(:disabled):not([aria-disabled="true"])
+    ) {
+    transform: translate(3px, 3px);
+    box-shadow: 0 0 0 var(--shadow);
+  }
+}
+
+.guess-input-control:has(.guess-stepper:focus-visible) {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+:is(
+    .go,
+    .guess-button,
+    .ctrl,
+    .icon-btn,
+    .language-trigger,
+    .theme-trigger,
+    .dialog-close,
+    .guess-stepper,
+    .guess-pick,
+    .plan-nudge,
+    .quiet-button,
+    .classroom-end-button,
+    .danger-button,
+    .text-button,
+    .wifi-history-clear,
+    .stepper-button,
+    .settings-nav-row,
+    .student-chip,
+    .promo-close,
+    .ghost:not(.classroom-end-button),
+    .link-button,
+    .mode-switch :is(button, a),
+    .seg button
+  ):is(:disabled, [aria-disabled="true"]),
+.mode-switch .is-disabled {
+  border-style: dashed;
+  border-color: var(--muted);
+  background: var(--soft);
+  box-shadow: none;
+  color: var(--muted);
+  transform: none;
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+.go.is-neutral:disabled {
+  border-style: solid;
+  border-color: var(--ink);
+  background: var(--surface);
+  box-shadow: var(--btn-shadow);
+  color: var(--ink);
+  transform: none;
+  cursor: default;
+  opacity: 1;
+}
+
+.plan-chip[aria-pressed="true"],
+.mode-hero-pill[aria-pressed="true"],
+.room-tester-chip[aria-pressed="true"],
+.classroom-session-chip[aria-pressed="true"],
+.guess-pick[aria-pressed="true"] {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--surface);
+}
+
+:is(.theme-option, .room-picker-option, .p-edit, .p-rm) {
+  transition: transform 0.08s, box-shadow 0.08s, background-color 0.15s;
+}
+
+:is(.theme-option, .room-picker-option, .p-edit, .p-rm):focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  :is(.theme-option, .room-picker-option, .p-edit, .p-rm):not(:disabled):not(
+      [aria-disabled="true"]
+    ):hover {
+    transform: translate(-1px, -1px);
+    box-shadow: var(--btn-shadow-hover);
+  }
+
+  :is(.theme-option, .room-picker-option, .p-edit, .p-rm):not(:disabled):not(
+      [aria-disabled="true"]
+    ):active {
+    transform: translate(3px, 3px);
+    box-shadow: 0 0 0 var(--shadow);
+  }
+}
+
+:is(
+  .theme-option,
+  .room-picker-option,
+  .p-edit,
+  .p-rm
+):is(:disabled, [aria-disabled="true"]) {
+  border-style: dashed;
+  border-color: var(--muted);
+  background: var(--soft);
+  box-shadow: none;
+  color: var(--muted);
+  transform: none;
+  cursor: not-allowed;
+  opacity: 1;
 }
