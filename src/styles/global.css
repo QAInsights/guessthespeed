@@ -3,12 +3,10 @@
 .room-bar {
   position: relative;
   min-width: 0;
-  border: 2px solid var(--ink);
-  border-radius: 22px;
+  border: var(--card-border) solid var(--ink);
+  border-radius: var(--r);
   background: linear-gradient(128deg, #fffdf1 0%, #fff 72%);
-  box-shadow:
-    0 7px 0 var(--ink),
-    0 13px 20px rgb(36 33 29 / 11%);
+  box-shadow: var(--card-shadow);
 }
 
 .room-entry {
@@ -18,7 +16,6 @@
   gap: clamp(18px, 4vw, 44px);
   margin: 28px 0;
   padding: clamp(20px, 4vw, 34px);
-  transform: rotate(-0.35deg);
 }
 
 .room-entry::before,
@@ -110,7 +107,6 @@
   gap: 16px;
   margin: 20px 0 28px;
   padding: 20px clamp(16px, 3vw, 28px);
-  transform: rotate(0.18deg);
 }
 
 .room-bar-code {
@@ -254,10 +250,10 @@
   width: min(330px, calc(100vw - 36px));
   max-height: min(60vh, 380px);
   padding: 10px;
-  border: 2.5px solid var(--ink);
-  border-radius: 16px;
+  border: var(--card-border) solid var(--ink);
+  border-radius: var(--r);
   background: var(--surface);
-  box-shadow: 5px 5px 0 var(--shadow);
+  box-shadow: var(--card-shadow);
   gap: 7px;
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -483,6 +479,9 @@ html[data-room="1"] .dev-console {
   --danger-ink: #8c1d18;
   --soft: #dfe3ea;
   --shadow: #16171b;
+  --card-border: 2.5px;
+  --card-shadow: 5px 5px 0 var(--shadow);
+  --card-shadow-raised: 7px 7px 0 var(--shadow);
   --btn-border: 2px;
   --btn-radius: 999px;
   --btn-shadow: 3px 3px 0 var(--shadow);
@@ -855,18 +854,18 @@ h3,
 }
 
 .stk {
-  border: 2.5px solid var(--ink);
+  border: var(--card-border) solid var(--ink);
   border-radius: var(--r);
   background: var(--surface);
-  box-shadow: 5px 5px 0 var(--shadow);
+  box-shadow: var(--card-shadow);
 }
 
 .room-entry.stk,
 .room-bar.stk {
-  border: 2.5px solid var(--ink);
-  border-radius: 22px;
+  border: var(--card-border) solid var(--ink);
+  border-radius: var(--r);
   background: linear-gradient(128deg, var(--surface), var(--bg));
-  box-shadow: 5px 5px 0 var(--shadow);
+  box-shadow: var(--card-shadow);
 }
 
 .top {
@@ -1020,10 +1019,10 @@ h3,
   right: 0;
   width: min(372px, calc(100vw - 28px));
   padding: 14px;
-  border: 2.5px solid var(--ink);
-  border-radius: 18px;
+  border: var(--card-border) solid var(--ink);
+  border-radius: var(--r);
   background: var(--surface);
-  box-shadow: 6px 6px 0 var(--shadow);
+  box-shadow: var(--card-shadow);
   color: var(--ink);
   transform-origin: top right;
   animation: theme-pop 0.16s ease-out;
@@ -1275,7 +1274,6 @@ html[data-room="1"] .mode-bar {
   font-size: 14px;
   font-weight: 800;
   line-height: 1.25;
-  transform: rotate(-2deg);
 }
 
 .mode-hero-visual .play-stat[hidden],
@@ -1297,7 +1295,6 @@ html[data-dev="1"] .mode-hero-visual .play-stat {
   color: var(--on-accent);
   font-weight: 800;
   line-height: 1.25;
-  transform: rotate(-1deg);
 }
 
 .mode-hero-visual .play-stat a,
@@ -1666,7 +1663,6 @@ html[data-revealing="1"] .gauge-needle {
   min-width: 0;
   margin: 4px 0 8px;
   padding: clamp(14px, 2vw, 24px);
-  transform: rotate(-0.35deg);
 }
 
 .wifi-history-head {
@@ -1795,21 +1791,10 @@ html[data-revealing="1"] .gauge-needle {
 
 .stat {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  padding: 14px 16px;
-}
-
-.stat:nth-child(1) {
-  transform: rotate(1.5deg);
-}
-
-.stat:nth-child(2) {
-  transform: rotate(-1deg);
-}
-
-.stat:nth-child(3) {
-  transform: rotate(0.8deg);
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 12px 14px;
 }
 
 .stat span {
@@ -1817,8 +1802,10 @@ html[data-revealing="1"] .gauge-needle {
   align-items: center;
   gap: 6px;
   color: var(--muted);
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .stat span svg {
@@ -1827,19 +1814,24 @@ html[data-revealing="1"] .gauge-needle {
 }
 
 .stat b {
-  font-size: 34px;
+  font-family: "Bricolage Grotesque Variable", sans-serif;
+  font-size: clamp(26px, 3vw, 32px);
+  font-weight: 700;
   line-height: 1;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
 }
 
 .stat small {
   margin-left: 4px;
   color: var(--muted);
+  font-size: 12px;
   font-weight: 700;
 }
 
 .stat-result {
   display: grid;
-  justify-items: end;
+  justify-items: start;
   gap: 6px;
 }
 
@@ -1924,9 +1916,10 @@ html[data-revealing="1"] .gauge-needle {
   gap: 12px;
   margin-top: 18px;
   padding: 12px 16px;
-  border: 2.5px solid var(--ink);
+  border: var(--card-border) solid var(--ink);
   border-radius: var(--r);
   background: var(--accent);
+  box-shadow: var(--card-shadow);
   color: var(--on-accent);
   font-weight: 700;
   text-align: left;
@@ -1945,7 +1938,7 @@ html[data-revealing="1"] .gauge-needle {
 
 @keyframes pop {
   from {
-    transform: scale(0.7) rotate(-4deg);
+    transform: scale(0.7);
     opacity: 0;
   }
 }
@@ -2034,19 +2027,11 @@ html[data-revealing="1"] .gauge-needle {
 .p-card {
   position: relative;
   padding: 16px;
-  border: 2.5px solid var(--ink);
+  border: var(--card-border) solid var(--ink);
   border-radius: var(--r);
   --card-fill: var(--surface);
   background: var(--surface);
-  box-shadow: 5px 5px 0 var(--shadow);
-}
-
-.p-card:nth-child(odd) {
-  transform: rotate(-0.8deg);
-}
-
-.p-card:nth-child(even) {
-  transform: rotate(0.7deg);
+  box-shadow: var(--card-shadow);
 }
 
 .p-card.is-winner {
@@ -2379,10 +2364,10 @@ html[lang] .p-actions .p-card-guess-actions > * {
   position: relative;
   grid-column: 1 / -1;
   overflow-x: auto;
-  border: 2.5px solid var(--ink);
+  border: var(--card-border) solid var(--ink);
   border-radius: var(--r);
   background: var(--surface);
-  box-shadow: 5px 5px 0 var(--shadow);
+  box-shadow: var(--card-shadow);
 }
 
 .p-table {
@@ -2459,7 +2444,7 @@ html[lang] .p-actions .p-card-guess-actions > * {
 .p-empty {
   grid-column: 1 / -1;
   padding: 40px;
-  border: 2.5px dashed var(--ink);
+  border: var(--card-border) dashed var(--ink);
   border-radius: var(--r);
   text-align: center;
 }
@@ -2608,7 +2593,6 @@ html[lang] .p-actions .p-card-guess-actions > * {
   color: var(--muted);
   font-size: 15px;
   line-height: 1.5;
-  transform: rotate(1deg);
 }
 
 .how .note strong {
@@ -2622,7 +2606,6 @@ html[lang] .p-actions .p-card-guess-actions > * {
   color: var(--muted);
   font-size: 15px;
   line-height: 1.5;
-  transform: rotate(-1deg);
 }
 
 .story-teaser h2 {
@@ -2763,22 +2746,18 @@ html[lang] .p-actions .p-card-guess-actions > * {
 
 .quote-card:nth-child(4n + 1) {
   background: color-mix(in srgb, var(--aurora-1) 14%, var(--surface));
-  transform: rotate(-1.4deg);
 }
 
 .quote-card:nth-child(4n + 2) {
   background: color-mix(in srgb, var(--aurora-2) 14%, var(--surface));
-  transform: rotate(1deg);
 }
 
 .quote-card:nth-child(4n + 3) {
   background: color-mix(in srgb, var(--aurora-3) 14%, var(--surface));
-  transform: rotate(-0.6deg);
 }
 
 .quote-card:nth-child(4n + 4) {
   background: color-mix(in srgb, var(--aurora-4) 14%, var(--surface));
-  transform: rotate(1.3deg);
 }
 
 @media (min-width: 640px) {
@@ -2802,7 +2781,7 @@ html[lang] .p-actions .p-card-guess-actions > * {
 
   .quote-card:hover {
     translate: -2px -2px;
-    box-shadow: 7px 7px 0 var(--shadow);
+    box-shadow: var(--card-shadow-raised);
   }
 }
 
@@ -2810,14 +2789,13 @@ html[lang] .p-actions .p-card-guess-actions > * {
   max-width: 540px;
   margin: 22px auto 0;
   padding: 15px 18px;
-  border: 2.5px solid var(--ink);
+  border: var(--card-border) solid var(--ink);
   border-radius: var(--r);
   background: var(--accent);
-  box-shadow: 4px 4px 0 var(--shadow);
+  box-shadow: var(--card-shadow);
   color: var(--on-accent);
   font-size: 17px;
   font-weight: 900;
-  transform: rotate(0.7deg);
 }
 
 .classroom-teaser p {
@@ -2837,12 +2815,11 @@ html[lang] .p-actions .p-card-guess-actions > * {
   bottom: 20px;
   width: 320px;
   padding: 14px;
-  border: 2.5px solid var(--ink);
+  border: var(--card-border) solid var(--ink);
   border-radius: var(--r);
   background: color-mix(in srgb, var(--aurora-1) 12%, var(--surface));
-  box-shadow: 4px 4px 0 var(--shadow);
+  box-shadow: var(--card-shadow);
   color: var(--ink);
-  transform: rotate(-1deg);
   animation: promo-enter 300ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
@@ -3103,11 +3080,10 @@ html[data-phase="up"] .house-promo {
 .lesson-classroom-callout {
   margin: 20px 0;
   padding: 16px 20px;
-  border: 2.5px solid var(--ink);
+  border: var(--card-border) solid var(--ink);
   border-radius: var(--r);
   background: var(--surface);
-  box-shadow: 5px 5px 0 var(--shadow);
-  transform: rotate(-0.35deg);
+  box-shadow: var(--card-shadow);
 }
 
 .lesson-classroom-callout p {
@@ -3577,10 +3553,10 @@ html[lang="es"] .sec-head > h2 {
   max-width: 100%;
   margin: 20px 0;
   overflow-x: auto;
-  border: 2.5px solid var(--ink);
+  border: var(--card-border) solid var(--ink);
   border-radius: var(--r);
   background: var(--surface);
-  box-shadow: 6px 6px 0 var(--shadow);
+  box-shadow: var(--card-shadow);
   -webkit-overflow-scrolling: touch;
 }
 
@@ -3691,10 +3667,10 @@ dialog {
   max-height: min(90dvh, 840px);
   padding: 0;
   overflow: auto;
-  border: 2.5px solid var(--ink);
-  border-radius: 18px;
+  border: var(--card-border) solid var(--ink);
+  border-radius: var(--r);
   background: var(--surface);
-  box-shadow: 9px 9px 0 var(--shadow);
+  box-shadow: var(--card-shadow-raised);
   color: var(--ink);
 }
 
@@ -4081,10 +4057,10 @@ dialog::backdrop {
   justify-items: center;
   gap: 6px;
   padding: 14px 8px;
-  border: 2.5px solid var(--ink);
-  border-radius: 14px 14px 8px 8px;
+  border: var(--card-border) solid var(--ink);
+  border-radius: var(--r);
   background: var(--bg);
-  box-shadow: 4px 4px 0 var(--shadow);
+  box-shadow: var(--card-shadow);
   text-align: center;
 }
 
@@ -4259,9 +4235,10 @@ html[data-dev="1"] .dev-console {
 .dev-data-table-wrap {
   max-width: 100%;
   overflow-x: auto;
-  border: 2px solid var(--ink);
-  border-radius: 10px;
+  border: var(--card-border) solid var(--ink);
+  border-radius: var(--r);
   background: var(--bg);
+  box-shadow: var(--card-shadow);
   -webkit-overflow-scrolling: touch;
 }
 
@@ -5240,15 +5217,12 @@ html[data-dev="1"] .dev-console {
   gap: clamp(22px, 4vw, 46px);
   margin: 0 0 56px;
   padding: clamp(22px, 4vw, 38px);
-  border: 2px solid var(--ink);
-  border-radius: 24px;
+  border: var(--card-border) solid var(--ink);
+  border-radius: var(--r);
   background:
     radial-gradient(circle at 90% 0%, rgb(255 176 32 / 19%), transparent 42%),
     var(--surface);
-  box-shadow:
-    0 8px 0 var(--ink),
-    0 16px 28px rgb(20 21 24 / 12%);
-  transform: rotate(-0.25deg);
+  box-shadow: var(--card-shadow);
 }
 
 .work-kicker {
@@ -5333,10 +5307,10 @@ html[data-dev="1"] .dev-console {
   align-items: flex-start;
   gap: 14px;
   padding: 14px 16px;
-  border: 2px solid var(--ink);
-  border-radius: 16px;
+  border: var(--card-border) solid var(--ink);
+  border-radius: var(--r);
   background: var(--surface);
-  box-shadow: 3px 3px 0 var(--ink);
+  box-shadow: var(--card-shadow);
 }
 
 .work-steps li > span {
@@ -5379,10 +5353,10 @@ html[data-dev="1"] .dev-console {
   gap: 18px;
   margin: 0 0 54px;
   padding: clamp(20px, 3vw, 30px);
-  border: 2px solid var(--ink);
-  border-radius: 20px;
+  border: var(--card-border) solid var(--ink);
+  border-radius: var(--r);
   background: var(--surface);
-  box-shadow: 5px 5px 0 var(--ink);
+  box-shadow: var(--card-shadow);
 }
 
 .work-privacy-icon {

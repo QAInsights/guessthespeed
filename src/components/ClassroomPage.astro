@@ -456,26 +456,26 @@ const faqSchema = {
     justify-content: space-between;
     gap: 16px;
     padding: 12px 17px;
-    border: 2.5px solid var(--on-pastel);
-    border-radius: 18px;
+    border: var(--card-border) solid var(--on-pastel);
+    border-radius: var(--r);
     background: var(--surface);
-    box-shadow: 5px 5px 0 var(--shadow);
+    box-shadow: var(--card-shadow);
     color: var(--on-pastel);
   }
 
   .classroom-team-sticker-rockets {
     background: #fff1b8;
-    transform: rotate(-5deg) translateX(-8px);
+    transform: translateX(-8px);
   }
 
   .classroom-team-sticker-lightning {
     background: #e3f5fa;
-    transform: rotate(3deg) translateX(18px);
+    transform: translateX(18px);
   }
 
   .classroom-team-sticker-dolphins {
     background: #f3e9ff;
-    transform: rotate(-2deg) translateX(2px);
+    transform: translateX(2px);
   }
 
   .classroom-team-name {
@@ -512,10 +512,9 @@ const faqSchema = {
     padding: 10px 18px;
     border-color: var(--on-pastel);
     background: #e8f7cf;
-    box-shadow: 4px 4px 0 var(--shadow);
+    box-shadow: var(--card-shadow);
     color: var(--on-pastel);
     font-size: 1rem;
-    transform: rotate(-1deg);
   }
 
   .privacy-sticker span {
@@ -587,10 +586,10 @@ const faqSchema = {
     align-items: center;
     gap: 14px;
     padding: 18px;
-    border: 2.5px solid var(--ink);
-    border-radius: 20px;
+    border: var(--card-border) solid var(--ink);
+    border-radius: var(--r);
     background: var(--surface);
-    box-shadow: 4px 4px 0 var(--shadow);
+    box-shadow: var(--card-shadow);
     color: var(--ink);
     text-align: left;
     transition:
@@ -601,7 +600,7 @@ const faqSchema = {
 
   .class-picker :global(.class-card:hover),
   .class-picker :global(.new-class-card:hover) {
-    box-shadow: var(--btn-shadow-hover);
+    box-shadow: var(--card-shadow-raised);
   }
 
   @media (prefers-reduced-motion: no-preference) {
@@ -705,12 +704,11 @@ const faqSchema = {
     width: 76px;
     height: 76px;
     place-items: center;
-    border: 2.5px solid var(--on-pastel);
-    border-radius: 22px;
+    border: var(--card-border) solid var(--on-pastel);
+    border-radius: var(--r);
     background: #fff;
-    box-shadow: 3px 3px 0 var(--shadow);
+    box-shadow: var(--card-shadow);
     font-size: 3rem;
-    transform: rotate(-7deg);
   }
 
   .class-picker :global(.empty-class-copy) {
@@ -758,10 +756,14 @@ const faqSchema = {
     border-style: solid;
     border-color: var(--on-accent);
     background: var(--accent);
-    box-shadow: 4px 4px 0 var(--shadow);
+    box-shadow: var(--card-shadow);
     color: var(--on-accent);
     font-size: 1.05rem;
     font-weight: 900;
+  }
+
+  .class-picker :global(.empty-classes .new-class-card:hover) {
+    box-shadow: var(--card-shadow-raised);
   }
 
   .class-picker :global(.empty-classes .new-class-card span) {
@@ -779,10 +781,10 @@ const faqSchema = {
   .classroom-toast:not(:empty) {
     margin: 0 0 14px;
     padding: 12px 16px;
-    border: 2px solid var(--on-pastel);
-    border-radius: 14px;
+    border: var(--card-border) solid var(--on-pastel);
+    border-radius: var(--r);
     background: #e8f7cf;
-    box-shadow: 3px 3px 0 var(--shadow);
+    box-shadow: var(--card-shadow);
   }
 
   .classroom-workspace {
@@ -1073,24 +1075,22 @@ const faqSchema = {
   .team-preview :global(.team-card) {
     min-width: 0;
     padding: 12px;
-    border: 2px solid var(--on-pastel);
-    border-radius: 15px;
+    border: var(--card-border) solid var(--on-pastel);
+    border-radius: var(--r);
     --card-fill: #fff5ce;
     background: #fff5ce;
-    box-shadow: 3px 3px 0 var(--shadow);
+    box-shadow: var(--card-shadow);
     color: var(--on-pastel);
   }
 
   .team-preview :global(.team-card:nth-child(3n + 2)) {
     --card-fill: #e3f5fa;
     background: #e3f5fa;
-    transform: rotate(0.4deg);
   }
 
   .team-preview :global(.team-card:nth-child(3n + 3)) {
     --card-fill: #f3e9ff;
     background: #f3e9ff;
-    transform: rotate(-0.4deg);
   }
 
   :global(html:not([data-aurora="0"]) .team-preview .team-card.has-aurora) {
@@ -1230,12 +1230,12 @@ const faqSchema = {
   @keyframes spotlight-pop {
     from {
       opacity: 0;
-      transform: scale(0.55) rotate(-8deg);
+      transform: scale(0.55);
     }
 
     to {
       opacity: 1;
-      transform: scale(1) rotate(0);
+      transform: scale(1);
     }
   }
 
@@ -1492,7 +1492,7 @@ const faqSchema = {
     .class-picker :global(.empty-class-face) {
       width: 58px;
       height: 58px;
-      border-radius: 17px;
+      border-radius: var(--r);
       font-size: 2.3rem;
     }
 
