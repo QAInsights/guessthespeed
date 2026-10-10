@@ -4794,7 +4794,7 @@ html[data-dev="1"] .dev-console {
     min-height: 0;
     align-self: center;
     justify-self: center;
-    aspect-ratio: 4 / 3;
+    aspect-ratio: 40 / 31;
     container-type: size;
   }
 
@@ -4802,7 +4802,7 @@ html[data-dev="1"] .dev-console {
     width: auto;
     height: 100%;
     max-height: 100%;
-    aspect-ratio: 4 / 3;
+    aspect-ratio: 40 / 31;
   }
 
   html[data-tv="1"][data-home="1"] .readout .mode {
