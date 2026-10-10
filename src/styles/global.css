@@ -282,7 +282,10 @@
   font: inherit;
   gap: 10px;
   text-align: left;
-  transition: transform 0.08s, box-shadow 0.08s, background-color 0.15s;
+  transition:
+    transform 0.08s,
+    box-shadow 0.08s,
+    background-color 0.15s;
 }
 
 .room-picker-option:hover {
@@ -1073,7 +1076,10 @@ h3,
   font: inherit;
   gap: 10px;
   text-align: left;
-  transition: transform 0.08s, box-shadow 0.08s, background-color 0.15s;
+  transition:
+    transform 0.08s,
+    box-shadow 0.08s,
+    background-color 0.15s;
 }
 
 .theme-option:hover {
@@ -5178,7 +5184,6 @@ html[data-dev="1"] .dev-console {
   html[data-tv="1"] .start-confirm-note {
     font-size: clamp(21px, 1.5vw, 27px);
   }
-
 }
 
 .work-page {
@@ -6558,33 +6563,36 @@ summary {
 .mode-switch :is(button, a),
 .seg button,
 .guess-input-control {
-  transition: transform 0.08s, box-shadow 0.08s, background-color 0.15s;
+  transition:
+    transform 0.08s,
+    box-shadow 0.08s,
+    background-color 0.15s;
 }
 
 :is(
-    .go,
-    .guess-button,
-    .ctrl,
-    .icon-btn,
-    .language-trigger,
-    .theme-trigger,
-    .dialog-close,
-    .plan-nudge,
-    .guess-pick,
-    .quiet-button,
-    .classroom-end-button,
-    .danger-button,
-    .text-button,
-    .wifi-history-clear,
-    .stepper-button,
-    .settings-nav-row,
-    .student-chip,
-    .promo-close,
-    .ghost:not(.classroom-end-button),
-    .link-button,
-    .mode-switch :is(button, a),
-    .seg button
-  ):focus-visible {
+  .go,
+  .guess-button,
+  .ctrl,
+  .icon-btn,
+  .language-trigger,
+  .theme-trigger,
+  .dialog-close,
+  .plan-nudge,
+  .guess-pick,
+  .quiet-button,
+  .classroom-end-button,
+  .danger-button,
+  .text-button,
+  .wifi-history-clear,
+  .stepper-button,
+  .settings-nav-row,
+  .student-chip,
+  .promo-close,
+  .ghost:not(.classroom-end-button),
+  .link-button,
+  .mode-switch :is(button, a),
+  .seg button
+):focus-visible {
   outline: var(--focus-ring);
   outline-offset: var(--focus-offset);
 }
@@ -6615,8 +6623,8 @@ summary {
   }
 
   .guess-input-control:has(
-      .guess-stepper:hover:not(:disabled):not([aria-disabled="true"])
-    ) {
+    .guess-stepper:hover:not(:disabled):not([aria-disabled="true"])
+  ) {
     transform: translate(-1px, -1px);
     box-shadow: var(--btn-shadow-hover);
   }
@@ -6668,8 +6676,8 @@ summary {
   }
 
   .guess-input-control:has(
-      .guess-stepper:active:not(:disabled):not([aria-disabled="true"])
-    ) {
+    .guess-stepper:active:not(:disabled):not([aria-disabled="true"])
+  ) {
     transform: translate(3px, 3px);
     box-shadow: 0 0 0 var(--shadow);
   }
@@ -6681,30 +6689,30 @@ summary {
 }
 
 :is(
-    .go,
-    .guess-button,
-    .ctrl,
-    .icon-btn,
-    .language-trigger,
-    .theme-trigger,
-    .dialog-close,
-    .guess-stepper,
-    .guess-pick,
-    .plan-nudge,
-    .quiet-button,
-    .classroom-end-button,
-    .danger-button,
-    .text-button,
-    .wifi-history-clear,
-    .stepper-button,
-    .settings-nav-row,
-    .student-chip,
-    .promo-close,
-    .ghost:not(.classroom-end-button),
-    .link-button,
-    .mode-switch :is(button, a),
-    .seg button
-  ):is(:disabled, [aria-disabled="true"]),
+  .go,
+  .guess-button,
+  .ctrl,
+  .icon-btn,
+  .language-trigger,
+  .theme-trigger,
+  .dialog-close,
+  .guess-stepper,
+  .guess-pick,
+  .plan-nudge,
+  .quiet-button,
+  .classroom-end-button,
+  .danger-button,
+  .text-button,
+  .wifi-history-clear,
+  .stepper-button,
+  .settings-nav-row,
+  .student-chip,
+  .promo-close,
+  .ghost:not(.classroom-end-button),
+  .link-button,
+  .mode-switch :is(button, a),
+  .seg button
+):is(:disabled, [aria-disabled="true"]),
 .mode-switch .is-disabled {
   border-style: dashed;
   border-color: var(--muted);
@@ -6738,7 +6746,10 @@ summary {
 }
 
 :is(.theme-option, .room-picker-option, .p-edit, .p-rm) {
-  transition: transform 0.08s, box-shadow 0.08s, background-color 0.15s;
+  transition:
+    transform 0.08s,
+    box-shadow 0.08s,
+    background-color 0.15s;
 }
 
 :is(.theme-option, .room-picker-option, .p-edit, .p-rm):focus-visible {
@@ -6762,12 +6773,10 @@ summary {
   }
 }
 
-:is(
-  .theme-option,
-  .room-picker-option,
-  .p-edit,
-  .p-rm
-):is(:disabled, [aria-disabled="true"]) {
+:is(.theme-option, .room-picker-option, .p-edit, .p-rm):is(
+  :disabled,
+  [aria-disabled="true"]
+) {
   border-style: dashed;
   border-color: var(--muted);
   background: var(--soft);
