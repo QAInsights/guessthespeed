@@ -3912,6 +3912,7 @@ dialog::backdrop {
 
 .sound-setting input[type="checkbox"]::before,
 .confetti-setting input[type="checkbox"]::before,
+.music-setting input[type="checkbox"]::before,
 .aurora-setting input[type="checkbox"]::before {
   position: absolute;
   top: 2px;
@@ -3926,18 +3927,21 @@ dialog::backdrop {
 
 .sound-setting input[type="checkbox"]:checked,
 .confetti-setting input[type="checkbox"]:checked,
+.music-setting input[type="checkbox"]:checked,
 .aurora-setting input[type="checkbox"]:checked {
   background: var(--accent);
 }
 
 .sound-setting input[type="checkbox"]:checked::before,
 .confetti-setting input[type="checkbox"]:checked::before,
+.music-setting input[type="checkbox"]:checked::before,
 .aurora-setting input[type="checkbox"]:checked::before {
   transform: translateX(16px);
 }
 
 .sound-setting input[type="checkbox"]:focus-visible,
 .confetti-setting input[type="checkbox"]:focus-visible,
+.music-setting input[type="checkbox"]:focus-visible,
 .aurora-setting input[type="checkbox"]:focus-visible {
   outline: 3px solid var(--accent);
   outline-offset: 3px;
@@ -6664,6 +6668,7 @@ summary {
 }
 
 .confetti-setting small,
+.music-setting small,
 .aurora-setting small {
   font-size: 0.875rem;
 }
