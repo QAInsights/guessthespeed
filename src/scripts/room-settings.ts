@@ -4,6 +4,7 @@ import { isRecord } from "../lib/guards";
 export interface RoomLocalSettings {
   themeMode: GameSettings["themeMode"];
   sound: boolean;
+  music: boolean;
   confetti: boolean;
   animatedBorders: boolean;
 }
@@ -13,7 +14,8 @@ const STORAGE_KEY = "gts:room-settings";
 export function readRoomLocalSettings(): RoomLocalSettings {
   const defaults: RoomLocalSettings = {
     themeMode: "auto",
-    sound: true,
+    sound: false,
+    music: false,
     confetti: true,
     animatedBorders: true,
   };
@@ -28,6 +30,7 @@ export function readRoomLocalSettings(): RoomLocalSettings {
           ? saved.themeMode
           : defaults.themeMode,
       sound: typeof saved.sound === "boolean" ? saved.sound : defaults.sound,
+      music: typeof saved.music === "boolean" ? saved.music : defaults.music,
       confetti:
         typeof saved.confetti === "boolean"
           ? saved.confetti

@@ -695,6 +695,8 @@
   "settings_download_tiebreak": "சமநிலைக்கு Download வேகத்தைப் பயன்படுத்தவும்",
   "settings_theme": "தீம்",
   "settings_sound": "ஒலி",
+  "settings_music": "இசை",
+  "settings_music_hint": "காத்திருப்பு இசையும் சாம்பியன் இசையும். ஒலியையும் இயக்கும்.",
   "settings_confetti": "வண்ணத்தாள்",
   "settings_confetti_hint": "சாம்பியனை உற்சாகமாகக் கொண்டாடு",
   "settings_animated_borders": "அசையும் விளிம்புகள்",

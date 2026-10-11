@@ -695,6 +695,8 @@
   "settings_download_tiebreak": "Usar la velocidad de descarga para desempatar",
   "settings_theme": "Tema",
   "settings_sound": "Sonido",
+  "settings_music": "Música",
+  "settings_music_hint": "Tema de la sala y fanfarria del campeón. También activa el sonido.",
   "settings_confetti": "Confeti",
   "settings_confetti_hint": "Celebra a la persona campeona",
   "settings_animated_borders": "Bordes animados",

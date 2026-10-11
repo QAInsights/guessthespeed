@@ -621,6 +621,13 @@ const languageTargets: Record<Locale, string> = translatedPage
             <span>{t("settings_sound", {}, locale)}</span>
             <input type="checkbox" name="sound" role="switch" />
           </label>
+          <label class="dialog-field music-setting">
+            <span>
+              {t("settings_music", {}, locale)}
+              <small>{t("settings_music_hint", {}, locale)}</small>
+            </span>
+            <input type="checkbox" name="music" role="switch" />
+          </label>
           <label class="dialog-field confetti-setting">
             <span>
               {t("settings_confetti", {}, locale)}

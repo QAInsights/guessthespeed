@@ -32,6 +32,7 @@ import { phaseText, sizeLabel, SLOW_HINT_MS } from "../lib/progress";
 import { gaugePosition } from "../lib/gauge";
 import { themes, themeForDate, type ThemeId } from "../lib/themes";
 import { playCue } from "../lib/sound";
+import { musicTrack, setMusic } from "../lib/music";
 import {
   buildPodiumEntries,
   buildSharePayload,
@@ -1349,6 +1350,21 @@ function syncFocusLayout() {
   if (focus && !focusActive && root.dataset.tv !== "1")
     window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" });
   focusActive = Boolean(focus);
+  syncMusic();
+}
+
+const musicOn = () => state.settings.sound && state.settings.music;
+
+function syncMusic() {
+  setMusic(
+    musicTrack({
+      enabled: musicOn(),
+      dev: isDevMode(),
+      phase: state.phase,
+      testing: isTesting(),
+      championOpen: championDialog.open,
+    }),
+  );
 }
 
 function render() {
@@ -1654,7 +1670,7 @@ function applyRoomView(view: RoomView) {
     raceTestActive = false;
     raceProgressOverride = null;
     setRemoteTesting(false);
-    if (previousPhase !== "champion" && view.phase === "champion")
+    if (previousPhase !== "champion" && view.phase === "champion" && !musicOn())
       playCue("champion", activeTheme, state.settings.sound);
     lastRoomProgressPhase = null;
     if (!view.history.length && previousHistoryLength) {
@@ -1964,6 +1980,7 @@ document.addEventListener("gts:settings-change", (event) => {
           ...state.settings,
           themeMode: nextSettings.themeMode,
           sound: nextSettings.sound,
+          music: nextSettings.music,
           confetti: nextSettings.confetti,
           animatedBorders: nextSettings.animatedBorders,
         }
@@ -2403,6 +2420,7 @@ shareButton.addEventListener("click", () => {
 });
 
 championDialog.addEventListener("close", () => {
+  syncMusic();
   if (state.phase === "champion" && !isDevMode())
     $<HTMLButtonElement>("[data-open-settings]").focus();
 });
@@ -2423,7 +2441,7 @@ nextButton.addEventListener("click", () => {
     persist();
     if (enteredChampion) {
       if (!isMockMode()) sendStat({ kind: "game" });
-      playCue("champion", activeTheme, state.settings.sound);
+      if (!musicOn()) playCue("champion", activeTheme, state.settings.sound);
     }
     render();
     if (enteredChampion && state.settings.confetti && !reduceMotion)

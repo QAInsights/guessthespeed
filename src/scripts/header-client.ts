@@ -493,6 +493,7 @@ function saveSettings(patch: Partial<GameSettings>, playSound = false) {
     saveRoomLocalSettings({
       themeMode: settings.themeMode,
       sound: settings.sound,
+      music: settings.music,
       confetti: settings.confetti,
       animatedBorders: settings.animatedBorders,
     });
@@ -513,6 +514,13 @@ function saveSettings(patch: Partial<GameSettings>, playSound = false) {
   if (playSound) playCue("lockIn", activeTheme, settings.sound);
 }
 
+function linkSoundAndMusic(event: Event) {
+  const sound = settingsForm.elements.namedItem("sound") as HTMLInputElement;
+  const music = settingsForm.elements.namedItem("music") as HTMLInputElement;
+  if (event.target === music && music.checked) sound.checked = true;
+  if (event.target === sound && !sound.checked) music.checked = false;
+}
+
 function fillSettingsForm() {
   if (!roomMode) settings = loadGame().settings;
   applyTheme(settings.themeMode);
@@ -530,6 +538,8 @@ function fillSettingsForm() {
     settings.themeMode;
   (settingsForm.elements.namedItem("sound") as HTMLInputElement).checked =
     settings.sound;
+  (settingsForm.elements.namedItem("music") as HTMLInputElement).checked =
+    settings.sound && settings.music;
   (settingsForm.elements.namedItem("confetti") as HTMLInputElement).checked =
     settings.confetti;
   (
@@ -650,6 +660,8 @@ document.addEventListener("pointerdown", (event) => {
     closeThemeMenu(false);
 });
 
+settingsForm.addEventListener("change", linkSoundAndMusic);
+
 soundButton.addEventListener("click", () => {
   saveSettings({ sound: !settings.sound }, true);
 });
@@ -683,6 +695,16 @@ settingsButton.addEventListener("click", () => {
 });
 
 closeSettingsButton.addEventListener("click", () => settingsDialog.close());
+
+let settingsPressedOutside = false;
+settingsDialog.addEventListener("pointerdown", (event) => {
+  settingsPressedOutside = event.target === settingsDialog;
+});
+settingsDialog.addEventListener("click", (event) => {
+  if (settingsPressedOutside && event.target === settingsDialog)
+    settingsDialog.close();
+  settingsPressedOutside = false;
+});
 
 modeOptions.forEach((option) => {
   option.addEventListener("click", (event) => {
@@ -751,6 +773,8 @@ settingsForm.addEventListener("submit", (event) => {
         : currentSettings.themeMode;
   const sound = (settingsForm.elements.namedItem("sound") as HTMLInputElement)
     .checked;
+  const music = (settingsForm.elements.namedItem("music") as HTMLInputElement)
+    .checked;
   const confetti = (
     settingsForm.elements.namedItem("confetti") as HTMLInputElement
   ).checked;
@@ -764,13 +788,14 @@ settingsForm.addEventListener("submit", (event) => {
           detail: { rounds, tieMode },
         }),
       );
-    saveSettings({ themeMode, sound, confetti, animatedBorders });
+    saveSettings({ themeMode, sound, music, confetti, animatedBorders });
   } else {
     saveSettings({
       rounds,
       tieMode,
       themeMode,
       sound,
+      music,
       confetti,
       animatedBorders,
     });

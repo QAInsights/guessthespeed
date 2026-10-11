@@ -17,6 +17,20 @@ afterEach(() => {
 });
 
 describe("room local settings", () => {
+  it("starts with sound and music off", () => {
+    stubRoomSettings("null");
+    expect(readRoomLocalSettings()).toMatchObject({
+      sound: false,
+      music: false,
+    });
+
+    stubRoomSettings(JSON.stringify({ sound: true, music: true }));
+    expect(readRoomLocalSettings()).toMatchObject({
+      sound: true,
+      music: true,
+    });
+  });
+
   it("defaults confetti on unless a boolean preference is saved", () => {
     stubRoomSettings(JSON.stringify({ confetti: "off" }));
     expect(readRoomLocalSettings().confetti).toBe(true);
