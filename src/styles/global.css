@@ -1343,7 +1343,7 @@ html[data-dev="1"] .mode-hero-visual .play-stat {
 .gauge {
   position: relative;
   width: 100%;
-  max-width: 470px;
+  max-width: 508px;
   margin: 0 auto;
   container-type: inline-size;
 }
@@ -4799,7 +4799,7 @@ html[lang="ta"]
   }
 
   .gauge {
-    max-width: 380px;
+    max-width: 410px;
   }
 
   .tick {
@@ -5101,15 +5101,17 @@ html[lang="ta"]
     min-height: 0;
     align-self: center;
     justify-self: center;
-    aspect-ratio: 40 / 31;
+    aspect-ratio: 432 / 310;
     container-type: size;
   }
 
   html[data-tv="1"][data-home="1"] .gauge svg {
-    width: auto;
-    height: 100%;
-    max-height: 100%;
-    aspect-ratio: 40 / 31;
+    position: absolute;
+    inset: 0;
+    width: min(100cqw, 100cqh * 432 / 310);
+    height: auto;
+    margin: auto;
+    aspect-ratio: 432 / 310;
   }
 
   html[data-tv="1"][data-home="1"] .readout .mode {
@@ -5126,7 +5128,8 @@ html[lang="ta"]
   }
 
   html[data-tv="1"][data-home="1"] .readout {
-    top: 30%;
+    --gauge-face-h: min(100cqh, 100cqw * 310 / 432);
+    top: calc((100cqh - var(--gauge-face-h)) / 2 + var(--gauge-face-h) * 0.3);
     bottom: auto;
   }
 
