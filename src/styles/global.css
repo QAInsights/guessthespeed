@@ -7126,20 +7126,27 @@ summary {
 }
 
 .room-race-rule {
+  display: flex;
   box-sizing: border-box;
   flex: 0 0 100%;
+  align-items: flex-start;
+  gap: 8px;
   margin: 0;
   padding: 10px 14px;
-  border: var(--card-border) solid var(--ink);
-  border-radius: var(--btn-radius);
+  border: 0;
+  border-radius: var(--r);
   background: var(--soft);
-  box-shadow: var(--btn-shadow);
+  box-shadow: none;
   color: var(--ink);
   font-size: 0.875rem;
   font-weight: 650;
   line-height: 1.5;
   text-align: left;
   text-wrap: pretty;
+}
+
+.room-race-rule > span:first-child {
+  flex: 0 0 auto;
 }
 
 .race-meter {
@@ -7459,6 +7466,12 @@ summary {
 }
 
 @media (forced-colors: active) {
+  .room-race-rule {
+    border: 1px solid CanvasText;
+    background: Canvas;
+    color: CanvasText;
+  }
+
   .race-meter-track,
   .race-track-line {
     border: var(--btn-border) solid CanvasText;
