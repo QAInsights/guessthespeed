@@ -222,6 +222,9 @@ function syncTVAddForm() {
   const locked = rosterLocked(state);
   const canAdd = (!roomMode || isRoomHost()) && !locked;
   rosterNote.hidden = !locked;
+  rosterNote.textContent = msg(
+    roomMode ? "game_roster_locked_room" : "game_roster_locked",
+  );
   tvAddToggle.hidden = !tvLayout || !canAdd;
   if (!tvLayout) tvAddExpanded = false;
   if (!canAdd) tvAddExpanded = false;
