@@ -6,6 +6,7 @@ import {
   newGame,
   nextRound,
   removePlayer,
+  rosterLocked,
   unlockGuess,
   updatePlayer,
   type GameSettings,
@@ -250,6 +251,7 @@ export function applyAction(
       if (isBlockedName(name) || isBlockedName(role) || isBlockedName(emoji))
         return { error: "name_blocked" };
       if (game.phase === "testing") return { error: "test_in_progress" };
+      if (rosterLocked(game)) return { error: "game_in_progress" };
       if (
         !isHost &&
         room.game.players.some((player) => player.owner === clientId)
@@ -359,6 +361,7 @@ export function applyAction(
       if (!isHost && player.owner !== clientId)
         return { error: "remove_own_only" };
       if (game.phase === "testing") return { error: "test_in_progress" };
+      if (rosterLocked(game)) return { error: "game_in_progress" };
       const updated = updateRoomGame(room, removePlayer(game, player.id), now);
       return {
         room: {

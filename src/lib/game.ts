@@ -183,6 +183,12 @@ export function removePlayer(state: GameState, id: string): GameState {
   };
 }
 
+export function rosterLocked(
+  state: Pick<GameState, "phase" | "history">,
+): boolean {
+  return state.phase !== "guessing" || state.history.length > 0;
+}
+
 export function lockGuess(
   state: GameState,
   id: string,

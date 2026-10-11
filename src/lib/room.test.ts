@@ -1347,3 +1347,25 @@ describe("room actions and views", () => {
     expect(room.game.players[0].guess).toEqual({ down: null, up: null });
   });
 });
+
+describe("roster lock", () => {
+  it("rejects joins and removals once the game has started", () => {
+    const room = roomWithResultsAndTester();
+    expect(
+      applyAction(
+        room,
+        "late-client",
+        false,
+        { type: "join", name: "Late", emoji: "🧑", role: "Friend" },
+        900,
+      ),
+    ).toEqual({ error: "game_in_progress" });
+    const player = playerByOwner(room, firstId);
+    expect(
+      applyAction(room, hostId, true, { type: "remove", id: player.id }, 900),
+    ).toEqual({ error: "game_in_progress" });
+    expect(
+      applyAction(room, firstId, false, { type: "remove", id: player.id }, 900),
+    ).toEqual({ error: "game_in_progress" });
+  });
+});
