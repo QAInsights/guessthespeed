@@ -4051,14 +4051,22 @@ dialog::backdrop {
 }
 
 .podium {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  align-items: end;
-  gap: 12px;
+  --podium-gap: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-end;
+  gap: var(--podium-gap);
   margin: 0 auto 20px;
 }
 
+.podium[hidden] {
+  display: none;
+}
+
 .podium-step {
+  flex: 0 1 calc((100% - 2 * var(--podium-gap)) / 3);
+  min-width: 0;
   display: grid;
   min-height: 128px;
   align-content: end;
@@ -4915,7 +4923,7 @@ html[lang="ta"]
   }
 
   .podium {
-    gap: 8px;
+    --podium-gap: 8px;
   }
 
   .podium-step {
@@ -7549,7 +7557,9 @@ html[data-focus] .story-teaser,
 html[data-focus] .classroom-teaser,
 html[data-focus] body > footer,
 html[data-focus] .house-promo,
-html[data-focus] [data-game-section] .section-actions,
+html[data-focus]:not([data-focus-stage="lobby"])
+  [data-game-section]
+  .section-actions,
 html[data-focus] .tv-add-toggle,
 html[data-focus] [data-add-form],
 html[data-focus] .classroom-session-note,

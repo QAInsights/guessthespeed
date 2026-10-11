@@ -24,7 +24,9 @@ export function joinNames(names: string[], locale: Locale = "en") {
 export function buildPodiumEntries<T extends { score: number }>(
   players: readonly T[],
 ) {
-  const sorted = [...players].sort((a, b) => b.score - a.score);
+  const sorted = players
+    .filter((player) => player.score > 0)
+    .sort((a, b) => b.score - a.score);
   let place = 0;
   return sorted.flatMap((player, index) => {
     if (index === 0 || player.score !== sorted[index - 1].score)

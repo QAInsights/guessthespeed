@@ -14,6 +14,7 @@ const base = {
   race: false,
   phase: "guessing",
   testing: false,
+  played: false,
 };
 
 const score = (
@@ -48,6 +49,23 @@ describe("focusLayout", () => {
       layout: "race",
       stage: "result",
     });
+  });
+
+  it("stays focused between rounds once a round has been played", () => {
+    expect(focusLayout({ ...base, played: true })).toEqual({
+      layout: "game",
+      stage: "lobby",
+    });
+    expect(focusLayout({ ...base, race: true, played: true })).toEqual({
+      layout: "game",
+      stage: "lobby",
+    });
+    expect(
+      focusLayout({ ...base, race: true, played: true, testing: true }),
+    ).toEqual({ layout: "race", stage: "live" });
+    expect(
+      focusLayout({ ...base, phase: "champion", played: true }),
+    ).toBeNull();
   });
 
   it("treats the reveal animation as live", () => {

@@ -321,6 +321,7 @@
   "dialog_edit_close": "Cerrar edición del jugador",
   "dialog_save_player": "Guardar jugador",
   "dialog_champion_title": "¡Campeón de la noche de juegos!",
+  "dialog_no_champion_title": "Esta vez no hay campeón",
   "dialog_champion_close": "Cerrar resultados del campeón",
   "dialog_play_again": "Volver a jugar",
   "dialog_share_result": "Compartir resultado",

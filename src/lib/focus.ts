@@ -2,7 +2,7 @@ import type { Player } from "./game";
 import type { PlayerRoundScore } from "./scoring";
 
 export type FocusLayout = "race" | "game" | "dev";
-export type FocusStage = "live" | "result";
+export type FocusStage = "live" | "result" | "lobby";
 
 export interface FocusInput {
   dev: boolean;
@@ -10,6 +10,7 @@ export interface FocusInput {
   race: boolean;
   phase: string;
   testing: boolean;
+  played: boolean;
 }
 
 export function focusLayout(
@@ -20,6 +21,8 @@ export function focusLayout(
     return input.devStarted
       ? { layout: "dev", stage: live ? "live" : "result" }
       : null;
+  if (!live && input.phase === "guessing" && input.played)
+    return { layout: "game", stage: "lobby" };
   if (!live && input.phase !== "results") return null;
   return {
     layout: input.race ? "race" : "game",

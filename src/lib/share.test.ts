@@ -85,6 +85,21 @@ describe("share results", () => {
     );
   });
 
+  it("never gives a podium place to players without points", () => {
+    expect(
+      buildPodiumEntries([
+        { name: "DD", score: 0 },
+        { name: "BB", score: 0 },
+      ]),
+    ).toEqual([]);
+    expect(
+      buildPodiumEntries([
+        { name: "First", score: 3 },
+        { name: "Zero", score: 0 },
+      ]).map(({ player, place }) => [player.name, place]),
+    ).toEqual([["First", 1]]);
+  });
+
   it("uses singular and plural point labels", () => {
     const text = buildShareText({
       players: [
