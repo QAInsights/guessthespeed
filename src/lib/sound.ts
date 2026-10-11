@@ -6,7 +6,7 @@ export type SoundCue =
 let context: AudioContext | undefined;
 let lastTick = 0;
 
-function audioContext(): AudioContext | null {
+export function audioContext(): AudioContext | null {
   if (typeof window === "undefined") return null;
   context ??= new AudioContext();
   return context;

@@ -73,6 +73,7 @@ export interface GameSettings {
   tieMode: TieMode;
   themeMode: "auto" | ThemeId;
   sound: boolean;
+  music: boolean;
   confetti: boolean;
   animatedBorders: boolean;
 }
@@ -121,7 +122,8 @@ export function initialGameState(): GameState {
       rounds: 3,
       tieMode: "share",
       themeMode: "auto",
-      sound: true,
+      sound: false,
+      music: false,
       confetti: true,
       animatedBorders: true,
     },
@@ -304,6 +306,10 @@ export function loadGame(storage?: StorageLike): GameState {
       ...parsed,
       settings: {
         ...parsed.settings,
+        music:
+          typeof parsed.settings.music === "boolean"
+            ? parsed.settings.music
+            : false,
         confetti:
           typeof parsed.settings.confetti === "boolean"
             ? parsed.settings.confetti

@@ -493,6 +493,7 @@ function saveSettings(patch: Partial<GameSettings>, playSound = false) {
     saveRoomLocalSettings({
       themeMode: settings.themeMode,
       sound: settings.sound,
+      music: settings.music,
       confetti: settings.confetti,
       animatedBorders: settings.animatedBorders,
     });
@@ -513,6 +514,12 @@ function saveSettings(patch: Partial<GameSettings>, playSound = false) {
   if (playSound) playCue("lockIn", activeTheme, settings.sound);
 }
 
+function syncMusicField() {
+  const sound = settingsForm.elements.namedItem("sound") as HTMLInputElement;
+  const music = settingsForm.elements.namedItem("music") as HTMLInputElement;
+  music.disabled = !sound.checked;
+}
+
 function fillSettingsForm() {
   if (!roomMode) settings = loadGame().settings;
   applyTheme(settings.themeMode);
@@ -530,6 +537,9 @@ function fillSettingsForm() {
     settings.themeMode;
   (settingsForm.elements.namedItem("sound") as HTMLInputElement).checked =
     settings.sound;
+  (settingsForm.elements.namedItem("music") as HTMLInputElement).checked =
+    settings.music;
+  syncMusicField();
   (settingsForm.elements.namedItem("confetti") as HTMLInputElement).checked =
     settings.confetti;
   (
@@ -650,6 +660,11 @@ document.addEventListener("pointerdown", (event) => {
     closeThemeMenu(false);
 });
 
+(settingsForm.elements.namedItem("sound") as HTMLInputElement).addEventListener(
+  "change",
+  syncMusicField,
+);
+
 soundButton.addEventListener("click", () => {
   saveSettings({ sound: !settings.sound }, true);
 });
@@ -751,6 +766,8 @@ settingsForm.addEventListener("submit", (event) => {
         : currentSettings.themeMode;
   const sound = (settingsForm.elements.namedItem("sound") as HTMLInputElement)
     .checked;
+  const music = (settingsForm.elements.namedItem("music") as HTMLInputElement)
+    .checked;
   const confetti = (
     settingsForm.elements.namedItem("confetti") as HTMLInputElement
   ).checked;
@@ -764,13 +781,14 @@ settingsForm.addEventListener("submit", (event) => {
           detail: { rounds, tieMode },
         }),
       );
-    saveSettings({ themeMode, sound, confetti, animatedBorders });
+    saveSettings({ themeMode, sound, music, confetti, animatedBorders });
   } else {
     saveSettings({
       rounds,
       tieMode,
       themeMode,
       sound,
+      music,
       confetti,
       animatedBorders,
     });

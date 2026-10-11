@@ -695,6 +695,8 @@
   "settings_download_tiebreak": "Use download speed as a tiebreaker",
   "settings_theme": "Theme",
   "settings_sound": "Sound",
+  "settings_music": "Music",
+  "settings_music_hint": "Lobby theme and champion fanfare. Turn on Sound first.",
   "settings_confetti": "Confetti",
   "settings_confetti_hint": "Celebrate the champion",
   "settings_animated_borders": "Animated borders",

@@ -3857,6 +3857,10 @@ dialog::backdrop {
   border: 0;
 }
 
+.music-setting:has(input:disabled) {
+  opacity: 0.55;
+}
+
 .sound-setting {
   grid-template-columns: 1fr auto;
   align-items: center;
@@ -3867,6 +3871,7 @@ dialog::backdrop {
 }
 
 .confetti-setting,
+.music-setting,
 .aurora-setting {
   grid-template-columns: 1fr auto;
   align-items: center;
@@ -3877,12 +3882,14 @@ dialog::backdrop {
 }
 
 .confetti-setting span,
+.music-setting span,
 .aurora-setting span {
   display: grid;
   gap: 3px;
 }
 
 .confetti-setting small,
+.music-setting small,
 .aurora-setting small {
   color: var(--muted);
   font-size: 12px;
@@ -3891,6 +3898,7 @@ dialog::backdrop {
 
 .sound-setting input[type="checkbox"],
 .confetti-setting input[type="checkbox"],
+.music-setting input[type="checkbox"],
 .aurora-setting input[type="checkbox"] {
   position: relative;
   width: 42px;
