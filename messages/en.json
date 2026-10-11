@@ -321,6 +321,7 @@
   "dialog_edit_close": "Close edit player",
   "dialog_save_player": "Save player",
   "dialog_champion_title": "Game night champion!",
+  "dialog_no_champion_title": "No champion this time",
   "dialog_champion_close": "Close champion results",
   "dialog_play_again": "Play again",
   "dialog_share_result": "Share result",

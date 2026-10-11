@@ -1104,12 +1104,15 @@ function renderChampion() {
   }
   $<HTMLButtonElement>("[data-play-again]").hidden = roomMode && !isRoomHost();
   const teamRoom = document.documentElement.dataset.roomKind === "team";
-  $<HTMLHeadingElement>("[data-champion-title]").textContent = teamRoom
-    ? msg("game_team_champion_title")
-    : msg("dialog_champion_title");
   const sorted = [...state.players].sort((a, b) => b.score - a.score);
   const topScore = sorted[0]?.score ?? 0;
-  const champions = sorted.filter((player) => player.score === topScore);
+  const champions =
+    topScore > 0 ? sorted.filter((player) => player.score === topScore) : [];
+  $<HTMLHeadingElement>("[data-champion-title]").textContent = !champions.length
+    ? msg("dialog_no_champion_title")
+    : teamRoom
+      ? msg("game_team_champion_title")
+      : msg("dialog_champion_title");
   $<HTMLParagraphElement>("[data-champion-message]").textContent = teamRoom
     ? champions.length > 1
       ? msg("game_team_champions", {
@@ -1131,9 +1134,10 @@ function renderChampion() {
       : champions.length
         ? msg("game_champion", { name: champions[0].name })
         : msg("game_thanks_for_playing");
-  $<HTMLDivElement>("[data-podium]").innerHTML = buildPodiumEntries(
-    state.players,
-  )
+  const podium = $<HTMLDivElement>("[data-podium]");
+  const podiumEntries = buildPodiumEntries(state.players);
+  podium.hidden = podiumEntries.length === 0;
+  podium.innerHTML = podiumEntries
     .map(({ player, place, medal }) => {
       return `
     <div class="podium-step ${place === 1 ? "is-champion" : ""}" data-place="${place}">
@@ -1332,6 +1336,7 @@ function syncFocusLayout() {
     race: isRaceRound(),
     phase: state.phase,
     testing: isTesting(),
+    played: state.history.length > 0,
   });
   const root = document.documentElement;
   if (focus) {
