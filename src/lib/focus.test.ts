@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  canEndGame,
   finishRaceLanes,
   focusLayout,
   liveRaceLanes,
@@ -156,5 +157,20 @@ describe("race lanes", () => {
     );
     expect(third.has("early")).toBe(false);
     expect(third.get("late")).toBe(0.45);
+  });
+});
+
+describe("canEndGame", () => {
+  it("offers End game on results and between rounds", () => {
+    expect(canEndGame({ layout: "game", stage: "result" }, true)).toBe(true);
+    expect(canEndGame({ layout: "race", stage: "result" }, true)).toBe(true);
+    expect(canEndGame({ layout: "game", stage: "lobby" }, true)).toBe(true);
+  });
+
+  it("hides End game during a test, outside a game, in Dev and for guests", () => {
+    expect(canEndGame({ layout: "race", stage: "live" }, true)).toBe(false);
+    expect(canEndGame(null, true)).toBe(false);
+    expect(canEndGame({ layout: "dev", stage: "result" }, true)).toBe(false);
+    expect(canEndGame({ layout: "game", stage: "result" }, false)).toBe(false);
   });
 });

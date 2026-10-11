@@ -380,6 +380,9 @@ const overheard: { face: string; quote: string; who: string; note: string }[] =
             aria-live="polite"
           ></div>
           <p class="error-note" data-error-note hidden></p>
+          <button class="ghost end-game" type="button" data-end-game hidden>
+            {msg("game_end_game")}
+          </button>
         </div>
         <p class="play-stat" data-play-stat hidden>
           <a href="/stats/">
@@ -1054,6 +1057,29 @@ const overheard: { face: string; quote: string; who: string; note: string }[] =
         </button>
         <button class="guess-button" type="button" data-wait-for-them>
           {msg("dialog_wait_for_them")}
+        </button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog
+    class="sticker-dialog"
+    data-end-game-dialog
+    aria-labelledby="end-game-title"
+  >
+    <div class="dialog-inner">
+      <div class="dialog-head">
+        <h2 id="end-game-title" class="display">
+          {msg("dialog_end_game_title")}
+        </h2>
+      </div>
+      <p class="start-confirm-note">{msg("dialog_end_game_note")}</p>
+      <div class="dialog-actions">
+        <button class="go" type="button" data-confirm-end-game>
+          {msg("game_end_game")}
+        </button>
+        <button class="guess-button" type="button" data-keep-playing>
+          {msg("dialog_keep_playing")}
         </button>
       </div>
     </div>

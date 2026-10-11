@@ -4145,6 +4145,7 @@ html[data-dev="1"] [data-game-title],
 html[data-dev="1"] [data-game-lede],
 html[data-dev="1"] [data-winner-banner],
 html[data-dev="1"] [data-next-round],
+html[data-dev="1"] [data-end-game],
 html[data-dev="1"] [data-game-section],
 html[data-dev="1"] .how,
 html[data-dev="1"] .overheard,
@@ -7569,6 +7570,7 @@ html[data-focus] .house-promo,
 html[data-focus]:not([data-focus-stage="lobby"])
   [data-game-section]
   .section-actions,
+html[data-focus] [data-game-section] [data-reset],
 html[data-focus] .tv-add-toggle,
 html[data-focus] [data-add-form],
 html[data-focus] .classroom-session-note,
@@ -8219,4 +8221,21 @@ html[data-tv="1"] .race-lane-pin {
 .roster-note[hidden],
 html[data-focus]:not([data-focus-stage="lobby"]) .roster-note {
   display: none;
+}
+
+.end-game {
+  display: flex;
+  width: fit-content;
+  margin: 10px auto 0;
+}
+
+.end-game[hidden] {
+  display: none;
+}
+
+html[data-tv="1"][data-home="1"] .gauge-card .end-game {
+  flex: none;
+  order: 7;
+  grid-row: 8;
+  margin-top: 6px;
 }

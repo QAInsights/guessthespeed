@@ -30,6 +30,15 @@ export function focusLayout(
   };
 }
 
+export function canEndGame(
+  focus: { layout: FocusLayout; stage: FocusStage } | null,
+  host: boolean,
+): boolean {
+  return Boolean(
+    host && focus && focus.layout !== "dev" && focus.stage !== "live",
+  );
+}
+
 export type RaceLaneState = "locked" | "thinking" | "finished" | "no-guess";
 
 export interface RaceLane {
