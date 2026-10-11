@@ -1323,11 +1323,12 @@ function renderRaceTrack() {
 }
 
 let focusActive = false;
+let devFocusStarted = false;
 
 function syncFocusLayout() {
   const focus = focusLayout({
     dev: isDevMode(),
-    classroom: classroomMode,
+    devStarted: devFocusStarted,
     race: isRaceRound(),
     phase: state.phase,
     testing: isTesting(),
@@ -1728,6 +1729,7 @@ async function startTest() {
   lastSpeedPhase = null;
   errorNote.hidden = true;
   if (devRun) {
+    devFocusStarted = true;
     document.dispatchEvent(new CustomEvent("gts:dev-run-start"));
   } else if (!roomMode) {
     latestPing = undefined;
@@ -1931,6 +1933,7 @@ async function startTest() {
     if (roomMode) render();
     else {
       syncControls();
+      syncFocusLayout();
       if (devRun && !isDevMode()) render();
     }
   }
@@ -2017,6 +2020,7 @@ document.addEventListener("gts:room-settings-change", (event) => {
 
 document.addEventListener("gts:dev-change", (event) => {
   devRunCompleted = false;
+  devFocusStarted = false;
   if ((event as CustomEvent<boolean>).detail) {
     restoreDevRun();
     if (guessDialog.open) guessDialog.close();

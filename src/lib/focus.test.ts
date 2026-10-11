@@ -10,7 +10,7 @@ import type { PlayerRoundScore } from "./scoring";
 
 const base = {
   dev: false,
-  classroom: false,
+  devStarted: false,
   race: false,
   phase: "guessing",
   testing: false,
@@ -56,9 +56,18 @@ describe("focusLayout", () => {
     ).toMatchObject({ stage: "live" });
   });
 
-  it("leaves Dev and Classroom modes alone", () => {
-    expect(focusLayout({ ...base, dev: true, testing: true })).toBeNull();
-    expect(focusLayout({ ...base, classroom: true, testing: true })).toBeNull();
+  it("focuses Dev mode from its first Start, through the result", () => {
+    expect(focusLayout({ ...base, dev: true })).toBeNull();
+    expect(
+      focusLayout({ ...base, dev: true, phase: "results", race: true }),
+    ).toBeNull();
+    expect(
+      focusLayout({ ...base, dev: true, devStarted: true, testing: true }),
+    ).toEqual({ layout: "dev", stage: "live" });
+    expect(focusLayout({ ...base, dev: true, devStarted: true })).toEqual({
+      layout: "dev",
+      stage: "result",
+    });
   });
 });
 

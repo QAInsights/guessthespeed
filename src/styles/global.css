@@ -7552,7 +7552,7 @@ html[data-focus] .house-promo,
 html[data-focus] [data-game-section] .section-actions,
 html[data-focus] .tv-add-toggle,
 html[data-focus] [data-add-form],
-html[data-focus] .classroom-session-banner,
+html[data-focus] .classroom-session-note,
 html[data-focus] [data-room-tester-control],
 html[data-focus] [data-room-host-control],
 html[data-focus] [data-room-rotate-control],
@@ -7614,6 +7614,28 @@ html[data-focus]:not([data-tv="1"]) [data-game-section] {
 }
 
 html[data-focus] .race-breakdown {
+  margin-top: 0;
+}
+
+html[data-focus] .classroom-session-banner {
+  margin-bottom: 14px;
+}
+
+html[data-focus="dev"] .dev-result {
+  margin: 0;
+}
+
+html[data-focus="dev"]:not([data-tv="1"]) .dev-result {
+  order: 2;
+}
+
+html[data-focus="dev"]:not([data-tv="1"]) .dev-console {
+  order: 1;
+  min-width: 0;
+  margin: 0;
+}
+
+html[data-focus="dev"]:not([data-tv="1"]) .dev-console-head {
   margin-top: 0;
 }
 
@@ -7698,8 +7720,17 @@ html[data-focus]:not([data-tv="1"]) .mode-hero-stats .plan-chip {
     grid-area: stage;
   }
 
-  html[data-focus]:not([data-tv="1"]) [data-game-section] {
+  html[data-focus]:not([data-tv="1"]) [data-game-section],
+  html[data-focus="dev"]:not([data-tv="1"]) .dev-console {
     grid-area: game;
+  }
+
+  html[data-focus="dev"]:not([data-tv="1"]) .dev-panels {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  html[data-focus="dev"]:not([data-tv="1"]) .dev-panel-wide {
+    grid-column: auto;
   }
 
   html[data-focus]:not([data-tv="1"]) [data-players] {
