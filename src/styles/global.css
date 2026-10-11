@@ -7126,12 +7126,19 @@ summary {
 }
 
 .room-race-rule {
-  margin: -8px 0 18px;
-  color: var(--muted);
-  font-size: 0.9rem;
+  box-sizing: border-box;
+  flex: 0 0 100%;
+  margin: 0;
+  padding: 10px 14px;
+  border: var(--card-border) solid var(--ink);
+  border-radius: var(--btn-radius);
+  background: var(--soft);
+  box-shadow: var(--btn-shadow);
+  color: var(--ink);
+  font-size: 0.875rem;
   font-weight: 650;
   line-height: 1.5;
-  text-align: center;
+  text-align: left;
   text-wrap: pretty;
 }
 
@@ -7143,8 +7150,23 @@ summary {
   text-align: left;
 }
 
-.race-meter > b {
+.race-meter-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.race-meter-head > b {
   font-size: 0.8rem;
+}
+
+.race-meter-head > strong {
+  color: var(--ink);
+  font-family: "Bricolage Grotesque Variable", sans-serif;
+  font-size: 1.25rem;
+  font-weight: 850;
+  white-space: nowrap;
 }
 
 .race-meter-track {
@@ -7192,6 +7214,16 @@ summary {
 .race-meter p,
 .race-meter small {
   margin: 0;
+}
+
+.race-meter p {
+  line-height: 1.4;
+}
+
+.locked-pill.race-status-thinking {
+  border-color: var(--line);
+  background: color-mix(in srgb, var(--accent) 24%, var(--surface));
+  color: var(--ink);
 }
 
 .race-meter .p-actions {
@@ -7250,13 +7282,13 @@ summary {
 
 .race-finish-track {
   position: relative;
-  min-height: 48px;
+  min-height: 112px;
   margin: 2px 12px 12px;
 }
 
 .race-track-line {
   position: absolute;
-  top: 7px;
+  top: 80px;
   right: 0;
   left: 0;
   height: 8px;
@@ -7267,11 +7299,11 @@ summary {
 .race-track-marker {
   position: absolute;
   z-index: 1;
-  top: -3px;
+  top: 70px;
   transform: translateX(-50%);
 }
 
-.race-track-marker > span {
+.race-track-marker-icon {
   display: grid;
   width: 28px;
   height: 28px;
@@ -7283,10 +7315,35 @@ summary {
   font-size: 0.85rem;
 }
 
+.race-track-label {
+  position: absolute;
+  bottom: calc(100% + var(--race-label-offset));
+  left: 50%;
+  max-width: min(220px, 35vw);
+  overflow: hidden;
+  padding: 4px 8px;
+  border-radius: var(--btn-radius);
+  background: var(--ink);
+  color: var(--surface);
+  font-size: 0.72rem;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.race-track-marker.is-near-start .race-track-label {
+  transform: translateX(0);
+}
+
+.race-track-marker.is-near-finish .race-track-label {
+  transform: translateX(-100%);
+}
+
 .race-track-start,
 .race-track-finish {
   position: absolute;
-  top: 24px;
+  top: 97px;
   color: var(--muted);
   font-size: 0.75rem;
   font-weight: 700;
@@ -7333,6 +7390,17 @@ summary {
   margin-top: 3px;
   color: var(--muted);
   font-size: 0.7rem;
+}
+
+.race-timing-pill {
+  display: inline-flex;
+  min-height: 28px;
+  align-items: center;
+  padding: 3px 9px;
+  background: var(--soft);
+  color: var(--ink);
+  font-size: 0.78rem;
+  white-space: nowrap;
 }
 
 .race-table .is-winner {
@@ -7407,6 +7475,42 @@ summary {
     background: Canvas;
     color: CanvasText;
   }
+
+  .race-track-label {
+    border: var(--btn-border) solid CanvasText;
+    background: CanvasText;
+    color: Canvas;
+  }
+
+  .race-status-thinking {
+    border-color: CanvasText;
+    background: Canvas;
+    color: CanvasText;
+  }
+
+  .race-tick-label {
+    fill: CanvasText;
+  }
+}
+
+.race-tick-label {
+  fill: var(--muted);
+  font-size: 10px;
+  font-weight: 800;
+}
+
+[data-gauge][data-racing] .tick {
+  display: none;
+}
+
+[data-gauge]:not([data-racing]) .race-tick-label {
+  display: none;
+}
+
+html[lang="ta"] .race-meter-head > strong {
+  font-family:
+    "Bricolage Grotesque Variable", "Noto Sans Tamil Variable",
+    "Noto Sans Tamil", sans-serif;
 }
 
 @media (prefers-reduced-motion: reduce) {

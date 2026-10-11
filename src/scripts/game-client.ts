@@ -292,6 +292,7 @@ function tweenGauge() {
 function renderGauge() {
   const progress = raceProgressOverride ?? gaugePosition(gaugeValue);
   const gauge = $<HTMLElement>("[data-gauge]");
+  gauge.toggleAttribute("data-racing", raceTestActive);
   applyGaugeProgress(gauge, progress);
   const live = $<HTMLSpanElement>("[data-live]");
   if (raceTestActive) live.textContent = "?";
@@ -365,6 +366,27 @@ function initializeGauge() {
     text.textContent = formatNumber(value, locale);
     ticksGroup.append(text);
   }
+  const raceTicks = [
+    { progress: 0, label: msg("race_gauge_start") },
+    { progress: 0.08, label: msg("race_gauge_ping") },
+    { progress: 0.18, label: msg("race_gauge_download") },
+    { progress: 0.72, label: msg("race_gauge_upload") },
+    { progress: 1, label: msg("race_gauge_finish") },
+  ];
+  for (const tick of raceTicks) {
+    const [x, y] = point(start + sweep * tick.progress, 190);
+    const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    text.setAttribute("x", String(x));
+    text.setAttribute("y", String(y));
+    text.setAttribute(
+      "text-anchor",
+      tick.progress < 0.25 ? "start" : tick.progress > 0.75 ? "end" : "middle",
+    );
+    text.setAttribute("dominant-baseline", "middle");
+    text.setAttribute("class", "race-tick-label");
+    text.textContent = tick.label;
+    ticksGroup.append(text);
+  }
   $$<SVGPathElement>("[data-arc]").forEach((path) => {
     const cx = Number(path.dataset.cx);
     const cy = Number(path.dataset.cy);
@@ -389,6 +411,14 @@ function playerRoleMarkup(player: Pick<Player, "name" | "role">) {
   return hasDistinctRole(player.name, player.role)
     ? `<span class="p-role">${escapeHtml(player.role)}</span>`
     : "";
+}
+
+function otherPlayerStatus(locked: boolean) {
+  if (!isRaceEnabled())
+    return `<span class="room-status-pill">${locked ? `🔒 ${msg("game_locked_in")}` : msg("game_thinking")}</span>`;
+  return locked
+    ? `<span class="locked-pill race-status-locked"><span aria-hidden="true">🔒</span>${msg("race_status_locked")}</span>`
+    : `<span class="locked-pill race-status-thinking">${msg("race_status_thinking")}</span>`;
 }
 
 function roleFor(player: Player) {
@@ -447,43 +477,45 @@ function renderPlayerCard(player: ClientPlayer, index: number) {
       <div class="p-actions">
         <div class="p-card-guess-actions">
           <span class="points-pill ${points > 0 ? "is-positive" : "is-zero"}">${medal ? `${medal} ` : ""}${formatPointAward(points)}</span>
-          ${roundResult?.bonus ? `<span class="bonus-pill">${msg("game_spot_on_points", { points: formatNumber(roundResult.bonus, locale) })}</span>` : ""}
+          ${roundResult?.bonus ? `<span class="bonus-pill">${msg("game_spot_on_points", { points: formatNumber(roundResult.basePoints === undefined ? roundResult.bonus : roundResult.bonus * 10, locale) })}</span>` : ""}
         </div>
         ${playerToolsMarkup}
       </div>`
     : concealed
-      ? `<div class="p-actions"><div class="p-card-guess-actions"><span class="room-status-pill">${locked ? `🔒 ${msg("game_locked_in")}` : msg("game_thinking")}</span></div>${playerToolsMarkup}</div>`
+      ? `<div class="p-actions"><div class="p-card-guess-actions">${otherPlayerStatus(locked)}</div>${playerToolsMarkup}</div>`
       : locked
         ? `<div class="p-actions"><div class="p-card-guess-actions"><button type="button" class="locked-pill" aria-label="${msg("game_locked_in")}, ${msg("game_change")}" data-guess="${escapeHtml(player.id)}" ${isTesting() ? "disabled" : ""}><span aria-hidden="true">🔒</span>${msg("game_locked_in")}</button>${roomMode ? `<button class="room-unlock" type="button" data-unlock="${escapeHtml(player.id)}" ${isTesting() ? "disabled" : ""}>${msg("game_unlock")}</button>` : ""}</div>${playerToolsMarkup}</div>`
         : `<div class="p-actions"><div class="p-card-guess-actions"><button type="button" class="guess-button" data-guess="${escapeHtml(player.id)}" ${isTesting() ? "disabled" : ""}>${msg("game_guess")}</button></div>${playerToolsMarkup}</div>`;
   const renderedGuessAction =
     raceLive && mine
       ? `<div class="race-meter">
-          <b>${msg("race_estimate_label")}</b>
+          <div class="race-meter-head"><b>${msg("race_estimate_label")}</b><strong>≈ ×${formatNumber(
+            0.5 + 0.5 * (raceProgressOverride ?? 0),
+            locale,
+            { maximumFractionDigits: 2 },
+          )}</strong></div>
           <div class="race-meter-track" aria-hidden="true">
             <span style="width:${raceProgressOverride === null ? 0 : raceProgressOverride * 100}%"></span>
             ${locked ? `<i style="left:${(raceLockFractions.get(player.id) ?? 0) * 100}%">🔒</i>` : ""}
           </div>
           <div class="race-meter-scale"><span>${msg("race_start_scale")}</span><span>${msg("race_finish_scale")}</span></div>
-          <p>${msg("race_now_multiplier", {
-            multiplier: formatNumber(
-              0.5 + 0.5 * (raceProgressOverride ?? 0),
-              locale,
-              { maximumFractionDigits: 2 },
-            ),
-          })}</p>
-          ${
+          <p>${
             locked
-              ? `<p>${msg("race_locked_at", {
+              ? msg("race_meter_locked", {
                   multiplier: formatNumber(
                     0.5 + 0.5 * (raceLockFractions.get(player.id) ?? 0),
                     locale,
                     { maximumFractionDigits: 2 },
                   ),
-                })}</p>`
-              : ""
-          }
-          <small>${msg("race_server_final")}</small>
+                })
+              : msg("race_meter_guess_now", {
+                  multiplier: formatNumber(
+                    0.5 + 0.5 * (raceProgressOverride ?? 0),
+                    locale,
+                    { maximumFractionDigits: 2 },
+                  ),
+                })
+          }</p>
           <div class="p-actions"><div class="p-card-guess-actions">
             <button type="button" class="guess-button" data-guess="${escapeHtml(player.id)}">${locked ? msg("race_change_guess") : msg("race_guess_now")}</button>
             ${locked ? `<button class="room-unlock" type="button" data-unlock="${escapeHtml(player.id)}">${msg("game_unlock")}</button>` : ""}
@@ -539,7 +571,7 @@ function renderPlayerTable(player: ClientPlayer, index: number) {
           ),
         })}</span><button class="guess-button" type="button" data-guess="${escapeHtml(player.id)}">${player.locked ? msg("race_change_guess") : msg("race_guess_now")}</button>${player.locked ? `<button class="room-unlock" type="button" data-unlock="${escapeHtml(player.id)}">${msg("game_unlock")}</button>` : ""}</span>`
       : roomMode && !mine
-        ? `<span class="room-status-pill">${player.locked ? `🔒 ${msg("game_locked_in")}` : msg("game_thinking")}</span>`
+        ? otherPlayerStatus(player.locked)
         : player.locked
           ? `<span class="p-table-round"><button class="locked-pill" type="button" data-guess="${escapeHtml(player.id)}" ${state.phase !== "guessing" || isTesting() ? "disabled" : ""}>🔒 ${msg("game_locked_in")} <small>${msg("game_change")}</small></button>${roomMode ? `<button class="room-unlock" type="button" data-unlock="${escapeHtml(player.id)}" ${isTesting() ? "disabled" : ""}>${msg("game_unlock")}</button>` : ""}</span>`
           : `<button class="guess-button" type="button" data-guess="${escapeHtml(player.id)}" ${state.phase !== "guessing" || isTesting() ? "disabled" : ""}>${msg("game_guess")}</button>`;
@@ -701,15 +733,31 @@ function renderRaceBreakdown() {
     card.innerHTML = "";
     return;
   }
-  const markers = scores
+  const trackPlayers = scores
     .filter((score) => score.timingBonus !== undefined)
     .map((score) => {
       const player = state.players.find(
         (candidate) => candidate.id === score.id,
       );
-      if (!player) return "";
+      if (!player) return null;
       const position = Math.max(0, Math.min(1, (score.timingBonus! - 0.5) * 2));
-      return `<span class="race-track-marker" style="left:${position * 100}%" aria-label="${escapeHtml(player.name)}"><span aria-hidden="true">${escapeHtml(player.emoji)}</span></span>`;
+      return { player, score, position };
+    })
+    .filter((marker) => marker !== null)
+    .sort((a, b) => a.position - b.position);
+  let clusterPosition: number | null = null;
+  let labelLane = 0;
+  const markers = trackPlayers
+    .map(({ player, score, position }) => {
+      if (clusterPosition !== null && position - clusterPosition <= 0.12)
+        labelLane += 1;
+      else labelLane = 0;
+      clusterPosition = position;
+      const multiplier = formatNumber(score.timingBonus!, locale, {
+        maximumFractionDigits: 2,
+      });
+      const label = `${player.name} · ×${multiplier}`;
+      return `<span class="race-track-marker${position < 0.15 ? " is-near-start" : position > 0.85 ? " is-near-finish" : ""}" style="left:${position * 100}%;--race-label-offset:${labelLane * 24}px" aria-label="${escapeHtml(label)}"><span class="race-track-marker-icon" aria-hidden="true">${escapeHtml(player.emoji)}</span><b class="race-track-label" aria-hidden="true">${escapeHtml(label)}</b></span>`;
     })
     .join("");
   const rows = scores
@@ -731,7 +779,7 @@ function renderRaceBreakdown() {
         <td data-label="${escapeHtml(msg("race_guess"))}">${escapeHtml(guess)}</td>
         <td data-label="${escapeHtml(msg("race_average_miss"))}">${noGuess ? "–" : `${formatNumber(score.miss! * 100, locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`}</td>
         <td data-label="${escapeHtml(msg("race_accuracy"))}">${formatNumber(score.basePoints ?? 0, locale)}<small>${accuracyDetail}</small></td>
-        <td data-label="${escapeHtml(msg("race_timing"))}">${score.timingBonus === undefined ? msg("race_no_guess") : `×${formatNumber(score.timingBonus, locale, { maximumFractionDigits: 2 })}`}</td>
+        <td data-label="${escapeHtml(msg("race_timing"))}">${score.timingBonus === undefined ? msg("race_no_guess") : `<span class="room-status-pill race-timing-pill">×${formatNumber(score.timingBonus, locale, { maximumFractionDigits: 2 })}</span>`}</td>
         <td data-label="${escapeHtml(msg("race_round_total"))}"><b>${formatNumber(score.total, locale)}</b></td>
       </tr>`;
     })
@@ -1448,6 +1496,7 @@ function applyRoomProgress(progress: {
   else setPhase(progress.phase, progress.bytes);
   if (raceTestActive) {
     renderGauge();
+    renderPlayers();
     return;
   }
   if (progress.mbps !== undefined) setGauge(progress.mbps);
@@ -1534,6 +1583,7 @@ async function startTest() {
           if (raceTestActive) {
             raceProgressOverride = raceFraction(update.step, steps);
             renderGauge();
+            renderPlayers();
           }
         }
         if (update.mbps !== undefined && !raceTestActive) setGauge(update.mbps);
