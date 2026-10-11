@@ -1,0 +1,470 @@
+dialog {
+  width: min(94vw, 560px);
+  max-height: min(90dvh, 840px);
+  padding: 0;
+  overflow: auto;
+  border: var(--card-border) solid var(--ink);
+  border-radius: var(--r);
+  background: var(--surface);
+  box-shadow: var(--card-shadow-raised);
+  color: var(--ink);
+}
+
+dialog::backdrop {
+  background: rgb(10 10 15 / 58%);
+  backdrop-filter: blur(2px);
+}
+
+.dialog-inner {
+  padding: 24px;
+}
+
+.dialog-head {
+  display: flex;
+  width: 100%;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.dialog-head h2 {
+  min-width: 0;
+  flex: 1;
+  margin: 0;
+  font-size: clamp(26px, 5vw, 34px);
+}
+
+.dialog-close {
+  display: grid;
+  width: var(--btn-h);
+  height: var(--btn-h);
+  flex: none;
+  place-items: center;
+  border: var(--btn-border) solid var(--ink);
+  border-radius: 50%;
+  background: var(--surface);
+  box-shadow: var(--btn-shadow);
+  color: var(--ink);
+  font:
+    800 20px/1 "Bricolage Grotesque Variable",
+    sans-serif;
+  text-decoration: none;
+}
+
+.dialog-close:focus {
+  outline: none;
+}
+
+.dialog-close:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+.dialog-close svg {
+  width: 20px;
+  height: 20px;
+}
+
+.dialog-form {
+  display: grid;
+  gap: 16px;
+}
+
+.dialog-plan-group {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  margin: 0;
+  padding: 12px;
+  border: 2px solid var(--ink);
+  border-radius: 12px;
+}
+
+.dialog-plan-group legend {
+  padding: 0 6px;
+  font-weight: 900;
+}
+
+.dialog-plan-hint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.dialog-field {
+  display: grid;
+  gap: 6px;
+  font-weight: 800;
+}
+
+.dialog-field small {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.dialog-input,
+.dialog-select {
+  width: 100%;
+  min-height: 48px;
+  padding: 8px 12px;
+  border: 2.5px solid var(--ink);
+  border-radius: 12px;
+  background: var(--bg);
+}
+
+.dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+[data-start-confirm-dialog] .dialog-inner {
+  display: grid;
+  gap: 10px;
+}
+
+[data-start-confirm-dialog] .dialog-head {
+  margin-bottom: 4px;
+}
+
+.start-confirm-message {
+  margin: 0;
+  font-size: clamp(18px, 2.2vw, 23px);
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+.start-confirm-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.edit-role-fieldset {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.edit-role-fieldset legend {
+  padding: 0;
+}
+
+.guess-person {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+  padding: 10px 14px;
+  border: 2px solid var(--ink);
+  border-radius: 14px;
+  background: var(--bg);
+  font-weight: 800;
+}
+
+.guess-person span {
+  font-size: 32px;
+}
+
+.guess-person b {
+  font-size: 20px;
+}
+
+.role-fieldset {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.sound-setting {
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  padding: 12px 14px;
+  border: 2px solid var(--ink);
+  border-radius: 12px;
+  background: var(--bg);
+}
+
+.confetti-setting,
+.music-setting,
+.aurora-setting {
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  padding: 12px 14px;
+  border: 2px solid var(--ink);
+  border-radius: 12px;
+  background: var(--bg);
+}
+
+.confetti-setting span,
+.music-setting span,
+.aurora-setting span {
+  display: grid;
+  gap: 3px;
+}
+
+.confetti-setting small,
+.music-setting small,
+.aurora-setting small {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.sound-setting input[type="checkbox"],
+.confetti-setting input[type="checkbox"],
+.music-setting input[type="checkbox"],
+.aurora-setting input[type="checkbox"] {
+  position: relative;
+  width: 42px;
+  height: 24px;
+  flex: none;
+  margin: 0;
+  padding: 2px;
+  appearance: none;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: var(--bg);
+  cursor: pointer;
+  transition: background-color 120ms ease;
+}
+
+.sound-setting input[type="checkbox"]::before,
+.confetti-setting input[type="checkbox"]::before,
+.music-setting input[type="checkbox"]::before,
+.aurora-setting input[type="checkbox"]::before {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--ink);
+  content: "";
+  transition: transform 120ms ease;
+}
+
+.sound-setting input[type="checkbox"]:checked,
+.confetti-setting input[type="checkbox"]:checked,
+.music-setting input[type="checkbox"]:checked,
+.aurora-setting input[type="checkbox"]:checked {
+  background: var(--accent);
+}
+
+.sound-setting input[type="checkbox"]:checked::before,
+.confetti-setting input[type="checkbox"]:checked::before,
+.music-setting input[type="checkbox"]:checked::before,
+.aurora-setting input[type="checkbox"]:checked::before {
+  transform: translateX(16px);
+}
+
+.sound-setting input[type="checkbox"]:focus-visible,
+.confetti-setting input[type="checkbox"]:focus-visible,
+.music-setting input[type="checkbox"]:focus-visible,
+.aurora-setting input[type="checkbox"]:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.guess-hint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.next-round {
+  margin-top: 14px;
+}
+
+.champion-dialog {
+  width: min(94vw, 680px);
+}
+
+.champion-dialog .dialog-inner {
+  position: relative;
+}
+
+.champion-confetti {
+  position: absolute;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  inset: 0;
+}
+
+.champion-title,
+.champion-intro,
+.podium,
+.champion-actions {
+  position: relative;
+  z-index: 1;
+}
+
+.champion-confetti span {
+  position: absolute;
+  top: -28px;
+  animation: fx-fall 4.8s linear infinite;
+  opacity: 0.58;
+}
+
+.confetti-burst {
+  position: fixed;
+  z-index: 2147483647;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  overflow: visible;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  pointer-events: none;
+}
+
+.confetti-piece {
+  position: absolute;
+  top: -2vh;
+  display: block;
+  background: var(--color, var(--accent));
+  animation: confetti-fall var(--duration, 3s) ease-out var(--delay, 0ms) both;
+  opacity: 0;
+}
+
+.confetti-piece[data-shape="rect"]:not(.is-emoji),
+.confetti-piece[data-shape="circle"]:not(.is-emoji) {
+  border: 1.5px solid var(--ink);
+}
+
+.confetti-piece[data-shape="circle"] {
+  border-radius: 50%;
+}
+
+.confetti-piece.is-emoji {
+  width: auto;
+  height: auto;
+  background: transparent;
+  line-height: 1;
+}
+
+@keyframes confetti-fall {
+  0% {
+    transform: translate3d(0, -8vh, 0) rotate(0deg);
+    opacity: 0;
+  }
+
+  8% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translate3d(var(--drift), 108vh, 0) rotate(var(--rotate));
+    opacity: 0;
+  }
+}
+
+.champion-title {
+  margin: 0;
+  font-size: clamp(32px, 7vw, 48px);
+  text-align: center;
+}
+
+.champion-intro {
+  margin: 8px 0 20px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.podium {
+  --podium-gap: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-end;
+  gap: var(--podium-gap);
+  margin: 0 auto 20px;
+}
+
+.podium[hidden] {
+  display: none;
+}
+
+.podium-step {
+  flex: 0 1 calc((100% - 2 * var(--podium-gap)) / 3);
+  min-width: 0;
+  display: grid;
+  min-height: 128px;
+  align-content: end;
+  justify-items: center;
+  gap: 6px;
+  padding: 14px 8px;
+  border: var(--card-border) solid var(--ink);
+  border-radius: var(--r);
+  background: var(--bg);
+  box-shadow: var(--card-shadow);
+  text-align: center;
+}
+
+.podium-step:first-child {
+  min-height: 164px;
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.podium-step:nth-child(2) {
+  min-height: 142px;
+}
+
+.podium-step.is-champion {
+  min-height: 164px;
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.podium-medal {
+  font-size: 30px;
+}
+
+.podium-name {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  font-weight: 900;
+}
+
+.podium-score {
+  font-family: "Bricolage Grotesque Variable", sans-serif;
+  font-size: 24px;
+  font-weight: 900;
+}
+
+.champion-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+}
+
+.champion-actions .share-status {
+  flex-basis: 100%;
+  min-height: 1.4em;
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+}
+
+[hidden] {
+  display: none !important;
+}

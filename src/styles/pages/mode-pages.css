@@ -1,0 +1,252 @@
+.content-page.mode-page {
+  max-width: 1180px;
+  padding-top: 0;
+}
+
+.mode-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  align-items: start;
+  column-gap: clamp(28px, 4vw, 48px);
+  row-gap: 18px;
+  padding: 12px 0 28px;
+}
+
+.mode-hero-left {
+  display: grid;
+  grid-column: 1;
+  grid-row: 1;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: start;
+  gap: 18px;
+  min-width: 0;
+}
+
+.mode-hero-copy {
+  grid-column: 1;
+  grid-row: 1;
+  min-width: 0;
+  align-self: start;
+  text-align: left;
+}
+
+.mode-hero-visual {
+  grid-column: 2;
+  grid-row: 1;
+  min-width: 0;
+  align-self: start;
+}
+
+.stage.mode-hero .mode-hero-visual {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: start;
+  gap: 12px;
+}
+
+.mode-hero-pill {
+  display: inline-flex;
+  min-height: var(--btn-h);
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  margin: 0 0 12px;
+  padding: 0 12px;
+  border: var(--btn-border) solid var(--ink);
+  border-radius: var(--btn-radius);
+  background: var(--surface);
+  box-shadow: none;
+  color: var(--ink);
+  font:
+    800 14px/1 "Bricolage Grotesque Variable",
+    sans-serif;
+  line-height: 1;
+}
+
+.mode-hero-pill svg {
+  width: 16px;
+  height: 16px;
+  flex: none;
+}
+
+.dev-mode-pill-label {
+  display: none;
+}
+
+html[data-dev="1"] [data-round-banner] > svg,
+html[data-dev="1"] [data-round-label] {
+  display: none;
+}
+
+html[data-dev="1"] .dev-mode-pill-label {
+  display: inline;
+}
+
+.mode-hero .mode-hero-heading {
+  min-height: 1.96em;
+  max-width: none;
+  margin: 0 0 14px;
+  font-size: clamp(34px, 4.1vw, 58px);
+  line-height: 0.98;
+}
+
+.mode-hero .mode-hero-heading em {
+  display: inline;
+  padding: 0 8px;
+  border-radius: 8px;
+  background: var(--accent);
+  box-decoration-break: clone;
+  color: var(--on-accent);
+  font-style: normal;
+  -webkit-box-decoration-break: clone;
+}
+
+.mode-hero .mode-hero-lede {
+  max-width: 42ch;
+  margin: 0;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+.mode-hero-stats {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.game-main > .stage.mode-hero {
+  padding-bottom: 28px;
+}
+
+.game-main > .room-entry {
+  margin-top: 0;
+  transform: none;
+}
+
+.game-main > .dev-console {
+  margin-top: -10px;
+}
+
+.work-room-card {
+  transform: none;
+}
+
+@media (max-width: 980px) {
+  .mode-hero {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 18px;
+  }
+
+  .mode-hero-left {
+    display: contents;
+  }
+
+  .mode-hero-copy,
+  .mode-hero-visual,
+  .mode-hero-stats {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  .mode-hero-copy {
+    order: 1;
+  }
+
+  .mode-hero-visual {
+    order: 2;
+  }
+
+  .mode-hero-stats {
+    order: 3;
+  }
+
+  .dev-result {
+    grid-column: 1;
+    order: 3;
+  }
+
+  .work-hero .work-hero-sticker {
+    transform: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .dev-result {
+    padding: 18px 16px;
+  }
+
+  .dev-result-top {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+  }
+
+  .dev-result-main {
+    padding-right: 0;
+    padding-bottom: 14px;
+    border-right: 0;
+    border-bottom: 2px dashed var(--soft);
+  }
+
+  .dev-result-value {
+    font-size: 64px;
+  }
+
+  .dev-result-side {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .dev-result-row-value > span:first-child {
+    font-size: 28px;
+  }
+
+  .dev-result-uses {
+    min-height: 118px;
+  }
+
+  .dev-result-foot {
+    align-items: flex-start;
+  }
+
+  .dev-result-meta {
+    min-height: 2.8em;
+    flex-basis: 100%;
+  }
+}
+
+@media (max-width: 374px) {
+  .dev-result-uses {
+    min-height: 154px;
+  }
+}
+
+@media (min-width: 981px) {
+  .stage.mode-hero .mode-hero-visual .play-stat {
+    justify-self: start;
+  }
+}
+
+@media (min-width: 900px) {
+  html[data-tv="1"][data-home="1"] .mode-hero-left,
+  html[data-tv="1"][data-home="1"] .mode-hero-visual {
+    display: contents;
+  }
+
+  html[data-tv="1"][data-home="1"] .mode-hero-visual .gauge-card {
+    order: 1;
+  }
+
+  html[data-tv="1"][data-home="1"] .mode-hero-visual .tv-shortcut-hint {
+    order: 3;
+  }
+
+  html[data-tv="1"][data-home="1"] .mode-hero-visual .play-stat {
+    order: 2;
+  }
+
+  html[data-tv="1"][data-home="1"] .mode-hero-stats {
+    order: 4;
+    transform: translateY(-12px);
+  }
+}
