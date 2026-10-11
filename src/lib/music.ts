@@ -21,8 +21,12 @@ const TRACKS: Record<
   MusicTrack,
   { src: string; loop: boolean; volume: number }
 > = {
-  lobby: { src: "/audio/lobby-theme-v1.mp3", loop: true, volume: 0.22 },
-  champion: { src: "/audio/champion-fanfare-v1.mp3", loop: false, volume: 0.4 },
+  lobby: { src: "/audio/lobby-theme-v1.mp3", loop: true, volume: 0.5 },
+  champion: {
+    src: "/audio/champion-fanfare-v1.mp3",
+    loop: false,
+    volume: 0.85,
+  },
 };
 
 const FADE_IN = 0.6;
@@ -72,16 +76,22 @@ function play(track: MusicTrack) {
   if (!target) return;
   window.clearTimeout(target.stopTimer);
   const context = target.gain.context as AudioContext;
+  const blocked = () => {
+    if (current === track) waitingForGesture = true;
+  };
   const started = () => {
+    if (current !== track) return;
+    if (context.state !== "running") {
+      blocked();
+      return;
+    }
     waitingForGesture = false;
     rampTo(target.gain, TRACKS[track].volume, FADE_IN);
   };
-  const blocked = () => {
-    waitingForGesture = true;
-  };
-  if (context.state === "suspended") void context.resume().catch(blocked);
-  target.element.play().then(started, blocked);
-  if (context.state !== "running") waitingForGesture = true;
+  waitingForGesture = true;
+  const resumed =
+    context.state === "running" ? Promise.resolve() : context.resume();
+  Promise.all([resumed, target.element.play()]).then(started, blocked);
 }
 
 function stop(track: MusicTrack) {
@@ -106,8 +116,14 @@ function retryAfterGesture() {
 function listen() {
   if (listening || typeof document === "undefined") return;
   listening = true;
-  document.addEventListener("pointerdown", retryAfterGesture);
-  document.addEventListener("keydown", retryAfterGesture);
+  for (const type of [
+    "pointerdown",
+    "pointerup",
+    "click",
+    "touchend",
+    "keydown",
+  ])
+    document.addEventListener(type, retryAfterGesture, true);
   document.addEventListener("visibilitychange", () => {
     if (!current) return;
     const target = channels.get(current);
