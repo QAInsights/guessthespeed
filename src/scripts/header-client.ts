@@ -514,10 +514,11 @@ function saveSettings(patch: Partial<GameSettings>, playSound = false) {
   if (playSound) playCue("lockIn", activeTheme, settings.sound);
 }
 
-function syncMusicField() {
+function linkSoundAndMusic(event: Event) {
   const sound = settingsForm.elements.namedItem("sound") as HTMLInputElement;
   const music = settingsForm.elements.namedItem("music") as HTMLInputElement;
-  music.disabled = !sound.checked;
+  if (event.target === music && music.checked) sound.checked = true;
+  if (event.target === sound && !sound.checked) music.checked = false;
 }
 
 function fillSettingsForm() {
@@ -538,8 +539,7 @@ function fillSettingsForm() {
   (settingsForm.elements.namedItem("sound") as HTMLInputElement).checked =
     settings.sound;
   (settingsForm.elements.namedItem("music") as HTMLInputElement).checked =
-    settings.music;
-  syncMusicField();
+    settings.sound && settings.music;
   (settingsForm.elements.namedItem("confetti") as HTMLInputElement).checked =
     settings.confetti;
   (
@@ -660,10 +660,7 @@ document.addEventListener("pointerdown", (event) => {
     closeThemeMenu(false);
 });
 
-(settingsForm.elements.namedItem("sound") as HTMLInputElement).addEventListener(
-  "change",
-  syncMusicField,
-);
+settingsForm.addEventListener("change", linkSoundAndMusic);
 
 soundButton.addEventListener("click", () => {
   saveSettings({ sound: !settings.sound }, true);
@@ -698,6 +695,16 @@ settingsButton.addEventListener("click", () => {
 });
 
 closeSettingsButton.addEventListener("click", () => settingsDialog.close());
+
+let settingsPressedOutside = false;
+settingsDialog.addEventListener("pointerdown", (event) => {
+  settingsPressedOutside = event.target === settingsDialog;
+});
+settingsDialog.addEventListener("click", (event) => {
+  if (settingsPressedOutside && event.target === settingsDialog)
+    settingsDialog.close();
+  settingsPressedOutside = false;
+});
 
 modeOptions.forEach((option) => {
   option.addEventListener("click", (event) => {

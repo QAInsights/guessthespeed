@@ -696,7 +696,7 @@
   "settings_theme": "Theme",
   "settings_sound": "Sound",
   "settings_music": "Music",
-  "settings_music_hint": "Lobby theme and champion fanfare. Turn on Sound first.",
+  "settings_music_hint": "Lobby theme and champion fanfare. Also turns on Sound.",
   "settings_confetti": "Confetti",
   "settings_confetti_hint": "Celebrate the champion",
   "settings_animated_borders": "Animated borders",

@@ -3857,10 +3857,6 @@ dialog::backdrop {
   border: 0;
 }
 
-.music-setting:has(input:disabled) {
-  opacity: 0.55;
-}
-
 .sound-setting {
   grid-template-columns: 1fr auto;
   align-items: center;
