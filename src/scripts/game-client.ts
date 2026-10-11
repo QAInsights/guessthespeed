@@ -63,6 +63,7 @@ import { hasPlan, loadPlan, planPercent, planTone } from "../lib/plan";
 import { describeTarget, isOverlayOpen, shortcutAction } from "./shortcuts";
 import { escapeHtml } from "../lib/html";
 import {
+  canEndGame,
   finishRaceLanes,
   focusLayout,
   liveRaceLanes,
@@ -189,6 +190,8 @@ const startConfirmMessage = $<HTMLParagraphElement>(
   "[data-start-confirm-message]",
 );
 const startAnywayButton = $<HTMLButtonElement>("[data-start-anyway]");
+const endGameButton = $<HTMLButtonElement>("[data-end-game]");
+const endGameDialog = $<HTMLDialogElement>("[data-end-game-dialog]");
 const editDialog = $<HTMLDialogElement>("[data-edit-dialog]");
 const editError = $<HTMLParagraphElement>("[data-edit-error]");
 const championDialog = $<HTMLDialogElement>("[data-champion-dialog]");
@@ -1346,6 +1349,8 @@ function syncFocusLayout() {
     testing: isTesting(),
     played: state.history.length > 0,
   });
+  endGameButton.hidden = !canEndGame(focus, !roomMode || isRoomHost());
+  if (endGameButton.hidden && endGameDialog.open) endGameDialog.close();
   const root = document.documentElement;
   if (focus) {
     root.dataset.focus = focus.layout;
@@ -2335,7 +2340,7 @@ $$<HTMLButtonElement>("[data-view-toggle] button").forEach((button) => {
   });
 });
 
-$<HTMLButtonElement>("[data-reset]").addEventListener("click", () => {
+function resetGame() {
   if (roomMode) {
     store.send({ type: "newGame" });
     return;
@@ -2348,6 +2353,25 @@ $<HTMLButtonElement>("[data-reset]").addEventListener("click", () => {
   setResultText("up", undefined);
   setGauge(0);
   render();
+}
+
+$<HTMLButtonElement>("[data-reset]").addEventListener("click", resetGame);
+endGameButton.addEventListener("click", () => {
+  endGameDialog.showModal();
+  $<HTMLButtonElement>("[data-keep-playing]").focus();
+});
+$<HTMLButtonElement>("[data-confirm-end-game]").addEventListener(
+  "click",
+  () => {
+    endGameDialog.close();
+    resetGame();
+  },
+);
+$<HTMLButtonElement>("[data-keep-playing]").addEventListener("click", () =>
+  endGameDialog.close(),
+);
+endGameDialog.addEventListener("click", (event) => {
+  if (event.target === endGameDialog) endGameDialog.close();
 });
 
 $<HTMLButtonElement>("[data-play-again]").addEventListener("click", () => {
@@ -2456,7 +2480,7 @@ nextButton.addEventListener("click", () => {
       burstConfetti(championDialog);
   }
 });
-$<HTMLDivElement>(".gauge-card").append(nextButton);
+$<HTMLDivElement>(".gauge-card").append(nextButton, endGameButton);
 
 function isVisibleButton(button: HTMLButtonElement): boolean {
   return (
