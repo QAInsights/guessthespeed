@@ -519,6 +519,8 @@ function linkSoundAndMusic(event: Event) {
   const music = settingsForm.elements.namedItem("music") as HTMLInputElement;
   if (event.target === music && music.checked) sound.checked = true;
   if (event.target === sound && !sound.checked) music.checked = false;
+  if (event.target === sound || event.target === music)
+    saveSettings({ sound: sound.checked, music: music.checked });
 }
 
 function fillSettingsForm() {
