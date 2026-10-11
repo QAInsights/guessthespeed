@@ -9,6 +9,7 @@ import {
   nextRound,
   pendingGuessers,
   removePlayer,
+  rosterLocked,
   unlockGuess,
   saveGame,
   STORAGE_KEY,
@@ -212,13 +213,19 @@ const classroomRoomNote = $<HTMLElement>("[data-classroom-room-note]");
 const roomEntry = $<HTMLElement>("[data-room-entry]");
 const classroomTeaser = $<HTMLElement>(".classroom-teaser");
 const endClassButton = $<HTMLButtonElement>("[data-end-class]");
+const rosterNote = $<HTMLElement>("[data-roster-note]");
 let tvAddExpanded = false;
 
 function syncTVAddForm() {
   const tvLayout =
     document.documentElement.dataset.tv === "1" &&
     window.matchMedia("(min-width: 900px)").matches;
-  const canAdd = !roomMode || isRoomHost();
+  const locked = rosterLocked(state);
+  const canAdd = (!roomMode || isRoomHost()) && !locked;
+  rosterNote.hidden = !locked;
+  rosterNote.textContent = msg(
+    roomMode ? "game_roster_locked_room" : "game_roster_locked",
+  );
   tvAddToggle.hidden = !tvLayout || !canAdd;
   if (!tvLayout) tvAddExpanded = false;
   if (!canAdd) tvAddExpanded = false;
@@ -461,7 +468,7 @@ function renderPlayerCard(player: ClientPlayer, index: number) {
       : "";
   const locked = player.locked && !revealed;
   const mine = isMine(player);
-  const canRemove = !roomMode || isRoomHost() || mine;
+  const canRemove = (!roomMode || isRoomHost() || mine) && !rosterLocked(state);
   const concealed = roomMode && !mine && !revealed;
   const points = roundResult?.total ?? 0;
   const raceLive = raceTestActive && roomMode && !revealed;
@@ -552,7 +559,7 @@ function renderPlayerTable(player: ClientPlayer, index: number) {
   const tooFar =
     miss !== null && miss !== undefined && roundResult?.place === null;
   const mine = isMine(player);
-  const canRemove = !roomMode || isRoomHost() || mine;
+  const canRemove = (!roomMode || isRoomHost() || mine) && !rosterLocked(state);
   const medal = revealed
     ? place === 1
       ? "🥇"
@@ -623,7 +630,7 @@ function renderPlayers() {
       const id = button.dataset.remove ?? "";
       if (roomMode) {
         store.send({ type: "remove", id });
-      } else {
+      } else if (!rosterLocked(state)) {
         state = removePlayer(state, id);
         persist();
         render();
@@ -2285,6 +2292,7 @@ addForm.addEventListener("submit", (event) => {
     )?.value ?? 0,
   );
   const role = ROLES[selected] ?? ROLES[0];
+  if (!roomMode && rosterLocked(state)) return;
   if (roomMode) {
     if (
       !store.send({

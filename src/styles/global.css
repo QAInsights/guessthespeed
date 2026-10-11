@@ -8205,3 +8205,18 @@ html[data-tv="1"] .race-lane-pin {
     transition: none;
   }
 }
+
+.roster-note {
+  margin: 12px 0 0;
+  padding: 12px 14px;
+  border: 2px dashed var(--ink);
+  border-radius: 12px;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.roster-note[hidden],
+html[data-focus]:not([data-focus-stage="lobby"]) .roster-note {
+  display: none;
+}

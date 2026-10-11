@@ -19,6 +19,7 @@ const msg = (
 const roomErrorKeys: Record<string, Parameters<typeof t>[0]> = {
   host_only: "room_error_host_only",
   test_in_progress: "room_error_test_in_progress",
+  game_in_progress: "room_error_game_in_progress",
   player_left: "room_error_player_left",
   player_offline: "room_error_player_offline",
   different_device_required: "room_error_other_device",
