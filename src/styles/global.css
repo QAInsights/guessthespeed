@@ -7621,9 +7621,12 @@ html[data-focus] .classroom-session-banner {
   margin-bottom: 14px;
 }
 
+html[data-focus="dev"] .dev-result {
+  margin: 0;
+}
+
 html[data-focus="dev"]:not([data-tv="1"]) .dev-result {
   order: 2;
-  margin: 0;
 }
 
 html[data-focus="dev"]:not([data-tv="1"]) .dev-console {
