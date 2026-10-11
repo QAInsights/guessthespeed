@@ -60,6 +60,13 @@ import { localizedPath } from "../lib/i18n";
 import { hasPlan, loadPlan, planPercent, planTone } from "../lib/plan";
 import { describeTarget, isOverlayOpen, shortcutAction } from "./shortcuts";
 import { escapeHtml } from "../lib/html";
+import {
+  finishRaceLanes,
+  focusLayout,
+  liveRaceLanes,
+  observeRaceLocks,
+  type RaceLane,
+} from "../lib/focus";
 import { $, $$ } from "./dom";
 import { playerEmptyState } from "./player-empty-state";
 import { initializeClientLocale, t } from "../lib/messages";
@@ -90,6 +97,7 @@ const msg = (
 let raceProgressOverride: number | null = null;
 let raceTestActive = false;
 const raceLockFractions = new Map<string, number>();
+let observedLockFractions = new Map<string, number>();
 const pendingRaceLockFractions = new Map<string, number>();
 type ClientGameState = Omit<GameState, "players"> & {
   players: ClientPlayer[];
@@ -607,6 +615,7 @@ function renderPlayers() {
   } else {
     playerContainer.innerHTML = state.players.map(renderPlayerCard).join("");
   }
+  renderRaceTrack();
   $$<HTMLButtonElement>("[data-remove]").forEach((button) => {
     button.addEventListener("click", () => {
       const id = button.dataset.remove ?? "";
@@ -1153,6 +1162,188 @@ function renderChampion() {
   if (!championDialog.open) championDialog.showModal();
 }
 
+const racePhaseBands = [
+  { key: "race_gauge_ping", from: 0, to: 0.18 },
+  { key: "race_gauge_download", from: 0.18, to: 0.72 },
+  { key: "race_gauge_upload", from: 0.72, to: 1 },
+] as const;
+
+function formatMultiplier(value: number) {
+  return `×${formatNumber(value, locale, { maximumFractionDigits: 2 })}`;
+}
+
+function isRaceRound() {
+  return (
+    roomMode &&
+    (isRaceEnabled() ||
+      raceTestActive ||
+      Boolean(
+        state.history
+          .at(-1)
+          ?.scores.some((score) => score.basePoints !== undefined),
+      ))
+  );
+}
+
+function raceLaneStat(lane: RaceLane, player: ClientPlayer) {
+  if (lane.state === "thinking") return `<b>${msg("race_status_thinking")}</b>`;
+  if (lane.state === "locked")
+    return `<b><span aria-hidden="true">🔒</span> ${msg("race_status_locked")}</b><small>≈ ${formatMultiplier(lane.multiplier ?? 0.5)}</small>`;
+  const score = lane.score;
+  const points = score?.total ?? 0;
+  if (lane.state === "no-guess")
+    return `<b class="points-pill is-zero">${formatPointAward(0)}</b><small>${msg("race_no_guess")}</small>`;
+  const guess = `${formatNumber(player.guess.down ?? 0, locale)} / ${formatNumber(player.guess.up ?? 0, locale)}`;
+  const miss =
+    score?.miss === null || score?.miss === undefined
+      ? ""
+      : ` · ${formatNumber(score.miss * 100, locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`;
+  return `<b class="points-pill ${points > 0 ? "is-positive" : "is-zero"}">${lane.winner ? "🏆 " : ""}${formatPointAward(points)}</b><small>${formatMultiplier(lane.multiplier ?? 0.5)} · ${escapeHtml(guess)}${miss}</small>`;
+}
+
+function renderRaceTrack() {
+  const track = $<HTMLElement>("[data-race-track]");
+  const latest = state.history.at(-1);
+  const finished =
+    isRevealed() &&
+    state.phase === "results" &&
+    Boolean(latest?.scores.some((score) => score.basePoints !== undefined));
+  const live =
+    isRaceRound() &&
+    (raceTestActive || (revealPending && state.phase === "results"));
+  if (!roomMode || (!finished && !live) || !state.players.length) {
+    track.hidden = true;
+    track.innerHTML = "";
+    return;
+  }
+  const progress = raceTestActive ? (raceProgressOverride ?? 0) : 1;
+  const fractions = new Map(observedLockFractions);
+  for (const [id, fraction] of raceLockFractions) fractions.set(id, fraction);
+  const lanes =
+    finished && latest
+      ? finishRaceLanes(
+          state.players,
+          latest.scores,
+          raceWinners(latest.scores),
+        )
+      : liveRaceLanes(state.players, fractions, progress);
+  const playersById = new Map(
+    state.players.map((player) => [player.id, player]),
+  );
+  const badge = finished
+    ? ""
+    : `<strong class="race-track-now" aria-live="polite">${
+        raceTestActive
+          ? msg("race_lock_now", {
+              multiplier: formatNumber(0.5 + 0.5 * progress, locale, {
+                maximumFractionDigits: 2,
+              }),
+            })
+          : msg("race_track_finishing")
+      }</strong>`;
+  const subtitle =
+    finished && latest
+      ? msg("race_actual_speeds", {
+          down: formatNumber(latest.actual.down, locale),
+          up: formatNumber(latest.actual.up, locale),
+        })
+      : msg("race_track_rule");
+  const mineLanes = raceTestActive
+    ? lanes.filter((lane) => playersById.get(lane.id)?.mine)
+    : [];
+  const cta = mineLanes
+    .map((lane) => {
+      const player = playersById.get(lane.id)!;
+      const locked = lane.state === "locked";
+      return `<div class="race-track-cta${locked ? " is-locked" : ""}">
+        <span class="race-track-cta-copy"><span aria-hidden="true">${escapeHtml(player.emoji)}</span><span><b>${escapeHtml(player.name)}</b><small>${
+          locked
+            ? msg("race_locked_at", {
+                multiplier: formatNumber(lane.multiplier ?? 0.5, locale, {
+                  maximumFractionDigits: 2,
+                }),
+              })
+            : msg("race_now_multiplier", {
+                multiplier: formatNumber(0.5 + 0.5 * progress, locale, {
+                  maximumFractionDigits: 2,
+                }),
+              })
+        }</small></span></span>
+        <span class="race-track-cta-actions">${locked ? `<button class="room-unlock" type="button" data-unlock="${escapeHtml(player.id)}">${msg("game_unlock")}</button>` : ""}<button type="button" class="guess-button" data-guess="${escapeHtml(player.id)}">${locked ? msg("race_change_guess") : msg("race_guess_now")}</button></span>
+      </div>`;
+    })
+    .join("");
+  const activeBand = finished
+    ? -1
+    : raceTestActive
+      ? ["ping", "down", "up"].indexOf(
+          document.documentElement.dataset.phase ?? "",
+        )
+      : racePhaseBands.length;
+  const phases = racePhaseBands
+    .map(
+      (band, index) =>
+        `<span class="${index === activeBand ? "is-active" : index < activeBand || finished ? "is-done" : ""}" style="--from:${band.from};--to:${band.to}">${msg(band.key)}</span>`,
+    )
+    .join("");
+  const rows = lanes
+    .map((lane) => {
+      const player = playersById.get(lane.id);
+      if (!player) return "";
+      const roundResult = latest?.scores.find((score) => score.id === lane.id);
+      const displayedScore =
+        revealPending && roundResult
+          ? player.score - roundResult.total
+          : player.score;
+      const pin =
+        lane.state === "no-guess"
+          ? ""
+          : `<span class="race-lane-pin" style="--pos:${lane.position.toFixed(4)}"><span>${escapeHtml(player.emoji)}</span>${lane.state === "locked" ? '<i aria-hidden="true">🔒</i>' : ""}</span>`;
+      return `<li class="race-lane is-${lane.state}${lane.winner ? " is-winner" : ""}${player.mine ? " is-mine" : ""}">
+        <span class="race-lane-who"><span class="race-lane-name">${escapeHtml(player.name)}</span><small>${msg("race_track_total", { points: formatNumber(displayedScore, locale) })}</small></span>
+        <span class="race-lane-road" aria-hidden="true"><span class="race-lane-fill" style="--pos:${lane.position.toFixed(4)}"></span>${pin}</span>
+        <span class="race-lane-stat">${raceLaneStat(lane, player)}</span>
+      </li>`;
+    })
+    .join("");
+  track.classList.toggle("is-finished", finished);
+  track.style.setProperty("--race-now", progress.toFixed(4));
+  track.innerHTML = `<header class="race-track-head">
+      <div><h2 id="race-track-heading" class="display">${finished ? msg("race_track_finish_title") : msg("race_track_title")}</h2><p>${subtitle}</p></div>
+      ${badge}
+    </header>
+    ${cta}
+    <div class="race-track-board">
+      <div class="race-track-phases" aria-hidden="true"><span class="race-track-gap"></span><span class="race-track-band">${phases}</span><span class="race-track-gap"></span></div>
+      <ol class="race-lanes">${rows}</ol>
+      <div class="race-track-scale" aria-hidden="true"><span class="race-track-gap"></span><span class="race-track-band"><span>${msg("race_start_scale")}</span><span>${msg("race_finish_scale")}</span></span><span class="race-track-gap"></span></div>
+    </div>`;
+  track.hidden = false;
+}
+
+let focusActive = false;
+
+function syncFocusLayout() {
+  const focus = focusLayout({
+    dev: isDevMode(),
+    classroom: classroomMode,
+    race: isRaceRound(),
+    phase: state.phase,
+    testing: isTesting(),
+  });
+  const root = document.documentElement;
+  if (focus) {
+    root.dataset.focus = focus.layout;
+    root.dataset.focusStage = focus.stage;
+  } else {
+    delete root.dataset.focus;
+    delete root.dataset.focusStage;
+  }
+  if (focus && !focusActive && root.dataset.tv !== "1")
+    window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" });
+  focusActive = Boolean(focus);
+}
+
 function render() {
   const teamRoom = document.documentElement.dataset.roomKind === "team";
   $<HTMLElement>("[data-game-team-headline]").textContent = teamRoom
@@ -1188,6 +1379,7 @@ function render() {
   } else {
     $<HTMLButtonElement>("[data-next-round]")?.setAttribute("hidden", "");
   }
+  syncFocusLayout();
 }
 
 function syncGuessPickState(direction: GuessDirection) {
@@ -1466,6 +1658,14 @@ function applyRoomView(view: RoomView) {
       setResultText("up", undefined);
     }
   }
+  if (view.phase === "testing")
+    observedLockFractions = observeRaceLocks(
+      observedLockFractions,
+      view.players,
+      raceProgressOverride ?? 0,
+      previousPhase !== "testing",
+    );
+  else if (view.phase !== "results") observedLockFractions = new Map();
   activeTheme = getResolvedTheme();
   render();
   if (revealActual) startRoomReveal(revealActual.down);
