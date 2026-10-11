@@ -109,6 +109,9 @@ const overheard: { face: string; quote: string; who: string; note: string }[] =
             <span data-round-label>
               {msg("home_round_one", { round: 1, total: 3 })}
             </span>
+            <span class="race-badge locked-pill" data-race-badge hidden>
+              🏁 {msg("race_badge")}
+            </span>
             <span class="dev-mode-pill-label" aria-hidden="true">
               {msg("home_dev_badge")}
             </span>
@@ -495,6 +498,11 @@ const overheard: { face: string; quote: string; who: string; note: string }[] =
           <span class="room-rotate-track" aria-hidden="true"></span>
           <span>{msg("room_rotate_round")}</span>
         </label>
+        <label class="room-rotate-toggle" data-room-race-control hidden>
+          <input type="checkbox" role="switch" data-room-race-toggle />
+          <span class="room-rotate-track" aria-hidden="true"></span>
+          <span>{msg("race_switch")}</span>
+        </label>
         <button
           class="guess-button room-stop-test"
           type="button"
@@ -516,6 +524,10 @@ const overheard: { face: string; quote: string; who: string; note: string }[] =
           {msg("room_leave")}
         </a>
       </div>
+      <p class="room-race-rule" data-room-race-rule hidden>
+        <span aria-hidden="true">🏁</span>
+        <span>{msg("race_rule")}</span>
+      </p>
     </section>
 
     <section
@@ -658,6 +670,12 @@ const overheard: { face: string; quote: string; who: string; note: string }[] =
           <p>{msg("home_add_first_player")}</p>
         </div>
       </div>
+      <section
+        class="race-breakdown stk"
+        data-race-breakdown
+        aria-labelledby="race-breakdown-heading"
+        hidden
+      ></section>
 
       <button
         class="guess-button tv-add-toggle"

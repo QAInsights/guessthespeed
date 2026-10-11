@@ -52,6 +52,7 @@ import {
   type ClientAction,
   type RoomView,
 } from "../lib/room";
+import type { PlayerRoundScore } from "../lib/scoring";
 import { roundStatEvent } from "../lib/stats";
 import { sendStat } from "./stats-client";
 import { recordSpeedSample } from "./history-client";
@@ -86,6 +87,10 @@ const msg = (
   key: Parameters<typeof t>[0],
   params: Record<string, string | number | boolean> = {},
 ) => t(key, params, locale);
+let raceProgressOverride: number | null = null;
+let raceTestActive = false;
+const raceLockFractions = new Map<string, number>();
+const pendingRaceLockFractions = new Map<string, number>();
 type ClientGameState = Omit<GameState, "players"> & {
   players: ClientPlayer[];
   isRoomHost?: boolean;
@@ -285,12 +290,36 @@ function tweenGauge() {
 }
 
 function renderGauge() {
-  const progress = gaugePosition(gaugeValue);
+  const progress = raceProgressOverride ?? gaugePosition(gaugeValue);
   const gauge = $<HTMLElement>("[data-gauge]");
+  gauge.toggleAttribute("data-racing", raceTestActive);
   applyGaugeProgress(gauge, progress);
   const live = $<HTMLSpanElement>("[data-live]");
-  if (!revealPending)
+  if (raceTestActive) live.textContent = "?";
+  else if (!revealPending)
     live.textContent = formatSpeed(gaugeReadoutValue ?? gaugeValue);
+}
+
+function isRaceEnabled() {
+  return roomMode && document.documentElement.dataset.race === "true";
+}
+
+function raceFraction(step?: number, steps?: number) {
+  if (step === undefined || steps === undefined || steps <= 0) return 0;
+  return Math.max(0, Math.min(1, step / steps));
+}
+
+function raceWinners(scores: PlayerRoundScore[]) {
+  const raceRound = scores.some((score) => score.basePoints !== undefined);
+  if (!raceRound)
+    return new Set(
+      scores.filter((score) => score.place === 1).map((score) => score.id),
+    );
+  const positive = scores.filter((score) => score.total > 0);
+  const high = Math.max(0, ...positive.map((score) => score.total));
+  return new Set(
+    positive.filter((score) => score.total === high).map((score) => score.id),
+  );
 }
 
 function applyGaugeProgress(gauge: HTMLElement, progress: number) {
@@ -337,6 +366,27 @@ function initializeGauge() {
     text.textContent = formatNumber(value, locale);
     ticksGroup.append(text);
   }
+  const raceTicks = [
+    { progress: 0, label: msg("race_gauge_start") },
+    { progress: 0.08, label: msg("race_gauge_ping") },
+    { progress: 0.18, label: msg("race_gauge_download") },
+    { progress: 0.72, label: msg("race_gauge_upload") },
+    { progress: 1, label: msg("race_gauge_finish") },
+  ];
+  for (const tick of raceTicks) {
+    const [x, y] = point(start + sweep * tick.progress, 190);
+    const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    text.setAttribute("x", String(x));
+    text.setAttribute("y", String(y));
+    text.setAttribute(
+      "text-anchor",
+      tick.progress < 0.25 ? "start" : tick.progress > 0.75 ? "end" : "middle",
+    );
+    text.setAttribute("dominant-baseline", "middle");
+    text.setAttribute("class", "race-tick-label");
+    text.textContent = tick.label;
+    ticksGroup.append(text);
+  }
   $$<SVGPathElement>("[data-arc]").forEach((path) => {
     const cx = Number(path.dataset.cx);
     const cy = Number(path.dataset.cy);
@@ -363,6 +413,14 @@ function playerRoleMarkup(player: Pick<Player, "name" | "role">) {
     : "";
 }
 
+function otherPlayerStatus(locked: boolean) {
+  if (!isRaceEnabled())
+    return `<span class="room-status-pill">${locked ? `🔒 ${msg("game_locked_in")}` : msg("game_thinking")}</span>`;
+  return locked
+    ? `<span class="locked-pill race-status-locked"><span aria-hidden="true">🔒</span>${msg("race_status_locked")}</span>`
+    : `<span class="locked-pill race-status-thinking">${msg("race_status_thinking")}</span>`;
+}
+
 function roleFor(player: Player) {
   return `<span class="p-emoji" aria-hidden="true">${escapeHtml(player.emoji)}</span><div><h3 class="p-name">${escapeHtml(player.name)}</h3>${playerRoleMarkup(player)}</div>`;
 }
@@ -387,12 +445,16 @@ function renderPlayerCard(player: ClientPlayer, index: number) {
         : roundResult?.place === 3
           ? "🥉"
           : "";
-  const winnerClass = roundResult?.place === 1 && revealed ? "is-winner" : "";
+  const winnerClass =
+    revealed && raceWinners(state.history.at(-1)?.scores ?? []).has(player.id)
+      ? "is-winner"
+      : "";
   const locked = player.locked && !revealed;
   const mine = isMine(player);
   const canRemove = !roomMode || isRoomHost() || mine;
   const concealed = roomMode && !mine && !revealed;
   const points = roundResult?.total ?? 0;
+  const raceLive = raceTestActive && roomMode && !revealed;
   const playerTools = [
     mine
       ? `<button class="p-edit" type="button" data-edit="${escapeHtml(player.id)}" aria-label="${msg("game_edit_player", { name: escapeHtml(player.name) })}" ${isTesting() ? "disabled" : ""}>${pencilIcon}</button>`
@@ -415,18 +477,54 @@ function renderPlayerCard(player: ClientPlayer, index: number) {
       <div class="p-actions">
         <div class="p-card-guess-actions">
           <span class="points-pill ${points > 0 ? "is-positive" : "is-zero"}">${medal ? `${medal} ` : ""}${formatPointAward(points)}</span>
-          ${roundResult?.bonus ? `<span class="bonus-pill">${msg("game_spot_on_points", { points: formatNumber(roundResult.bonus, locale) })}</span>` : ""}
+          ${roundResult?.bonus ? `<span class="bonus-pill">${msg("game_spot_on_points", { points: formatNumber(roundResult.basePoints === undefined ? roundResult.bonus : roundResult.bonus * 10, locale) })}</span>` : ""}
         </div>
         ${playerToolsMarkup}
       </div>`
     : concealed
-      ? `<div class="p-actions"><div class="p-card-guess-actions"><span class="room-status-pill">${locked ? `🔒 ${msg("game_locked_in")}` : msg("game_thinking")}</span></div>${playerToolsMarkup}</div>`
+      ? `<div class="p-actions"><div class="p-card-guess-actions">${otherPlayerStatus(locked)}</div>${playerToolsMarkup}</div>`
       : locked
         ? `<div class="p-actions"><div class="p-card-guess-actions"><button type="button" class="locked-pill" aria-label="${msg("game_locked_in")}, ${msg("game_change")}" data-guess="${escapeHtml(player.id)}" ${isTesting() ? "disabled" : ""}><span aria-hidden="true">🔒</span>${msg("game_locked_in")}</button>${roomMode ? `<button class="room-unlock" type="button" data-unlock="${escapeHtml(player.id)}" ${isTesting() ? "disabled" : ""}>${msg("game_unlock")}</button>` : ""}</div>${playerToolsMarkup}</div>`
         : `<div class="p-actions"><div class="p-card-guess-actions"><button type="button" class="guess-button" data-guess="${escapeHtml(player.id)}" ${isTesting() ? "disabled" : ""}>${msg("game_guess")}</button></div>${playerToolsMarkup}</div>`;
+  const renderedGuessAction =
+    raceLive && mine
+      ? `<div class="race-meter">
+          <div class="race-meter-head"><b>${msg("race_estimate_label")}</b><strong>≈ ×${formatNumber(
+            0.5 + 0.5 * (raceProgressOverride ?? 0),
+            locale,
+            { maximumFractionDigits: 2 },
+          )}</strong></div>
+          <div class="race-meter-track" aria-hidden="true">
+            <span style="width:${raceProgressOverride === null ? 0 : raceProgressOverride * 100}%"></span>
+            ${locked ? `<i style="left:${(raceLockFractions.get(player.id) ?? 0) * 100}%">🔒</i>` : ""}
+          </div>
+          <div class="race-meter-scale"><span>${msg("race_start_scale")}</span><span>${msg("race_finish_scale")}</span></div>
+          <p>${
+            locked
+              ? msg("race_meter_locked", {
+                  multiplier: formatNumber(
+                    0.5 + 0.5 * (raceLockFractions.get(player.id) ?? 0),
+                    locale,
+                    { maximumFractionDigits: 2 },
+                  ),
+                })
+              : msg("race_meter_guess_now", {
+                  multiplier: formatNumber(
+                    0.5 + 0.5 * (raceProgressOverride ?? 0),
+                    locale,
+                    { maximumFractionDigits: 2 },
+                  ),
+                })
+          }</p>
+          <div class="p-actions"><div class="p-card-guess-actions">
+            <button type="button" class="guess-button" data-guess="${escapeHtml(player.id)}">${locked ? msg("race_change_guess") : msg("race_guess_now")}</button>
+            ${locked ? `<button class="room-unlock" type="button" data-unlock="${escapeHtml(player.id)}">${msg("game_unlock")}</button>` : ""}
+          </div>${playerToolsMarkup}</div>
+        </div>`
+      : guessAction;
   return `<article class="p-card has-aurora ${winnerClass}" style="--card-index:${index};${auroraStyleVars(auroraFor(player.id))}">
     <div class="p-head">${roleFor(player)}<div class="p-score" role="group" aria-label="${escapeHtml(formatScoreLabel(displayedScore))}"><b>${formatNumber(displayedScore, locale)}</b><span>${msg("game_points_unit")}</span></div></div>
-    ${guessAction}
+    ${renderedGuessAction}
   </article>`;
 }
 
@@ -464,12 +562,20 @@ function renderPlayerTable(player: ClientPlayer, index: number) {
           }),
           tooFar: tooFar ? msg("game_too_far_short") : "",
         })
-    : roomMode && !mine
-      ? `<span class="room-status-pill">${player.locked ? `🔒 ${msg("game_locked_in")}` : msg("game_thinking")}</span>`
-      : player.locked
-        ? `<span class="p-table-round"><button class="locked-pill" type="button" data-guess="${escapeHtml(player.id)}" ${state.phase !== "guessing" || isTesting() ? "disabled" : ""}>🔒 ${msg("game_locked_in")} <small>${msg("game_change")}</small></button>${roomMode ? `<button class="room-unlock" type="button" data-unlock="${escapeHtml(player.id)}" ${isTesting() ? "disabled" : ""}>${msg("game_unlock")}</button>` : ""}</span>`
-        : `<button class="guess-button" type="button" data-guess="${escapeHtml(player.id)}" ${state.phase !== "guessing" || isTesting() ? "disabled" : ""}>${msg("game_guess")}</button>`;
-  return `<tr class="${place === 1 && revealed ? "is-winner" : ""}" style="--card-index:${index}">
+    : raceTestActive && roomMode && mine
+      ? `<span class="race-table-action"><span>${msg("race_now_multiplier", {
+          multiplier: formatNumber(
+            0.5 + 0.5 * (raceProgressOverride ?? 0),
+            locale,
+            { maximumFractionDigits: 2 },
+          ),
+        })}</span><button class="guess-button" type="button" data-guess="${escapeHtml(player.id)}">${player.locked ? msg("race_change_guess") : msg("race_guess_now")}</button>${player.locked ? `<button class="room-unlock" type="button" data-unlock="${escapeHtml(player.id)}">${msg("game_unlock")}</button>` : ""}</span>`
+      : roomMode && !mine
+        ? otherPlayerStatus(player.locked)
+        : player.locked
+          ? `<span class="p-table-round"><button class="locked-pill" type="button" data-guess="${escapeHtml(player.id)}" ${state.phase !== "guessing" || isTesting() ? "disabled" : ""}>🔒 ${msg("game_locked_in")} <small>${msg("game_change")}</small></button>${roomMode ? `<button class="room-unlock" type="button" data-unlock="${escapeHtml(player.id)}" ${isTesting() ? "disabled" : ""}>${msg("game_unlock")}</button>` : ""}</span>`
+          : `<button class="guess-button" type="button" data-guess="${escapeHtml(player.id)}" ${state.phase !== "guessing" || isTesting() ? "disabled" : ""}>${msg("game_guess")}</button>`;
+  return `<tr class="${revealed && raceWinners(state.history.at(-1)?.scores ?? []).has(player.id) ? "is-winner" : ""}" style="--card-index:${index}">
     <td class="p-pos">${medal}${formatNumber(index + 1, locale)}</td>
     <td><span class="p-emoji">${escapeHtml(player.emoji)}</span><span class="p-name">${escapeHtml(player.name)}</span>${playerRoleMarkup(player)}</td>
     <td>${revealed ? (player.guess.down === null ? msg("game_no_guess") : `${formatNumber(player.guess.down, locale)} Mbps`) : msg("game_hidden")}</td>
@@ -525,7 +631,10 @@ function renderPlayers() {
     button.addEventListener("click", () => {
       const id = button.dataset.unlock ?? "";
       if (roomMode) {
-        store.send({ type: "unlock", id });
+        if (store.send({ type: "unlock", id })) {
+          raceLockFractions.delete(id);
+          pendingRaceLockFractions.delete(id);
+        }
       } else {
         state = unlockGuess(state, id);
         persist();
@@ -560,8 +669,9 @@ function renderWinner() {
   }
   const scores = state.history.at(-1)?.scores ?? [];
   const guessedScores = scores.filter((score) => score.miss !== null);
+  const winnerIds = raceWinners(scores);
   const winners = scores
-    .filter((score) => score.place === 1)
+    .filter((score) => winnerIds.has(score.id))
     .flatMap((score) => {
       const player = state.players.find(
         (candidate) => candidate.id === score.id,
@@ -610,7 +720,89 @@ function renderWinner() {
   banner.hidden = false;
 }
 
+function renderRaceBreakdown() {
+  const card = $<HTMLElement>("[data-race-breakdown]");
+  const latest = state.history.at(-1);
+  const scores = latest?.scores ?? [];
+  if (
+    !latest ||
+    !isRevealed() ||
+    !scores.some((score) => score.basePoints !== undefined)
+  ) {
+    card.hidden = true;
+    card.innerHTML = "";
+    return;
+  }
+  const trackPlayers = scores
+    .filter((score) => score.timingBonus !== undefined)
+    .map((score) => {
+      const player = state.players.find(
+        (candidate) => candidate.id === score.id,
+      );
+      if (!player) return null;
+      const position = Math.max(0, Math.min(1, (score.timingBonus! - 0.5) * 2));
+      return { player, score, position };
+    })
+    .filter((marker) => marker !== null)
+    .sort((a, b) => a.position - b.position);
+  let clusterPosition: number | null = null;
+  let labelLane = 0;
+  const markers = trackPlayers
+    .map(({ player, score, position }) => {
+      if (clusterPosition !== null && position - clusterPosition <= 0.12)
+        labelLane += 1;
+      else labelLane = 0;
+      clusterPosition = position;
+      const multiplier = formatNumber(score.timingBonus!, locale, {
+        maximumFractionDigits: 2,
+      });
+      const label = `${player.name} · ×${multiplier}`;
+      return `<span class="race-track-marker${position < 0.15 ? " is-near-start" : position > 0.85 ? " is-near-finish" : ""}" style="left:${position * 100}%;--race-label-offset:${labelLane * 24}px" aria-label="${escapeHtml(label)}"><span class="race-track-marker-icon" aria-hidden="true">${escapeHtml(player.emoji)}</span><b class="race-track-label" aria-hidden="true">${escapeHtml(label)}</b></span>`;
+    })
+    .join("");
+  const rows = scores
+    .map((score) => {
+      const player = state.players.find(
+        (candidate) => candidate.id === score.id,
+      );
+      if (!player) return "";
+      const noGuess = score.miss === null;
+      const guess = noGuess
+        ? msg("race_no_guess")
+        : `${formatNumber(player.guess.down ?? 0, locale)} / ${formatNumber(player.guess.up ?? 0, locale)}`;
+      const accuracyDetail = msg("race_accuracy_breakdown", {
+        place: formatNumber(score.placePoints, locale),
+        bonus: formatNumber(score.bonus, locale),
+      });
+      return `<tr class="${raceWinners(scores).has(score.id) ? "is-winner" : ""}">
+        <th scope="row">${score.place === 1 ? "🥇 " : score.place === 2 ? "🥈 " : score.place === 3 ? "🥉 " : ""}${escapeHtml(player.emoji)} ${escapeHtml(player.name)}</th>
+        <td data-label="${escapeHtml(msg("race_guess"))}">${escapeHtml(guess)}</td>
+        <td data-label="${escapeHtml(msg("race_average_miss"))}">${noGuess ? "–" : `${formatNumber(score.miss! * 100, locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`}</td>
+        <td data-label="${escapeHtml(msg("race_accuracy"))}">${formatNumber(score.basePoints ?? 0, locale)}<small>${accuracyDetail}</small></td>
+        <td data-label="${escapeHtml(msg("race_timing"))}">${score.timingBonus === undefined ? msg("race_no_guess") : `<span class="room-status-pill race-timing-pill">×${formatNumber(score.timingBonus, locale, { maximumFractionDigits: 2 })}</span>`}</td>
+        <td data-label="${escapeHtml(msg("race_round_total"))}"><b>${formatNumber(score.total, locale)}</b></td>
+      </tr>`;
+    })
+    .join("");
+  card.innerHTML = `<header class="race-breakdown-head"><h2 id="race-breakdown-heading">${msg("race_breakdown_title")}</h2><p>${msg(
+    "race_actual_speeds",
+    {
+      down: formatNumber(latest.actual.down, locale),
+      up: formatNumber(latest.actual.up, locale),
+    },
+  )}</p></header>
+    <div class="race-finish-track" role="img" aria-label="${msg("race_start_scale")} — ${msg("race_finish_scale")}">
+      <span class="race-track-line" aria-hidden="true"></span>${markers}
+      <span class="race-track-start">${msg("race_start_scale")}</span><span class="race-track-finish">${msg("race_finish_scale")}</span>
+    </div>
+    <div class="race-table-wrap"><table class="race-table"><thead><tr>
+      <th>${msg("race_player")}</th><th>${msg("race_guess")}</th><th>${msg("race_average_miss")}</th><th>${msg("race_accuracy")}</th><th>${msg("race_timing")}</th><th>${msg("race_round_total")}</th>
+    </tr></thead><tbody>${rows}</tbody></table></div>`;
+  card.hidden = false;
+}
+
 function setResults() {
+  if (raceTestActive) return;
   if (
     !isRevealed() &&
     (state.phase === "results" || state.phase === "champion")
@@ -792,6 +984,7 @@ function syncControls() {
   const host = isRoomHost();
   const canRun = !roomMode || canRunRoomTest();
   const roomView = roomMode ? getRoomView() : null;
+  const raceMode = roomView?.race === true;
   const assignedTester =
     roomView?.testerId === null || roomView?.testerId === undefined
       ? undefined
@@ -802,10 +995,11 @@ function syncControls() {
   const lockedCount = state.players.filter((player) => player.locked).length;
   const allGuessed =
     state.players.length > 0 && lockedCount === state.players.length;
-  const waitingForGuesses = guessing && !allGuessed && !devMode;
-  const waitingForGuess = roomMode && canRun && guessing && !lockedGuess;
+  const waitingForGuesses = guessing && !allGuessed && !devMode && !raceMode;
+  const waitingForGuess =
+    roomMode && canRun && guessing && !lockedGuess && !raceMode;
   startButton.disabled =
-    (!devMode && (!guessing || !lockedGuess)) || runInProgress;
+    (!devMode && (!guessing || (!lockedGuess && !raceMode))) || runInProgress;
   startButton.hidden =
     !revealPending &&
     ((roomMode && !canRun) ||
@@ -856,12 +1050,14 @@ function syncControls() {
         ? msg("game_testing")
         : isRevealed()
           ? msg("game_round_complete")
-          : allGuessed
+          : raceMode && guessing
             ? msg("game_start_test")
-            : msg("home_guesses_in", {
-                done: formatNumber(lockedCount, locale),
-                total: formatNumber(state.players.length, locale),
-              });
+            : allGuessed
+              ? msg("game_start_test")
+              : msg("home_guesses_in", {
+                  done: formatNumber(lockedCount, locale),
+                  total: formatNumber(state.players.length, locale),
+                });
   $<HTMLSpanElement>("[data-phase-text]").textContent = revealPending
     ? msg("home_drumroll")
     : devMode
@@ -964,6 +1160,7 @@ function render() {
     : msg("home_team_family");
   renderPlayers();
   renderWinner();
+  renderRaceBreakdown();
   $<HTMLSpanElement>("[data-round-label]").textContent = currentRoundLabel();
   document.documentElement.dataset.phase = state.history.length
     ? "done"
@@ -1062,7 +1259,7 @@ function renderGuessPicks() {
 }
 
 function openGuess(id: string) {
-  if (state.phase !== "guessing") return;
+  if (state.phase !== "guessing" && !raceTestActive) return;
   const player = state.players.find((candidate) => candidate.id === id);
   if (!player || !isMine(player)) return;
   activePlayerId = player.id;
@@ -1108,6 +1305,13 @@ function setPhase(phase: Phase, bytes?: number) {
         : msg("home_download");
   $<HTMLSpanElement>("[data-unit]").textContent =
     phase === "ping" ? "ms" : "Mbps";
+  if (raceTestActive) {
+    $<HTMLSpanElement>("[data-mode]").textContent = msg("race_readout");
+    $<HTMLSpanElement>("[data-unit]").textContent = msg(
+      "race_hidden_until_finish",
+    );
+    $<HTMLSpanElement>("[data-live]").textContent = "?";
+  }
   const phaseData = phaseText(phase, bytes);
   const label = msg(`game_phase_${phaseData.phase}` as Parameters<typeof t>[0]);
   $<HTMLSpanElement>("[data-phase-text]").textContent =
@@ -1211,6 +1415,18 @@ function applyRoomView(view: RoomView) {
     history: view.history,
     isRoomHost: view.isHost,
   };
+  if (view.phase !== "testing") {
+    pendingRaceLockFractions.clear();
+    raceLockFractions.clear();
+  } else {
+    for (const player of view.players) {
+      const fraction = pendingRaceLockFractions.get(player.id);
+      if (player.mine && player.locked && fraction !== undefined) {
+        raceLockFractions.set(player.id, fraction);
+        pendingRaceLockFractions.delete(player.id);
+      }
+    }
+  }
   if (revealActual) revealPending = true;
   if (
     previousPhase === "testing" &&
@@ -1220,10 +1436,24 @@ function applyRoomView(view: RoomView) {
   )
     activeRoomTestController?.abort();
   if (view.phase === "testing") {
+    raceTestActive = view.race === true;
+    if (raceTestActive && raceProgressOverride === null)
+      raceProgressOverride = 0;
+    if (!raceTestActive) raceProgressOverride = null;
+    if (raceTestActive) {
+      $<HTMLSpanElement>("[data-mode]").textContent = msg("race_readout");
+      $<HTMLSpanElement>("[data-unit]").textContent = msg(
+        "race_hidden_until_finish",
+      );
+      $<HTMLSpanElement>("[data-live]").textContent = "?";
+      renderGauge();
+    }
     if (previousPhase !== "testing" && !view.canRunTest)
       playCue("start", activeTheme, state.settings.sound);
     setRemoteTesting(true);
   } else {
+    raceTestActive = false;
+    raceProgressOverride = null;
     setRemoteTesting(false);
     if (previousPhase !== "champion" && view.phase === "champion")
       playCue("champion", activeTheme, state.settings.sound);
@@ -1257,10 +1487,18 @@ function applyRoomProgress(progress: {
     playCue("phase", activeTheme, state.settings.sound);
     if (progress.phase === "up") setGauge(0);
   }
-  if (progress.step !== undefined && progress.steps !== undefined)
+  if (progress.step !== undefined && progress.steps !== undefined) {
     setProgress(progress.step, progress.steps);
+    if (raceTestActive)
+      raceProgressOverride = raceFraction(progress.step, progress.steps);
+  }
   if (progress.phase === "ping") setPhase("ping");
   else setPhase(progress.phase, progress.bytes);
+  if (raceTestActive) {
+    renderGauge();
+    renderPlayers();
+    return;
+  }
   if (progress.mbps !== undefined) setGauge(progress.mbps);
   if (progress.pingMs !== undefined) setGauge(progress.pingMs);
   playCue(
@@ -1273,14 +1511,17 @@ function applyRoomProgress(progress: {
 
 async function startTest() {
   const devRun = isDevMode();
+  const raceRun = roomMode && isRaceEnabled();
   if (roomMode && (!canRunRoomTest() || state.phase !== "guessing")) return;
   if (
     runInProgress ||
-    (!devRun && !state.players.some((player) => player.locked))
+    (!devRun && !state.players.some((player) => player.locked) && !raceRun)
   )
     return;
   const roomRunController = roomMode ? new AbortController() : null;
   if (roomMode && !store.send({ type: "start" })) return;
+  raceTestActive = raceRun;
+  raceProgressOverride = raceRun ? 0 : null;
   if (roomRunController) activeRoomTestController = roomRunController;
   runInProgress = true;
   lastSpeedPhase = null;
@@ -1294,7 +1535,7 @@ async function startTest() {
   }
   playCue("start", activeTheme, state.settings.sound);
   render();
-  if (!devRun) {
+  if (!devRun && !raceRun) {
     setResultText("ping", undefined);
     setResultText("down", undefined);
     setResultText("up", undefined);
@@ -1332,18 +1573,23 @@ async function startTest() {
           if (lastSpeedPhase !== update.phase) {
             lastSpeedPhase = update.phase;
             playCue("phase", activeTheme, state.settings.sound);
-            if (update.phase === "up") setGauge(0);
+            if (update.phase === "up" && !raceTestActive) setGauge(0);
           }
           if (update.bytes !== undefined) currentBytes = update.bytes;
           else if (update.phase === "ping") currentBytes = undefined;
           if (update.steps !== undefined) steps = update.steps;
           setProgress(update.step, steps);
           setPhase(update.phase, currentBytes);
+          if (raceTestActive) {
+            raceProgressOverride = raceFraction(update.step, steps);
+            renderGauge();
+            renderPlayers();
+          }
         }
-        if (update.mbps !== undefined) setGauge(update.mbps);
-        if (update.downloadMbps !== undefined && !devRun)
+        if (update.mbps !== undefined && !raceTestActive) setGauge(update.mbps);
+        if (update.downloadMbps !== undefined && !devRun && !raceTestActive)
           setResultText("down", update.downloadMbps);
-        if (update.pingMs !== undefined) {
+        if (update.pingMs !== undefined && !raceTestActive) {
           setGauge(update.pingMs);
           if (!devRun) setResultText("ping", update.pingMs);
         }
@@ -1367,7 +1613,7 @@ async function startTest() {
           "tick",
           activeTheme,
           state.settings.sound,
-          gaugePosition(update.mbps ?? update.pingMs ?? 0),
+          raceTestActive ? 0 : gaugePosition(update.mbps ?? update.pingMs ?? 0),
         );
       },
       devRun
@@ -1739,6 +1985,8 @@ guessForm.addEventListener("submit", (event) => {
       })
     )
       return;
+    if (isRaceEnabled() && raceTestActive)
+      pendingRaceLockFractions.set(activePlayerId, raceProgressOverride ?? 0);
   } else {
     state = lockGuess(state, activePlayerId, guess);
     persist();
@@ -1750,7 +1998,7 @@ guessForm.addEventListener("submit", (event) => {
 
 startButton.addEventListener("click", () => {
   const message =
-    !isDevMode() && state.phase === "guessing"
+    !isDevMode() && state.phase === "guessing" && !isRaceEnabled()
       ? pendingGuessers(state.players).length
         ? msg("game_missing_guesses", {
             names: pendingGuessers(state.players)

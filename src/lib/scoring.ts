@@ -26,6 +26,8 @@ export interface PlayerRoundScore {
   placePoints: number;
   bonus: number;
   total: number;
+  basePoints?: number;
+  timingBonus?: number;
 }
 
 export const DEFAULT_SCORING_SETTINGS: ScoringSettings = {
@@ -119,4 +121,45 @@ export function scoreRound(
     [...ranked, ...excluded].map((result) => [result.id, result]),
   );
   return players.map(({ id }) => byId.get(id)!);
+}
+
+export function applyRaceTiming(
+  scores: PlayerRoundScore[],
+  players: { id: string; guessedAt?: number | null }[],
+  raceStartedAt: number | undefined,
+  endedAt: number,
+): PlayerRoundScore[] {
+  const guessedAtById = new Map(
+    players.map((player) => [player.id, player.guessedAt]),
+  );
+
+  return scores.map((score) => {
+    const hasGuess = score.miss !== null;
+    const basePoints = score.placePoints + score.bonus * 10;
+    if (!hasGuess)
+      return { ...score, basePoints: 0, total: 0, timingBonus: undefined };
+
+    const guessedAt = guessedAtById.get(score.id);
+    let timingBonus = 0.5;
+    if (
+      raceStartedAt !== undefined &&
+      typeof guessedAt === "number" &&
+      Number.isFinite(guessedAt) &&
+      guessedAt >= raceStartedAt
+    ) {
+      const duration = endedAt - raceStartedAt;
+      const fraction =
+        duration === 0
+          ? 1
+          : Math.max(0, Math.min(1, (guessedAt - raceStartedAt) / duration));
+      timingBonus = 0.5 + 0.5 * fraction;
+    }
+
+    return {
+      ...score,
+      basePoints,
+      timingBonus,
+      total: Math.round(basePoints * timingBonus),
+    };
+  });
 }
