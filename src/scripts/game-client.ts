@@ -339,6 +339,7 @@ function applyGaugeProgress(gauge: HTMLElement, progress: number) {
 function initializeGauge() {
   const ticksGroup = $<SVGGElement>("[data-ticks]");
   const ticks = [0, 5, 10, 25, 50, 100, 250, 500, 1000];
+  const GAUGE_LABEL_RADIUS = 182;
   const cx = Number(ticksGroup.dataset.cx);
   const cy = Number(ticksGroup.dataset.cy);
   const start = Number(ticksGroup.dataset.start);
@@ -364,7 +365,7 @@ function initializeGauge() {
 
     if (!major) continue;
     const value = ticks[index / 5];
-    const [x, y] = point(angle, 190);
+    const [x, y] = point(angle, GAUGE_LABEL_RADIUS);
     const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
     text.setAttribute("x", String(x));
     text.setAttribute("y", String(y));
@@ -382,7 +383,7 @@ function initializeGauge() {
     { progress: 1, label: msg("race_gauge_finish") },
   ];
   for (const tick of raceTicks) {
-    const [x, y] = point(start + sweep * tick.progress, 190);
+    const [x, y] = point(start + sweep * tick.progress, GAUGE_LABEL_RADIUS);
     const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
     text.setAttribute("x", String(x));
     text.setAttribute("y", String(y));
