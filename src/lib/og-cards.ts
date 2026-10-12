@@ -184,7 +184,15 @@ export function ogSlug(pathname: string): string {
 export function ogCardFor(pathname: string): OgCard {
   const path = pathname.replace(/^\/+|\/+$/g, "");
   const normalizedPath = path ? `/${path}/` : "/";
-  return ogCards.find((card) => card.path === normalizedPath) ?? ogCards[0]!;
+  return (
+    ogCards.find((card) => card.path === normalizedPath) ??
+    ogCards
+      .filter(
+        (card) => card.path !== "/" && normalizedPath.startsWith(card.path),
+      )
+      .sort((a, b) => b.path.length - a.path.length)[0] ??
+    ogCards[0]!
+  );
 }
 
 export function ogImagePath(pathname: string): string {

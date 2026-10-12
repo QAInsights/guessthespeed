@@ -100,4 +100,25 @@ for (const entry of await readdir(DIST, { withFileTypes: true })) {
   written += 1;
 }
 if (written === 0) throw new Error("No Markdown pages were written");
+
+const MARKER = "<!-- speed-school-articles -->";
+const llmsPath = join(DIST, "llms.txt");
+const llms = await readFile(llmsPath, "utf8");
+if (!llms.includes(MARKER)) throw new Error(`${llmsPath} is missing ${MARKER}`);
+const entries = JSON.parse(
+  await readFile(join(DIST, "speed-school", "search.json"), "utf8"),
+);
+const byTopic = Map.groupBy(entries, (entry) => entry.category);
+const grouped = [...byTopic]
+  .map(
+    ([category, list]) =>
+      `### ${category}\n\n${list
+        .map(
+          (entry) =>
+            `- [${entry.title}](${SITE}${entry.path}) ([Markdown](${SITE}${entry.path.slice(0, -1)}.md)): ${entry.excerpt}`,
+        )
+        .join("\n")}`,
+  )
+  .join("\n\n");
+await writeFile(llmsPath, llms.replace(MARKER, grouped));
 console.log(`build-markdown: wrote ${written} Markdown pages`);
