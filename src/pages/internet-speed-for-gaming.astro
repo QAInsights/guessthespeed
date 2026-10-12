@@ -1,5 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
+import ArticleTools from '../components/ArticleTools.astro';
 import '../styles/site.css';
 import { downloadSeconds, formatDuration } from '../lib/convert';
 
@@ -90,13 +91,14 @@ const articleSchema = {
   schema={[articleSchema, faqSchema]}
 >
   <main class="wrap content-page">
-    <span class="round-banner">Speed school</span>
+    <a class="round-banner" href="/speed-school/">Speed School</a>
     <h1>How Much Internet Speed Do You Need for Gaming?</h1>
     <p class="lede">
       Short answer: for online multiplayer, a stable connection with low ping matters more than raw Mbps, and 25 Mbps or more is plenty for the match itself.
       Streaming a game is a different story. PlayStation recommends <strong>15 Mbps upload and download</strong> for Remote Play, Xbox Cloud Gaming
       suggests about <strong>20 Mbps</strong> on consoles and PCs, and GeForce NOW asks for <strong>25 Mbps</strong> for 1080p at 60 FPS.
     </p>
+    <ArticleTools path="/internet-speed-for-gaming/" />
     <article class="content-card stk">
       <p>
         Every time someone at home says "the game is lagging", the first reaction is to blame the internet plan. I have been there. I spent years in

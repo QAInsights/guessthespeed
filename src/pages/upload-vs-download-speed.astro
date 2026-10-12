@@ -1,5 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
+import ArticleTools from '../components/ArticleTools.astro';
 import '../styles/site.css';
 import { downloadSeconds, formatDuration } from '../lib/convert';
 import { DEV_USE_THRESHOLDS } from '../lib/devresult';
@@ -111,6 +112,7 @@ const articleSchema = {
       send data back out. Most homes need far more download, but video calls, live streams and cloud backups depend on upload, for example about
       <strong>2.5 Mbps up per person</strong> for a Teams video meeting and <strong>15 Mbps both ways</strong> for PlayStation Remote Play.
     </p>
+    <ArticleTools path="/upload-vs-download-speed/" />
     <article class="content-card stk">
       <p>
         When we play Guess the Speed at home, everyone shouts a download number. Nobody ever guesses the upload. Then the speed test finishes and the

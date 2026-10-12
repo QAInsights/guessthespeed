@@ -1,5 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
+import ArticleTools from '../components/ArticleTools.astro';
 import '../styles/site.css';
 
 const questions = [
@@ -55,12 +56,13 @@ const faqSchema = {
     <script type="application/ld+json" set:html={JSON.stringify(faqSchema)}></script>
   </Fragment>
   <main class="wrap content-page">
-    <span class="round-banner">Speed school</span>
+    <a class="round-banner" href="/speed-school/">Speed School</a>
     <h1>Internet speed 101</h1>
     <p class="lede">
       Speed labels stop looking like secret code once you know a few simple ideas. Let’s turn
       bits, bytes, ping, and Wi-Fi into friendly clues for your next Guess the Speed round.
     </p>
+    <ArticleTools path="/internet-speed-101/" />
     <article class="content-card stk">
       <h2>Bits, bytes, and the numbers on a plan</h2>
       <p>

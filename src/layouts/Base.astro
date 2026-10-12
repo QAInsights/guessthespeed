@@ -10,6 +10,7 @@ import Footer from "../components/Footer.astro";
 import HousePromo from "../components/HousePromo.astro";
 import ModeSwitch from "../components/ModeSwitch.astro";
 import { ogCardFor, ogImagePath } from "../lib/og-cards";
+import { ARTICLES } from "../lib/articles";
 import { type ThemeId } from "../lib/themes";
 import { LOCALE_INFO, localizedPath, type Locale } from "../lib/i18n";
 import { t } from "../lib/messages";
@@ -54,6 +55,11 @@ const canonical = new URL(
 const ogPath =
   translatedPage && locale !== "en" ? translatedPage : Astro.url.pathname;
 const ogCard = ogCardFor(ogPath);
+const markdownPath = ARTICLES.some(
+  (article) => article.path === Astro.url.pathname,
+)
+  ? `${Astro.url.pathname.slice(0, -1)}.md`
+  : undefined;
 const ogImageAlt = `${ogCard.line1} ${ogCard.line2}`;
 const ogImageUrl = `https://guessthespeed.com${ogImagePath(ogPath)}`;
 const beaconToken = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
@@ -290,6 +296,14 @@ const languageTargets: Record<Locale, string> = translatedPage
     <meta name="description" content={pageDescription} />
     {noindex && <meta name="robots" content="noindex" />}
     <link rel="canonical" href={canonical} />
+    {markdownPath && (
+      <link
+        rel="alternate"
+        type="text/markdown"
+        href={markdownPath}
+        title="Markdown version"
+      />
+    )}
     {translatedPage && (
       <>
         {(["en", "ta", "es"] as const).map((alternate) => (

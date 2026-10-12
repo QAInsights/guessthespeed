@@ -1,0 +1,555 @@
+---
+import { Icon } from 'astro-icon/components';
+import Base from '../layouts/Base.astro';
+import '../styles/site.css';
+import { ARTICLE_CATEGORIES, ARTICLES, type ArticleCategory } from '../lib/articles';
+import { ogCardFor } from '../lib/og-cards';
+import { readingMinutes } from '../lib/reading-time';
+
+const SITE = 'https://guessthespeed.com';
+const pageUrl = `${SITE}/speed-school/`;
+const description =
+  'Speed School is the Guess the Speed blog: plain-English, sourced guides to Mbps, ping, Wi-Fi and gaming speed, plus free tools and family game night ideas.';
+
+const categorySlug = (category: ArticleCategory) =>
+  category.toLowerCase().replace(/\s+/g, '-');
+
+const posts = ARTICLES.map((article) => ({
+  ...article,
+  slug: categorySlug(article.category),
+  icon: ogCardFor(article.path).icon,
+  minutes: readingMinutes(article.path),
+  date: new Date(`${article.published}T12:00:00Z`).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }),
+}));
+
+const categories = ARTICLE_CATEGORIES.map((category) => ({
+  category,
+  slug: categorySlug(category),
+  count: ARTICLES.filter((article) => article.category === category).length,
+}));
+
+const author = {
+  '@type': 'Person',
+  '@id': `${SITE}/#author`,
+  name: 'NaveenKumar Namachivayam',
+  url: 'https://qainsights.com',
+};
+
+const blogSchema = {
+  '@type': 'Blog',
+  '@id': `${pageUrl}#blog`,
+  name: 'Speed School',
+  url: pageUrl,
+  description,
+  inLanguage: 'en',
+  publisher: { '@type': 'Organization', name: 'Guess the Speed', url: `${SITE}/` },
+  blogPost: ARTICLES.map((article) => ({
+    '@type': 'BlogPosting',
+    headline: article.title,
+    description: article.excerpt,
+    url: `${SITE}${article.path}`,
+    datePublished: article.published,
+    author,
+  })),
+};
+
+const listSchema = {
+  '@type': 'ItemList',
+  name: 'Speed School articles',
+  numberOfItems: ARTICLES.length,
+  itemListElement: ARTICLES.map((article, index) => ({
+    '@type': 'ListItem',
+    position: index + 1,
+    url: `${SITE}${article.path}`,
+    name: article.title,
+  })),
+};
+---
+
+<Base
+  title="Speed School: Internet Speed Guides and Tools | Guess the Speed"
+  description={description}
+  breadcrumb="Speed School"
+  schema={[blogSchema, listSchema]}
+>
+  <main class="wrap content-page school-page">
+    <span class="round-banner">Speed School</span>
+    <h1>Speed School</h1>
+    <p class="lede">
+      Plain-English guides to <strong>Mbps, ping, Wi-Fi and gaming speed</strong>, free tools that
+      do the maths for you, and game night ideas for the whole family. Every number is sourced.
+    </p>
+
+    <form class="school-search" role="search" data-school-search hidden>
+      <label class="school-field">
+        <span class="sr">Search Speed School</span>
+        <Icon name="ph:magnifying-glass-bold" aria-hidden="true" />
+        <input
+          type="search"
+          name="q"
+          placeholder="Search articles, for example ping or Wi-Fi"
+          autocomplete="off"
+          enterkeyhint="search"
+          data-school-query
+        />
+      </label>
+      <div class="school-topics" role="group" aria-label="Filter by topic">
+        <button type="button" class="school-topic" data-topic="all" aria-pressed="true">
+          All <span>{ARTICLES.length}</span>
+        </button>
+        {
+          categories.map(({ category, slug, count }) => (
+            <button type="button" class="school-topic" data-topic={slug} aria-pressed="false">
+              {category} <span>{count}</span>
+            </button>
+          ))
+        }
+      </div>
+    </form>
+    <p class="school-status" aria-live="polite" data-school-status>
+      {ARTICLES.length} articles
+    </p>
+
+    <ol class="school-grid" data-school-grid>
+      {
+        posts.map((post) => (
+          <li
+            class="school-item"
+            data-category={post.slug}
+            data-search={`${post.title} ${post.excerpt} ${post.category}`.toLowerCase()}
+          >
+            <article class="school-card stk">
+              <div class={`school-art is-${post.slug}`} aria-hidden="true">
+                <span class="school-art-icon">
+                  <Icon name={post.icon} />
+                </span>
+              </div>
+              <div class="school-body">
+                <p class="school-meta">
+                  <span class="school-category">{post.category}</span>
+                  <time datetime={post.published}>{post.date}</time>
+                  <span>{post.minutes} min read</span>
+                </p>
+                <h2>
+                  <a href={post.path}>{post.title}</a>
+                </h2>
+                <p class="school-excerpt">{post.excerpt}</p>
+                <span class="school-more" aria-hidden="true">
+                  Read article <Icon name="ph:arrow-right-bold" />
+                </span>
+              </div>
+            </article>
+          </li>
+        ))
+      }
+    </ol>
+
+    <div class="school-empty" data-school-empty hidden>
+      <p>No articles match that search yet. Try "ping", "Wi-Fi" or "gaming".</p>
+      <button type="button" class="text-button" data-school-reset>Show all articles</button>
+    </div>
+
+    <div class="story-cta">
+      <a class="go" href="/">Play Guess the Speed</a>
+    </div>
+  </main>
+</Base>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('[data-school-search]');
+  const input = document.querySelector<HTMLInputElement>('[data-school-query]');
+  const grid = document.querySelector<HTMLElement>('[data-school-grid]');
+  const status = document.querySelector<HTMLElement>('[data-school-status]');
+  const empty = document.querySelector<HTMLElement>('[data-school-empty]');
+  const items = [...document.querySelectorAll<HTMLElement>('.school-item')];
+  const topics = [...document.querySelectorAll<HTMLButtonElement>('[data-topic]')];
+
+  const normalize = (value: string) =>
+    value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[^\p{L}\p{N}\s]/gu, '');
+
+  const params = new URLSearchParams(location.search);
+  let topic = topics.some((button) => button.dataset.topic === params.get('topic'))
+    ? params.get('topic')!
+    : 'all';
+  if (input) input.value = params.get('q') ?? '';
+
+  function apply() {
+    const terms = normalize(input?.value ?? '').split(/\s+/).filter(Boolean);
+    let shown = 0;
+    for (const item of items) {
+      const haystack = normalize(item.dataset.search ?? '');
+      const match =
+        (topic === 'all' || item.dataset.category === topic) &&
+        terms.every((term) => haystack.includes(term));
+      item.hidden = !match;
+      if (match) shown += 1;
+    }
+    for (const button of topics) {
+      button.setAttribute('aria-pressed', String(button.dataset.topic === topic));
+    }
+    grid?.classList.toggle('is-filtered', terms.length > 0 || topic !== 'all');
+    if (status) status.textContent = `${shown} ${shown === 1 ? 'article' : 'articles'}`;
+    if (empty) empty.hidden = shown > 0;
+
+    const next = new URLSearchParams();
+    if (input?.value.trim()) next.set('q', input.value.trim());
+    if (topic !== 'all') next.set('topic', topic);
+    const query = next.toString();
+    history.replaceState(null, '', query ? `?${query}` : location.pathname);
+  }
+
+  if (form) {
+    form.hidden = false;
+    form.addEventListener('submit', (event) => event.preventDefault());
+  }
+  input?.addEventListener('input', apply);
+  for (const button of topics) {
+    button.addEventListener('click', () => {
+      topic = button.dataset.topic ?? 'all';
+      apply();
+    });
+  }
+  document.querySelector('[data-school-reset]')?.addEventListener('click', () => {
+    if (input) input.value = '';
+    topic = 'all';
+    apply();
+    input?.focus();
+  });
+  apply();
+</script>
+
+<style>
+  .school-page {
+    max-width: 1180px;
+  }
+
+  .school-search {
+    display: grid;
+    gap: 14px;
+    margin-top: 28px;
+  }
+
+  .school-field {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: 640px;
+    min-height: var(--btn-h-lg);
+    padding: 0 18px;
+    border: var(--card-border) solid var(--ink);
+    border-radius: var(--r-pill);
+    background: var(--surface);
+    box-shadow: var(--btn-shadow);
+    color: var(--muted);
+  }
+
+  .school-field:focus-within {
+    outline: var(--focus-ring);
+    outline-offset: var(--focus-offset);
+  }
+
+  .school-field :global(svg) {
+    width: 20px;
+    height: 20px;
+    flex: none;
+  }
+
+  .school-field input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    background: transparent;
+    color: var(--ink);
+    font: inherit;
+    font-size: 17px;
+    font-weight: 600;
+  }
+
+  .school-field input:focus {
+    outline: none;
+  }
+
+  .school-field input::placeholder {
+    color: var(--muted);
+    opacity: 0.8;
+  }
+
+  .school-topics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .school-topic {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 38px;
+    padding: 0 14px;
+    border: var(--btn-border) solid var(--ink);
+    border-radius: var(--r-pill);
+    background: var(--surface);
+    color: var(--ink);
+    font: 800 14px/1 var(--font-display);
+    cursor: pointer;
+  }
+
+  .school-topic span {
+    color: var(--muted);
+    font-weight: 700;
+  }
+
+  .school-topic[aria-pressed='true'] {
+    background: var(--ink);
+    color: var(--surface);
+  }
+
+  .school-topic[aria-pressed='true'] span {
+    color: inherit;
+    opacity: 0.75;
+  }
+
+  .school-topic:focus-visible {
+    outline: var(--focus-ring);
+    outline-offset: var(--focus-offset);
+  }
+
+  .school-status {
+    margin: 18px 0 0;
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .school-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+    gap: 24px;
+    margin: 14px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .school-item[hidden] {
+    display: none;
+  }
+
+  .school-card {
+    position: relative;
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+    overflow: hidden;
+    transition:
+      transform 0.15s ease,
+      box-shadow 0.15s ease;
+  }
+
+  .school-card:hover,
+  .school-card:focus-within {
+    box-shadow: var(--card-shadow-raised);
+    transform: translate(-2px, -2px);
+  }
+
+  .school-art {
+    --art-a: var(--aurora-4);
+    --art-b: var(--aurora-3);
+
+    position: relative;
+    display: grid;
+    place-items: center;
+    aspect-ratio: 16 / 7;
+    border-bottom: var(--card-border) solid var(--ink);
+    background:
+      radial-gradient(circle at 18% 22%, color-mix(in oklab, #fff 35%, transparent), transparent 42%),
+      radial-gradient(circle at 85% 90%, color-mix(in oklab, var(--art-b) 70%, transparent), transparent 55%),
+      linear-gradient(135deg, var(--art-a), var(--art-b));
+  }
+
+  .school-art::after {
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      -45deg,
+      color-mix(in oklab, #fff 14%, transparent) 0 2px,
+      transparent 2px 18px
+    );
+    content: '';
+  }
+
+  .school-art.is-tools {
+    --art-a: var(--gauge-up-1);
+    --art-b: var(--gauge-up-2);
+  }
+
+  .school-art.is-game-night {
+    --art-a: var(--aurora-1);
+    --art-b: var(--aurora-2);
+  }
+
+  .school-art.is-classroom {
+    --art-a: var(--aurora-3);
+    --art-b: var(--aurora-2);
+  }
+
+  .school-art.is-behind-the-scenes {
+    --art-a: var(--aurora-5);
+    --art-b: var(--aurora-1);
+  }
+
+  .school-art-icon {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    width: 64px;
+    height: 64px;
+    place-items: center;
+    border: var(--card-border) solid var(--ink);
+    border-radius: 18px;
+    background: var(--surface);
+    box-shadow: var(--btn-shadow);
+    color: var(--ink);
+    transform: rotate(-4deg);
+  }
+
+  .school-art-icon :global(svg) {
+    width: 32px;
+    height: 32px;
+  }
+
+  .school-body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 10px;
+    padding: 20px 22px 22px;
+  }
+
+  .school-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 12px;
+    margin: 0;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .school-category {
+    padding: 3px 9px;
+    border: var(--btn-border) solid var(--ink);
+    border-radius: var(--r-pill);
+    background: var(--soft);
+    color: var(--ink);
+    font-weight: 800;
+  }
+
+  .school-body h2 {
+    margin: 0;
+    font-size: clamp(21px, 2.2vw, 25px);
+    line-height: 1.15;
+  }
+
+  .school-body h2 a {
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  .school-body h2 a::after {
+    position: absolute;
+    inset: 0;
+    content: '';
+  }
+
+  .school-body h2 a:focus-visible {
+    outline: none;
+  }
+
+  .school-card:has(h2 a:focus-visible) {
+    outline: var(--focus-ring);
+    outline-offset: var(--focus-offset);
+  }
+
+  .school-excerpt {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.55;
+  }
+
+  .school-more {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: auto;
+    padding-top: 6px;
+    color: var(--ink);
+    font-weight: 800;
+  }
+
+  .school-more :global(svg) {
+    width: 16px;
+    height: 16px;
+    transition: transform 0.15s ease;
+  }
+
+  .school-card:hover .school-more :global(svg) {
+    transform: translateX(3px);
+  }
+
+  .school-empty {
+    margin-top: 24px;
+    padding: 24px;
+    border: var(--card-border) dashed var(--ink);
+    border-radius: var(--r);
+    color: var(--muted);
+    font-weight: 700;
+    text-align: center;
+  }
+
+  .school-empty p {
+    margin: 0 0 8px;
+  }
+
+  @media (min-width: 980px) {
+    .school-grid:not(.is-filtered) .school-item:first-child {
+      grid-column: span 2;
+    }
+
+    .school-grid:not(.is-filtered) .school-item:first-child .school-card {
+      flex-direction: row;
+    }
+
+    .school-grid:not(.is-filtered) .school-item:first-child .school-art {
+      flex: 0 0 46%;
+      aspect-ratio: auto;
+      border-right: var(--card-border) solid var(--ink);
+      border-bottom: 0;
+    }
+
+    .school-grid:not(.is-filtered) .school-item:first-child h2 {
+      font-size: clamp(26px, 2.6vw, 32px);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .school-card,
+    .school-more :global(svg) {
+      transition: none;
+    }
+
+    .school-card:hover,
+    .school-card:focus-within {
+      transform: none;
+    }
+  }
+</style>

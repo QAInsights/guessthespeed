@@ -1,5 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
+import ArticleTools from '../components/ArticleTools.astro';
 import '../styles/site.css';
 
 const articleSchema = {
@@ -36,6 +37,7 @@ const articleSchema = {
     <span class="round-banner">Our story</span>
     <h1>How a living-room speed test became a family game</h1>
     <p class="lede">It started on a lazy evening with a TV, a speed test app and two kids who would not stop guessing. This is how that little ritual turned into guessthespeed.com.</p>
+    <ArticleTools path="/story/" />
     <article class="content-card stk">
       <h2>It started on the TV</h2>
       <p>I started my career in performance testing and moved into a developer role a long time ago, but the habits never left. Throughput, latency, percentiles, the works. So naturally, at home, the Speedtest app runs on our TV more often than it should. Is the Wi-Fi slow, or is it just the streaming app? Let me run a quick test.</p>

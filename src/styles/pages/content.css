@@ -224,3 +224,12 @@ html[lang="es"] .sec-head > h2 {
   font-weight: 800;
   transform: rotate(-2deg);
 }
+
+a.round-banner {
+  text-decoration: none;
+}
+
+a.round-banner:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
