@@ -1,8 +1,51 @@
 ---
 import Base from '../layouts/Base.astro';
-import { ACTIVITY_RATES, type ActivityId } from '../lib/speed-needs';
+import { ACTIVITY_RATES, recommendSpeed, type ActivityId } from '../lib/speed-needs';
+
+const noActivities: Record<ActivityId, number> = {
+  streams4k: 0,
+  streamsHd: 0,
+  callsHd: 0,
+  onlineGamers: 0,
+  largeDownloads: 0,
+  smartHomeDevices: 0,
+};
+const exampleHomes = [
+  {
+    home: 'One person streaming and on calls',
+    uses: '1 HD stream, 1 video call, 5 connected devices',
+    counts: { streamsHd: 1, callsHd: 1, smartHomeDevices: 5 },
+  },
+  {
+    home: 'Two people working from home',
+    uses: '2 video calls, 1 HD stream, 8 connected devices',
+    counts: { callsHd: 2, streamsHd: 1, smartHomeDevices: 8 },
+  },
+  {
+    home: 'Family of four',
+    uses: '2 4K streams, 1 HD stream, 1 video call, 10 connected devices',
+    counts: { streams4k: 2, streamsHd: 1, callsHd: 1, smartHomeDevices: 10 },
+  },
+  {
+    home: 'Busy home with a gamer',
+    uses: '2 4K streams, 2 HD streams, 2 video calls, 1 Remote Play gamer, 1 big download, 12 devices',
+    counts: {
+      streams4k: 2,
+      streamsHd: 2,
+      callsHd: 2,
+      onlineGamers: 1,
+      largeDownloads: 1,
+      smartHomeDevices: 12,
+    },
+  },
+].map((example) => ({ ...example, ...recommendSpeed({ ...noActivities, ...example.counts }) }));
+const familyOfFour = exampleHomes[2];
 
 const questions = [
+  {
+    question: 'How many Mbps do I need for a family of four?',
+    answer: `A family of four with two 4K streams, one HD stream, one video call and ten connected devices needs about ${familyOfFour.down} Mbps down and ${familyOfFour.up} Mbps up with headroom. That rounds to a ${familyOfFour.tierDown} Mbps download plan with ${familyOfFour.tierUp} Mbps upload.`,
+  },
   {
     question: 'How does this household speed calculator work?',
     answer:
@@ -22,6 +65,11 @@ const questions = [
     question: 'Does online gaming need a lot of upload speed?',
     answer:
       'Ordinary online multiplayer and game streaming are not the same. The gaming step uses PlayStation Remote Play guidance of 15 Mbps in both directions for a better experience; individual games can need less or more.',
+  },
+  {
+    question: 'How much internet speed does PlayStation Remote Play need?',
+    answer:
+      'PlayStation recommends 15 Mbps upload and download for a better Remote Play experience. Count it on top of everything else running at the same time; the Online gamers step in the calculator adds it for you.',
   },
   {
     question: 'Why does the calculator reserve speed for a large download?',
@@ -116,8 +164,8 @@ const activities: {
 ---
 
 <Base
-  title="How Much Internet Speed Do I Need? Household Speed Calculator"
-  description="Count the streams, calls, games, downloads, and connected devices happening at once to estimate a household download and upload plan."
+  title="How Much Internet Speed Do I Need? Mbps Calculator for Your Home"
+  description="Find out how many Mbps your home needs. Count the streams, calls, games, downloads, and devices running at once to get a download and upload plan estimate."
   breadcrumb="Speed calculator"
   schema={[faqSchema, calculatorSchema]}
 >
@@ -130,6 +178,35 @@ const activities: {
       the plan target to 100 Mbps down and 25 Mbps up.
     </p>
     <article class="content-card stk">
+      <h2>How many Mbps do I need?</h2>
+      <p>
+        It depends on how many things run at the same time, not on how many people live in the
+        house. These example homes use the same rates and 25% headroom as the calculator below.
+      </p>
+      <div class="guide-table-wrap" role="region" aria-label="Example Mbps needs by household" tabindex="0">
+        <table class="guide-table">
+          <caption>Estimated need with headroom, and the plan tier it rounds up to</caption>
+          <thead>
+            <tr>
+              <th scope="col">Household</th>
+              <th scope="col">Running at once</th>
+              <th scope="col">Need (down / up)</th>
+              <th scope="col">Plan to look for</th>
+            </tr>
+          </thead>
+          <tbody>
+            {exampleHomes.map(({ home, uses, down, up, tierDown, tierUp }) => (
+              <tr>
+                <th scope="row">{home}</th>
+                <td>{uses}</td>
+                <td>{down} / {up} Mbps</td>
+                <td>{tierDown} / {tierUp} Mbps</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
       <h2>What is everyone doing at the same time?</h2>
       <p>
         Count the activities that overlap during a busy moment. The calculator adds their

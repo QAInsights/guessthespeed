@@ -1,5 +1,17 @@
 ---
 import Base from '../layouts/Base.astro';
+import { downloadSeconds, formatDuration, mbpsToMBps } from '../lib/convert';
+
+const GB = 1_000_000_000;
+const formatRate = (mbps: number) => `${Number(mbpsToMBps(mbps)?.toFixed(3))} MB/s`;
+const formatTime = (sizeBytes: number, mbps: number) =>
+  formatDuration(downloadSeconds(sizeBytes, mbps) ?? 0) ?? '';
+const commonSpeeds = [10, 25, 50, 100, 200, 300, 500, 1000].map((mbps) => ({
+  label: `${mbps.toLocaleString('en-US')} Mbps`,
+  rate: formatRate(mbps),
+  oneGb: formatTime(GB, mbps),
+  fiftyGb: formatTime(50 * GB, mbps),
+}));
 
 const questions = [
   {
@@ -11,6 +23,10 @@ const questions = [
     question: 'How many MB/s is 100 Mbps?',
     answer:
       'At the full line rate, 100 Mbps is 12.5 MB/s. Real download programs can show less because of network overhead, server speed, Wi-Fi, and other activity.',
+  },
+  {
+    question: 'How many MB/s is 300 Mbps?',
+    answer: `300 Mbps is ${formatRate(300)} at the full line rate. A 1 GB file takes about ${formatTime(GB, 300)} at that speed, and about ${formatTime(GB, 300 * 0.9)} at a more realistic 90% efficiency.`,
   },
   {
     question: 'Why does Steam or my browser show MB/s?',
@@ -57,7 +73,7 @@ const calculatorSchema = {
 
 <Base
   title="Mbps to MB/s Converter (and Download Time Calculator)"
-  description="Convert Mbps to MB/s and Gbps, then estimate a file download time at full speed and with a realistic 90% efficiency."
+  description="Convert Mbps to MB/s: 100 Mbps is 12.5 MB/s and 300 Mbps is 37.5 MB/s. Then estimate how long any file takes to download at full speed and at a realistic 90%."
   breadcrumb="Mbps to MB/s"
   schema={[faqSchema, calculatorSchema]}
 >
@@ -192,21 +208,31 @@ const calculatorSchema = {
         lists the decimal and binary definitions.
       </p>
 
-      <h2>Which Mbps speeds are useful to compare?</h2>
+      <h2>100 Mbps, 300 Mbps and other common speeds in MB/s</h2>
+      <p>
+        Here are the plan speeds people ask about most, with the time a 1 GB file and a 50 GB
+        game take at the full line rate.
+      </p>
       <div class="guide-table-wrap" role="region" aria-label="Mbps to megabytes per second conversions" tabindex="0">
         <table class="guide-table">
           <caption>Line-rate conversion using one byte per eight bits</caption>
           <thead>
-            <tr><th scope="col">Internet speed</th><th scope="col">Equivalent file rate</th></tr>
+            <tr>
+              <th scope="col">Internet speed</th>
+              <th scope="col">Equivalent file rate</th>
+              <th scope="col">1 GB download</th>
+              <th scope="col">50 GB download</th>
+            </tr>
           </thead>
           <tbody>
-            <tr><th scope="row">10 Mbps</th><td>1.25 MB/s</td></tr>
-            <tr><th scope="row">25 Mbps</th><td>3.125 MB/s</td></tr>
-            <tr><th scope="row">50 Mbps</th><td>6.25 MB/s</td></tr>
-            <tr><th scope="row">100 Mbps</th><td>12.5 MB/s</td></tr>
-            <tr><th scope="row">300 Mbps</th><td>37.5 MB/s</td></tr>
-            <tr><th scope="row">500 Mbps</th><td>62.5 MB/s</td></tr>
-            <tr><th scope="row">1,000 Mbps</th><td>125 MB/s</td></tr>
+            {commonSpeeds.map(({ label, rate, oneGb, fiftyGb }) => (
+              <tr>
+                <th scope="row">{label}</th>
+                <td>{rate}</td>
+                <td>{oneGb}</td>
+                <td>{fiftyGb}</td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
