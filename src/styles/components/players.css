@@ -1,0 +1,633 @@
+.winner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 18px;
+  padding: 12px 16px;
+  border: var(--card-border) solid var(--ink);
+  border-radius: var(--r);
+  background: var(--accent);
+  box-shadow: var(--card-shadow);
+  color: var(--on-accent);
+  font-weight: 700;
+  text-align: left;
+  animation: pop 0.4s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+
+.wb-emoji {
+  font-size: 30px;
+}
+
+.error-note {
+  margin: 14px auto 0;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+@keyframes pop {
+  from {
+    transform: scale(0.7);
+    opacity: 0;
+  }
+}
+
+.sec-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 10px 0 18px;
+}
+
+.sec-head h2 {
+  margin: 0;
+  font-size: clamp(30px, 4vw, 44px);
+  line-height: 1;
+}
+
+.section-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.seg {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  border: var(--btn-border) solid var(--ink);
+  border-radius: var(--btn-radius);
+  background: var(--surface);
+  box-shadow: var(--btn-shadow);
+}
+
+.seg button {
+  display: inline-flex;
+  min-height: var(--btn-h);
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 10px;
+  border: var(--btn-border) solid transparent;
+  border-radius: var(--btn-radius);
+  background: transparent;
+  color: var(--ink);
+  font:
+    800 14px/1 "Bricolage Grotesque Variable",
+    sans-serif;
+}
+
+.seg button[aria-pressed="true"] {
+  border-color: var(--ink);
+  background: var(--accent);
+  box-shadow: none;
+  color: var(--on-accent);
+}
+
+.ghost,
+.link-button {
+  display: inline-flex;
+  min-height: var(--btn-h);
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
+  border: 0;
+  border-radius: var(--btn-radius);
+  background: transparent;
+  box-shadow: none;
+  color: var(--muted);
+  font:
+    800 14px/1 "Bricolage Grotesque Variable",
+    sans-serif;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+[data-players] {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  align-items: start;
+  gap: 20px;
+}
+
+.p-card {
+  position: relative;
+  padding: 16px;
+  border: var(--card-border) solid var(--ink);
+  border-radius: var(--r);
+  --card-fill: var(--surface);
+  background: var(--surface);
+  box-shadow: var(--card-shadow);
+}
+
+.p-card.is-winner {
+  --card-fill: var(--accent);
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+@property --aurora-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+html:not([data-aurora="0"]) .has-aurora {
+  border-color: transparent;
+  background:
+    linear-gradient(var(--card-fill), var(--card-fill)) padding-box,
+    conic-gradient(
+        from calc(var(--aurora-start) + var(--aurora-angle)),
+        var(--aurora-a),
+        transparent 16%,
+        var(--aurora-b) 33%,
+        transparent 50%,
+        var(--aurora-c) 66%,
+        transparent 83%,
+        var(--aurora-a)
+      )
+      border-box,
+    linear-gradient(
+        color-mix(in srgb, var(--ink) 28%, var(--card-fill)),
+        color-mix(in srgb, var(--ink) 28%, var(--card-fill))
+      )
+      border-box;
+  box-shadow:
+    5px 5px 0 var(--shadow),
+    0 0 18px -6px color-mix(in srgb, var(--aurora-a) 55%, transparent);
+  animation: aurora-drift var(--aurora-dur) linear var(--aurora-delay) infinite;
+}
+
+html:not([data-aurora="0"]) .is-winner.has-aurora {
+  background:
+    linear-gradient(var(--card-fill), var(--card-fill)) padding-box,
+    conic-gradient(
+        from calc(var(--aurora-start) + var(--aurora-angle)),
+        var(--aurora-a),
+        transparent 16%,
+        var(--aurora-b) 33%,
+        transparent 50%,
+        var(--aurora-c) 66%,
+        transparent 83%,
+        var(--aurora-a)
+      )
+      border-box,
+    linear-gradient(var(--aurora-b), var(--aurora-b)) border-box;
+  box-shadow:
+    5px 5px 0 var(--shadow),
+    0 0 26px -4px color-mix(in srgb, var(--aurora-b) 70%, transparent);
+}
+
+@keyframes aurora-drift {
+  to {
+    --aurora-angle: 360deg;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html:not([data-aurora="0"]) .has-aurora {
+    animation: none;
+  }
+}
+
+.p-card.is-winner .p-results {
+  color: var(--on-accent);
+}
+
+.p-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.p-emoji {
+  font-size: 42px;
+  line-height: 1;
+}
+
+.p-name {
+  margin: 0;
+  font:
+    800 24px/1 "Bricolage Grotesque Variable",
+    sans-serif;
+  font-variation-settings: "wdth" 80;
+}
+
+.p-role {
+  font-size: 13px;
+  font-weight: 700;
+  opacity: 0.75;
+}
+
+.classroom-session-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 18px;
+  padding: 12px 14px;
+  border: 2.5px solid var(--ink);
+  border-radius: var(--r);
+  background: var(--surface);
+  box-shadow: 4px 4px 0 var(--shadow);
+}
+
+.classroom-session-chip {
+  display: inline-flex;
+  max-width: 100%;
+  min-height: var(--btn-h);
+  align-items: center;
+  margin: 0;
+  padding: 0 12px;
+  border: var(--btn-border) solid var(--ink);
+  border-radius: var(--btn-radius);
+  background: var(--surface);
+  color: var(--ink);
+  font:
+    800 14px/1 "Bricolage Grotesque Variable",
+    sans-serif;
+}
+
+.classroom-session-copy {
+  min-width: 0;
+}
+
+.classroom-session-note {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.classroom-session-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.p-score {
+  margin-left: auto;
+  text-align: right;
+  line-height: 1;
+}
+
+.p-score b {
+  display: block;
+  font-size: 38px;
+}
+
+.p-score span {
+  font-size: 12px;
+  font-weight: 800;
+  opacity: 0.75;
+}
+
+.p-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  margin-top: 12px;
+  min-width: 0;
+}
+
+.p-card-guess-actions {
+  display: flex;
+  flex-wrap: wrap;
+  flex: 0 1 auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.p-card-guess-actions > * {
+  overflow-wrap: normal;
+  word-break: normal;
+  white-space: nowrap;
+}
+
+html[lang] .p-actions .p-card-guess-actions > * {
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+.guess-button {
+  display: inline-flex;
+  min-height: var(--btn-h);
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 16px;
+  border: var(--btn-border) solid var(--ink);
+  border-radius: var(--btn-radius);
+  background: var(--surface);
+  box-shadow: var(--btn-shadow);
+  color: var(--ink);
+  font:
+    800 15px/1 "Bricolage Grotesque Variable",
+    sans-serif;
+  text-decoration: none;
+}
+
+.classroom-end-button {
+  min-height: var(--btn-h);
+  padding: 0 16px;
+  border: var(--btn-border) solid var(--ink);
+  border-radius: var(--btn-radius);
+  background: var(--surface);
+  box-shadow: var(--btn-shadow);
+  color: var(--ink);
+  font:
+    800 15px/1 "Bricolage Grotesque Variable",
+    sans-serif;
+  text-decoration: none;
+}
+
+.locked-pill,
+.points-pill,
+.bonus-pill {
+  display: inline-flex;
+  min-height: 38px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: var(--btn-border) solid var(--ink);
+  border-radius: var(--btn-radius);
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.locked-pill {
+  border-color: var(--on-pastel);
+  background: #d7f4d5;
+  color: var(--on-pastel);
+}
+
+.points-pill,
+.bonus-pill {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.p-results {
+  display: grid;
+  gap: 5px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.p-card-tools {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0;
+  flex: none;
+  margin-left: auto;
+}
+
+.p-edit {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  flex: none;
+  place-items: center;
+  border: var(--btn-border) solid var(--ink);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1;
+  opacity: 1;
+  box-shadow: var(--btn-shadow);
+  cursor: pointer;
+}
+
+.p-rm {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  flex: none;
+  place-items: center;
+  border: var(--btn-border) solid var(--ink);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--ink);
+  opacity: 1;
+  box-shadow: var(--btn-shadow);
+  cursor: pointer;
+}
+
+.p-edit svg,
+.p-rm svg {
+  display: block;
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+}
+
+.p-edit:hover,
+.p-rm:hover,
+.p-edit:focus-visible,
+.p-rm:focus-visible {
+  background: var(--soft);
+  color: var(--ink);
+}
+
+.p-edit:focus-visible,
+.p-rm:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.p-table-wrap {
+  position: relative;
+  grid-column: 1 / -1;
+  overflow-x: auto;
+  border: var(--card-border) solid var(--ink);
+  border-radius: var(--r);
+  background: var(--surface);
+  box-shadow: var(--card-shadow);
+}
+
+.p-table {
+  width: 100%;
+  min-width: 640px;
+  border-collapse: collapse;
+}
+
+.p-table th {
+  padding: 12px 14px;
+  border-bottom: 2.5px solid var(--ink);
+  color: var(--muted);
+  font-size: 0.875rem;
+  letter-spacing: 0.06em;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.p-table td {
+  padding: 10px 14px;
+  vertical-align: middle;
+}
+
+.p-table tbody tr + tr td {
+  border-top: 1.5px dashed var(--soft);
+}
+
+.p-table .p-emoji {
+  margin-right: 8px;
+  font-size: 28px;
+  vertical-align: middle;
+}
+
+.p-table .p-name {
+  display: inline;
+  margin-right: 8px;
+  font-size: 20px;
+}
+
+.p-table .p-score {
+  font:
+    800 28px "Bricolage Grotesque Variable",
+    sans-serif;
+  text-align: right;
+}
+
+.p-table-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.p-table .p-edit {
+  position: static;
+  opacity: 1;
+}
+
+.p-table .p-pos {
+  font:
+    800 22px "Bricolage Grotesque Variable",
+    sans-serif;
+}
+
+.p-table .p-rm {
+  position: static;
+  opacity: 1;
+}
+
+.p-table tr.is-winner td {
+  background: color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+.p-empty {
+  grid-column: 1 / -1;
+  padding: 40px;
+  border: var(--card-border) dashed var(--ink);
+  border-radius: var(--r);
+  text-align: center;
+}
+
+.p-empty span {
+  font-size: 40px;
+}
+
+.p-empty p {
+  margin-bottom: 0;
+  font-weight: 700;
+}
+
+.add {
+  display: grid;
+  grid-template-columns: minmax(180px, 260px) 1fr auto;
+  align-items: end;
+  gap: 16px;
+  margin: 28px 0 0;
+  padding: 18px;
+}
+
+.lbl {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.add input[name="name"] {
+  width: 100%;
+  height: 48px;
+  padding: 0 14px;
+  border: 2.5px solid var(--ink);
+  border-radius: 12px;
+  background: var(--bg);
+  font-weight: 700;
+}
+
+[data-emoji-picker],
+[data-room-emoji-picker] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+[data-room-face-set] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+[data-room-face-set][hidden] {
+  display: none;
+}
+
+[data-emoji-picker] label,
+[data-room-emoji-picker] label {
+  cursor: pointer;
+  text-align: center;
+}
+
+[data-emoji-picker] input,
+[data-room-emoji-picker] input {
+  position: absolute;
+  opacity: 0;
+}
+
+[data-emoji-picker] span,
+[data-room-emoji-picker] span {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  font-size: 25px;
+  transition: transform 0.1s;
+}
+
+[data-emoji-picker] small,
+[data-room-emoji-picker] small {
+  display: block;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 800;
+}
+
+[data-emoji-picker] input:checked + span,
+[data-room-emoji-picker] input:checked + span {
+  border-color: var(--ink);
+  background: var(--accent);
+}
+
+[data-emoji-picker] input:focus-visible + span,
+[data-room-emoji-picker] input:focus-visible + span {
+  outline: 3px solid var(--accent);
+}

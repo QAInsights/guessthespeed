@@ -1,0 +1,246 @@
+.go,
+.guess-button,
+.ctrl,
+.icon-btn,
+.language-trigger,
+.theme-trigger,
+.dialog-close,
+.plan-nudge,
+.guess-pick,
+.quiet-button,
+.classroom-end-button,
+.danger-button,
+.text-button,
+.wifi-history-clear,
+.stepper-button,
+.settings-nav-row,
+.student-chip,
+.promo-close,
+.mode-switch,
+.seg,
+.mode-switch :is(button, a),
+.seg button,
+.guess-input-control {
+  transition:
+    transform 0.08s,
+    box-shadow 0.08s,
+    background-color 0.15s;
+}
+
+:is(
+  .go,
+  .guess-button,
+  .ctrl,
+  .icon-btn,
+  .language-trigger,
+  .theme-trigger,
+  .dialog-close,
+  .plan-nudge,
+  .guess-pick,
+  .quiet-button,
+  .classroom-end-button,
+  .danger-button,
+  .text-button,
+  .wifi-history-clear,
+  .stepper-button,
+  .settings-nav-row,
+  .student-chip,
+  .promo-close,
+  .ghost:not(.classroom-end-button),
+  .link-button,
+  .mode-switch :is(button, a),
+  .seg button
+):focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  :is(
+      .go,
+      .guess-button,
+      .ctrl,
+      .icon-btn,
+      .language-trigger,
+      .theme-trigger,
+      .dialog-close,
+      .plan-nudge,
+      .guess-pick,
+      .quiet-button,
+      .classroom-end-button,
+      .danger-button,
+      .stepper-button,
+      .settings-nav-row,
+      .student-chip,
+      .promo-close,
+      .mode-switch :is(button, a),
+      .seg button
+    ):not(:disabled):not([aria-disabled="true"]):hover {
+    transform: translate(-1px, -1px);
+    box-shadow: var(--btn-shadow-hover);
+  }
+
+  .guess-input-control:has(
+    .guess-stepper:hover:not(:disabled):not([aria-disabled="true"])
+  ) {
+    transform: translate(-1px, -1px);
+    box-shadow: var(--btn-shadow-hover);
+  }
+
+  .guess-stepper:hover:not(:disabled):not([aria-disabled="true"]) {
+    background: var(--soft);
+  }
+
+  .ghost:not(.classroom-end-button):hover:not(:disabled):not(
+      [aria-disabled="true"]
+    ),
+  .link-button:hover:not(:disabled):not([aria-disabled="true"]),
+  .text-button:hover:not(:disabled):not([aria-disabled="true"]),
+  .wifi-history-clear:hover:not(:disabled):not([aria-disabled="true"]) {
+    transform: none;
+    box-shadow: none;
+    background: var(--soft);
+    text-decoration: none;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  :is(
+      .go,
+      .guess-button,
+      .ctrl,
+      .icon-btn,
+      .language-trigger,
+      .theme-trigger,
+      .dialog-close,
+      .plan-nudge,
+      .guess-pick,
+      .quiet-button,
+      .classroom-end-button,
+      .danger-button,
+      .text-button,
+      .wifi-history-clear,
+      .stepper-button,
+      .settings-nav-row,
+      .student-chip,
+      .promo-close,
+      .ghost:not(.classroom-end-button),
+      .link-button,
+      .mode-switch :is(button, a),
+      .seg button
+    ):not(:disabled):not([aria-disabled="true"]):active {
+    transform: translate(3px, 3px);
+    box-shadow: 0 0 0 var(--shadow);
+  }
+
+  .guess-input-control:has(
+    .guess-stepper:active:not(:disabled):not([aria-disabled="true"])
+  ) {
+    transform: translate(3px, 3px);
+    box-shadow: 0 0 0 var(--shadow);
+  }
+}
+
+.guess-input-control:has(.guess-stepper:focus-visible) {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+:is(
+  .go,
+  .guess-button,
+  .ctrl,
+  .icon-btn,
+  .language-trigger,
+  .theme-trigger,
+  .dialog-close,
+  .guess-stepper,
+  .guess-pick,
+  .plan-nudge,
+  .quiet-button,
+  .classroom-end-button,
+  .danger-button,
+  .text-button,
+  .wifi-history-clear,
+  .stepper-button,
+  .settings-nav-row,
+  .student-chip,
+  .promo-close,
+  .ghost:not(.classroom-end-button),
+  .link-button,
+  .mode-switch :is(button, a),
+  .seg button
+):is(:disabled, [aria-disabled="true"]),
+.mode-switch .is-disabled {
+  border-style: dashed;
+  border-color: var(--muted);
+  background: var(--soft);
+  box-shadow: none;
+  color: var(--muted);
+  transform: none;
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+.go.is-neutral:disabled {
+  border-style: solid;
+  border-color: var(--ink);
+  background: var(--surface);
+  box-shadow: var(--btn-shadow);
+  color: var(--ink);
+  transform: none;
+  cursor: default;
+  opacity: 1;
+}
+
+.plan-chip[aria-pressed="true"],
+.mode-hero-pill[aria-pressed="true"],
+.room-tester-chip[aria-pressed="true"],
+.classroom-session-chip[aria-pressed="true"],
+.guess-pick[aria-pressed="true"] {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--surface);
+}
+
+:is(.theme-option, .room-picker-option, .p-edit, .p-rm) {
+  transition:
+    transform 0.08s,
+    box-shadow 0.08s,
+    background-color 0.15s;
+}
+
+:is(.theme-option, .room-picker-option, .p-edit, .p-rm):focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  :is(.theme-option, .room-picker-option, .p-edit, .p-rm):not(:disabled):not(
+      [aria-disabled="true"]
+    ):hover {
+    transform: translate(-1px, -1px);
+    box-shadow: var(--btn-shadow-hover);
+  }
+
+  :is(.theme-option, .room-picker-option, .p-edit, .p-rm):not(:disabled):not(
+      [aria-disabled="true"]
+    ):active {
+    transform: translate(3px, 3px);
+    box-shadow: 0 0 0 var(--shadow);
+  }
+}
+
+:is(.theme-option, .room-picker-option, .p-edit, .p-rm):is(
+  :disabled,
+  [aria-disabled="true"]
+) {
+  border-style: dashed;
+  border-color: var(--muted);
+  background: var(--soft);
+  box-shadow: none;
+  color: var(--muted);
+  transform: none;
+  cursor: not-allowed;
+  opacity: 1;
+}

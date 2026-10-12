@@ -1,0 +1,362 @@
+.top {
+  flex-wrap: nowrap;
+  gap: clamp(8px, 1vw, 14px);
+}
+
+.logo {
+  min-height: 44px;
+  flex: none;
+}
+
+.ctrls {
+  min-width: 0;
+  flex: 0 1 auto;
+  gap: 6px;
+}
+
+.icon-btn {
+  display: inline-flex;
+  width: auto;
+  min-width: var(--btn-h);
+  height: var(--btn-h);
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 10px;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.icon-btn > span:not(.ctrl-label) {
+  display: inline-flex;
+}
+
+.icon-btn svg {
+  flex: none;
+}
+
+.ctrl-label {
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.language-trigger {
+  min-width: var(--btn-h);
+  min-height: var(--btn-h);
+  font-size: 14px;
+}
+
+.settings-nav {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.settings-nav-row {
+  display: flex;
+  width: 100%;
+  min-height: var(--btn-h-lg);
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border: var(--btn-border) solid var(--ink);
+  border-radius: var(--btn-radius);
+  background: var(--surface);
+  box-shadow: var(--btn-shadow);
+  color: var(--ink);
+  font:
+    800 14px/1.25 "Bricolage Grotesque Variable",
+    sans-serif;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.settings-nav-row > svg:first-child {
+  width: 22px;
+  height: 22px;
+  flex: none;
+}
+
+.settings-nav-row > span:nth-child(2) {
+  flex: 1;
+}
+
+.settings-nav-row > svg:last-child {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  color: var(--muted);
+}
+
+.settings-nav-row:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+.settings-switch {
+  display: inline-flex;
+  width: 42px;
+  height: 24px;
+  flex: none;
+  align-items: center;
+  padding: 2px;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: var(--bg);
+  transition: background 120ms ease;
+}
+
+.settings-switch > span {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--ink);
+  transition: transform 120ms ease;
+}
+
+.settings-nav-row[aria-checked="true"] .settings-switch {
+  background: var(--accent);
+}
+
+.settings-nav-row[aria-checked="true"] .settings-switch > span {
+  transform: translateX(16px);
+}
+
+.mode-switch :is(button, a) {
+  min-height: var(--btn-h);
+  font-size: 15px;
+}
+
+.mode-hero-pill {
+  min-height: var(--btn-h);
+  font-size: 14px;
+}
+
+.stat span {
+  font-size: 0.875rem;
+}
+
+.stat small {
+  font-size: 0.8125rem;
+}
+
+.plan-chip {
+  min-height: var(--btn-h);
+  align-items: center;
+  font-size: 14px;
+}
+
+.plan-nudge {
+  min-height: var(--btn-h);
+  font-size: 14px;
+}
+
+.wifi-history-footer {
+  font-size: 0.875rem;
+}
+
+.wifi-history-clear {
+  min-height: var(--btn-h);
+  padding: 0 8px;
+  font-size: 14px;
+}
+
+.p-role,
+.p-results {
+  font-size: 0.875rem;
+}
+
+.p-role {
+  opacity: 1;
+}
+
+.p-score span {
+  font-size: 0.8125rem;
+  opacity: 1;
+}
+
+.locked-pill {
+  min-height: var(--btn-h);
+}
+
+.go.is-neutral {
+  border-color: var(--ink);
+  background: var(--surface);
+  box-shadow: var(--btn-shadow);
+  color: var(--ink);
+}
+
+.gauge-card .go {
+  white-space: nowrap;
+}
+
+[data-guess-dialog] {
+  overflow: hidden;
+}
+
+[data-guess-dialog] .guess-dialog-inner {
+  display: flex;
+  max-height: min(calc(90dvh - 4px), 836px);
+  min-height: 0;
+  flex-direction: column;
+  padding: 16px clamp(16px, 4vw, 24px);
+  overflow: hidden;
+}
+
+[data-guess-dialog] .dialog-head,
+[data-guess-dialog] .guess-person,
+[data-guess-dialog] .guess-dialog-actions {
+  flex: none;
+}
+
+[data-guess-dialog] .guess-person {
+  margin-bottom: 10px;
+}
+
+.guess-dialog-scroll {
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 2px;
+}
+
+.guess-mbps-note {
+  margin: 0 0 10px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.guess-mbps-note a {
+  color: var(--ink);
+  font-weight: 800;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 2px;
+}
+
+.guess-dialog-form {
+  gap: 10px;
+}
+
+.guess-field {
+  display: grid;
+  min-width: 0;
+  gap: 6px;
+}
+
+.guess-field > label {
+  font-weight: 800;
+}
+
+.guess-input-control {
+  display: grid;
+  grid-template-columns: var(--btn-h) minmax(0, 1fr) var(--btn-h);
+  align-items: stretch;
+  gap: 0;
+  min-height: var(--btn-h);
+  border: var(--btn-border) solid var(--ink);
+  border-radius: var(--btn-radius);
+  background: var(--surface);
+  box-shadow: var(--btn-shadow);
+  overflow: hidden;
+}
+
+.guess-input-control .dialog-input {
+  appearance: textfield;
+  -moz-appearance: textfield;
+  min-height: var(--btn-h);
+  min-width: 0;
+  padding: 0 8px;
+  border: 0;
+  border-right: var(--btn-border) solid var(--ink);
+  border-left: var(--btn-border) solid var(--ink);
+  border-radius: 0;
+  background: var(--bg);
+  box-shadow: none;
+  text-align: center;
+}
+
+.guess-input-control .dialog-input::-webkit-inner-spin-button,
+.guess-input-control .dialog-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.guess-stepper {
+  display: inline-grid;
+  width: var(--btn-h);
+  min-width: var(--btn-h);
+  min-height: var(--btn-h);
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: var(--surface);
+  box-shadow: none;
+  color: var(--ink);
+  font:
+    800 20px/1 "Bricolage Grotesque Variable",
+    sans-serif;
+  line-height: 1;
+}
+
+.guess-stepper svg {
+  display: block;
+}
+
+.guess-stepper:focus-visible,
+.guess-pick:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+.guess-input-control:focus-within {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+.guess-picks {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.guess-pick {
+  display: inline-flex;
+  min-height: var(--btn-h);
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 12px;
+  border: var(--btn-border) solid var(--ink);
+  border-radius: var(--btn-radius);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 800;
+  font-family: "Bricolage Grotesque Variable", sans-serif;
+  line-height: 1;
+  white-space: nowrap;
+  overflow-wrap: normal;
+}
+
+.guess-pick[aria-pressed="true"] {
+  border-color: var(--ink);
+  background: var(--ink);
+  box-shadow: none;
+  color: var(--surface);
+}
+
+.guess-dialog-actions {
+  margin-top: 8px;
+  padding-top: 10px;
+  border-top: 1px solid color-mix(in srgb, var(--ink) 18%, transparent);
+  background: var(--surface);
+}
+
+.guess-dialog-actions .go {
+  width: 100%;
+}
