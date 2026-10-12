@@ -31,6 +31,7 @@
 - [Internet speed 101](https://guessthespeed.com/internet-speed-101/)
 - [What is a good internet speed?](https://guessthespeed.com/what-is-a-good-internet-speed/)
 - [How much internet speed do you need for gaming?](https://guessthespeed.com/internet-speed-for-gaming/)
+- [Upload vs Download Speed](https://guessthespeed.com/upload-vs-download-speed/): What upload and download speed mean, which home activities use each, and how much upload video calls, live streams and Remote Play need.
 - [Am I getting the internet speed I pay for?](https://guessthespeed.com/am-i-getting-the-speed-i-pay-for/)
 - [Household speed calculator](https://guessthespeed.com/how-much-internet-speed-do-i-need/)
 - [Mbps to MB/s converter and download time](https://guessthespeed.com/mbps-to-mbs/)

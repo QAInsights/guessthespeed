@@ -1,0 +1,301 @@
+---
+import Base from '../layouts/Base.astro';
+import '../styles/site.css';
+import { downloadSeconds, formatDuration } from '../lib/convert';
+import { DEV_USE_THRESHOLDS } from '../lib/devresult';
+
+const GB = 1_000_000_000;
+const formatTime = (sizeBytes: number, mbps: number) =>
+  formatDuration(downloadSeconds(sizeBytes, mbps) ?? 0) ?? '';
+const transferTimes = [10, 20, 50, 100, 300, 1000].map((mbps) => ({
+  label: `${mbps.toLocaleString('en-US')} Mbps`,
+  small: formatTime(1 * GB, mbps),
+  video: formatTime(5 * GB, mbps),
+  backup: formatTime(50 * GB, mbps),
+}));
+const exampleDown = formatTime(5 * GB, 300);
+const exampleUp = formatTime(5 * GB, 20);
+
+const ytHeadroom = 0.2;
+const liveUpload = [
+  { label: '4K (2160p) at 60 fps', bitrate: 50 },
+  { label: '4K (2160p) at 30 fps', bitrate: 42 },
+  { label: '1080p at 60 fps', bitrate: 17 },
+  { label: '1080p at 30 fps', bitrate: 14 },
+].map((row) => ({ ...row, upload: Math.ceil(row.bitrate / (1 - ytHeadroom)) }));
+
+const sources = {
+  remotePlay: 'https://www.playstation.com/en-us/support/games/ps4-remote-play-connection-troubleshooting/',
+  teams: 'https://learn.microsoft.com/en-us/microsoftteams/prepare-network',
+  ytEncoder: 'https://support.google.com/youtube/answer/2853702?hl=en',
+  ytTips: 'https://support.google.com/youtube/answer/2853856?hl=en',
+  fccGuide: 'https://www.fcc.gov/consumers/guides/broadband-speed-guide',
+  proximus: 'https://www.proximus.com/news/2026/202610-fiber-speed-boost.html',
+  optimum: 'https://www.optimum.com/about-us/news/articles/optimum-launch-fastest-internet-speeds-carterville-and-webb-city-missouri',
+};
+
+const questions = [
+  {
+    question: 'What is the difference between upload and download speed?',
+    answer:
+      'Download speed is how fast data comes from the internet to your device, such as a film, a web page or a game update. Upload speed is how fast data goes from your device to the internet, such as your camera on a video call, a live stream or a cloud backup.',
+  },
+  {
+    question: 'Why is my upload speed so much lower than my download speed?',
+    answer:
+      'Many plans are sold asymmetric, with far more download than upload, because most household traffic comes in rather than going out. Some fiber providers now sell symmetrical plans with the same speed in both directions.',
+  },
+  {
+    question: 'How much upload speed do I need for video calls?',
+    answer:
+      'Microsoft recommends 2.5 Mbps upload and 4 Mbps download per person for Teams video meetings, and our calculator uses 3 Mbps upload for an HD group call. Add that for every person who is on a call at the same time.',
+  },
+  {
+    question: 'How much upload speed do I need to live stream?',
+    answer:
+      'Your upload must be higher than the stream bitrate, and YouTube suggests leaving about 20% of your upload unused. A 1080p stream at 60 fps on H.264 is about 17 Mbps, so plan for roughly 22 Mbps of steady upload.',
+  },
+  {
+    question: 'Is 10 Mbps upload good?',
+    answer:
+      'For one or two people on video calls, yes. It is tight for 1080p live streaming, large cloud backups or Remote Play, which Sony recommends at 15 Mbps upload.',
+  },
+  {
+    question: 'Does a fast download speed mean my upload is fast too?',
+    answer:
+      'No. The two directions are measured separately and are often sold at very different speeds, so always check the upload number on its own before you trust a call or a stream.',
+  },
+];
+
+const faqSchema = {
+  '@type': 'FAQPage',
+  mainEntity: questions.map(({ question, answer }) => ({
+    '@type': 'Question',
+    name: question,
+    acceptedAnswer: { '@type': 'Answer', text: answer },
+  })),
+};
+
+const articleSchema = {
+  '@type': 'Article',
+  headline: 'Upload vs Download Speed: What Is the Difference?',
+  description:
+    'Sourced guide to upload vs download speed: what each one means, which home activities use them, and how much upload video calls, live streaming and Remote Play need.',
+  author: {
+    '@type': 'Person',
+    '@id': 'https://guessthespeed.com/#author',
+    name: 'NaveenKumar Namachivayam',
+    url: 'https://qainsights.com',
+  },
+  publisher: {
+    '@type': 'Organization',
+    name: 'Guess the Speed',
+    url: 'https://guessthespeed.com',
+  },
+  datePublished: '2026-10-12',
+  mainEntityOfPage: 'https://guessthespeed.com/upload-vs-download-speed/',
+};
+---
+
+<Base
+  title="Upload vs Download Speed: What Is the Difference? (2026)"
+  description="Upload vs download speed explained for 2026: what each means, which home activities use them, and how much upload video calls and live streams need."
+  breadcrumb="Upload vs download"
+  schema={[articleSchema, faqSchema]}
+>
+  <main class="wrap content-page">
+    <span class="round-banner">Speed school</span>
+    <h1>Upload vs Download Speed: What Is the Difference?</h1>
+    <p class="lede">
+      Short answer: <strong>download speed</strong> is how fast data reaches you from the internet, and <strong>upload speed</strong> is how fast you
+      send data back out. Most homes need far more download, but video calls, live streams and cloud backups depend on upload, for example about
+      <strong>2.5 Mbps up per person</strong> for a Teams video meeting and <strong>15 Mbps both ways</strong> for PlayStation Remote Play.
+    </p>
+    <article class="content-card stk">
+      <p>
+        When we play Guess the Speed at home, everyone shouts a download number. Nobody ever guesses the upload. Then the speed test finishes and the
+        upload is a fraction of the download, and someone asks, "Is the internet broken?" It is not. Download and upload are two separate lanes on the
+        same road, and many plans are built with one lane much wider than the other. In this article, let us look at what each speed means, which of
+        your daily activities use which lane, and how to check that the smaller lane is big enough for your home.
+      </p>
+
+      <h2>What is download speed?</h2>
+      <p>
+        Download speed is the rate at which data travels from the internet to your device, measured in megabits per second (Mbps). Every time you
+        open a web page, watch Netflix or YouTube, install a game patch or sync your email, you are downloading. It is usually the big headline number
+        on the plan your provider sells you.
+      </p>
+      <p>
+        Most of what a family does online is download heavy. A film streaming to the TV is a steady flow coming in, with only tiny control messages
+        going back out. That is why the FCC's <a href={sources.fccGuide} rel="noopener nofollow">Broadband Speed Guide</a> lists everyday activities
+        by <em>minimum download speed</em> only, for example 25 Mbps for streaming Ultra HD 4K video.
+      </p>
+
+      <h2>What is upload speed?</h2>
+      <p>
+        Upload speed is the same measurement in the other direction: the rate at which data leaves your device and goes out to the internet. Your
+        camera and microphone on a video call, a live stream to YouTube or Twitch, photos syncing to the cloud, a big file sent to a colleague, and
+        the video your PS5 sends out during Remote Play are all uploads.
+      </p>
+      <p>
+        I spent years in performance testing before moving into a developer role, and this is how I explain it to my team. In a load test you
+        always measure throughput for requests and responses separately, because a server can be fast at answering and slow at receiving. Your
+        home connection works the same way. A big download result tells you nothing about the upload side, so you have to measure both.
+      </p>
+
+      <h2>Why is my upload speed lower than my download speed?</h2>
+      <p>
+        Because many plans are sold that way on purpose. Providers often give most of the capacity to download, since households pull far more
+        data in than they send out. YouTube's own
+        <a href={sources.ytTips} rel="noopener nofollow">live streaming tips</a> point this out: inbound bandwidth (download speed) is often greater
+        than outbound bandwidth (upload speed). A plan with a large download speed and a much smaller upload speed is called <em>asymmetric</em>.
+      </p>
+      <p>
+        Some fiber providers now sell <em>symmetrical</em> plans, with the same speed in both directions, and they are starting to advertise upload
+        as a feature. In October 2026, Belgian operator Proximus <a href={sources.proximus} rel="noopener nofollow">announced</a> that from 1 November its
+        Internet Mega Fiber plan moves from 500/100 Mbps to 600/600 Mbps and Internet Giga Fiber from 2 Gbps/200 Mbps to 2/2 Gbps, citing cloud
+        storage, video calls and gaming as reasons upload matters. In September 2026, Optimum
+        <a href={sources.optimum} rel="noopener nofollow">announced</a> symmetrical fiber plans of up to 8 Gbps for Carterville and Webb City,
+        Missouri. If you are choosing a plan, look for both numbers on the label, not just the headline one.
+      </p>
+
+      <h2>Which activities use upload and which use download?</h2>
+      <p>Here is a quick map of everyday activities and the direction that does the heavy lifting.</p>
+      <div class="guide-table-wrap" role="region" aria-label="Which home activities use upload and download speed" tabindex="0">
+        <table class="guide-table">
+          <caption>Upload and download use by activity</caption>
+          <thead>
+            <tr><th scope="col">Activity</th><th scope="col">Mostly uses</th><th scope="col">Published or site figure</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">Streaming 4K video</th><td>Download</td><td><a href={sources.fccGuide} rel="noopener nofollow">25 Mbps down (FCC)</a>; our calculator uses 20 Mbps</td></tr>
+            <tr><th scope="row">Browsing, email, game patches</th><td>Download</td><td>More Mbps simply means less waiting</td></tr>
+            <tr><th scope="row"><a href={sources.teams} rel="noopener nofollow">Teams video meeting</a></th><td>Both</td><td>Recommended 2.5 Mbps up, 4 Mbps down per person</td></tr>
+            <tr><th scope="row">HD group video call</th><td>Both</td><td>3 Mbps up, 3.8 Mbps down in our <a href="/how-much-internet-speed-do-i-need/">calculator</a></td></tr>
+            <tr><th scope="row"><a href={sources.remotePlay} rel="noopener nofollow">PlayStation Remote Play</a></th><td>Both</td><td>5 Mbps minimum, 15 Mbps recommended, each way</td></tr>
+            <tr><th scope="row"><a href={sources.ytEncoder} rel="noopener nofollow">YouTube live, 1080p 60 fps</a></th><td>Upload</td><td>17 Mbps H.264 bitrate, plus headroom</td></tr>
+            <tr><th scope="row">Cloud backup, sending large files</th><td>Upload</td><td>Time depends directly on upload speed</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>How much upload speed do I need for video calls?</h2>
+      <p>
+        Less than most people fear, but it adds up. Microsoft's <a href={sources.teams} rel="noopener nofollow">Teams network guidance</a> lists the
+        bandwidth per person for each kind of call. For video meetings it recommends 2.5 Mbps up and 4 Mbps down, with 4 Mbps each way for the best
+        experience, and notes that actual use changes with layout, resolution and frame rate. Our household calculator uses 3 Mbps up and 3.8 Mbps
+        down for an HD group call, and Dev mode flags video calls as comfortable at {DEV_USE_THRESHOLDS.videoCallsUpMbps} Mbps upload or more.
+      </p>
+      <p>
+        The catch is concurrency. In a work-from-home family, two parents on calls and a child in an online class are three uploads at the same
+        time. On a plan with 10 Mbps upload that is already most of the lane, before anyone's phone starts backing up photos.
+      </p>
+
+      <h2>How much upload speed do I need for live streaming?</h2>
+      <p>
+        Live streaming is the one everyday activity that is almost pure upload. YouTube's
+        <a href={sources.ytEncoder} rel="noopener nofollow">live encoder settings</a> list a recommended bitrate for each resolution, and its
+        <a href={sources.ytTips} rel="noopener nofollow">network tips</a> say your stream bitrate must fit inside your upload speed with about 20%
+        left unused. Here is what that means for H.264 streams.
+      </p>
+      <div class="guide-table-wrap" role="region" aria-label="Upload speed needed for YouTube live streaming" tabindex="0">
+        <table class="guide-table">
+          <caption>YouTube live bitrate and upload with 20% headroom</caption>
+          <thead>
+            <tr><th scope="col">Stream</th><th scope="col">H.264 bitrate</th><th scope="col">Upload to plan for</th></tr>
+          </thead>
+          <tbody>
+            {liveUpload.map((row) => (
+              <tr><th scope="row">{row.label}</th><td>{row.bitrate} Mbps</td><td>About {row.upload} Mbps</td></tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p>
+        If you send a backup stream as well, YouTube says to count both streams plus the headroom. And if you stream a game you are also playing
+        online, that game traffic is on top.
+      </p>
+
+      <h2>How long does it take to upload a file?</h2>
+      <p>
+        Uploads and downloads use the same math, so the time to send a file depends only on its size and the speed of the lane it travels in. Here
+        are ideal times, calculated with the same code as our <a href="/mbps-to-mbs/">Mbps to MB/s converter</a>.
+      </p>
+      <div class="guide-table-wrap" role="region" aria-label="Ideal transfer times at common speeds" tabindex="0">
+        <table class="guide-table">
+          <caption>Ideal transfer time by speed, upload or download</caption>
+          <thead>
+            <tr><th scope="col">Speed</th><th scope="col">1 GB</th><th scope="col">5 GB of video</th><th scope="col">50 GB backup</th></tr>
+          </thead>
+          <tbody>
+            {transferTimes.map((row) => (
+              <tr><th scope="row">{row.label}</th><td>{row.small}</td><td>{row.video}</td><td>{row.backup}</td></tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p>
+        This is where an asymmetric plan really shows. On a 300/20 Mbps plan, downloading 5 GB takes about {exampleDown}, but uploading the same
+        5 GB of holiday video takes about {exampleUp}. Same plan, same file, very different wait. Real transfers are usually a bit slower than these
+        ideal times because of Wi-Fi and other devices sharing the line.
+      </p>
+
+      <h2>How do I work out what my household needs?</h2>
+      <p>Treat each direction as its own budget:</p>
+      <ol>
+        <li><strong>List what runs at the same time</strong> at your busiest hour, usually the evening or a weekday morning when everyone is on calls.</li>
+        <li><strong>Add up download</strong> for streams, game downloads and browsing.</li>
+        <li><strong>Add up upload</strong> separately for calls, live streams, Remote Play and backups.</li>
+        <li><strong>Leave headroom</strong> on both. Our <a href="/how-much-internet-speed-do-i-need/">household speed calculator</a> does this for you: it adds 25% and rounds up to a common plan tier.</li>
+      </ol>
+      <p>
+        If the download budget fits your plan but the upload budget does not, a faster download tier will not help. Look at the upload figure, or at
+        a symmetrical plan. For general targets in both directions, see <a href="/what-is-a-good-internet-speed/">what is a good internet speed</a>.
+      </p>
+
+      <h2>Why can both speeds be lower on Wi-Fi?</h2>
+      <p>
+        Wi-Fi is shared airtime. Distance, walls, and other devices transmitting at the same time all reduce what your device can push or pull. Sony's <a href={sources.remotePlay} rel="noopener nofollow">Remote Play
+        troubleshooting page</a> suggests a wired connection where possible for this reason. Congestion matters too: a backup
+        running in the background can quietly eat most of a small upload lane and make a call stutter, even when the download side looks fine.
+      </p>
+
+      <h2>How do I test upload and download speed fairly?</h2>
+      <ol>
+        <li>Test on the device that has the problem, at the time it happens.</li>
+        <li>Pause cloud backups, big downloads and other streams first, so you measure the line and not your own traffic.</li>
+        <li>Test once on Wi-Fi near the router and once with a cable if you can. The gap tells you whether the plan or the Wi-Fi is the bottleneck.</li>
+        <li>
+          Read both numbers. <a href="/?dev=1">Dev mode</a> shows download, upload and ping, and checks them against simple targets such as
+          {DEV_USE_THRESHOLDS.videoCallsUpMbps} Mbps upload for video calls and {DEV_USE_THRESHOLDS.bigUploadsUpMbps} Mbps upload for big uploads.
+        </li>
+        <li>If both numbers are well below your plan, follow the <a href="/am-i-getting-the-speed-i-pay-for/">plan speed check</a> before calling your provider.</li>
+      </ol>
+      <p>
+        One honest caveat: our test measures to a nearby Cloudflare server. It tells you how healthy your home line and Wi-Fi are in each direction.
+        It does not prove that a Teams server, YouTube ingest or your console's Remote Play session will get the same speed, because those take
+        different routes.
+      </p>
+      <p>
+        Or make it a game. Ask everyone to <a href="/">guess the speed</a>, and this time make them guess the upload too. In my house, that is the
+        round nobody wins.
+      </p>
+
+      <h2>Frequently asked questions</h2>
+      <div class="faq">
+        {questions.map(({ question, answer }) => (
+          <section>
+            <h3>{question}</h3>
+            <p>{answer}</p>
+          </section>
+        ))}
+      </div>
+      <p>
+        Playing your console away from home? Read <a href="/internet-speed-for-gaming/">how much internet speed you need for gaming</a>.
+      </p>
+      <div class="story-cta">
+        <a class="go" href="/">Start a game</a>
+      </div>
+    </article>
+  </main>
+</Base>

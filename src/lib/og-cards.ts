@@ -112,6 +112,16 @@ export const ogCards: readonly OgCard[] = [
     icon: "ph:game-controller-bold",
   },
   {
+    path: "/upload-vs-download-speed/",
+    group: "Learn",
+    kicker: "Guide",
+    line1: "Upload vs",
+    line2: "Download Speed",
+    subtitle:
+      "What each speed means and how much upload calls and streams need",
+    icon: "ph:arrows-down-up-bold",
+  },
+  {
     path: "/how-much-internet-speed-do-i-need/",
     group: "Tools",
     kicker: "Free tool",
