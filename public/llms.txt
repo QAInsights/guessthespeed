@@ -30,6 +30,7 @@
 - [How it works](https://guessthespeed.com/how-it-works/)
 - [Internet speed 101](https://guessthespeed.com/internet-speed-101/)
 - [What is a good internet speed?](https://guessthespeed.com/what-is-a-good-internet-speed/)
+- [Speed School](https://guessthespeed.com/speed-school/): searchable index of every guide, tool and game night article
 - [How much internet speed do you need for gaming?](https://guessthespeed.com/internet-speed-for-gaming/)
 - [Am I getting the internet speed I pay for?](https://guessthespeed.com/am-i-getting-the-speed-i-pay-for/)
 - [Household speed calculator](https://guessthespeed.com/how-much-internet-speed-do-i-need/)

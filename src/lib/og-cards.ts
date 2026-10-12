@@ -85,6 +85,15 @@ export const ogCards: readonly OgCard[] = [
     icon: "ph:gear-six-fill",
   },
   {
+    path: "/speed-school/",
+    group: "Learn",
+    kicker: "Speed School",
+    line1: "Learn internet speed",
+    line2: "the easy way.",
+    subtitle: "Plain-English guides, tools and game night ideas in one place.",
+    icon: "ph:graduation-cap-fill",
+  },
+  {
     path: "/internet-speed-101/",
     group: "Learn",
     kicker: "Guide",
