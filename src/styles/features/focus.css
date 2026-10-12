@@ -70,6 +70,7 @@ html[data-focus]:not([data-tv="1"]) .room-bar {
   margin: 0;
 }
 
+/* stylelint-disable-next-line no-duplicate-selectors -- kept apart on purpose: cascade order */
 html[data-focus]:not([data-tv="1"]) .stage {
   order: 0;
 }
@@ -216,6 +217,7 @@ html[data-focus]:not([data-tv="1"]) .mode-hero-stats .plan-chip {
   margin: 0 0 18px;
   padding: clamp(14px, 2vw, 22px);
   background: var(--surface);
+
   --lane-cols: minmax(72px, 7.5rem) minmax(0, 1fr) minmax(84px, 8.5rem);
 }
 

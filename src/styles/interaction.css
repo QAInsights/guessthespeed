@@ -102,6 +102,7 @@
     background: var(--soft);
     text-decoration: none;
   }
+
   :is(
       .go,
       .guess-button,
@@ -136,6 +137,7 @@
     transform: translate(3px, 3px);
     box-shadow: 0 0 0 var(--shadow);
   }
+
   :is(.theme-option, .room-picker-option, .p-edit, .p-rm):not(:disabled):not(
       [aria-disabled="true"]
     ):hover {

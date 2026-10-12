@@ -331,6 +331,7 @@ html[lang="ta"]
   .dev-bar i {
     transition: none;
   }
+
   *,
   *::before,
   *::after {
@@ -569,7 +570,6 @@ html[lang="ta"]
     width: 100%;
     max-width: 420px;
     margin: 0 auto;
-    overflow-x: auto;
     scrollbar-width: none;
     justify-content: space-between;
     overflow: visible;
@@ -600,8 +600,6 @@ html[lang="ta"]
   }
 
   .language-trigger {
-    padding-right: 7px;
-    padding-left: 7px;
     width: auto;
     min-width: 44px;
     min-height: 44px;

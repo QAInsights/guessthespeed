@@ -116,13 +116,16 @@
   padding: 16px;
   border: var(--card-border) solid var(--ink);
   border-radius: var(--r);
+
   --card-fill: var(--surface);
+
   background: var(--surface);
   box-shadow: var(--card-shadow);
 }
 
 .p-card.is-winner {
   --card-fill: var(--accent);
+
   background: var(--accent);
   color: var(--on-accent);
 }
