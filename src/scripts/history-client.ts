@@ -21,6 +21,10 @@ const summary = document.querySelector<HTMLElement>("[data-history-summary]");
 const clearButton = document.querySelector<HTMLButtonElement>(
   "[data-clear-history]",
 );
+const toggle = document.querySelector<HTMLButtonElement>(
+  "[data-history-toggle]",
+);
+const body = document.querySelector<HTMLElement>("[data-history-body]");
 const svgNamespace = "http://www.w3.org/2000/svg";
 
 function readHistory(): SpeedSample[] {
@@ -182,6 +186,13 @@ export function recordSpeedSample(sample: SpeedSample) {
   }
   renderHistoryCard();
 }
+
+toggle?.addEventListener("click", () => {
+  if (!body) return;
+  const expanded = toggle.getAttribute("aria-expanded") !== "true";
+  toggle.setAttribute("aria-expanded", String(expanded));
+  body.hidden = !expanded;
+});
 
 clearButton?.addEventListener("click", () => {
   try {
