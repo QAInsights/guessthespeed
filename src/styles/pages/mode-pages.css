@@ -46,7 +46,6 @@
 
 .mode-hero-pill {
   display: inline-flex;
-  min-height: var(--btn-h);
   align-items: center;
   gap: 8px;
   width: fit-content;
@@ -61,6 +60,8 @@
     800 14px/1 "Bricolage Grotesque Variable",
     sans-serif;
   line-height: 1;
+  min-height: var(--btn-h);
+  font-size: 14px;
 }
 
 .mode-hero-pill svg {
@@ -125,10 +126,6 @@ html[data-dev="1"] .dev-mode-pill-label {
 
 .game-main > .dev-console {
   margin-top: -10px;
-}
-
-.work-room-card {
-  transform: none;
 }
 
 @media (max-width: 980px) {

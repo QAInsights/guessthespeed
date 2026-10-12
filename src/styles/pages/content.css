@@ -9,12 +9,6 @@ html[lang="es"] .sec-head > h2 {
   overflow-wrap: anywhere;
 }
 
-.mode-switch :is(button, a) {
-  overflow-wrap: normal;
-  white-space: nowrap;
-  word-break: normal;
-}
-
 @media (max-width: 960px) {
   .foot {
     grid-template-columns: minmax(0, 1fr);
@@ -25,6 +19,7 @@ html[lang="es"] .sec-head > h2 {
 @media (max-width: 640px) {
   footer {
     padding-top: 36px;
+    margin-top: 50px;
   }
 
   .foot-nav {

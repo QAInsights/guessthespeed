@@ -144,6 +144,8 @@
     justify-self: center;
     aspect-ratio: 432 / 310;
     container-type: size;
+    order: 1;
+    grid-row: 1;
   }
 
   html[data-tv="1"][data-home="1"] .gauge svg {
@@ -180,10 +182,12 @@
   }
 
   html[data-tv="1"][data-home="1"] .phase-status {
-    min-height: clamp(18px, 2.5cqi, 28px);
     flex: none;
     gap: 0.75cqi;
     margin: 0.3cqi 0 0.6cqi;
+    order: 2;
+    grid-row: 2;
+    min-height: clamp(18px, 2.5cqi, 28px);
   }
 
   html[data-tv="1"][data-home="1"] .test-progress {
@@ -191,6 +195,8 @@
     height: clamp(12px, 1.5cqi, 17px);
     flex: none;
     margin: 0 auto 0.8cqi;
+    order: 3;
+    grid-row: 3;
   }
 
   html[data-tv="1"][data-home="1"] .gauge-card .go {
@@ -242,10 +248,6 @@
     font-size: clamp(20px, 1.8vw, 30px);
   }
 
-  html[data-tv="1"][data-home="1"] .phase-status {
-    min-height: clamp(18px, 2.5cqi, 28px);
-  }
-
   html[data-tv="1"][data-home="1"] .winner {
     gap: 8px;
     flex-wrap: wrap;
@@ -271,21 +273,7 @@
     grid-column: 1 / -1;
     grid-row: 1;
     margin: 0;
-  }
-
-  html[data-tv="1"][data-home="1"] .gauge {
-    order: 1;
-    grid-row: 1;
-  }
-
-  html[data-tv="1"][data-home="1"] .phase-status {
-    order: 2;
-    grid-row: 2;
-  }
-
-  html[data-tv="1"][data-home="1"] .test-progress {
-    order: 3;
-    grid-row: 3;
+    z-index: 10;
   }
 
   html[data-tv="1"][data-home="1"] .room-waiting {
@@ -425,10 +413,6 @@
 
   html[data-tv="1"][data-home="1"] .p-score span {
     font-size: 13px;
-  }
-
-  html[data-tv="1"][data-home="1"] .room-bar:not([hidden]) {
-    z-index: 10;
   }
 
   html[data-tv="1"][data-home="1"] .tv-add-toggle svg {

@@ -291,12 +291,6 @@
   background: color-mix(in srgb, var(--gauge-down-1) 14%, var(--surface));
 }
 
-@media (max-width: 980px) {
-  .dev-result {
-    order: 3;
-  }
-}
-
 @media (max-width: 560px) {
   .race-breakdown {
     padding: 14px;

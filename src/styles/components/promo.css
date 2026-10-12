@@ -58,6 +58,7 @@
   align-items: center;
   color: inherit;
   text-decoration: none;
+  min-height: 44px;
 }
 
 .promo-link > img {
@@ -85,12 +86,12 @@
   background: var(--accent);
   box-shadow: 2px 2px 0 var(--shadow);
   color: var(--on-accent);
-  font-family: var(--mono, ui-monospace, monospace);
-  font-size: 0.58rem;
-  font-weight: 900;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
   white-space: nowrap;
+  font-size: 0.875rem;
+  font-weight: 650;
+  font-family: inherit;
+  letter-spacing: normal;
+  text-transform: none;
 }
 
 .promo-title {
@@ -146,16 +147,18 @@
   place-items: center;
   padding: 0;
   border: var(--btn-border) solid var(--ink);
-  border-radius: 50%;
   background: var(--surface);
   box-shadow: var(--btn-shadow);
   color: var(--ink);
   cursor: pointer;
+  border-radius: 50%;
 }
 
 .promo-close svg {
   width: 18px;
   height: 18px;
+  position: relative;
+  z-index: 1;
 }
 
 @media screen and (min-width: 1301px) {
