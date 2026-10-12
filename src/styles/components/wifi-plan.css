@@ -35,10 +35,10 @@
   flex: none;
   margin: 0;
   padding: 6px 11px;
-  border: 2px solid var(--ink);
+  border: var(--border-line);
   border-radius: 8px;
   background: var(--accent);
-  box-shadow: 3px 3px 0 var(--shadow);
+  box-shadow: var(--shadow-md);
   color: var(--on-accent);
   font-size: 14px;
   font-weight: 800;
@@ -66,7 +66,7 @@
 
 .wifi-history-plan-label {
   fill: var(--ink);
-  font-family: "Bricolage Grotesque Variable", sans-serif;
+  font-family: var(--font-display);
   font-size: 12px;
   font-weight: 800;
 }
@@ -84,7 +84,7 @@
 .wifi-history-value {
   display: none;
   fill: var(--ink);
-  font-family: "Bricolage Grotesque Variable", sans-serif;
+  font-family: var(--font-display);
   font-size: 18px;
   font-weight: 800;
 }
@@ -126,13 +126,13 @@
   outline-offset: var(--focus-offset);
 }
 
-@media (min-width: 600px) {
+@media (min-width: 641px) {
   .wifi-history-value {
     display: block;
   }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 640px) {
   .wifi-history-head {
     align-items: flex-start;
     flex-direction: column;
@@ -157,7 +157,6 @@
   align-items: center;
   gap: 6px;
   color: var(--muted);
-  font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -169,7 +168,7 @@
 }
 
 .stat b {
-  font-family: "Bricolage Grotesque Variable", sans-serif;
+  font-family: var(--font-display);
   font-size: clamp(26px, 3vw, 32px);
   font-weight: 700;
   line-height: 1;
@@ -180,7 +179,6 @@
 .stat small {
   margin-left: 4px;
   color: var(--muted);
-  font-size: 12px;
   font-weight: 700;
 }
 
@@ -197,8 +195,6 @@
 .plan-chip {
   display: inline-flex;
   max-width: 100%;
-  min-height: var(--btn-h);
-  align-items: center;
   justify-content: center;
   padding: 0 12px;
   border: var(--btn-border) solid var(--ink);
@@ -212,6 +208,9 @@
   text-align: center;
   text-decoration: none;
   white-space: nowrap;
+  min-height: var(--btn-h);
+  align-items: center;
+  font-size: 14px;
 }
 
 .plan-chip[hidden] {

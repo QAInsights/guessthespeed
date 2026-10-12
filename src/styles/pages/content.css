@@ -9,7 +9,7 @@ html[lang="es"] .sec-head > h2 {
   overflow-wrap: anywhere;
 }
 
-@media (max-width: 960px) {
+@media (max-width: 980px) {
   .foot {
     grid-template-columns: minmax(0, 1fr);
     gap: 36px;
@@ -25,16 +25,6 @@ html[lang="es"] .sec-head > h2 {
   .foot-nav {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 28px 20px;
-  }
-
-  .foot-col ul {
-    gap: 4px;
-  }
-
-  .foot-col a {
-    display: inline-flex;
-    min-height: 32px;
-    align-items: center;
   }
 
   .foot-base {
@@ -227,8 +217,8 @@ html[lang="es"] .sec-head > h2 {
   gap: 8px;
   margin-bottom: 18px;
   padding: 8px 13px;
-  border: 2px solid var(--ink);
-  border-radius: 999px;
+  border: var(--border-line);
+  border-radius: var(--r-pill);
   background: var(--accent);
   color: var(--on-accent);
   font-weight: 800;

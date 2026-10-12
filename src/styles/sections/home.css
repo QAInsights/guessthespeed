@@ -92,10 +92,10 @@
   display: inline-block;
   margin-bottom: 8px;
   padding: 5px 10px;
-  border: 2px solid var(--ink);
-  border-radius: 999px;
+  border: var(--border-line);
+  border-radius: var(--r-pill);
   background: var(--accent);
-  box-shadow: 2px 2px 0 var(--shadow);
+  box-shadow: var(--shadow-sm);
   color: var(--on-accent);
   font-size: 0.875rem;
   font-weight: 650;
@@ -173,7 +173,7 @@
   height: 36px;
   flex: 0 0 36px;
   place-items: center;
-  border: 2px solid var(--ink);
+  border: var(--border-line);
   border-radius: 50%;
   background: var(--bg);
   font-size: 19px;

@@ -119,14 +119,12 @@
   color: var(--muted);
   font-size: 0.875rem;
   font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
 }
 
 .room-bar-code strong,
 .room-qr-code strong {
   color: var(--ink);
-  font-family: var(--mono, ui-monospace, monospace);
+  font-family: var(--font-mono);
   font-size: clamp(1.65rem, 4vw, 2.35rem);
   font-weight: 950;
   letter-spacing: 0.2em;
@@ -147,8 +145,8 @@
   align-items: center;
   gap: 8px;
   padding: 6px 10px;
-  border: 2px solid var(--ink);
-  border-radius: 999px;
+  border: var(--border-line);
+  border-radius: var(--r-pill);
   background: var(--bg);
   box-shadow: 3px 3px 0 var(--ink);
   color: var(--ink);
@@ -172,8 +170,8 @@
   width: 36px;
   height: 21px;
   flex: 0 0 auto;
-  border: 2px solid var(--ink);
-  border-radius: 999px;
+  border: var(--border-line);
+  border-radius: var(--r-pill);
   background: var(--bg);
   transition: background 0.15s ease;
 }
@@ -303,7 +301,7 @@
   width: 32px;
   height: 32px;
   flex: none;
-  border: 2px solid var(--ink);
+  border: var(--border-line);
   border-radius: 9px;
   background: var(--surface);
   font-size: 19px;
@@ -335,7 +333,7 @@
 .room-connection {
   padding: 7px 11px;
   border: 1px solid rgb(37 98 64 / 28%);
-  border-radius: 999px;
+  border-radius: var(--r-pill);
   background: #e6f7e9;
   color: var(--on-pastel);
   font-size: 0.83rem;
@@ -356,7 +354,7 @@
   align-items: center;
   padding: 8px 12px;
   border: 1px dashed var(--line);
-  border-radius: 999px;
+  border-radius: var(--r-pill);
   background: var(--paper);
   color: var(--muted);
   font-size: 0.82rem;
@@ -388,7 +386,7 @@
 
 .room-join-code strong {
   color: var(--ink);
-  font-family: var(--mono, ui-monospace, monospace);
+  font-family: var(--font-mono);
   letter-spacing: 0.16em;
 }
 
@@ -405,7 +403,7 @@
   aspect-ratio: 1;
   place-items: center;
   padding: 12px;
-  border: 2px solid var(--ink);
+  border: var(--border-line);
   border-radius: 18px;
   background: white;
 }
@@ -436,7 +434,7 @@ html[data-room="1"] .dev-console {
   display: none !important;
 }
 
-@media (max-width: 720px) {
+@media (max-width: 760px) {
   .room-entry {
     grid-template-columns: minmax(0, 1fr);
   }

@@ -134,7 +134,7 @@ html[data-focus]:not([data-tv="1"]) .mode-hero-stats .plan-chip {
 
 @media (max-width: 640px) {
   html[data-focus] .room-tester-chip {
-    display: none !important;
+    display: none;
   }
 
   html[data-focus="race"][data-focus-stage="live"]:not([data-tv="1"])
@@ -256,9 +256,9 @@ html[data-focus]:not([data-tv="1"]) .mode-hero-stats .plan-chip {
   align-items: center;
   padding: 9px 16px;
   border: var(--btn-border) solid var(--ink);
-  border-radius: 999px;
+  border-radius: var(--r-pill);
   background: var(--accent);
-  box-shadow: 3px 3px 0 var(--shadow);
+  box-shadow: var(--shadow-md);
   color: var(--on-accent);
   font-size: 18px;
   font-weight: 800;
@@ -348,8 +348,8 @@ html[data-focus]:not([data-tv="1"]) .mode-hero-stats .plan-chip {
 .race-track-phases .race-track-band {
   height: 28px;
   overflow: hidden;
-  border: 2px solid var(--ink);
-  border-radius: 999px;
+  border: var(--border-line);
+  border-radius: var(--r-pill);
   background: var(--soft);
 }
 
@@ -402,8 +402,8 @@ html[data-focus]:not([data-tv="1"]) .mode-hero-stats .plan-chip {
 
 .race-lane {
   padding: 8px 10px;
-  border: 2px solid var(--ink);
-  border-radius: 12px;
+  border: var(--border-line);
+  border-radius: var(--r-sm);
   background: var(--surface);
 }
 
@@ -413,7 +413,7 @@ html[data-focus]:not([data-tv="1"]) .mode-hero-stats .plan-chip {
 
 .race-lane.is-winner {
   background: color-mix(in srgb, #ffd23f 38%, var(--surface));
-  box-shadow: 3px 3px 0 var(--shadow);
+  box-shadow: var(--shadow-md);
 }
 
 .race-lane.is-no-guess {
@@ -444,8 +444,8 @@ html[data-focus]:not([data-tv="1"]) .mode-hero-stats .plan-chip {
 .race-lane-road {
   position: relative;
   height: 36px;
-  border: 2px solid var(--ink);
-  border-radius: 999px;
+  border: var(--border-line);
+  border-radius: var(--r-pill);
   background: repeating-linear-gradient(
     90deg,
     var(--soft) 0 18px,
@@ -498,10 +498,10 @@ html[data-focus]:not([data-tv="1"]) .mode-hero-stats .plan-chip {
   width: 34px;
   height: 34px;
   place-items: center;
-  border: 2px solid var(--ink);
+  border: var(--border-line);
   border-radius: 50%;
   background: var(--surface);
-  box-shadow: 2px 2px 0 var(--shadow);
+  box-shadow: var(--shadow-sm);
   font-size: 18px;
   transform: translate(-50%, -50%);
   transition: left 0.6s linear;
@@ -524,7 +524,7 @@ html[data-focus]:not([data-tv="1"]) .mode-hero-stats .plan-chip {
   width: 20px;
   height: 20px;
   place-items: center;
-  border: 2px solid var(--ink);
+  border: var(--border-line);
   border-radius: 50%;
   background: var(--surface);
   font-size: 10px;
@@ -641,7 +641,7 @@ html[data-tv="1"] .race-lane-pin {
   margin: 12px 0 0;
   padding: 12px 14px;
   border: 2px dashed var(--ink);
-  border-radius: 12px;
+  border-radius: var(--r-sm);
   color: var(--muted);
   font-size: 14px;
   font-weight: 700;

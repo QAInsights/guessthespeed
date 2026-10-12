@@ -4,9 +4,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
   padding-top: 18px;
   padding-bottom: 18px;
+  flex-wrap: nowrap;
+  gap: clamp(8px, 1vw, 14px);
 }
 
 .logo {
@@ -26,9 +27,9 @@
   transform: rotate(-6deg);
   place-items: center;
   border: 2.5px solid var(--ink);
-  border-radius: 12px;
+  border-radius: var(--r-sm);
   background: var(--accent);
-  box-shadow: 3px 3px 0 var(--shadow);
+  box-shadow: var(--shadow-md);
   color: var(--on-accent);
   font:
     800 26px/1 "Bricolage Grotesque Variable",
@@ -46,7 +47,9 @@
 .ctrls {
   display: flex;
   align-items: center;
-  gap: 10px;
+  min-width: 0;
+  flex: 0 1 auto;
+  gap: 6px;
 }
 
 .ctrl {
@@ -64,14 +67,6 @@
 }
 
 .icon-btn {
-  display: inline-flex;
-  width: auto;
-  min-width: var(--btn-h);
-  height: var(--btn-h);
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 0 10px;
   text-decoration: none;
 }
 
@@ -84,7 +79,6 @@
 .icon-btn svg {
   width: 18px;
   height: 18px;
-  flex: none;
 }
 
 .icon-btn[data-tv-toggle][aria-pressed="true"],
@@ -128,7 +122,7 @@
   width: 16px;
   height: 16px;
   flex: none;
-  border: 2px solid var(--ink);
+  border: var(--border-line);
   border-radius: 50%;
   background: var(--accent);
 }
@@ -229,7 +223,7 @@
   width: 32px;
   height: 32px;
   flex: none;
-  border: 2px solid var(--ink);
+  border: var(--border-line);
   border-radius: 9px;
   background: var(--surface);
   font-size: 17px;
