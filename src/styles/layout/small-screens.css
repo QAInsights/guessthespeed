@@ -56,12 +56,6 @@
   font-size: 14px;
 }
 
-[data-emoji-picker] span,
-[data-room-emoji-picker] span {
-  width: 44px;
-  height: 44px;
-}
-
 [data-emoji-picker] small,
 [data-room-emoji-picker] small {
   font-size: 0.875rem;
@@ -77,10 +71,6 @@
 .room-join-form > button {
   flex: 0 0 auto;
   white-space: nowrap;
-}
-
-.room-join-form .dialog-input {
-  flex: 1 1 0;
 }
 
 .promo-blurb,
@@ -251,12 +241,6 @@ summary {
   .language-trigger .language-name,
   .language-trigger svg:last-child {
     display: none;
-  }
-
-  .language-trigger .language-code {
-    display: inline;
-    font-size: 0.875rem;
-    font-weight: 800;
   }
 
   .icon-btn[data-open-settings] {

@@ -83,8 +83,8 @@
 .room-join-form .dialog-input {
   min-width: 0;
   width: 100%;
-  flex: 1 1 auto;
   text-transform: uppercase;
+  flex: 1 1 0;
 }
 
 .room-join-form .dialog-input::placeholder {

@@ -607,13 +607,13 @@ html[lang] .p-actions .p-card-guess-actions > * {
 [data-emoji-picker] span,
 [data-room-emoji-picker] span {
   display: grid;
-  width: 42px;
-  height: 42px;
   place-items: center;
   border: 2px solid transparent;
   border-radius: 12px;
   font-size: 25px;
   transition: transform 0.1s;
+  width: 44px;
+  height: 44px;
 }
 
 [data-emoji-picker] small,
