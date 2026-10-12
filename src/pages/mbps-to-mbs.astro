@@ -1,5 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
+import ArticleTools from '../components/ArticleTools.astro';
 import '../styles/site.css';
 import { downloadSeconds, formatDuration, mbpsToMBps } from '../lib/convert';
 
@@ -85,6 +86,7 @@ const calculatorSchema = {
       Divide Mbps by eight to estimate MB/s: a 100 Mbps connection has a line-rate equivalent of
       12.5 MB/s. Enter either unit below to see the other value and its Gbps equivalent.
     </p>
+    <ArticleTools path="/mbps-to-mbs/" />
     <article class="content-card stk">
       <h2>How many megabytes per second is your speed?</h2>
       <section class="converter-panel stk" data-mbps-converter aria-label="Mbps and MB/s converter">

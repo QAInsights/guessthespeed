@@ -42,3 +42,7 @@
 - [Internet speed lesson for kids](https://guessthespeed.com/internet-speed-lesson-for-kids/)
 - [Privacy](https://guessthespeed.com/privacy/)
 - [Full game guide](https://guessthespeed.com/llms-full.txt)
+
+## Markdown versions
+
+Every Speed School article is also available as clean Markdown at the same URL with `.md` instead of the trailing slash, for example https://guessthespeed.com/internet-speed-for-gaming.md. The full list is at https://guessthespeed.com/speed-school/.
