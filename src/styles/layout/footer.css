@@ -32,7 +32,7 @@ footer {
   width: 36px;
   height: 36px;
   border-radius: 10px;
-  box-shadow: 2px 2px 0 var(--shadow);
+  box-shadow: var(--shadow-sm);
   font-size: 21px;
 }
 
@@ -59,16 +59,14 @@ footer {
 
 .foot-actions a {
   display: inline-flex;
-  min-height: 36px;
   align-items: center;
   gap: 6px;
   padding: 6px 14px;
-  border: 2px solid var(--ink);
-  border-radius: 999px;
+  border: var(--border-line);
+  border-radius: var(--r-pill);
   background: var(--surface);
-  box-shadow: 2px 2px 0 var(--shadow);
+  box-shadow: var(--shadow-sm);
   color: var(--ink);
-  font-size: 13px;
   font-weight: 800;
   text-decoration: none;
   transition:
@@ -78,7 +76,7 @@ footer {
 
 .foot-actions a:hover {
   transform: translate(-1px, -1px);
-  box-shadow: 3px 3px 0 var(--shadow);
+  box-shadow: var(--shadow-md);
 }
 
 .foot-actions svg {
@@ -99,10 +97,7 @@ footer {
 .foot-col h2 {
   margin: 0 0 14px;
   color: var(--ink);
-  font-size: 0.875rem;
   font-weight: 900;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
 }
 
 .foot-col h2::after {
@@ -117,10 +112,10 @@ footer {
 
 .foot-col ul {
   display: grid;
-  gap: 10px;
   margin: 0;
   padding: 0;
   list-style: none;
+  gap: 4px;
 }
 
 .foot-col a,
@@ -176,14 +171,7 @@ footer {
 
 .foot-projects span {
   color: var(--ink);
-  font-size: 0.875rem;
   font-weight: 900;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.foot-projects a {
-  font-size: 0.9375rem;
 }
 
 .language-picker {
@@ -246,7 +234,6 @@ footer {
 
 .footer-languages a {
   color: var(--muted);
-  font-size: 0.85rem;
   font-weight: 700;
   text-decoration: none;
   text-underline-offset: 4px;
@@ -295,15 +282,11 @@ html[lang="ta"] button,
 html[lang="ta"] input,
 html[lang="ta"] select,
 html[lang="ta"] textarea {
-  font-family:
-    "Figtree Variable", Figtree, "Noto Sans Tamil Variable", "Noto Sans Tamil",
-    system-ui, sans-serif;
+  font-family: var(--font-body-ta);
 }
 
 html[lang="ta"] :is(h1, h2, h3, h4, .display, .logo b, .foot-logo b) {
-  font-family:
-    "Bricolage Grotesque Variable", "Noto Sans Tamil Variable",
-    "Noto Sans Tamil", sans-serif;
+  font-family: var(--font-display-ta);
 }
 
 html[lang="ta"]

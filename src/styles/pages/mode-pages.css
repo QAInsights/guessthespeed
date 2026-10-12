@@ -167,7 +167,7 @@ html[data-dev="1"] .dev-mode-pill-label {
   }
 }
 
-@media (max-width: 560px) {
+@media (max-width: 640px) {
   .dev-result {
     padding: 18px 16px;
   }

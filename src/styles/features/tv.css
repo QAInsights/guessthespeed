@@ -22,10 +22,10 @@
     justify-content: center;
     margin-right: 4px;
     padding: 2px 7px;
-    border: 2px solid var(--ink);
+    border: var(--border-line);
     border-radius: 7px;
     background: var(--bg);
-    box-shadow: 2px 2px 0 var(--shadow);
+    box-shadow: var(--shadow-sm);
     color: var(--ink);
     font: inherit;
     transform: rotate(-2deg);
@@ -360,10 +360,6 @@
     margin-top: 12px;
     padding: 0 18px;
     font-size: 17px;
-  }
-
-  html[data-tv="1"][data-home="1"] .add[hidden] {
-    display: none !important;
   }
 
   html[data-tv="1"][data-home="1"] .add:not([hidden]) {

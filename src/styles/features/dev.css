@@ -119,7 +119,7 @@ html[data-classroom="1"] .dev-result {
 }
 
 .dev-result-value {
-  font-family: "Bricolage Grotesque Variable", sans-serif;
+  font-family: var(--font-display);
   font-size: clamp(56px, 7vw, 88px);
   font-weight: 700;
   line-height: 1;
@@ -183,7 +183,7 @@ html[data-classroom="1"] .dev-result {
 
 .dev-result-row-value > span:first-child {
   color: var(--ink);
-  font-family: "Bricolage Grotesque Variable", sans-serif;
+  font-family: var(--font-display);
   font-size: 34px;
   font-weight: 700;
   line-height: 1;
@@ -199,7 +199,7 @@ html[data-classroom="1"] .dev-result {
 .dev-bar {
   height: 6px;
   overflow: hidden;
-  border-radius: 999px;
+  border-radius: var(--r-pill);
   background: var(--soft);
 }
 
@@ -236,8 +236,8 @@ html[data-classroom="1"] .dev-result {
   align-items: center;
   gap: 6px;
   padding: 0 10px;
-  border-radius: 999px;
-  font-family: "Bricolage Grotesque Variable", sans-serif;
+  border-radius: var(--r-pill);
+  font-family: var(--font-display);
   font-size: 13px;
   font-weight: 800;
   line-height: 1;
@@ -312,16 +312,12 @@ html[data-classroom="1"] .dev-result {
 
 html[lang="ta"]
   :is(.dev-result-label, .dev-result-unit, .dev-result-sub, .dev-result-meta) {
-  font-family:
-    "Figtree Variable", Figtree, "Noto Sans Tamil Variable", "Noto Sans Tamil",
-    system-ui, sans-serif;
+  font-family: var(--font-body-ta);
 }
 
 html[lang="ta"]
   :is(.dev-use, .dev-result-row-value > span:first-child, .dev-result-value) {
-  font-family:
-    "Bricolage Grotesque Variable", "Noto Sans Tamil Variable",
-    "Noto Sans Tamil", sans-serif;
+  font-family: var(--font-display-ta);
 }
 
 @media (forced-colors: active) {
@@ -499,7 +495,7 @@ html[lang="ta"]
   margin-left: 0;
   padding: 2px 8px;
   border: 1.5px solid var(--ink);
-  border-radius: 999px;
+  border-radius: var(--r-pill);
   background: var(--surface);
   color: var(--ink);
   font: inherit;
@@ -512,8 +508,8 @@ html[lang="ta"]
   gap: 8px;
 }
 
-.dev-privacy-note {
-  margin-top: 12px !important;
+.dev-panel .dev-privacy-note {
+  margin-top: 12px;
   font-size: 0.875rem;
 }
 
@@ -580,24 +576,13 @@ html[lang="ta"]
   }
 
   .mode-switch :is(button, a) {
-    flex: 1 0 auto;
-    min-height: var(--btn-h);
-    gap: 4px;
     padding-right: 6px;
     padding-left: 6px;
-    font-size: 14px;
     text-align: center;
   }
 
   .mode-switch::-webkit-scrollbar {
     display: none;
-  }
-
-  .top {
-    flex-wrap: wrap;
-    gap: 8px;
-    padding-top: 12px;
-    padding-bottom: 12px;
   }
 
   .logo {
@@ -612,17 +597,6 @@ html[lang="ta"]
   .logo-badge {
     width: 44px;
     height: 44px;
-  }
-
-  .ctrls {
-    width: auto;
-    flex: 1;
-    gap: 6px;
-    min-width: 0;
-  }
-
-  .language-picker {
-    margin-left: auto;
   }
 
   .language-trigger {
@@ -650,17 +624,6 @@ html[lang="ta"]
     height: 44px;
   }
 
-  .theme-picker {
-    flex: 1;
-  }
-
-  .theme-trigger {
-    width: 100%;
-    max-width: none;
-    padding: 0 10px;
-    font-size: 13px;
-  }
-
   .theme-trigger-label {
     flex: 1;
   }
@@ -670,10 +633,6 @@ html[lang="ta"]
     left: 0;
     width: calc(100vw - 30px);
     transform-origin: top left;
-  }
-
-  .icon-btn {
-    width: var(--btn-h);
   }
 
   .stage {
@@ -708,20 +667,14 @@ html[lang="ta"]
 
   .stat span {
     gap: 3px;
-    font-size: 12px;
   }
 
   .stat b {
     font-size: 26px;
   }
 
-  .stat small {
-    font-size: 11px;
-  }
-
   .plan-chip {
     padding: 0 8px;
-    font-size: 13px;
   }
 
   .sec-head {
@@ -740,7 +693,6 @@ html[lang="ta"]
 
   .seg button {
     padding: 7px 10px;
-    font-size: 14px;
   }
 
   [data-players] {
@@ -813,7 +765,6 @@ html[lang="ta"]
 
 @media (max-width: 420px) {
   .mode-switch {
-    gap: 1px;
     padding: 3px;
   }
 

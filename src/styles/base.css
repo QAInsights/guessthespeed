@@ -87,3 +87,7 @@ h3,
   background: linear-gradient(128deg, var(--surface), var(--bg));
   box-shadow: var(--card-shadow);
 }
+
+[hidden] {
+  display: none !important;
+}

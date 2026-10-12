@@ -77,8 +77,8 @@ dialog::backdrop {
   min-width: 0;
   margin: 0;
   padding: 12px;
-  border: 2px solid var(--ink);
-  border-radius: 12px;
+  border: var(--border-line);
+  border-radius: var(--r-sm);
 }
 
 .dialog-plan-group legend {
@@ -111,7 +111,7 @@ dialog::backdrop {
   min-height: 48px;
   padding: 8px 12px;
   border: 2.5px solid var(--ink);
-  border-radius: 12px;
+  border-radius: var(--r-sm);
   background: var(--bg);
 }
 
@@ -164,7 +164,7 @@ dialog::backdrop {
   gap: 10px;
   margin-bottom: 18px;
   padding: 10px 14px;
-  border: 2px solid var(--ink);
+  border: var(--border-line);
   border-radius: 14px;
   background: var(--bg);
   font-weight: 800;
@@ -189,8 +189,8 @@ dialog::backdrop {
   grid-template-columns: 1fr auto;
   align-items: center;
   padding: 12px 14px;
-  border: 2px solid var(--ink);
-  border-radius: 12px;
+  border: var(--border-line);
+  border-radius: var(--r-sm);
   background: var(--bg);
 }
 
@@ -200,8 +200,8 @@ dialog::backdrop {
   grid-template-columns: 1fr auto;
   align-items: center;
   padding: 12px 14px;
-  border: 2px solid var(--ink);
-  border-radius: 12px;
+  border: var(--border-line);
+  border-radius: var(--r-sm);
   background: var(--bg);
 }
 
@@ -216,7 +216,6 @@ dialog::backdrop {
 .music-setting small,
 .aurora-setting small {
   color: var(--muted);
-  font-size: 12px;
   font-weight: 600;
 }
 
@@ -231,8 +230,8 @@ dialog::backdrop {
   margin: 0;
   padding: 2px;
   appearance: none;
-  border: 2px solid var(--ink);
-  border-radius: 999px;
+  border: var(--border-line);
+  border-radius: var(--r-pill);
   background: var(--bg);
   cursor: pointer;
   transition: background-color 120ms ease;
@@ -444,7 +443,7 @@ dialog::backdrop {
 }
 
 .podium-score {
-  font-family: "Bricolage Grotesque Variable", sans-serif;
+  font-family: var(--font-display);
   font-size: 24px;
   font-weight: 900;
 }
@@ -464,8 +463,4 @@ dialog::backdrop {
   font-size: 13px;
   font-weight: 700;
   text-align: center;
-}
-
-[hidden] {
-  display: none !important;
 }

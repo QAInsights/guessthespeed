@@ -47,7 +47,7 @@
 
 .race-meter-head > strong {
   color: var(--ink);
-  font-family: "Bricolage Grotesque Variable", sans-serif;
+  font-family: var(--font-display);
   font-size: 1.25rem;
   font-weight: 850;
   white-space: nowrap;
@@ -291,7 +291,7 @@
   background: color-mix(in srgb, var(--gauge-down-1) 14%, var(--surface));
 }
 
-@media (max-width: 560px) {
+@media (max-width: 640px) {
   .race-breakdown {
     padding: 14px;
   }
@@ -392,9 +392,7 @@
 }
 
 html[lang="ta"] .race-meter-head > strong {
-  font-family:
-    "Bricolage Grotesque Variable", "Noto Sans Tamil Variable",
-    "Noto Sans Tamil", sans-serif;
+  font-family: var(--font-display-ta);
 }
 
 @media (prefers-reduced-motion: reduce) {

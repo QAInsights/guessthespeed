@@ -33,6 +33,16 @@
   --ping-2: #4c6ef5;
   --r: 14px;
   color-scheme: light;
+  --r-sm: 12px;
+  --r-pill: 999px;
+  --font-display: "Bricolage Grotesque Variable", sans-serif;
+  --font-display-ta:
+    "Bricolage Grotesque Variable", "Noto Sans Tamil Variable",
+    "Noto Sans Tamil", sans-serif;
+  --font-body-ta:
+    "Figtree Variable", Figtree, "Noto Sans Tamil Variable", "Noto Sans Tamil",
+    system-ui, sans-serif;
+  --font-mono: ui-monospace, monospace;
 }
 
 [data-theme="dark"] {
@@ -312,4 +322,14 @@
   --aurora-4: #ff8c1a;
   --aurora-5: #0f9d8a;
   color-scheme: light;
+}
+
+/* Built from --ink and --shadow, so they must be recomputed wherever a theme is set (the theme menu swatches set data-theme too). */
+
+:root,
+[data-theme] {
+  --shadow-sm: 2px 2px 0 var(--shadow);
+  --shadow-md: 3px 3px 0 var(--shadow);
+  --shadow-lg: 4px 4px 0 var(--shadow);
+  --border-line: 2px solid var(--ink);
 }

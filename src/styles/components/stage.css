@@ -67,7 +67,6 @@ footer {
   align-items: center;
   justify-content: center;
   gap: 7px;
-  min-height: var(--btn-h);
   padding: 7px 14px;
   border: var(--btn-border) solid transparent;
   border-radius: var(--btn-radius);
@@ -149,7 +148,7 @@ html[data-room="1"] .mode-bar {
   border: 2.5px solid var(--ink);
   border-radius: 7px;
   background: var(--accent);
-  box-shadow: 4px 4px 0 var(--shadow);
+  box-shadow: var(--shadow-lg);
   color: var(--on-accent);
   font-size: 14px;
   font-weight: 800;
@@ -171,7 +170,7 @@ html[data-dev="1"] .mode-hero-visual .play-stat {
   border: 2.5px solid var(--ink);
   border-radius: 7px;
   background: var(--accent);
-  box-shadow: 4px 4px 0 var(--shadow);
+  box-shadow: var(--shadow-lg);
   color: var(--on-accent);
   font-weight: 800;
   line-height: 1.25;
@@ -195,8 +194,8 @@ html[data-dev="1"] .mode-hero-visual .play-stat {
   gap: 6px;
   margin-bottom: 14px;
   padding: 6px 12px;
-  border: 2px solid var(--ink);
-  border-radius: 999px;
+  border: var(--border-line);
+  border-radius: var(--r-pill);
   background: var(--surface);
   font-size: 14px;
   font-weight: 800;
@@ -323,7 +322,7 @@ html[data-revealing="1"] .gauge-needle {
   align-items: center;
   gap: 6px;
   padding: 4px 10px;
-  border-radius: 999px;
+  border-radius: var(--r-pill);
   background: var(--soft);
   color: var(--muted);
   font-size: 12px;
@@ -346,7 +345,7 @@ html[data-revealing="1"] .gauge-needle {
 
 .readout .num {
   margin-top: 10px;
-  font-family: "Bricolage Grotesque Variable", sans-serif;
+  font-family: var(--font-display);
   font-size: min(68px, 15cqi);
   font-weight: 700;
   font-variation-settings: "wdth" 85;
@@ -423,10 +422,10 @@ html[data-revealing="1"] .gauge-needle {
   width: 11px;
   height: 11px;
   flex: 0 0 11px;
-  border: 2px solid var(--ink);
+  border: var(--border-line);
   border-radius: 50%;
   background: var(--accent);
-  box-shadow: 2px 2px 0 var(--shadow);
+  box-shadow: var(--shadow-sm);
 }
 
 .live-dot.is-live {
@@ -458,9 +457,9 @@ html[data-revealing="1"] .gauge-needle {
   margin: 0 auto 18px;
   overflow: hidden;
   border: 3px solid var(--ink);
-  border-radius: 999px;
+  border-radius: var(--r-pill);
   background: var(--surface);
-  box-shadow: 4px 4px 0 var(--shadow);
+  box-shadow: var(--shadow-lg);
 }
 
 .test-progress-fill {
