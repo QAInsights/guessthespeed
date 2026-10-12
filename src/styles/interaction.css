@@ -102,9 +102,6 @@
     background: var(--soft);
     text-decoration: none;
   }
-}
-
-@media (prefers-reduced-motion: no-preference) {
   :is(
       .go,
       .guess-button,
@@ -136,6 +133,19 @@
   .guess-input-control:has(
     .guess-stepper:active:not(:disabled):not([aria-disabled="true"])
   ) {
+    transform: translate(3px, 3px);
+    box-shadow: 0 0 0 var(--shadow);
+  }
+  :is(.theme-option, .room-picker-option, .p-edit, .p-rm):not(:disabled):not(
+      [aria-disabled="true"]
+    ):hover {
+    transform: translate(-1px, -1px);
+    box-shadow: var(--btn-shadow-hover);
+  }
+
+  :is(.theme-option, .room-picker-option, .p-edit, .p-rm):not(:disabled):not(
+      [aria-disabled="true"]
+    ):active {
     transform: translate(3px, 3px);
     box-shadow: 0 0 0 var(--shadow);
   }
@@ -213,22 +223,6 @@
 :is(.theme-option, .room-picker-option, .p-edit, .p-rm):focus-visible {
   outline: var(--focus-ring);
   outline-offset: var(--focus-offset);
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  :is(.theme-option, .room-picker-option, .p-edit, .p-rm):not(:disabled):not(
-      [aria-disabled="true"]
-    ):hover {
-    transform: translate(-1px, -1px);
-    box-shadow: var(--btn-shadow-hover);
-  }
-
-  :is(.theme-option, .room-picker-option, .p-edit, .p-rm):not(:disabled):not(
-      [aria-disabled="true"]
-    ):active {
-    transform: translate(3px, 3px);
-    box-shadow: 0 0 0 var(--shadow);
-  }
 }
 
 :is(.theme-option, .room-picker-option, .p-edit, .p-rm):is(

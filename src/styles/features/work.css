@@ -48,6 +48,7 @@
 .work-hero-sticker small {
   color: var(--muted);
   font-weight: 800;
+  font-size: 0.875rem;
 }
 
 .work-room-card {

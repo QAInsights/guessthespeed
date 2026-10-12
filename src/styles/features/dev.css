@@ -335,6 +335,18 @@ html[lang="ta"]
   .dev-bar i {
     transition: none;
   }
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .champion-confetti {
+    display: none;
+  }
 }
 
 .dev-console-head {
@@ -814,20 +826,5 @@ html[lang="ta"]
   .mode-switch svg {
     width: 12px;
     height: 12px;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    scroll-behavior: auto !important;
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-
-  .champion-confetti {
-    display: none;
   }
 }

@@ -182,12 +182,12 @@
   }
 
   html[data-tv="1"][data-home="1"] .phase-status {
-    min-height: clamp(18px, 2.5cqi, 28px);
     flex: none;
     gap: 0.75cqi;
     margin: 0.3cqi 0 0.6cqi;
     order: 2;
     grid-row: 2;
+    min-height: clamp(18px, 2.5cqi, 28px);
   }
 
   html[data-tv="1"][data-home="1"] .test-progress {
@@ -246,10 +246,6 @@
 
   html[data-tv="1"][data-home="1"] .stat b {
     font-size: clamp(20px, 1.8vw, 30px);
-  }
-
-  html[data-tv="1"][data-home="1"] .phase-status {
-    min-height: clamp(18px, 2.5cqi, 28px);
   }
 
   html[data-tv="1"][data-home="1"] .winner {

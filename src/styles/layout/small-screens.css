@@ -14,6 +14,12 @@
   .mode-hero .mode-hero-lede {
     line-height: 1.25;
   }
+  .work-room-actions .room-join-form .dialog-input {
+    flex-basis: 100%;
+  }
+  .logo b {
+    display: none;
+  }
 }
 
 @media (max-width: 370px) {
@@ -140,10 +146,6 @@ summary {
   align-items: center;
 }
 
-.work-hero-sticker small {
-  font-size: 0.875rem;
-}
-
 .confetti-setting small,
 .music-setting small,
 .aurora-setting small {
@@ -164,12 +166,6 @@ summary {
   font-family: inherit;
   letter-spacing: normal;
   text-transform: none;
-}
-
-@media (max-width: 420px) {
-  .work-room-actions .room-join-form .dialog-input {
-    flex-basis: 100%;
-  }
 }
 
 @media (max-width: 1023px) {
@@ -238,11 +234,6 @@ summary {
     margin-left: 0;
   }
 
-  .language-trigger .language-name,
-  .language-trigger svg:last-child {
-    display: none;
-  }
-
   .icon-btn[data-open-settings] {
     flex: none;
   }
@@ -258,12 +249,6 @@ summary {
 
   .promo-blurb {
     font-size: 0.875rem;
-  }
-}
-
-@media (max-width: 420px) {
-  .logo b {
-    display: none;
   }
 }
 
