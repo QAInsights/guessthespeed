@@ -283,6 +283,7 @@ dialog::backdrop {
 
 .next-round {
   margin-top: 14px;
+  min-height: var(--btn-h);
 }
 
 .champion-dialog {

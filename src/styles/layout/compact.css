@@ -3,11 +3,6 @@
   gap: clamp(8px, 1vw, 14px);
 }
 
-.logo {
-  min-height: 44px;
-  flex: none;
-}
-
 .ctrls {
   min-width: 0;
   flex: 0 1 auto;
@@ -38,12 +33,6 @@
 .ctrl-label {
   font-size: 14px;
   font-weight: 800;
-}
-
-.language-trigger {
-  min-width: var(--btn-h);
-  min-height: var(--btn-h);
-  font-size: 14px;
 }
 
 .settings-nav {
@@ -128,11 +117,6 @@
   font-size: 15px;
 }
 
-.mode-hero-pill {
-  min-height: var(--btn-h);
-  font-size: 14px;
-}
-
 .stat span {
   font-size: 0.875rem;
 }
@@ -147,37 +131,14 @@
   font-size: 14px;
 }
 
-.plan-nudge {
-  min-height: var(--btn-h);
-  font-size: 14px;
-}
-
-.wifi-history-footer {
-  font-size: 0.875rem;
-}
-
-.wifi-history-clear {
-  min-height: var(--btn-h);
-  padding: 0 8px;
-  font-size: 14px;
-}
-
 .p-role,
 .p-results {
   font-size: 0.875rem;
 }
 
-.p-role {
-  opacity: 1;
-}
-
 .p-score span {
   font-size: 0.8125rem;
   opacity: 1;
-}
-
-.locked-pill {
-  min-height: var(--btn-h);
 }
 
 .go.is-neutral {

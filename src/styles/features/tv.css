@@ -271,6 +271,7 @@
     grid-column: 1 / -1;
     grid-row: 1;
     margin: 0;
+    z-index: 10;
   }
 
   html[data-tv="1"][data-home="1"] .gauge {
@@ -425,10 +426,6 @@
 
   html[data-tv="1"][data-home="1"] .p-score span {
     font-size: 13px;
-  }
-
-  html[data-tv="1"][data-home="1"] .room-bar:not([hidden]) {
-    z-index: 10;
   }
 
   html[data-tv="1"][data-home="1"] .tv-add-toggle svg {

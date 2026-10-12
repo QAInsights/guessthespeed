@@ -219,7 +219,7 @@ html:not([data-aurora="0"]) .is-winner.has-aurora {
 .p-role {
   font-size: 13px;
   font-weight: 700;
-  opacity: 0.75;
+  opacity: 1;
 }
 
 .classroom-session-banner {
@@ -368,12 +368,15 @@ html[lang] .p-actions .p-card-guess-actions > * {
   border-color: var(--on-pastel);
   background: #d7f4d5;
   color: var(--on-pastel);
+  min-height: var(--btn-h);
 }
 
 .points-pill,
 .bonus-pill {
   background: var(--accent);
   color: var(--on-accent);
+  box-shadow: none;
+  font-size: 0.875rem;
 }
 
 .p-results {
@@ -468,10 +471,10 @@ html[lang] .p-actions .p-card-guess-actions > * {
   padding: 12px 14px;
   border-bottom: 2.5px solid var(--ink);
   color: var(--muted);
-  font-size: 0.875rem;
-  letter-spacing: 0.06em;
   text-align: left;
-  text-transform: uppercase;
+  font-size: 0.875rem;
+  letter-spacing: normal;
+  text-transform: none;
 }
 
 .p-table td {

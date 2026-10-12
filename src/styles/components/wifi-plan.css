@@ -100,13 +100,11 @@
   gap: 12px;
   margin: 0;
   color: var(--muted);
-  font-size: 13px;
   font-weight: 700;
+  font-size: 0.875rem;
 }
 
 .wifi-history-clear {
-  min-height: var(--btn-h);
-  padding: 0 8px;
   border: 0;
   border-radius: var(--btn-radius);
   background: transparent;
@@ -118,6 +116,9 @@
   text-decoration: underline;
   text-underline-offset: 4px;
   cursor: pointer;
+  min-height: var(--btn-h);
+  padding: 0 8px;
+  font-size: 14px;
 }
 
 .wifi-history-clear:focus-visible {
@@ -234,7 +235,6 @@
   align-self: center;
   gap: 5px;
   margin: 0;
-  min-height: var(--btn-h);
   padding: 0 12px;
   border: var(--btn-border) solid var(--ink);
   border-radius: var(--btn-radius);
@@ -247,6 +247,8 @@
   text-align: center;
   white-space: nowrap;
   cursor: pointer;
+  min-height: var(--btn-h);
+  font-size: 14px;
 }
 
 .plan-nudge svg {

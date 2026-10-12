@@ -573,17 +573,19 @@ html[data-tv="1"] .race-lane-pin {
 
   .race-track-phases,
   .race-track-scale {
-    padding-inline: 8px;
+    gap: 8px;
+    grid-template-columns: minmax(0, 1fr);
+    padding-inline: 10px;
   }
 
   .race-lane {
     gap: 8px;
-    padding: 6px 6px;
-  }
-
-  .race-track-phases,
-  .race-track-scale {
-    gap: 8px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "who stat"
+      "road road";
+    row-gap: 6px;
+    padding: 8px 10px 10px;
   }
 
   .race-track-phases .race-track-band > span {
@@ -597,6 +599,7 @@ html[data-tv="1"] .race-lane-pin {
 
   .race-lane-road {
     height: 30px;
+    grid-area: road;
   }
 
   .race-lane-pin {
@@ -613,31 +616,12 @@ html[data-tv="1"] .race-lane-pin {
     width: 100%;
   }
 
-  .race-lane {
-    grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-areas:
-      "who stat"
-      "road road";
-    row-gap: 6px;
-    padding: 8px 10px 10px;
-  }
-
   .race-lane-who {
     grid-area: who;
   }
 
   .race-lane-stat {
     grid-area: stat;
-  }
-
-  .race-lane-road {
-    grid-area: road;
-  }
-
-  .race-track-phases,
-  .race-track-scale {
-    grid-template-columns: minmax(0, 1fr);
-    padding-inline: 10px;
   }
 
   .race-track-phases .race-track-gap,

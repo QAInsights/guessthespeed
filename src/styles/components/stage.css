@@ -78,6 +78,9 @@ footer {
     sans-serif;
   cursor: pointer;
   text-decoration: none;
+  overflow-wrap: normal;
+  white-space: nowrap;
+  word-break: normal;
 }
 
 .mode-switch :is(button[aria-pressed="true"], [aria-current="page"]) {

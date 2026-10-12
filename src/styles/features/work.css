@@ -63,6 +63,7 @@
     radial-gradient(circle at 90% 0%, rgb(255 176 32 / 19%), transparent 42%),
     var(--surface);
   box-shadow: var(--card-shadow);
+  transform: none;
 }
 
 .work-kicker {
@@ -309,6 +310,7 @@
 
   .work-room-actions .room-join-form > button {
     justify-self: stretch;
+    flex: 1 1 100%;
   }
 
   .work-privacy {
