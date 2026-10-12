@@ -75,6 +75,7 @@ Room game data, including player names, face choices, guesses, and scores, is st
 - How it works: https://guessthespeed.com/how-it-works/
 - Internet speed 101: https://guessthespeed.com/internet-speed-101/
 - Good internet speed guide: https://guessthespeed.com/what-is-a-good-internet-speed/
+- Gaming internet speed guide: https://guessthespeed.com/internet-speed-for-gaming/
 - Internet plan quick check: https://guessthespeed.com/am-i-getting-the-speed-i-pay-for/
 - Household speed calculator: https://guessthespeed.com/how-much-internet-speed-do-i-need/
 - Mbps to MB/s converter and download-time calculator: https://guessthespeed.com/mbps-to-mbs/
@@ -89,6 +90,7 @@ Internet speed 101 defines bits, bytes, Mbps, MB/s, download, upload, ping, and 
 ## Internet speed guides and calculators
 
 - [What is a good internet speed?](https://guessthespeed.com/what-is-a-good-internet-speed/) explains sourced download, upload, streaming, video-call, Remote Play, and latency recommendations, with household starting ranges and advice for diagnosing a lower speed test.
+- [How much internet speed do you need for gaming?](https://guessthespeed.com/internet-speed-for-gaming/) gives sourced download, upload and ping guidance for online multiplayer, PlayStation Remote Play (5 Mbps minimum, 15 Mbps recommended both ways), Xbox Cloud Gaming (10 Mbps mobile, 20 Mbps consoles and PCs) and GeForce NOW (15 to 45 Mbps by resolution, under 80 ms latency), plus game download times at common plan speeds.
 - [Am I getting the internet speed I pay for?](https://guessthespeed.com/am-i-getting-the-speed-i-pay-for/) compares a measured download result with a plan, offers a browser-only quick checker, and explains fair testing and when to discuss a repeated gap with a provider. Its percentage colors are Guess the Speed's own rule of thumb.
 - [Household speed calculator](https://guessthespeed.com/how-much-internet-speed-do-i-need/) adds estimated download and upload rates for simultaneous 4K and HD streams, HD calls, game streaming, downloads, and connected devices, then adds 25% headroom and rounds to a common tier. Its active-download allowance is explicitly a planning assumption.
 - [Mbps to MB/s converter and download-time calculator](https://guessthespeed.com/mbps-to-mbs/) converts between Mbps, MB/s, and Gbps, and estimates decimal file download times at full rate and 90% efficiency.
