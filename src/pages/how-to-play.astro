@@ -1,5 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
+import ArticleTools from '../components/ArticleTools.astro';
 import '../styles/site.css';
 
 const questions = [
@@ -44,6 +45,7 @@ const faqSchema = {
     <span class="round-banner">Game night rules</span>
     <h1>How do you play Guess the Speed?</h1>
     <p class="lede">Everyone makes a secret download and upload guess. Then a real speed test reveals the numbers. The closest guesses collect points.</p>
+    <ArticleTools path="/how-to-play/" />
     <article class="content-card stk">
       <h2>How does a round work?</h2>
       <ol>

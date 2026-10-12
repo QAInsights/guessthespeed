@@ -420,22 +420,42 @@ const overheard: { face: string; quote: string; who: string; note: string }[] =
       >
         <div class="wifi-history-head">
           <h2 class="display" id="wifi-history-title">
-            {msg("history_title")}
+            <button
+              class="wifi-history-toggle"
+              type="button"
+              data-history-toggle
+              aria-expanded="false"
+              aria-controls="wifi-history-body"
+            >
+              <span>{msg("history_title")}</span>
+              <Icon
+                name="ph:caret-down-bold"
+                class="wifi-history-caret"
+                aria-hidden="true"
+              />
+            </button>
           </h2>
           <p class="wifi-history-summary" data-history-summary></p>
         </div>
-        <svg
-          class="wifi-history-chart"
-          data-history-chart
-          role="img"
-          viewBox="0 0 600 180"
-        ></svg>
-        <p class="wifi-history-footer">
-          <span>{msg("history_saved")}</span>
-          <button class="wifi-history-clear" type="button" data-clear-history>
-            {msg("history_clear")}
-          </button>
-        </p>
+        <div
+          class="wifi-history-body"
+          id="wifi-history-body"
+          data-history-body
+          hidden
+        >
+          <svg
+            class="wifi-history-chart"
+            data-history-chart
+            role="img"
+            viewBox="0 0 600 180"
+          ></svg>
+          <p class="wifi-history-footer">
+            <span>{msg("history_saved")}</span>
+            <button class="wifi-history-clear" type="button" data-clear-history>
+              {msg("history_clear")}
+            </button>
+          </p>
+        </div>
       </article>
     </section>
 

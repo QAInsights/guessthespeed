@@ -1,5 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
+import ArticleTools from '../components/ArticleTools.astro';
 import '../styles/site.css';
 import { ACTIVITY_RATES, recommendSpeed, type ActivityId } from '../lib/speed-needs';
 
@@ -178,6 +179,7 @@ const activities: {
       calls use about 51.4 Mbps down and 9 Mbps up before that buffer, so the calculator rounds
       the plan target to 100 Mbps down and 25 Mbps up.
     </p>
+    <ArticleTools path="/how-much-internet-speed-do-i-need/" />
     <article class="content-card stk">
       <h2>How many Mbps do I need?</h2>
       <p>

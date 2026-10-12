@@ -1,5 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
+import ArticleTools from '../components/ArticleTools.astro';
 import '../styles/site.css';
 
 const questions = [
@@ -52,7 +53,7 @@ const faqSchema = {
   schema={[faqSchema]}
 >
   <main class="wrap content-page">
-    <span class="round-banner">Speed school</span>
+    <a class="round-banner" href="/speed-school/">Speed School</a>
     <h1>What Is a Good Internet Speed in 2026?</h1>
     <p class="lede">
       For many homes, about 100 Mbps download and 20 Mbps upload is a useful starting point. That
@@ -60,6 +61,7 @@ const faqSchema = {
       but it is not a one-size-fits-all plan: lighter households can use less, while busy homes,
       creators, and people moving large files may benefit from more.
     </p>
+    <ArticleTools path="/what-is-a-good-internet-speed/" />
     <article class="content-card stk">
       <h2>How fast is good for your household?</h2>
       <p>
