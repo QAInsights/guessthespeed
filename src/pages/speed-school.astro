@@ -4,29 +4,12 @@ import Base from '../layouts/Base.astro';
 import '../styles/site.css';
 import { ARTICLE_CATEGORIES, ARTICLES, type ArticleCategory } from '../lib/articles';
 import { ogCardFor } from '../lib/og-cards';
+import { readingMinutes } from '../lib/reading-time';
 
 const SITE = 'https://guessthespeed.com';
 const pageUrl = `${SITE}/speed-school/`;
 const description =
   'Speed School is the Guess the Speed blog: plain-English, sourced guides to Mbps, ping, Wi-Fi and gaming speed, plus free tools and family game night ideas.';
-
-const sources = import.meta.glob<string>('./*.astro', {
-  query: '?raw',
-  import: 'default',
-  eager: true,
-});
-
-function readingMinutes(path: string): number {
-  const source = sources[`.${path.slice(0, -1)}.astro`] ?? '';
-  const main = source.match(/<main[\s\S]*<\/main>/)?.[0] ?? '';
-  const words = main
-    .replace(/<(script|style)[\s\S]*?<\/\1>/g, ' ')
-    .replace(/\{[^{}]*\}/g, ' ')
-    .replace(/<[^>]+>/g, ' ')
-    .split(/\s+/)
-    .filter((word) => /[a-z0-9]/i.test(word)).length;
-  return Math.max(1, Math.round(words / 220));
-}
 
 const categorySlug = (category: ArticleCategory) =>
   category.toLowerCase().replace(/\s+/g, '-');

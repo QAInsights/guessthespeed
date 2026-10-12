@@ -26,4 +26,13 @@ describe("Speed School articles", () => {
       expect(ARTICLES.some((a) => a.category === category)).toBe(true);
     }
   });
+
+  it("gives every article a short TL;DR", () => {
+    for (const { tldr, updated, published } of ARTICLES) {
+      expect(tldr.length).toBeGreaterThanOrEqual(3);
+      expect(tldr.length).toBeLessThanOrEqual(4);
+      for (const point of tldr) expect(point).not.toMatch(/\u2014/);
+      if (updated) expect(updated >= published).toBe(true);
+    }
+  });
 });

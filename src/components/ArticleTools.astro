@@ -1,0 +1,303 @@
+---
+import { Icon } from 'astro-icon/components';
+import { ARTICLES } from '../lib/articles';
+import { readingMinutes } from '../lib/reading-time';
+
+interface Props {
+  path: string;
+}
+
+const { path } = Astro.props;
+const article = ARTICLES.find((entry) => entry.path === path);
+if (!article) throw new Error(`Add ${path} to ARTICLES in src/lib/articles.ts`);
+
+const SITE = 'https://guessthespeed.com';
+const url = `${SITE}${path}`;
+const markdownPath = `${path.slice(0, -1)}.md`;
+const updated = article.updated ?? article.published;
+const formatDate = (date: string) =>
+  new Date(`${date}T12:00:00Z`).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    timeZone: 'UTC',
+  });
+const enc = encodeURIComponent;
+
+const shareLinks = [
+  { label: 'WhatsApp', icon: 'ph:whatsapp-logo-bold', href: `https://wa.me/?text=${enc(`${article.title} ${url}`)}` },
+  { label: 'X', icon: 'ph:x-logo-bold', href: `https://x.com/intent/post?text=${enc(article.title)}&url=${enc(url)}` },
+  { label: 'LinkedIn', icon: 'ph:linkedin-logo-bold', href: `https://www.linkedin.com/sharing/share-offsite/?url=${enc(url)}` },
+  { label: 'Facebook', icon: 'ph:facebook-logo-bold', href: `https://www.facebook.com/sharer/sharer.php?u=${enc(url)}` },
+  { label: 'Reddit', icon: 'ph:reddit-logo-bold', href: `https://www.reddit.com/submit?url=${enc(url)}&title=${enc(article.title)}` },
+  { label: 'Email', icon: 'ph:envelope-simple-bold', href: `mailto:?subject=${enc(article.title)}&body=${enc(`${article.excerpt}\n\n${url}`)}` },
+];
+
+const prompt = `Read ${url} and summarize the key points, then help me apply them to my home internet.`;
+const aiLinks = [
+  { label: 'ChatGPT', href: `https://chatgpt.com/?q=${enc(prompt)}` },
+  { label: 'Claude', href: `https://claude.ai/new?q=${enc(prompt)}` },
+  { label: 'Perplexity', href: `https://www.perplexity.ai/search?q=${enc(prompt)}` },
+];
+
+const pageSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebPage',
+  '@id': `${url}#webpage`,
+  url,
+  name: article.title,
+  description: article.excerpt,
+  datePublished: article.published,
+  dateModified: updated,
+  author: { '@id': `${SITE}/#author` },
+  isPartOf: { '@id': `${SITE}/speed-school/#blog` },
+  abstract: article.tldr.join(' '),
+  speakable: { '@type': 'SpeakableSpecification', cssSelector: ['.article-tldr'] },
+};
+---
+
+<p class="article-meta" data-md-skip>
+  <span>By <a href="/story/">NaveenKumar Namachivayam</a></span>
+  <span>Published <time datetime={article.published}>{formatDate(article.published)}</time></span>
+  {updated !== article.published && (
+    <span>Updated <time datetime={updated}>{formatDate(updated)}</time></span>
+  )}
+  <span>{readingMinutes(path)} min read</span>
+</p>
+
+<section class="article-tldr stk" aria-labelledby="article-tldr-title">
+  <h2 id="article-tldr-title">TL;DR</h2>
+  <ul>
+    {article.tldr.map((point) => <li>{point}</li>)}
+  </ul>
+</section>
+
+<div class="article-share" data-md-skip data-article-share>
+  <div class="share-row" role="group" aria-label="Share this article">
+    <span class="share-label">Share</span>
+    <button type="button" class="share-pill" data-native-share hidden>
+      <Icon name="ph:share-network-bold" aria-hidden="true" /> Share
+    </button>
+    <button type="button" class="share-pill" data-copy-link={url}>
+      <Icon name="ph:link-bold" aria-hidden="true" /> Copy link
+    </button>
+    {
+      shareLinks.map(({ label, icon, href }) => (
+        <a
+          class="share-pill is-icon"
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={`Share on ${label}`}
+          title={label}
+        >
+          <Icon name={icon} aria-hidden="true" />
+        </a>
+      ))
+    }
+  </div>
+  <div class="share-row" role="group" aria-label="Use this article with AI">
+    <span class="share-label">AI</span>
+    <button type="button" class="share-pill" data-copy-markdown={markdownPath}>
+      <Icon name="ph:copy-bold" aria-hidden="true" /> Copy for AI
+    </button>
+    <a class="share-pill" href={markdownPath} type="text/markdown">
+      <Icon name="ph:file-text-bold" aria-hidden="true" /> Markdown
+    </a>
+    {
+      aiLinks.map(({ label, href }) => (
+        <a class="share-pill" href={href} target="_blank" rel="noopener noreferrer">
+          <Icon name="ph:sparkle-bold" aria-hidden="true" /> Ask {label}
+        </a>
+      ))
+    }
+  </div>
+  <p class="share-status" role="status" data-share-status></p>
+</div>
+
+<script type="application/ld+json" set:html={JSON.stringify(pageSchema)} />
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-article-share]');
+  const status = root?.querySelector<HTMLElement>('[data-share-status]');
+  let timer = 0;
+
+  function say(message: string) {
+    if (!status) return;
+    status.textContent = message;
+    window.clearTimeout(timer);
+    timer = window.setTimeout(() => (status.textContent = ''), 4000);
+  }
+
+  const nativeShare = root?.querySelector<HTMLButtonElement>('[data-native-share]');
+  const copyLink = root?.querySelector<HTMLButtonElement>('[data-copy-link]');
+  const copyMarkdown = root?.querySelector<HTMLButtonElement>('[data-copy-markdown]');
+  const url = copyLink?.dataset.copyLink ?? location.href;
+
+  if (nativeShare && typeof navigator.share === 'function') {
+    nativeShare.hidden = false;
+    nativeShare.addEventListener('click', () => {
+      navigator.share({ title: document.title, url }).catch(() => {});
+    });
+  }
+
+  copyLink?.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(url);
+      say('Link copied.');
+    } catch {
+      say(`Copy failed. The link is ${url}`);
+    }
+  });
+
+  copyMarkdown?.addEventListener('click', async () => {
+    const path = copyMarkdown.dataset.copyMarkdown ?? '';
+    try {
+      const text = fetch(path).then((response) => {
+        if (!response.ok) throw new Error(String(response.status));
+        return response.text();
+      });
+      await navigator.clipboard.write([
+        new ClipboardItem({ 'text/plain': text.then((body) => new Blob([body], { type: 'text/plain' })) }),
+      ]);
+      say('Article copied as Markdown. Paste it into any AI chat.');
+    } catch {
+      say(`Copy failed. Open ${path} to copy it by hand.`);
+    }
+  });
+</script>
+
+<style>
+  .article-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 16px;
+    margin: 18px 0 0;
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .article-meta a {
+    color: var(--ink);
+  }
+
+  .article-tldr {
+    position: relative;
+    margin-top: 22px;
+    padding: 20px 24px 18px 28px;
+    overflow: hidden;
+  }
+
+  .article-tldr::before {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 8px;
+    background: linear-gradient(180deg, var(--aurora-4), var(--aurora-3));
+    content: '';
+  }
+
+  .article-tldr h2 {
+    margin: 0 0 8px;
+    font-size: 15px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .article-tldr ul {
+    display: grid;
+    gap: 8px;
+    margin: 0;
+    padding-left: 20px;
+  }
+
+  .article-tldr li {
+    max-width: 72ch;
+    color: var(--ink);
+    line-height: 1.55;
+  }
+
+  .article-share {
+    display: grid;
+    gap: 10px;
+    margin-top: 18px;
+  }
+
+  .share-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .share-label {
+    min-width: 44px;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .share-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 38px;
+    padding: 0 13px;
+    border: var(--btn-border) solid var(--ink);
+    border-radius: var(--r-pill);
+    background: var(--surface);
+    color: var(--ink);
+    font: 800 14px/1 var(--font-display);
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+      transform 0.15s ease,
+      box-shadow 0.15s ease;
+  }
+
+  .share-pill[hidden] {
+    display: none;
+  }
+
+  .share-pill.is-icon {
+    width: 38px;
+    justify-content: center;
+    padding: 0;
+  }
+
+  .share-pill :global(svg) {
+    width: 17px;
+    height: 17px;
+    flex: none;
+  }
+
+  .share-pill:hover {
+    box-shadow: var(--btn-shadow);
+    transform: translate(-1px, -1px);
+  }
+
+  .share-pill:focus-visible {
+    outline: var(--focus-ring);
+    outline-offset: var(--focus-offset);
+  }
+
+  .share-status {
+    min-height: 1.4em;
+    margin: 0;
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .share-pill {
+      transition: none;
+    }
+
+    .share-pill:hover {
+      transform: none;
+    }
+  }
+</style>

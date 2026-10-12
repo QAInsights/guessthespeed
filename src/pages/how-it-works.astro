@@ -1,5 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
+import ArticleTools from '../components/ArticleTools.astro';
 import '../styles/site.css';
 
 const questions = [
@@ -62,6 +63,7 @@ const faqSchema = {
       slower than it is. This test ramps through larger files, checks both directions, and turns
       your guesses into points.
     </p>
+    <ArticleTools path="/how-it-works/" />
     <article class="content-card stk">
       <h2>A real test in your browser</h2>
       <p>
