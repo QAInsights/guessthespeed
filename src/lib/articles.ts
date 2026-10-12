@@ -24,6 +24,20 @@ export interface Article {
 /** Every Speed School article, newest first. New article pages must be added here. */
 export const ARTICLES: Article[] = [
   {
+    path: "/upload-vs-download-speed/",
+    title: "Upload vs Download Speed: What Is the Difference?",
+    excerpt:
+      "What upload and download speed mean, why most plans give you far less upload, and how much upload video calls, live streams and backups need.",
+    category: "Guides",
+    published: "2026-10-12",
+    tldr: [
+      "Download speed is how fast data reaches you, and upload speed is how fast you send data out. Most homes need far more download than upload.",
+      "Video calls, live streams and cloud backups lean on upload: Microsoft recommends 2.5 Mbps up for a Teams video meeting and PlayStation recommends 15 Mbps both ways for Remote Play.",
+      "For live streaming, YouTube lists 17 Mbps for 1080p at 60 fps with H.264 and advises leaving about 20% of your upload unused.",
+      "Guess the Speed tests your line and Wi-Fi to a nearby Cloudflare server, not to Teams, YouTube or PlayStation, so treat it as a check on your own connection.",
+    ],
+  },
+  {
     path: "/internet-speed-for-gaming/",
     title: "How Much Internet Speed Do You Need for Gaming?",
     excerpt:
