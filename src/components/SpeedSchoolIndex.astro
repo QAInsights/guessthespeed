@@ -1,0 +1,936 @@
+---
+import { Icon } from 'astro-icon/components';
+import Base from '../layouts/Base.astro';
+import '../styles/site.css';
+import { ARTICLE_CATEGORIES, ARTICLES } from '../lib/articles';
+import { ogCardFor } from '../lib/og-cards';
+import { readingMinutes } from '../lib/reading-time';
+import {
+  SCHOOL_PAGE_COUNT,
+  SCHOOL_PAGE_SIZE,
+  categorySlug,
+  formatArticleDate,
+  schoolPageArticles,
+  schoolPagePath,
+} from '../lib/speed-school';
+
+interface Props {
+  page: number;
+}
+
+const { page } = Astro.props;
+const SITE = 'https://guessthespeed.com';
+const pageUrl = `${SITE}${schoolPagePath(page)}`;
+const blogUrl = `${SITE}/speed-school/`;
+const baseDescription =
+  'Speed School is the Guess the Speed blog: plain-English, sourced guides to Mbps, ping, Wi-Fi and gaming speed, plus free tools and family game night ideas.';
+const description =
+  page === 1 ? baseDescription : `${baseDescription} Page ${page} of ${SCHOOL_PAGE_COUNT}.`;
+const title =
+  page === 1
+    ? 'Speed School: Internet Speed Guides and Tools | Guess the Speed'
+    : `Speed School: Page ${page} of ${SCHOOL_PAGE_COUNT} | Guess the Speed`;
+const firstIndex = (page - 1) * SCHOOL_PAGE_SIZE;
+const pageArticles = schoolPageArticles(page);
+
+const posts = pageArticles.map((article) => ({
+  ...article,
+  slug: categorySlug(article.category),
+  icon: ogCardFor(article.path).icon,
+  minutes: readingMinutes(article.path),
+  date: formatArticleDate(article.published),
+}));
+
+const categories = ARTICLE_CATEGORIES.map((category) => ({
+  category,
+  slug: categorySlug(category),
+  count: ARTICLES.filter((article) => article.category === category).length,
+}));
+
+const author = {
+  '@type': 'Person',
+  '@id': `${SITE}/#author`,
+  name: 'NaveenKumar Namachivayam',
+  url: 'https://qainsights.com',
+};
+
+const blogSchema = {
+  '@type': 'Blog',
+  '@id': `${blogUrl}#blog`,
+  name: 'Speed School',
+  url: blogUrl,
+  description: baseDescription,
+  inLanguage: 'en',
+  publisher: { '@type': 'Organization', name: 'Guess the Speed', url: `${SITE}/` },
+  blogPost: pageArticles.map((article) => ({
+    '@type': 'BlogPosting',
+    headline: article.title,
+    description: article.excerpt,
+    abstract: article.tldr.join(' '),
+    articleSection: article.category,
+    url: `${SITE}${article.path}`,
+    datePublished: article.published,
+    dateModified: article.updated ?? article.published,
+    author,
+  })),
+};
+
+const listSchema = {
+  '@type': 'ItemList',
+  name: page === 1 ? 'Speed School articles' : `Speed School articles, page ${page}`,
+  url: pageUrl,
+  numberOfItems: pageArticles.length,
+  itemListElement: pageArticles.map((article, index) => ({
+    '@type': 'ListItem',
+    position: firstIndex + index + 1,
+    url: `${SITE}${article.path}`,
+    name: article.title,
+  })),
+};
+
+const pages = Array.from({ length: SCHOOL_PAGE_COUNT }, (_, index) => index + 1);
+const range = `${firstIndex + 1} to ${firstIndex + pageArticles.length}`;
+---
+
+<Base
+  title={title}
+  description={description}
+  breadcrumb="Speed School"
+  schema={[blogSchema, listSchema]}
+>
+  <Fragment slot="head">
+    {page > 1 && <link rel="prev" href={schoolPagePath(page - 1)} />}
+    {page < SCHOOL_PAGE_COUNT && <link rel="next" href={schoolPagePath(page + 1)} />}
+  </Fragment>
+  <main class="wrap content-page school-page">
+    <span class="round-banner">Speed School</span>
+    <h1>Speed School{page > 1 && <span class="school-page-label">Page {page}</span>}</h1>
+    <p class="lede">
+      Plain-English guides to <strong>Mbps, ping, Wi-Fi and gaming speed</strong>, free tools that
+      do the maths for you, and game night ideas for the whole family. Every number is sourced.
+    </p>
+
+    <form class="school-search" role="search" data-school-search hidden>
+      <label class="school-field">
+        <span class="sr">Search every Speed School article</span>
+        <Icon name="ph:magnifying-glass-bold" aria-hidden="true" />
+        <input
+          type="search"
+          name="q"
+          placeholder="Search every article, for example ping or Wi-Fi"
+          autocomplete="off"
+          enterkeyhint="search"
+          aria-keyshortcuts="/"
+          data-school-query
+        />
+        <kbd class="school-kbd" aria-hidden="true">/</kbd>
+      </label>
+      <div class="school-topics" role="group" aria-label="Filter by topic">
+        <button type="button" class="school-topic" data-topic="all" aria-pressed="true">
+          All <span>{ARTICLES.length}</span>
+        </button>
+        {
+          categories.map(({ category, slug, count }) => (
+            <button type="button" class="school-topic" data-topic={slug} aria-pressed="false">
+              {category} <span>{count}</span>
+            </button>
+          ))
+        }
+      </div>
+    </form>
+    <p class="school-status" aria-live="polite" data-school-status>
+      {
+        SCHOOL_PAGE_COUNT > 1
+          ? `Articles ${range} of ${ARTICLES.length}`
+          : `${ARTICLES.length} articles`
+      }
+    </p>
+
+    <div data-school-browse>
+      <ol class:list={['school-grid', { 'is-featured': page === 1 }]} start={firstIndex + 1}>
+        {
+          posts.map((post) => (
+            <li class="school-item">
+              <article class="school-card stk">
+                <div class={`school-art is-${post.slug}`} aria-hidden="true">
+                  <span class="school-art-icon">
+                    <Icon name={post.icon} />
+                  </span>
+                </div>
+                <div class="school-body">
+                  <p class="school-meta">
+                    <span class="school-category">{post.category}</span>
+                    <time datetime={post.published}>{post.date}</time>
+                    <span>{post.minutes} min read</span>
+                  </p>
+                  <h2>
+                    <a href={post.path}>{post.title}</a>
+                  </h2>
+                  <p class="school-excerpt">{post.excerpt}</p>
+                  <span class="school-more" aria-hidden="true">
+                    Read article <Icon name="ph:arrow-right-bold" />
+                  </span>
+                </div>
+              </article>
+            </li>
+          ))
+        }
+      </ol>
+
+      {
+        SCHOOL_PAGE_COUNT > 1 && (
+          <nav class="school-pages" aria-label="Speed School pages">
+            {page > 1 ? (
+              <a class="school-page-link is-step" href={schoolPagePath(page - 1)} rel="prev">
+                <Icon name="ph:arrow-left-bold" aria-hidden="true" /> Newer
+              </a>
+            ) : (
+              <span class="school-page-link is-step" aria-disabled="true">
+                <Icon name="ph:arrow-left-bold" aria-hidden="true" /> Newer
+              </span>
+            )}
+            <ol>
+              {pages.map((number) => (
+                <li>
+                  <a
+                    class="school-page-link"
+                    href={schoolPagePath(number)}
+                    aria-current={number === page ? 'page' : undefined}
+                    aria-label={`Page ${number}`}
+                  >
+                    {number}
+                  </a>
+                </li>
+              ))}
+            </ol>
+            {page < SCHOOL_PAGE_COUNT ? (
+              <a class="school-page-link is-step" href={schoolPagePath(page + 1)} rel="next">
+                Older <Icon name="ph:arrow-right-bold" aria-hidden="true" />
+              </a>
+            ) : (
+              <span class="school-page-link is-step" aria-disabled="true">
+                Older <Icon name="ph:arrow-right-bold" aria-hidden="true" />
+              </span>
+            )}
+          </nav>
+        )
+      }
+    </div>
+
+    <ol class="school-results" data-school-results hidden></ol>
+
+    <div class="school-empty" data-school-empty hidden>
+      <p>No articles match that search yet. Try "ping", "Wi-Fi" or "gaming".</p>
+      <button type="button" class="text-button" data-school-reset>Show all articles</button>
+    </div>
+
+    <p class="school-feeds">
+      <a href="/speed-school/rss.xml"><Icon name="ph:rss-bold" aria-hidden="true" /> RSS feed</a>
+      <a href="/llms.txt"><Icon name="ph:robot-bold" aria-hidden="true" /> llms.txt</a>
+    </p>
+
+    <div class="story-cta">
+      <a class="go" href="/">Play Guess the Speed</a>
+    </div>
+  </main>
+</Base>
+
+<script>
+  interface Entry {
+    path: string;
+    title: string;
+    excerpt: string;
+    category: string;
+    topic: string;
+    published: string;
+    date: string;
+    minutes: number;
+    tldr: string[];
+    text: string;
+  }
+
+  const form = document.querySelector<HTMLFormElement>('[data-school-search]');
+  const input = document.querySelector<HTMLInputElement>('[data-school-query]');
+  const browse = document.querySelector<HTMLElement>('[data-school-browse]');
+  const results = document.querySelector<HTMLOListElement>('[data-school-results]');
+  const status = document.querySelector<HTMLElement>('[data-school-status]');
+  const empty = document.querySelector<HTMLElement>('[data-school-empty]');
+  const topics = [...document.querySelectorAll<HTMLButtonElement>('[data-topic]')];
+  const browseStatus = status?.textContent ?? '';
+
+  const normalize = (value: string) =>
+    value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[^\p{L}\p{N}\s]/gu, '');
+
+  let index: Promise<(Entry & { fields: Record<string, string> })[]> | undefined;
+  const loadIndex = () =>
+    (index ??= fetch('/speed-school/search.json')
+      .then((response) => response.json() as Promise<Entry[]>)
+      .then((entries) =>
+        entries.map((entry) => ({
+          ...entry,
+          fields: {
+            title: normalize(entry.title),
+            summary: normalize(`${entry.excerpt} ${entry.tldr.join(' ')} ${entry.category}`),
+            text: normalize(entry.text),
+          },
+        })),
+      ));
+
+  const params = new URLSearchParams(location.search);
+  let topic = topics.some((button) => button.dataset.topic === params.get('topic'))
+    ? params.get('topic')!
+    : 'all';
+  if (input) input.value = params.get('q') ?? '';
+
+  function count(haystack: string, term: string) {
+    let hits = 0;
+    for (let at = haystack.indexOf(term); at !== -1; at = haystack.indexOf(term, at + 1)) {
+      hits += 1;
+    }
+    return hits;
+  }
+
+  function snippet(entry: Entry, terms: string[]) {
+    const plain = entry.text;
+    const lower = normalize(plain);
+    const at = terms.length ? Math.min(...terms.map((t) => lower.indexOf(t)).filter((i) => i >= 0)) : -1;
+    if (!Number.isFinite(at) || at < 0) return entry.excerpt;
+    const start = Math.max(0, plain.lastIndexOf(' ', Math.max(0, at - 60)) + 1);
+    const end = Math.min(plain.length, start + 180);
+    return `${start > 0 ? '... ' : ''}${plain.slice(start, end).trim()}${end < plain.length ? ' ...' : ''}`;
+  }
+
+  function highlight(target: HTMLElement, text: string, terms: string[]) {
+    target.textContent = '';
+    if (!terms.length) {
+      target.textContent = text;
+      return;
+    }
+    const pattern = new RegExp(
+      `(${terms.map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`,
+      'gi',
+    );
+    for (const part of text.split(pattern)) {
+      if (!part) continue;
+      if (terms.includes(part.toLowerCase())) {
+        const mark = document.createElement('mark');
+        mark.textContent = part;
+        target.append(mark);
+      } else {
+        target.append(part);
+      }
+    }
+  }
+
+  async function apply() {
+    const raw = input?.value.trim() ?? '';
+    const terms = normalize(raw).split(/\s+/).filter(Boolean);
+    const filtering = terms.length > 0 || topic !== 'all';
+
+    for (const button of topics) {
+      button.setAttribute('aria-pressed', String(button.dataset.topic === topic));
+    }
+    const next = new URLSearchParams();
+    if (raw) next.set('q', raw);
+    if (topic !== 'all') next.set('topic', topic);
+    const query = next.toString();
+    history.replaceState(null, '', query ? `?${query}` : location.pathname);
+
+    if (!filtering) {
+      if (browse) browse.hidden = false;
+      if (results) results.hidden = true;
+      if (empty) empty.hidden = true;
+      if (status) status.textContent = browseStatus;
+      return;
+    }
+
+    const entries = await loadIndex().catch(() => []);
+    const ranked = entries
+      .filter((entry) => topic === 'all' || entry.topic === topic)
+      .map((entry) => {
+        let score = 0;
+        for (const term of terms) {
+          const inTitle = count(entry.fields.title, term);
+          const inSummary = count(entry.fields.summary, term);
+          const inText = count(entry.fields.text, term);
+          if (!inTitle && !inSummary && !inText) return { entry, score: -1 };
+          score += inTitle * 10 + inSummary * 4 + Math.min(inText, 20);
+        }
+        return { entry, score };
+      })
+      .filter(({ score }) => score >= 0)
+      .sort((a, b) => b.score - a.score || b.entry.published.localeCompare(a.entry.published));
+
+    if (browse) browse.hidden = true;
+    if (results) {
+      results.replaceChildren(
+        ...ranked.map(({ entry }) => {
+          const item = document.createElement('li');
+          item.className = 'school-result stk';
+          const meta = document.createElement('p');
+          meta.className = 'school-meta';
+          const category = document.createElement('span');
+          category.className = 'school-category';
+          category.textContent = entry.category;
+          const time = document.createElement('time');
+          time.dateTime = entry.published;
+          time.textContent = entry.date;
+          const minutes = document.createElement('span');
+          minutes.textContent = `${entry.minutes} min read`;
+          meta.append(category, time, minutes);
+          const heading = document.createElement('h2');
+          const link = document.createElement('a');
+          link.href = entry.path;
+          highlight(link, entry.title, terms);
+          heading.append(link);
+          const text = document.createElement('p');
+          text.className = 'school-excerpt';
+          highlight(text, snippet(entry, terms), terms);
+          item.append(meta, heading, text);
+          return item;
+        }),
+      );
+      results.hidden = ranked.length === 0;
+    }
+    if (status) {
+      status.textContent = `${ranked.length} ${ranked.length === 1 ? 'article' : 'articles'} found`;
+    }
+    if (empty) empty.hidden = ranked.length > 0;
+  }
+
+  if (form) {
+    form.hidden = false;
+    form.addEventListener('submit', (event) => event.preventDefault());
+  }
+  input?.addEventListener('input', () => void apply());
+  input?.addEventListener('focus', () => void loadIndex(), { once: true });
+  for (const button of topics) {
+    button.addEventListener('click', () => {
+      topic = button.dataset.topic ?? 'all';
+      void apply();
+    });
+  }
+  document.querySelector('[data-school-reset]')?.addEventListener('click', () => {
+    if (input) input.value = '';
+    topic = 'all';
+    void apply();
+    input?.focus();
+  });
+  document.addEventListener('keydown', (event) => {
+    const target = event.target as HTMLElement | null;
+    const typing = target?.closest('input, textarea, select, [contenteditable="true"]');
+    if (event.key === '/' && !typing && !event.metaKey && !event.ctrlKey && !event.altKey) {
+      event.preventDefault();
+      input?.focus();
+    }
+    if (event.key === 'Escape' && target === input && input?.value) {
+      input.value = '';
+      void apply();
+    }
+  });
+  void apply();
+</script>
+
+<style>
+  .school-page {
+    max-width: 1180px;
+  }
+
+  .school-search {
+    display: grid;
+    gap: 14px;
+    margin-top: 28px;
+  }
+
+  .school-field {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: 640px;
+    min-height: var(--btn-h-lg);
+    padding: 0 18px;
+    border: var(--card-border) solid var(--ink);
+    border-radius: var(--r-pill);
+    background: var(--surface);
+    box-shadow: var(--btn-shadow);
+    color: var(--muted);
+  }
+
+  .school-field:focus-within {
+    outline: var(--focus-ring);
+    outline-offset: var(--focus-offset);
+  }
+
+  .school-field :global(svg) {
+    width: 20px;
+    height: 20px;
+    flex: none;
+  }
+
+  .school-field input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    background: transparent;
+    color: var(--ink);
+    font: inherit;
+    font-size: 17px;
+    font-weight: 600;
+  }
+
+  .school-field input:focus {
+    outline: none;
+  }
+
+  .school-field input::placeholder {
+    color: var(--muted);
+    opacity: 0.8;
+  }
+
+  .school-topics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .school-topic {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 38px;
+    padding: 0 14px;
+    border: var(--btn-border) solid var(--ink);
+    border-radius: var(--r-pill);
+    background: var(--surface);
+    color: var(--ink);
+    font: 800 14px/1 var(--font-display);
+    cursor: pointer;
+  }
+
+  .school-topic span {
+    color: var(--muted);
+    font-weight: 700;
+  }
+
+  .school-topic[aria-pressed='true'] {
+    background: var(--ink);
+    color: var(--surface);
+  }
+
+  .school-topic[aria-pressed='true'] span {
+    color: inherit;
+    opacity: 0.75;
+  }
+
+  .school-topic:focus-visible {
+    outline: var(--focus-ring);
+    outline-offset: var(--focus-offset);
+  }
+
+  .school-status {
+    margin: 18px 0 0;
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .school-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+    gap: 24px;
+    margin: 14px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .school-item[hidden] {
+    display: none;
+  }
+
+  .school-card {
+    position: relative;
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+    overflow: hidden;
+    transition:
+      transform 0.15s ease,
+      box-shadow 0.15s ease;
+  }
+
+  .school-card:hover,
+  .school-card:focus-within {
+    box-shadow: var(--card-shadow-raised);
+    transform: translate(-2px, -2px);
+  }
+
+  .school-art {
+    --art-a: var(--aurora-4);
+    --art-b: var(--aurora-3);
+
+    position: relative;
+    display: grid;
+    place-items: center;
+    aspect-ratio: 16 / 7;
+    border-bottom: var(--card-border) solid var(--ink);
+    background:
+      radial-gradient(circle at 18% 22%, color-mix(in oklab, #fff 35%, transparent), transparent 42%),
+      radial-gradient(circle at 85% 90%, color-mix(in oklab, var(--art-b) 70%, transparent), transparent 55%),
+      linear-gradient(135deg, var(--art-a), var(--art-b));
+  }
+
+  .school-art::after {
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      -45deg,
+      color-mix(in oklab, #fff 14%, transparent) 0 2px,
+      transparent 2px 18px
+    );
+    content: '';
+  }
+
+  .school-art.is-tools {
+    --art-a: var(--gauge-up-1);
+    --art-b: var(--gauge-up-2);
+  }
+
+  .school-art.is-game-night {
+    --art-a: var(--aurora-1);
+    --art-b: var(--aurora-2);
+  }
+
+  .school-art.is-classroom {
+    --art-a: var(--aurora-3);
+    --art-b: var(--aurora-2);
+  }
+
+  .school-art.is-behind-the-scenes {
+    --art-a: var(--aurora-5);
+    --art-b: var(--aurora-1);
+  }
+
+  .school-art-icon {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    width: 64px;
+    height: 64px;
+    place-items: center;
+    border: var(--card-border) solid var(--ink);
+    border-radius: 18px;
+    background: var(--surface);
+    box-shadow: var(--btn-shadow);
+    color: var(--ink);
+    transform: rotate(-4deg);
+  }
+
+  .school-art-icon :global(svg) {
+    width: 32px;
+    height: 32px;
+  }
+
+  .school-body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 10px;
+    padding: 20px 22px 22px;
+  }
+
+  .school-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 12px;
+    margin: 0;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .school-category {
+    padding: 3px 9px;
+    border: var(--btn-border) solid var(--ink);
+    border-radius: var(--r-pill);
+    background: var(--soft);
+    color: var(--ink);
+    font-weight: 800;
+  }
+
+  .school-body h2 {
+    margin: 0;
+    font-size: clamp(21px, 2.2vw, 25px);
+    line-height: 1.15;
+  }
+
+  .school-body h2 a {
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  .school-body h2 a::after {
+    position: absolute;
+    inset: 0;
+    content: '';
+  }
+
+  .school-body h2 a:focus-visible {
+    outline: none;
+  }
+
+  .school-card:has(h2 a:focus-visible) {
+    outline: var(--focus-ring);
+    outline-offset: var(--focus-offset);
+  }
+
+  .school-excerpt {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.55;
+  }
+
+  .school-more {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: auto;
+    padding-top: 6px;
+    color: var(--ink);
+    font-weight: 800;
+  }
+
+  .school-more :global(svg) {
+    width: 16px;
+    height: 16px;
+    transition: transform 0.15s ease;
+  }
+
+  .school-card:hover .school-more :global(svg) {
+    transform: translateX(3px);
+  }
+
+  .school-empty {
+    margin-top: 24px;
+    padding: 24px;
+    border: var(--card-border) dashed var(--ink);
+    border-radius: var(--r);
+    color: var(--muted);
+    font-weight: 700;
+    text-align: center;
+  }
+
+  .school-empty p {
+    margin: 0 0 8px;
+  }
+
+  @media (min-width: 980px) {
+    .school-grid.is-featured .school-item:first-child {
+      grid-column: span 2;
+    }
+
+    .school-grid.is-featured .school-item:first-child .school-card {
+      flex-direction: row;
+    }
+
+    .school-grid.is-featured .school-item:first-child .school-art {
+      flex: 0 0 46%;
+      aspect-ratio: auto;
+      border-right: var(--card-border) solid var(--ink);
+      border-bottom: 0;
+    }
+
+    .school-grid.is-featured .school-item:first-child h2 {
+      font-size: clamp(26px, 2.6vw, 32px);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .school-card,
+    .school-more :global(svg) {
+      transition: none;
+    }
+
+    .school-card:hover,
+    .school-card:focus-within {
+      transform: none;
+    }
+  }
+  .school-page-label {
+    display: block;
+    color: var(--muted);
+    font-size: 0.42em;
+    letter-spacing: 0.04em;
+  }
+
+  .school-field {
+    position: relative;
+  }
+
+  .school-kbd {
+    position: absolute;
+    top: 50%;
+    right: 14px;
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    border: 1.5px solid var(--card-border);
+    border-radius: 6px;
+    color: var(--muted);
+    font: 800 13px/1 var(--font-display);
+    pointer-events: none;
+    transform: translateY(-50%);
+  }
+
+  .school-field:focus-within .school-kbd {
+    display: none;
+  }
+
+  .school-results {
+    display: grid;
+    gap: 14px;
+    margin: 18px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .school-results[hidden] {
+    display: none;
+  }
+
+  .school-results :global(.school-result) {
+    padding: 18px 22px;
+  }
+
+  .school-results :global(h2) {
+    margin: 6px 0 6px;
+    font-size: clamp(19px, 2.4vw, 23px);
+    line-height: 1.25;
+  }
+
+  .school-results :global(h2 a) {
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  .school-results :global(h2 a:hover) {
+    text-decoration: underline;
+  }
+
+  .school-results :global(h2 a:focus-visible) {
+    outline: var(--focus-ring);
+    outline-offset: var(--focus-offset);
+  }
+
+  .school-results :global(mark) {
+    padding: 0 2px;
+    border-radius: 4px;
+    background: color-mix(in srgb, var(--accent) 28%, transparent);
+    color: inherit;
+  }
+
+  .school-pages {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 28px;
+  }
+
+  .school-pages ol {
+    display: flex;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .school-page-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-width: 42px;
+    min-height: 42px;
+    padding: 0 14px;
+    border: var(--btn-border) solid var(--ink);
+    border-radius: var(--r-pill);
+    background: var(--surface);
+    color: var(--ink);
+    font: 800 15px/1 var(--font-display);
+    text-decoration: none;
+  }
+
+  .school-page-link :global(svg) {
+    width: 16px;
+    height: 16px;
+  }
+
+  .school-page-link[aria-current='page'] {
+    background: var(--ink);
+    color: var(--bg);
+  }
+
+  .school-page-link[aria-disabled='true'] {
+    opacity: 0.4;
+  }
+
+  a.school-page-link:hover {
+    box-shadow: var(--btn-shadow);
+  }
+
+  a.school-page-link:focus-visible {
+    outline: var(--focus-ring);
+    outline-offset: var(--focus-offset);
+  }
+
+  .school-feeds {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px 22px;
+    margin: 26px 0 0;
+    font-weight: 700;
+  }
+
+  .school-feeds a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--muted);
+  }
+
+  .school-feeds :global(svg) {
+    width: 16px;
+    height: 16px;
+  }
+  .school-results :global(.school-meta) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 12px;
+    margin: 0;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .school-results :global(.school-category) {
+    padding: 3px 9px;
+    border: var(--btn-border) solid var(--ink);
+    border-radius: var(--r-pill);
+    background: var(--soft);
+    color: var(--ink);
+    font-weight: 800;
+  }
+  .school-results :global(.school-excerpt) {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.55;
+  }
+</style>
