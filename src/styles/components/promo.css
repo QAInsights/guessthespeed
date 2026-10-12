@@ -238,7 +238,7 @@
       [data-phase="down"]
     ):not([data-phase="up"])
     body:has(.house-promo:not([hidden])) {
-    padding-bottom: var(--promo-h, 0px);
+    padding-bottom: var(--promo-h, 0);
   }
 }
 

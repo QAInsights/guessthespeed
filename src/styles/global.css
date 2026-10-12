@@ -1,4 +1,4 @@
-/* Imported in cascade order: later files override earlier ones. */
+/* Game page bundle, imported in cascade order: later files override earlier ones. Keep site.css in the same order. */
 @import "./features/rooms.css";
 @import "./tokens.css";
 @import "./base.css";

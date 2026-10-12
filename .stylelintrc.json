@@ -1,0 +1,23 @@
+{
+  "extends": ["stylelint-config-standard"],
+  "rules": {
+    "import-notation": "string",
+    "media-feature-range-notation": "prefix",
+    "no-descending-specificity": null,
+    "property-no-deprecated": [
+      true,
+      {
+        "ignoreProperties": ["clip"]
+      }
+    ],
+    "property-no-vendor-prefix": null,
+    "selector-not-notation": null,
+    "value-keyword-case": [
+      "lower",
+      {
+        "ignoreKeywords": ["currentColor"],
+        "ignoreProperties": ["/^--font/"]
+      }
+    ]
+  }
+}

@@ -140,6 +140,7 @@
 
 .theme-menu {
   --picker-ring: var(--ink);
+
   position: absolute;
   top: calc(100% + 10px);
   right: 0;

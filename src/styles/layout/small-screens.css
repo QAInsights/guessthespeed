@@ -14,9 +14,11 @@
   .mode-hero .mode-hero-lede {
     line-height: 1.25;
   }
+
   .work-room-actions .room-join-form .dialog-input {
     flex-basis: 100%;
   }
+
   .logo b {
     display: none;
   }
@@ -268,7 +270,7 @@ summary {
   .mode-switch :is(button, a) {
     min-width: 44px;
     flex: 0 0 auto;
-    padding: 4px 4px;
+    padding: 4px;
   }
 
   .mode-switch svg {

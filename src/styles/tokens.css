@@ -32,7 +32,9 @@
   --ping-1: #2ec4b6;
   --ping-2: #4c6ef5;
   --r: 14px;
+
   color-scheme: light;
+
   --r-sm: 12px;
   --r-pill: 999px;
   --font-display: "Bricolage Grotesque Variable", sans-serif;
@@ -62,6 +64,7 @@
   --aurora-5: #da77f2;
   --gauge-glow-down: color-mix(in srgb, var(--accent) 55%, transparent);
   --gauge-glow-up: rgb(110 120 255 / 50%);
+
   color-scheme: dark;
 }
 
@@ -82,6 +85,7 @@
   --aurora-5: #ff4f7b;
   --gauge-glow-down: color-mix(in srgb, var(--accent) 55%, transparent);
   --gauge-glow-up: rgb(110 120 255 / 50%);
+
   color-scheme: dark;
 }
 
@@ -102,6 +106,7 @@
   --aurora-5: #c77dff;
   --gauge-glow-down: color-mix(in srgb, var(--accent) 55%, transparent);
   --gauge-glow-up: rgb(110 120 255 / 50%);
+
   color-scheme: dark;
 }
 
@@ -119,6 +124,7 @@
   --aurora-3: #8a5a2b;
   --aurora-4: #a3311f;
   --aurora-5: #5f7d2e;
+
   color-scheme: light;
 }
 
@@ -139,6 +145,7 @@
   --aurora-5: #e8f7ff;
   --gauge-glow-down: color-mix(in srgb, var(--accent) 55%, transparent);
   --gauge-glow-up: rgb(110 120 255 / 50%);
+
   color-scheme: dark;
 }
 
@@ -159,6 +166,7 @@
   --aurora-5: #2ab673;
   --gauge-glow-down: color-mix(in srgb, var(--accent) 55%, transparent);
   --gauge-glow-up: rgb(110 120 255 / 50%);
+
   color-scheme: dark;
 }
 
@@ -176,9 +184,10 @@
   --aurora-2: #ff6ec7;
   --aurora-3: #7df9ff;
   --aurora-4: #b388ff;
-  --aurora-5: #ffffff;
+  --aurora-5: #fff;
   --gauge-glow-down: color-mix(in srgb, var(--accent) 55%, transparent);
   --gauge-glow-up: rgb(110 120 255 / 50%);
+
   color-scheme: dark;
 }
 
@@ -196,6 +205,7 @@
   --aurora-3: #2f8f4e;
   --aurora-4: #d8572a;
   --aurora-5: #6b8e23;
+
   color-scheme: light;
 }
 
@@ -213,6 +223,7 @@
   --aurora-3: #ff8fab;
   --aurora-4: #b5179e;
   --aurora-5: #f4a259;
+
   color-scheme: light;
 }
 
@@ -230,6 +241,7 @@
   --aurora-3: #2ec4b6;
   --aurora-4: #3a86ff;
   --aurora-5: #8ac926;
+
   color-scheme: light;
 }
 
@@ -247,6 +259,7 @@
   --aurora-3: #8fd3b6;
   --aurora-4: #ffd166;
   --aurora-5: #9ab8ff;
+
   color-scheme: light;
 }
 
@@ -267,6 +280,7 @@
   --aurora-5: #c9a0ff;
   --gauge-glow-down: color-mix(in srgb, var(--accent) 55%, transparent);
   --gauge-glow-up: rgb(110 120 255 / 50%);
+
   color-scheme: dark;
 }
 
@@ -284,6 +298,7 @@
   --aurora-3: #2a9d8f;
   --aurora-4: #8c5a2b;
   --aurora-5: #d4a017;
+
   color-scheme: light;
 }
 
@@ -304,6 +319,7 @@
   --aurora-5: #ff6f91;
   --gauge-glow-down: color-mix(in srgb, var(--accent) 55%, transparent);
   --gauge-glow-up: rgb(110 120 255 / 50%);
+
   color-scheme: dark;
 }
 
@@ -321,6 +337,7 @@
   --aurora-3: #d4a017;
   --aurora-4: #ff8c1a;
   --aurora-5: #0f9d8a;
+
   color-scheme: light;
 }
 

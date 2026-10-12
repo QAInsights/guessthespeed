@@ -230,7 +230,7 @@ html[data-dev="1"] .mode-hero-visual .play-stat {
 
 .gauge-fill {
   fill: none;
-  stroke: url(#gauge-grad-down);
+  stroke: url("#gauge-grad-down");
   stroke-dasharray: 100 101;
   stroke-dashoffset: calc(100 - 100 * var(--p, 0));
   stroke-linecap: round;
@@ -240,7 +240,7 @@ html[data-dev="1"] .mode-hero-visual .play-stat {
 }
 
 [data-phase="up"] .gauge-fill {
-  stroke: url(#gauge-grad-up);
+  stroke: url("#gauge-grad-up");
   filter: drop-shadow(0 0 10px var(--gauge-glow-up, transparent));
 }
 
