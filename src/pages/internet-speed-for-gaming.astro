@@ -143,7 +143,7 @@ const articleSchema = {
       </p>
       <p>Three things to watch, in this order:</p>
       <ol>
-        <li><strong>Ping.</strong> Lower is better. Our Dev mode treats a result under 50 ms as good for gaming. GeForce NOW sets its own ceiling at 80 ms to its data center.</li>
+        <li><strong>Ping.</strong> Lower is better, and the number that counts is the round trip to the server you actually play on. GeForce NOW, for example, asks for under 80 ms to an NVIDIA data center. A speed test, including our Dev mode, pings a nearby Cloudflare server instead, so treat its ping as a check of your own line and Wi-Fi, not of any game server. For the real figure, use the connection or network stats inside the game or streaming app.</li>
         <li><strong>Jitter.</strong> How much the ping jumps around. A steady 40 ms feels smoother than a ping that swings between 15 and 90 ms.</li>
         <li><strong>Packet loss.</strong> Lost updates show up as rubber-banding and teleporting players. Any regular loss is worth fixing before you upgrade the plan.</li>
       </ol>
@@ -194,7 +194,7 @@ const articleSchema = {
       <h2>How do I check if my connection is good enough?</h2>
       <ol>
         <li>Run a test on the device you play on, at the time you usually play. Evening results can look very different from mid-morning ones.</li>
-        <li>Look at ping and upload, not only the big download number. <a href="/?dev=1">Dev mode</a> shows ping, upload and how they compare with common needs.</li>
+        <li>Look at ping and upload, not only the big download number. <a href="/?dev=1">Dev mode</a> shows both. Its ping goes to a nearby Cloudflare server, so it tells you how healthy your line and Wi-Fi are, not your latency to a game server or a cloud gaming data center.</li>
         <li>Test once on Wi-Fi and once with a cable if you can. The difference tells you whether the plan or the Wi-Fi is the bottleneck.</li>
         <li>If the numbers look much lower than your plan, follow the <a href="/am-i-getting-the-speed-i-pay-for/">plan speed check</a> before calling your provider.</li>
       </ol>
