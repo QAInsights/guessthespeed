@@ -25,6 +25,19 @@
 }
 
 @media (max-width: 374px) {
+  .stats {
+    gap: 6px;
+  }
+
+  .stat {
+    padding: 10px 8px;
+  }
+
+  .stat span {
+    font-size: 0.75rem;
+    letter-spacing: 0.02em;
+  }
+
   html[lang="ta"] .stage.mode-hero .mode-hero-visual .gauge {
     margin-bottom: -15vw;
     transform: scale(0.8);
@@ -281,5 +294,20 @@ summary {
     width: 44px;
     min-width: 44px;
     height: 44px;
+  }
+}
+
+@media (max-width: 420px) {
+  html[lang="es"] .stats {
+    gap: 6px;
+  }
+
+  html[lang="es"] .stat {
+    padding: 10px 8px;
+  }
+
+  html[lang="es"] .stat span {
+    font-size: 0.75rem;
+    letter-spacing: 0.02em;
   }
 }
