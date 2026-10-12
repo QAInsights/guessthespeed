@@ -1,7 +1,13 @@
 import { existsSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { ARTICLE_CATEGORIES, ARTICLES } from "./articles";
-import { ogCards } from "./og-cards";
+import { ogCardFor, ogCards } from "./og-cards";
+import {
+  SCHOOL_PAGE_COUNT,
+  SCHOOL_PAGE_SIZE,
+  schoolPageArticles,
+  schoolPagePath,
+} from "./speed-school";
 
 describe("Speed School articles", () => {
   it("points every entry at a real page with a share card", () => {
@@ -34,5 +40,19 @@ describe("Speed School articles", () => {
       for (const point of tldr) expect(point).not.toMatch(/\u2014/);
       if (updated) expect(updated >= published).toBe(true);
     }
+  });
+
+  it("paginates every article exactly once", () => {
+    const paged = Array.from({ length: SCHOOL_PAGE_COUNT }, (_, i) =>
+      schoolPageArticles(i + 1),
+    );
+    expect(paged.flat()).toEqual(ARTICLES);
+    for (const list of paged) {
+      expect(list.length).toBeGreaterThan(0);
+      expect(list.length).toBeLessThanOrEqual(SCHOOL_PAGE_SIZE);
+    }
+    expect(schoolPagePath(1)).toBe("/speed-school/");
+    expect(schoolPagePath(2)).toBe("/speed-school/page/2/");
+    expect(ogCardFor("/speed-school/page/2/").path).toBe("/speed-school/");
   });
 });

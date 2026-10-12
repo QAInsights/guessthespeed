@@ -43,6 +43,12 @@
 - [Privacy](https://guessthespeed.com/privacy/)
 - [Full game guide](https://guessthespeed.com/llms-full.txt)
 
+## Speed School articles by topic
+
+<!-- speed-school-articles -->
+
+RSS feed: https://guessthespeed.com/speed-school/rss.xml
+
 ## Markdown versions
 
 Every Speed School article is also available as clean Markdown at the same URL with `.md` instead of the trailing slash, for example https://guessthespeed.com/internet-speed-for-gaming.md. The full list is at https://guessthespeed.com/speed-school/.
