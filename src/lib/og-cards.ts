@@ -103,6 +103,15 @@ export const ogCards: readonly OgCard[] = [
     icon: "ph:wifi-high-bold",
   },
   {
+    path: "/internet-speed-for-gaming/",
+    group: "Learn",
+    kicker: "Guide",
+    line1: "Internet speed",
+    line2: "for gaming",
+    subtitle: "Mbps and ping for multiplayer, Remote Play and cloud gaming.",
+    icon: "ph:game-controller-bold",
+  },
+  {
     path: "/how-much-internet-speed-do-i-need/",
     group: "Tools",
     kicker: "Free tool",

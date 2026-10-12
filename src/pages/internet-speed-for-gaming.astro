@@ -1,0 +1,223 @@
+---
+import Base from '../layouts/Base.astro';
+import '../styles/site.css';
+import { downloadSeconds, formatDuration } from '../lib/convert';
+
+const GB = 1_000_000_000;
+const formatTime = (sizeBytes: number, mbps: number) =>
+  formatDuration(downloadSeconds(sizeBytes, mbps) ?? 0) ?? '';
+const downloadTimes = [25, 50, 100, 300, 500, 1000].map((mbps) => ({
+  label: `${mbps.toLocaleString('en-US')} Mbps`,
+  patch: formatTime(5 * GB, mbps),
+  game: formatTime(50 * GB, mbps),
+  big: formatTime(100 * GB, mbps),
+}));
+
+const sources = {
+  remotePlay: 'https://www.playstation.com/en-us/support/games/ps4-remote-play-connection-troubleshooting/',
+  xboxCloud: 'https://www.xbox.com/en-US/cloud-gaming',
+  geforceNow: 'https://www.nvidia.com/en-us/geforce-now/system-reqs/',
+  steam: 'https://help.steampowered.com/en/faqs/view/163C-7C89-406E-2F63',
+};
+
+const questions = [
+  {
+    question: 'How much internet speed do you need for gaming?',
+    answer:
+      'For ordinary online multiplayer on a console or PC, a stable connection with low ping matters more than raw speed, and most homes with 25 Mbps or more have enough bandwidth for the match itself. Streaming games is different: PlayStation recommends 15 Mbps upload and download for Remote Play, Xbox Cloud Gaming suggests about 20 Mbps on consoles and PCs, and NVIDIA GeForce NOW asks for 25 Mbps for 1080p at 60 FPS.',
+  },
+  {
+    question: 'What speed do I need for PlayStation Remote Play?',
+    answer:
+      'Sony lists 5 Mbps upload and download as the minimum for Remote Play and recommends 15 Mbps upload and download for a better experience. The upload speed at the console end matters as much as the download speed at the device you play on.',
+  },
+  {
+    question: 'How much speed does Xbox Cloud Gaming need?',
+    answer:
+      'Microsoft says Xbox Cloud Gaming needs at least 10 Mbps on supported mobile devices, with the best performance at about 10 Mbps on mobile and 20 Mbps on consoles, PCs and tablets. It also recommends a 5 GHz Wi-Fi connection or mobile data.',
+  },
+  {
+    question: 'How much speed does GeForce NOW need?',
+    answer:
+      'NVIDIA lists 15 Mbps for HD up to 60 FPS, 25 Mbps for 1080p at 60 FPS, 35 Mbps for 1440p at 120 FPS and 45 Mbps for 4K at 120 FPS. It also asks for less than 80 ms of latency to an NVIDIA data center and recommends wired Ethernet or 5 GHz Wi-Fi.',
+  },
+  {
+    question: 'Is ping more important than Mbps for gaming?',
+    answer:
+      'For online multiplayer, yes. A match sends small, frequent updates, so a high or jumpy ping hurts far more than a modest download speed. Mbps matters most for downloading games and patches and for streaming games from the cloud or your own console.',
+  },
+  {
+    question: 'Is 100 Mbps good for gaming?',
+    answer:
+      'Yes. 100 Mbps covers online multiplayer, Remote Play and cloud gaming for one player with room to spare, and downloads a 50 GB game in a little over an hour. If several people stream video or play at the same time, add their needs together with the household calculator.',
+  },
+];
+
+const faqSchema = {
+  '@type': 'FAQPage',
+  mainEntity: questions.map(({ question, answer }) => ({
+    '@type': 'Question',
+    name: question,
+    acceptedAnswer: { '@type': 'Answer', text: answer },
+  })),
+};
+
+const articleSchema = {
+  '@type': 'Article',
+  headline: 'How Much Internet Speed Do You Need for Gaming?',
+  description:
+    'Sourced download, upload and ping guidance for online multiplayer, PlayStation Remote Play, Xbox Cloud Gaming and GeForce NOW, plus game download times.',
+  author: {
+    '@type': 'Person',
+    '@id': 'https://guessthespeed.com/#author',
+    name: 'NaveenKumar Namachivayam',
+    url: 'https://qainsights.com',
+  },
+  publisher: {
+    '@type': 'Organization',
+    name: 'Guess the Speed',
+    url: 'https://guessthespeed.com',
+  },
+  datePublished: '2026-10-12',
+  mainEntityOfPage: 'https://guessthespeed.com/internet-speed-for-gaming/',
+};
+---
+
+<Base
+  title="How Much Internet Speed Do You Need for Gaming? (2026 Guide)"
+  description="Sourced 2026 guidance on the Mbps and ping you need for online multiplayer, PlayStation Remote Play, Xbox Cloud Gaming and GeForce NOW, with game download times."
+  breadcrumb="Speed for gaming"
+  schema={[articleSchema, faqSchema]}
+>
+  <main class="wrap content-page">
+    <span class="round-banner">Speed school</span>
+    <h1>How Much Internet Speed Do You Need for Gaming?</h1>
+    <p class="lede">
+      Short answer: for online multiplayer, a stable connection with low ping matters more than raw Mbps, and 25 Mbps or more is plenty for the match itself.
+      Streaming a game is a different story. PlayStation recommends <strong>15 Mbps upload and download</strong> for Remote Play, Xbox Cloud Gaming
+      suggests about <strong>20 Mbps</strong> on consoles and PCs, and GeForce NOW asks for <strong>25 Mbps</strong> for 1080p at 60 FPS.
+    </p>
+    <article class="content-card stk">
+      <p>
+        Every time someone at home says "the game is lagging", the first reaction is to blame the internet plan. I have been there. I spent years in
+        performance testing before moving into a developer role, and one lesson from that world applies perfectly here: <em>throughput and latency are
+        two different things</em>. A fat pipe does not fix a slow round trip. In this article, let us look at what each kind of gaming actually needs,
+        using only the numbers the platforms themselves publish, and how you can check your own connection in a couple of minutes.
+      </p>
+
+      <h2>What internet speed do you need for gaming?</h2>
+      <p>It depends on <em>how</em> you play. There are three very different workloads hiding behind the word "gaming":</p>
+      <ol>
+        <li><strong>Online multiplayer</strong> on a PS5, Xbox, Switch or PC. The game runs on your device. Only small position and input updates travel over the network.</li>
+        <li><strong>Game streaming</strong> such as PlayStation Remote Play, Xbox Cloud Gaming or GeForce NOW. The game runs somewhere else and a live video of it streams to you.</li>
+        <li><strong>Downloads and patches.</strong> Big files, no real-time pressure. More Mbps simply means less waiting.</li>
+      </ol>
+      <p>Here is the quick reference, with each number taken from the official page linked in the table.</p>
+      <div class="guide-table-wrap" role="region" aria-label="Internet speed needed for each kind of gaming" tabindex="0">
+        <table class="guide-table">
+          <caption>Published speed guidance by gaming service</caption>
+          <thead>
+            <tr><th scope="col">How you play</th><th scope="col">Speed guidance</th><th scope="col">What else matters</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">Online multiplayer</th><td>No single official figure; bandwidth use is small</td><td>Low, steady ping and no packet loss</td></tr>
+            <tr><th scope="row"><a href={sources.remotePlay} rel="noopener">PlayStation Remote Play</a></th><td>5 Mbps minimum, 15 Mbps recommended, upload and download</td><td>Upload at the console end, 5 GHz Wi-Fi or wired</td></tr>
+            <tr><th scope="row"><a href={sources.xboxCloud} rel="noopener">Xbox Cloud Gaming</a></th><td>10 Mbps on mobile, 20 Mbps on consoles, PCs and tablets</td><td>5 GHz Wi-Fi or mobile data</td></tr>
+            <tr><th scope="row"><a href={sources.geforceNow} rel="noopener">GeForce NOW, 1080p 60 FPS</a></th><td>25 Mbps</td><td>Under 80 ms to an NVIDIA data center</td></tr>
+            <tr><th scope="row"><a href={sources.geforceNow} rel="noopener">GeForce NOW, 4K 120 FPS</a></th><td>45 Mbps</td><td>Wired Ethernet or 5 GHz Wi-Fi</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        These numbers are per player, per stream. If two kids stream games while someone watches 4K video in the living room, you add them up. That is
+        exactly what our <a href="/how-much-internet-speed-do-i-need/">household speed calculator</a> does, and its "Online gamers" step already uses
+        the PlayStation Remote Play figure of 15 Mbps in both directions.
+      </p>
+
+      <h2>Is ping more important than Mbps for online games?</h2>
+      <p>
+        For multiplayer, yes. Think of it like a load test. Mbps is throughput: how much data per second the line can carry. Ping is latency: how long a
+        single message takes to make a round trip. A shooter or a racing game sends lots of tiny messages, many times per second. None of them needs much
+        bandwidth, but every one of them waits for the round trip. So a 1 Gbps plan with a jumpy 120 ms ping will feel worse than a 50 Mbps plan with a
+        steady 20 ms ping.
+      </p>
+      <p>Three things to watch, in this order:</p>
+      <ol>
+        <li><strong>Ping.</strong> Lower is better. Our Dev mode treats a result under 50 ms as good for gaming. GeForce NOW sets its own ceiling at 80 ms to its data center.</li>
+        <li><strong>Jitter.</strong> How much the ping jumps around. A steady 40 ms feels smoother than a ping that swings between 15 and 90 ms.</li>
+        <li><strong>Packet loss.</strong> Lost updates show up as rubber-banding and teleporting players. Any regular loss is worth fixing before you upgrade the plan.</li>
+      </ol>
+
+      <h2>How much upload speed do you need for gaming?</h2>
+      <p>
+        Upload is the number most people forget. For multiplayer, your inputs going up are tiny. For Remote Play, the video of your game is sent
+        <em>up</em> from the console at home, so the home connection's upload speed sets the ceiling for the whole stream. That is why Sony quotes 5 Mbps
+        minimum and 15 Mbps recommended for <em>both</em> upload and download. If you plan to play your PS5 from a hotel or a friend's house, check the
+        upload speed at home first.
+      </p>
+      <p>
+        If you also stream your gameplay to Twitch or YouTube, the stream itself is another upload on top of the game. Count it separately in the
+        calculator and leave headroom.
+      </p>
+
+      <h2>How long does it take to download a game?</h2>
+      <p>
+        This is where Mbps really pays off. Modern games and day-one patches are huge, and the size is shown in gigabytes while your plan is sold in
+        megabits. Here are the ideal download times at common plan speeds, calculated with the same math as our <a href="/mbps-to-mbs/">Mbps to MB/s
+        converter</a>.
+      </p>
+      <div class="guide-table-wrap" role="region" aria-label="Game download times at common internet speeds" tabindex="0">
+        <table class="guide-table">
+          <caption>Ideal download time by plan speed</caption>
+          <thead>
+            <tr><th scope="col">Plan speed</th><th scope="col">5 GB patch</th><th scope="col">50 GB game</th><th scope="col">100 GB game</th></tr>
+          </thead>
+          <tbody>
+            {downloadTimes.map((row) => (
+              <tr><th scope="row">{row.label}</th><td>{row.patch}</td><td>{row.game}</td><td>{row.big}</td></tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p>
+        Real downloads are usually slower than these ideal times. The store's servers, Wi-Fi and other devices all take a share. Steam also lets you
+        <a href={sources.steam} rel="noopener">limit the download bandwidth</a> so a big install does not ruin everyone else's evening.
+      </p>
+
+      <h2>Wi-Fi or Ethernet for gaming?</h2>
+      <p>
+        Wired wins whenever you can run a cable. Every service above says the same: Sony recommends a wired connection or 5 GHz Wi-Fi, Microsoft
+        recommends 5 GHz Wi-Fi, and NVIDIA recommends wired Ethernet or 5 GHz Wi-Fi. A cable removes the jitter and interference that Wi-Fi adds,
+        especially through walls. If you must stay on Wi-Fi, use the 5 GHz band and keep the console or PC close to the router.
+      </p>
+
+      <h2>How do I check if my connection is good enough?</h2>
+      <ol>
+        <li>Run a test on the device you play on, at the time you usually play. Evening results can look very different from mid-morning ones.</li>
+        <li>Look at ping and upload, not only the big download number. <a href="/?dev=1">Dev mode</a> shows ping, upload and how they compare with common needs.</li>
+        <li>Test once on Wi-Fi and once with a cable if you can. The difference tells you whether the plan or the Wi-Fi is the bottleneck.</li>
+        <li>If the numbers look much lower than your plan, follow the <a href="/am-i-getting-the-speed-i-pay-for/">plan speed check</a> before calling your provider.</li>
+      </ol>
+      <p>
+        Or make it fun. Gather the family, let everyone <a href="/">guess the speed</a> before the test runs, and see who knows your Wi-Fi best. My kids
+        win every time.
+      </p>
+
+      <h2>Frequently asked questions</h2>
+      <div class="faq">
+        {questions.map(({ question, answer }) => (
+          <section>
+            <h3>{question}</h3>
+            <p>{answer}</p>
+          </section>
+        ))}
+      </div>
+      <p>
+        For general household speeds beyond gaming, read <a href="/what-is-a-good-internet-speed/">what is a good internet speed</a>.
+      </p>
+      <div class="story-cta">
+        <a class="go" href="/">Start a game</a>
+      </div>
+    </article>
+  </main>
+</Base>
