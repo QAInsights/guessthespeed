@@ -18,7 +18,9 @@
   .work-room-actions .room-join-form .dialog-input {
     flex-basis: 100%;
   }
+}
 
+@media (max-width: 520px) {
   .logo b {
     display: none;
   }
@@ -246,7 +248,14 @@ summary {
   }
 
   .icon-btn[data-open-settings] {
+    width: var(--btn-h);
     flex: none;
+    padding: 0;
+    border-radius: 50%;
+  }
+
+  .icon-btn[data-open-settings] .ctrl-label {
+    display: none;
   }
 
   .mode-switch :is(button, a) {
@@ -260,18 +269,6 @@ summary {
 
   .promo-blurb {
     font-size: 0.875rem;
-  }
-}
-
-@media (max-width: 380px) {
-  .icon-btn[data-open-settings] {
-    width: var(--btn-h);
-    padding: 0;
-    border-radius: 50%;
-  }
-
-  .icon-btn[data-open-settings] .ctrl-label {
-    display: none;
   }
 }
 
