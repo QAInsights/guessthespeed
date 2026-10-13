@@ -8,13 +8,26 @@ const sources = import.meta.glob<string>("../pages/*.astro", {
 
 const WORDS_PER_MINUTE = 220;
 
-/** Plain prose of a top-level page such as "/story/", without markup or expressions. */
+/** String fields the pages render through expressions, such as FAQ `questions`. */
+const RENDERED_FIELD =
+  /\b(?:question|answer|explanation):\s*(['"`])((?:\\.|(?!\1)[^\\])*)\1/g;
+
+/** Plain prose of a top-level page such as "/story/", including rendered FAQ answers. */
 export function articleText(path: string): string {
   const source = sources[`../pages${path.slice(0, -1)}.astro`] ?? "";
   const main = source.match(/<main[\s\S]*<\/main>/)?.[0] ?? "";
-  return main
-    .replace(/<(script|style)[\s\S]*?<\/\1>/g, " ")
-    .replace(/\{[^{}]*\}/g, " ")
+  const frontmatter = source.match(/^---\n([\s\S]*?)\n---/)?.[1] ?? "";
+  const fields = [...frontmatter.matchAll(RENDERED_FIELD)].map(([, , value]) =>
+    value.replace(/\\(.)/g, "$1"),
+  );
+  let text = [main, ...fields]
+    .join(" ")
+    .replace(/<(script|style)[\s\S]*?<\/\1>/g, " ");
+  for (let prev = ""; prev !== text;) {
+    prev = text;
+    text = text.replace(/\$?\{[^{}]*\}/g, " ");
+  }
+  return text
     .replace(/<[^>]+>/g, " ")
     .replace(/&nbsp;/g, " ")
     .replace(/&amp;/g, "&")

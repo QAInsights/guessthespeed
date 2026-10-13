@@ -278,7 +278,12 @@ const range = `${firstIndex + 1} to ${firstIndex + pageArticles.length}`;
             text: normalize(entry.text),
           },
         })),
-      ));
+      )
+      .catch((error) => {
+        index = undefined;
+        throw error;
+      }));
+  let applied = 0;
 
   const params = new URLSearchParams(location.search);
   let topic = topics.some((button) => button.dataset.topic === params.get('topic'))
@@ -310,13 +315,14 @@ const range = `${firstIndex + 1} to ${firstIndex + pageArticles.length}`;
       target.textContent = text;
       return;
     }
+    const escape = (char: string) => char.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const pattern = new RegExp(
-      `(${terms.map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`,
-      'gi',
+      `(${terms.map((t) => [...t].map(escape).join('[^\\p{L}\\p{N}\\s]*')).join('|')})`,
+      'giu',
     );
     for (const part of text.split(pattern)) {
       if (!part) continue;
-      if (terms.includes(part.toLowerCase())) {
+      if (terms.includes(normalize(part))) {
         const mark = document.createElement('mark');
         mark.textContent = part;
         target.append(mark);
@@ -327,6 +333,7 @@ const range = `${firstIndex + 1} to ${firstIndex + pageArticles.length}`;
   }
 
   async function apply() {
+    const run = ++applied;
     const raw = input?.value.trim() ?? '';
     const terms = normalize(raw).split(/\s+/).filter(Boolean);
     const filtering = terms.length > 0 || topic !== 'all';
@@ -349,6 +356,7 @@ const range = `${firstIndex + 1} to ${firstIndex + pageArticles.length}`;
     }
 
     const entries = await loadIndex().catch(() => []);
+    if (run !== applied) return;
     const ranked = entries
       .filter((entry) => topic === 'all' || entry.topic === topic)
       .map((entry) => {
