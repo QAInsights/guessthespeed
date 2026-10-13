@@ -492,15 +492,23 @@ html[lang="ta"]
   border-top: 1px solid var(--soft);
 }
 
-.dev-ip-control {
+.dev-ip-value .dev-ip-control {
+  position: relative;
+  min-height: 0;
   margin-left: 0;
-  padding: 2px 8px;
+  padding: 0 8px;
   border: 1.5px solid var(--ink);
   border-radius: var(--r-pill);
   background: var(--surface);
   color: var(--ink);
   font: inherit;
   cursor: pointer;
+}
+
+.dev-ip-control::after {
+  position: absolute;
+  inset: -12px -4px;
+  content: "";
 }
 
 .dev-ip-value {
