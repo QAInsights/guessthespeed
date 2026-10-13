@@ -299,11 +299,17 @@ const range = `${firstIndex + 1} to ${firstIndex + pageArticles.length}`;
     return hits;
   }
 
+  const escape = (char: string) => char.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const termPattern = (terms: string[]) =>
+    new RegExp(
+      `(${terms.map((t) => [...t].map(escape).join('[^\\p{L}\\p{N}\\s]*')).join('|')})`,
+      'giu',
+    );
+
   function snippet(entry: Entry, terms: string[]) {
     const plain = entry.text;
-    const lower = normalize(plain);
-    const at = terms.length ? Math.min(...terms.map((t) => lower.indexOf(t)).filter((i) => i >= 0)) : -1;
-    if (!Number.isFinite(at) || at < 0) return entry.excerpt;
+    const at = terms.length ? plain.search(termPattern(terms)) : -1;
+    if (at < 0) return entry.excerpt;
     const start = Math.max(0, plain.lastIndexOf(' ', Math.max(0, at - 60)) + 1);
     const end = Math.min(plain.length, start + 180);
     return `${start > 0 ? '... ' : ''}${plain.slice(start, end).trim()}${end < plain.length ? ' ...' : ''}`;
@@ -315,12 +321,7 @@ const range = `${firstIndex + 1} to ${firstIndex + pageArticles.length}`;
       target.textContent = text;
       return;
     }
-    const escape = (char: string) => char.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const pattern = new RegExp(
-      `(${terms.map((t) => [...t].map(escape).join('[^\\p{L}\\p{N}\\s]*')).join('|')})`,
-      'giu',
-    );
-    for (const part of text.split(pattern)) {
+    for (const part of text.split(termPattern(terms))) {
       if (!part) continue;
       if (terms.includes(normalize(part))) {
         const mark = document.createElement('mark');
