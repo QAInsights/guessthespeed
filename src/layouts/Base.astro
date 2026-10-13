@@ -487,6 +487,16 @@ const languageTargets: Record<Locale, string> = translatedPage
           <Icon name="ph:question-fill" />
           <span class="ctrl-label">{t("header_help_label", {}, locale)}</span>
         </a>
+        <a
+          class="ctrl icon-btn school-link"
+          href="/speed-school/"
+          aria-label={t("footer_speed_school", {}, locale)}
+          title={t("footer_speed_school", {}, locale)}
+          aria-current={Astro.url.pathname.startsWith("/speed-school/") ? "page" : undefined}
+        >
+          <Icon name="ph:graduation-cap-fill" />
+          <span class="ctrl-label">{t("footer_speed_school", {}, locale)}</span>
+        </a>
         <button
           class="ctrl icon-btn"
           type="button"
