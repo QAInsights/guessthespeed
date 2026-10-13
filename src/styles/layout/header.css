@@ -81,7 +81,7 @@
   height: 18px;
 }
 
-.school-link[aria-current="page"],
+.school-link[aria-current],
 .icon-btn[data-tv-toggle][aria-pressed="true"],
 .icon-btn[data-fullscreen][aria-pressed="true"] {
   background: var(--ink);

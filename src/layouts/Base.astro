@@ -492,7 +492,11 @@ const languageTargets: Record<Locale, string> = translatedPage
           href="/speed-school/"
           aria-label={t("footer_speed_school", {}, locale)}
           title={t("footer_speed_school", {}, locale)}
-          aria-current={Astro.url.pathname.startsWith("/speed-school/") ? "page" : undefined}
+          aria-current={Astro.url.pathname === "/speed-school/"
+            ? "page"
+            : Astro.url.pathname.startsWith("/speed-school/")
+              ? "true"
+              : undefined}
         >
           <Icon name="ph:graduation-cap-fill" />
           <span class="ctrl-label">{t("footer_speed_school", {}, locale)}</span>
