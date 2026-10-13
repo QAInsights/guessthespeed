@@ -492,9 +492,10 @@ html[lang="ta"]
   border-top: 1px solid var(--soft);
 }
 
-.dev-ip-control {
+.dev-ip-value .dev-ip-control {
+  min-height: 24px;
   margin-left: 0;
-  padding: 2px 8px;
+  padding: 0 10px;
   border: 1.5px solid var(--ink);
   border-radius: var(--r-pill);
   background: var(--surface);

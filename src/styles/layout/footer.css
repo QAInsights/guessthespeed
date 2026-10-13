@@ -214,6 +214,7 @@ footer {
 
 .language-option[aria-current="true"] {
   background: color-mix(in srgb, var(--accent) 26%, var(--surface));
+  color: var(--ink);
 }
 
 .language-current {

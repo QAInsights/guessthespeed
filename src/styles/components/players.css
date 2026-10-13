@@ -391,7 +391,7 @@ html[lang] .p-actions .p-card-guess-actions > * {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 0;
+  gap: 8px;
   flex: none;
   margin-left: auto;
 }

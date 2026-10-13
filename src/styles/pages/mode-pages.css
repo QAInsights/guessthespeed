@@ -243,6 +243,5 @@ html[data-dev="1"] .dev-mode-pill-label {
 
   html[data-tv="1"][data-home="1"] .mode-hero-stats {
     order: 4;
-    transform: translateY(-12px);
   }
 }
