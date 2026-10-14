@@ -77,6 +77,7 @@ Room game data, including player names, face choices, guesses, and scores, is st
 - Good internet speed guide: https://guessthespeed.com/what-is-a-good-internet-speed/
 - Gaming internet speed guide: https://guessthespeed.com/internet-speed-for-gaming/
 - Upload vs Download Speed: https://guessthespeed.com/upload-vs-download-speed/
+- Why Is My Internet Slow When Someone Is Downloading?: https://guessthespeed.com/why-is-my-internet-slow-when-downloading/
 - Internet plan quick check: https://guessthespeed.com/am-i-getting-the-speed-i-pay-for/
 - Household speed calculator: https://guessthespeed.com/how-much-internet-speed-do-i-need/
 - Mbps to MB/s converter and download-time calculator: https://guessthespeed.com/mbps-to-mbs/
@@ -89,6 +90,10 @@ How it works explains the real browser-based Cloudflare speed test, its ping, do
 Internet speed 101 defines bits, bytes, Mbps, MB/s, download, upload, ping, and jitter. It includes sourced activity needs, Wi-Fi tips, a speed conversion table, and a glossary. Use the good internet speed guide for household download, upload, and ping planning, the household speed calculator to add overlapping activities, or the Mbps to MB/s converter to estimate transfer rates and download time.
 
 ## Internet speed guides and calculators
+
+### Why Is My Internet Slow When Someone Is Downloading?
+
+A big download or upload fills the queue on a home connection, so small, time-sensitive packets from calls, games and web pages wait behind it: Mbps stays the same but round trip time rises. This is called loaded latency, often nicknamed bufferbloat. Cloudflare measures loaded latency with small requests sent during its download and upload tests and says an idle to loaded gap approaching 100 ms or more on a wired connection likely points to the ISP (https://blog.cloudflare.com/how-does-cloudflares-speed-test-really-work/). Microsoft Teams lists typical call values of round trip under 200 ms, jitter under 30 ms and packet loss under 2% (https://support.microsoft.com/en-us/teams/meetings/monitor-call-and-meeting-quality-in-microsoft-teams). Apple's Network Responsiveness test (networkQuality on macOS) reports Round-trips Per Minute and suggests routers with Smart Queue Management (https://support.apple.com/en-us/101942). Guess the Speed measures idle ping, jitter, download and upload to a nearby Cloudflare server and does not measure loaded latency or packet loss. Fixes: enable SQM if the router supports it, schedule big transfers, use Ethernet, avoid VPNs for calls, and upgrade only if the line is genuinely full.
 
 - [What is a good internet speed?](https://guessthespeed.com/what-is-a-good-internet-speed/) explains sourced download, upload, streaming, video-call, Remote Play, and latency recommendations, with household starting ranges and advice for diagnosing a lower speed test.
 - [How much internet speed do you need for gaming?](https://guessthespeed.com/internet-speed-for-gaming/) gives sourced download, upload and ping guidance for online multiplayer, PlayStation Remote Play (5 Mbps minimum, 15 Mbps recommended both ways), Xbox Cloud Gaming (10 Mbps mobile, 20 Mbps consoles and PCs) and GeForce NOW (15 to 45 Mbps by resolution, under 80 ms latency), plus game download times at common plan speeds.

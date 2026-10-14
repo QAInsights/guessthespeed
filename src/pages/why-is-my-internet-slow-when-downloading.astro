@@ -1,0 +1,303 @@
+---
+import Base from '../layouts/Base.astro';
+import ArticleTools from '../components/ArticleTools.astro';
+import '../styles/site.css';
+import { DEV_USE_THRESHOLDS } from '../lib/devresult';
+
+const roundTripsPerMinute = (pingMs: number) => Math.round(60_000 / pingMs).toLocaleString('en-US');
+const roundTripRows = [
+  { ping: 15, when: 'Quiet line, nobody else online' },
+  { ping: DEV_USE_THRESHOLDS.gamingMaxPingMs, when: 'Dev mode gaming check limit' },
+  { ping: 100, when: 'A busy evening on a congested line' },
+  { ping: 200, when: 'Microsoft Teams typical round trip ceiling' },
+  { ping: 500, when: 'A big upload filling the router queue' },
+].map(({ ping, when }) => ({ label: `${ping} ms`, when, rpm: roundTripsPerMinute(ping) }));
+
+const sources = {
+  cloudflareTest: 'https://blog.cloudflare.com/how-does-cloudflares-speed-test-really-work/',
+  cloudflareAim: 'https://developers.cloudflare.com/speed/aim/',
+  apple: 'https://support.apple.com/en-us/101942',
+  teamsQuality: 'https://support.microsoft.com/en-us/teams/meetings/monitor-call-and-meeting-quality-in-microsoft-teams',
+  teamsNetwork: 'https://learn.microsoft.com/en-us/microsoftteams/prepare-network',
+  geforceNow: 'https://www.nvidia.com/en-us/geforce-now/system-reqs/',
+  fcc: 'https://www.fcc.gov/broadbandlabels-glossary',
+  ping: 'https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/ping',
+};
+
+const questions = [
+  {
+    question: 'Why is my internet slow when someone is downloading?',
+    answer:
+      'A big download or upload fills the queue in your router or on the line, so small, time-sensitive packets from calls, games and web pages wait behind it. Your Mbps barely changes, but the round trip time rises, and that delay is what makes everything feel slow.',
+  },
+  {
+    question: 'What is loaded latency?',
+    answer:
+      'Loaded latency is the round trip time measured while your connection is busy moving data. Cloudflare measures it by sending small empty requests during its download and upload tests and compares it with idle latency measured before the transfer starts.',
+  },
+  {
+    question: 'What is bufferbloat?',
+    answer:
+      'Bufferbloat is the everyday name for latency that balloons when a connection is busy because data piles up in oversized queues. It shows up as a big gap between ping on a quiet line and ping while something large is downloading or uploading.',
+  },
+  {
+    question: 'How much should ping rise during a download?',
+    answer:
+      'As little as possible. Cloudflare says that if the difference between idle and loaded latency approaches 100 milliseconds or more on a wired connection, your internet provider is likely at fault.',
+  },
+  {
+    question: 'Will a faster internet plan fix lag during downloads?',
+    answer:
+      'Not always. A faster plan helps if the line is genuinely full, but if the router queue is the problem, the new plan simply fills up too. Smart Queue Management on the router, a wired connection and limiting big transfers usually help more than extra Mbps.',
+  },
+  {
+    question: 'Does Guess the Speed measure bufferbloat?',
+    answer:
+      'No. Guess the Speed measures ping, jitter, download and upload to a nearby Cloudflare server, with ping measured while the line is idle. It does not measure loaded latency or packet loss, so use a tool that does, such as the Cloudflare speed test or the Apple Network Responsiveness test.',
+  },
+];
+
+const faqSchema = {
+  '@type': 'FAQPage',
+  mainEntity: questions.map(({ question, answer }) => ({
+    '@type': 'Question',
+    name: question,
+    acceptedAnswer: { '@type': 'Answer', text: answer },
+  })),
+};
+
+const articleSchema = {
+  '@type': 'Article',
+  headline: 'Why Is My Internet Slow When Someone Is Downloading?',
+  description:
+    'A sourced guide to loaded latency and bufferbloat: why calls and games lag while a download or upload runs, how to test it at home and what actually fixes it.',
+  author: {
+    '@type': 'Person',
+    '@id': 'https://guessthespeed.com/#author',
+    name: 'NaveenKumar Namachivayam',
+    url: 'https://qainsights.com',
+  },
+  publisher: {
+    '@type': 'Organization',
+    name: 'Guess the Speed',
+    url: 'https://guessthespeed.com',
+  },
+  datePublished: '2026-10-14',
+  mainEntityOfPage: 'https://guessthespeed.com/why-is-my-internet-slow-when-downloading/',
+};
+---
+
+<Base
+  title="Why Is My Internet Slow When Someone Is Downloading? (2026)"
+  description="Why calls and games lag while someone downloads: loaded latency and bufferbloat explained with sourced 2026 figures, home tests and fixes that actually work."
+  breadcrumb="Slow when downloading"
+  schema={[articleSchema, faqSchema]}
+>
+  <main class="wrap content-page">
+    <a class="round-banner" href="/speed-school/">Speed School</a>
+    <h1>Why Is My Internet Slow When Someone Is Downloading?</h1>
+    <p class="lede">
+      Short answer: a big download or upload fills the queue on your line, so everything else waits behind it and your ping climbs even though your
+      Mbps looks fine. Cloudflare says a jump between idle and loaded latency approaching <strong>100 ms or more</strong> on a wired connection points
+      to your provider, while Microsoft Teams treats round trips under <strong>200 ms</strong>, jitter under <strong>30 ms</strong> and packet loss under
+      <strong>2%</strong> as typical for a healthy call.
+    </p>
+    <ArticleTools path="/why-is-my-internet-slow-when-downloading/" />
+    <article class="content-card stk">
+      <p>
+        Here is a scene from my house. My son starts a 60 GB game download on the console, and five minutes later my video call freezes, my voice turns
+        robotic and someone shouts "the Wi-Fi is broken" from the living room. The speed test still shows a healthy number. So what is going on?
+      </p>
+      <p>
+        In my performance testing days, this was the classic pattern we looked for in load tests: throughput holds steady while response times shoot up.
+        The server is not slower, it is just busy, and every new request waits in a queue. Your home internet behaves exactly the same way. In this
+        article, let us look at why it happens, how to measure it with free tools, and what actually fixes it, using only figures the vendors themselves
+        publish.
+      </p>
+
+      <h2>Why does my internet slow down when someone downloads?</h2>
+      <p>
+        Think of your connection as a single checkout lane at a supermarket. Mbps is how fast the cashier scans items. Latency is how long you wait from
+        joining the lane to walking out. If one shopper arrives with three overflowing trolleys, the cashier keeps scanning at the same speed, but you,
+        holding a single bottle of milk, now wait behind all of it.
+      </p>
+      <p>
+        That is a download hogging the line. Files, game updates, cloud photo backups and big email attachments send huge amounts of data as fast as the
+        connection allows. Routers and modems hold the excess in a buffer, a waiting line for packets. When that buffer is large and full, the tiny,
+        time-sensitive packets from a video call, a game or a web page sit in the same queue. People often call this <em>bufferbloat</em>, and the
+        measurement that reveals it is called <em>loaded latency</em>.
+      </p>
+      <p>
+        Uploads are often worse than downloads, because many home plans have much less upload capacity, so the queue fills sooner. If you are curious why
+        the two numbers differ, I covered that in <a href="/upload-vs-download-speed/">upload vs download speed</a>.
+      </p>
+
+      <h2>What is loaded latency, and how is it different from ping?</h2>
+      <p>
+        Ping, or latency, is the round trip time for a small piece of data to reach a server and come back, measured in milliseconds. The FCC's
+        <a href={sources.fcc} rel="noopener nofollow">broadband label glossary</a> describes typical latency as the time it takes data to travel from
+        one point to another, notes that it is often called lag, and says lower latency means a higher-quality connection.
+      </p>
+      <p>
+        The catch is <em>when</em> you measure it. According to
+        <a href={sources.cloudflareTest} rel="noopener nofollow">Cloudflare's explanation of its speed test</a>, idle latency is measured when no data is
+        transferring, and loaded latency is measured by sending small empty requests at regular intervals while the download and upload tests are running,
+        so it shows the round trip time while your connection is busy. Cloudflare also reports jitter, the average variation between consecutive round
+        trips, and packet loss, the percentage of packets that fail to reach their destination.
+      </p>
+      <p>
+        The difference between the two latency numbers is the useful part. Cloudflare says that if the gap approaches <strong>100 milliseconds or
+        more</strong> over a wired connection, your internet provider is likely at fault. On Wi-Fi, the gap can also come from your own router and the
+        radio link, which is why testing with a cable first matters.
+      </p>
+
+      <h2>Why does latency hurt more than slow Mbps?</h2>
+      <p>
+        Most things you do online are conversations, not one long transfer. A web page needs many small round trips before it appears. A video call sends
+        a steady stream of tiny audio and video packets that must arrive on time. A game sends small position updates many times a second. Cloudflare
+        notes that video calls, streaming and gaming can be more sensitive to latency, jitter and packet loss than to bandwidth.
+      </p>
+      <p>
+        Here is a simple way to see it. If every request has to wait for the previous answer, the round trip time sets how many conversations you can
+        finish in a minute. Apple uses a similar idea, Round-trips Per Minute, in its responsiveness test (more on that below). The table below is just
+        arithmetic, 60,000 milliseconds divided by the round trip time, worked out when this page is built. It is not Apple's exact method, but it
+        shows the trend.
+      </p>
+      <div class="guide-table-wrap" role="region" aria-label="Sequential round trips per minute at different ping values" tabindex="0">
+        <table class="guide-table">
+          <caption>Sequential round trips per minute at each round trip time</caption>
+          <thead>
+            <tr><th scope="col">Round trip time</th><th scope="col">Round trips per minute</th><th scope="col">Where you might see it</th></tr>
+          </thead>
+          <tbody>
+            {roundTripRows.map((row) => (
+              <tr><th scope="row">{row.label}</th><td>{row.rpm}</td><td>{row.when}</td></tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p>
+        Same plan, same Mbps, yet going from a quiet line to a full queue cuts the number of round trips you can finish by more than thirty times. That is
+        why the web feels sluggish and calls stutter while the speed test number looks perfectly fine.
+      </p>
+
+      <h2>What do calls and games actually need?</h2>
+      <p>
+        Here are the published figures I could find for latency, jitter and packet loss, each from the vendor's own page. Notice that each one is measured
+        to that vendor's service, not to the nearest speed test server.
+      </p>
+      <div class="guide-table-wrap" role="region" aria-label="Published latency, jitter and packet loss guidance" tabindex="0">
+        <table class="guide-table">
+          <caption>Published latency, jitter and packet loss guidance</caption>
+          <thead>
+            <tr><th scope="col">Source</th><th scope="col">Figure</th><th scope="col">What it applies to</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row"><a href={sources.teamsQuality} rel="noopener nofollow">Microsoft Teams</a></th><td>Round trip under 200 ms</td><td>Typical value in Teams call quality stats</td></tr>
+            <tr><th scope="row"><a href={sources.teamsQuality} rel="noopener nofollow">Microsoft Teams</a></th><td>Jitter under 30 ms</td><td>Typical received jitter in a call</td></tr>
+            <tr><th scope="row"><a href={sources.teamsQuality} rel="noopener nofollow">Microsoft Teams</a></th><td>Packet loss under 2%</td><td>Typical received packet loss in a call</td></tr>
+            <tr><th scope="row"><a href={sources.geforceNow} rel="noopener nofollow">NVIDIA GeForce NOW</a></th><td>Under 80 ms</td><td>Latency to an NVIDIA data center</td></tr>
+            <tr><th scope="row"><a href={sources.cloudflareTest} rel="noopener nofollow">Cloudflare</a></th><td>Idle to loaded gap near 100 ms or more</td><td>Likely an ISP issue on a wired connection</td></tr>
+            <tr><th scope="row"><a href="/?dev=1">Guess the Speed Dev mode</a></th><td>Ping under {DEV_USE_THRESHOLDS.gamingMaxPingMs} ms</td><td>Our own gaming check, to a nearby Cloudflare server</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        Microsoft's <a href={sources.teamsNetwork} rel="noopener nofollow">Teams network guide</a> also describes the symptoms you hear when this goes
+        wrong: calls with static that cut out, or voices that sound like robots, which it says could be jitter or packet loss. If that is what your family
+        hears every time a backup kicks in, you are looking at a queue problem, not a speed problem.
+      </p>
+
+      <h2>How can I test for bufferbloat at home?</h2>
+      <p>
+        I will be honest about our own tool first. The Guess the Speed test measures ping and jitter to a nearby Cloudflare server while the line is quiet,
+        then measures download and upload. It does not measure loaded latency or packet loss, and you can read exactly what it does on
+        <a href="/how-it-works/">how it works</a>. It tells you how healthy your home line and Wi-Fi are, not your latency to a game server or a
+        meeting service. For bufferbloat, use one of these:
+      </p>
+      <ol>
+        <li>
+          <strong>Cloudflare speed test.</strong> Cloudflare's test reports idle latency, loaded latency during download and upload, jitter and packet loss.
+          Its <a href={sources.cloudflareAim} rel="noopener nofollow">Aggregated Internet Measurement</a> page explains how those metrics are turned into
+          quality scores for streaming, gaming and real-time communication. Compare idle latency with loaded latency.
+        </li>
+        <li>
+          <strong>Apple Network Responsiveness test.</strong> <a href={sources.apple} rel="noopener nofollow">Apple's support page</a> says it measures
+          how well a network multitasks when several devices and apps share it, and reports Round-trips Per Minute, where higher is better. On a Mac with
+          macOS Monterey or later, type <code>networkQuality</code> in Terminal. On iPhone, it lives under Developer settings. Apple groups results as
+          Low, Medium or High, and says that at Low, someone downloading a movie or backing up photos can make FaceTime calls or gaming unreliable.
+        </li>
+        <li>
+          <strong>A do-it-yourself ping test.</strong> On Windows, the
+          <a href={sources.ping} rel="noopener nofollow"><code>ping</code> command</a> sends echo requests and shows the round trip time for each reply.
+          <code>ping /t</code> keeps going until you stop it with Ctrl+C. Start it against your router or a well-known server, note the usual
+          milliseconds, then start a big download on another device and watch what happens. A jump from tens to hundreds of milliseconds is bufferbloat
+          you can see with your own eyes.
+        </li>
+      </ol>
+      <p>
+        Whichever test you use, run it twice: once on Wi-Fi and once with a cable plugged into the router. If loaded latency is fine on the cable and bad
+        on Wi-Fi, the radio link or router placement is the bottleneck. If it is bad on both, the queue is at the router or the line itself.
+      </p>
+
+      <h2>How do I fix lag when someone is downloading?</h2>
+      <p>Start with the cheapest fix and work up. In my house, the first three solved most of it.</p>
+      <ol>
+        <li>
+          <strong>Turn on Smart Queue Management if your router has it.</strong> Apple suggests this directly: some routers offer Smart Queue Management
+          (SQM) to keep responsiveness consistently high, though Apple notes these higher-end home gateways generally need some expert configuration.
+          Check your router's own manual for whether it has this setting and what it is called.
+        </li>
+        <li>
+          <strong>Schedule the heavy stuff.</strong> Game updates, cloud photo backups and big uploads do not need to run at 7 pm. Many consoles and backup
+          apps have a setting to pause, schedule or limit them, so check before blaming the plan.
+        </li>
+        <li>
+          <strong>Use a cable for the device that matters.</strong> NVIDIA recommends wired Ethernet or 5 GHz Wi-Fi for GeForce NOW, and a cable removes
+          the Wi-Fi part of the delay entirely.
+        </li>
+        <li>
+          <strong>Turn off the VPN for calls.</strong> Microsoft's Teams guidance warns that routing traffic through a VPN can add latency and jitter.
+        </li>
+        <li>
+          <strong>Upgrade the plan only if the line is genuinely full.</strong> If several people really are streaming, calling and gaming at the same
+          time, you may simply need more capacity. Add everyone up with the <a href="/how-much-internet-speed-do-i-need/">household speed
+          calculator</a> before you spend money. A faster plan does not shrink a badly managed queue, it just fills a bigger one.
+        </li>
+        <li>
+          <strong>Call your provider with evidence.</strong> If loaded latency stays high on a wired connection with SQM enabled, and the gap is near the
+          100 ms mark Cloudflare mentions, take screenshots of the idle and loaded results. The <a href="/am-i-getting-the-speed-i-pay-for/">plan speed
+          check</a> walks through what else to collect.
+        </li>
+      </ol>
+
+      <h2>Is my speed test lying to me?</h2>
+      <p>
+        No, it is answering a different question. A speed test asks "how fast can this pipe move a big file?" Lag during downloads asks "how long does a
+        small packet wait when the pipe is full?" Both matter. A connection with plenty of Mbps and terrible loaded latency feels slower than a modest
+        plan with a well-managed queue. When people ask me <a href="/what-is-a-good-internet-speed/">what a good internet speed is</a>, I now always add:
+        and check what your ping does when someone else is downloading.
+      </p>
+      <p>
+        Want to make it a family experiment? Play a round of <a href="/">Guess the Speed</a> on a quiet line, then play again while the console
+        downloads an update. Everyone guesses first, so you will find out who in the house really knows your Wi-Fi.
+      </p>
+
+      <h2>Frequently asked questions</h2>
+      <div class="faq">
+        {questions.map(({ question, answer }) => (
+          <section>
+            <h3>{question}</h3>
+            <p>{answer}</p>
+          </section>
+        ))}
+      </div>
+      <p>
+        For gaming-specific speeds and ping, read <a href="/internet-speed-for-gaming/">how much internet speed you need for gaming</a>.
+      </p>
+      <div class="story-cta">
+        <a class="go" href="/">Start a game</a>
+      </div>
+    </article>
+  </main>
+</Base>
