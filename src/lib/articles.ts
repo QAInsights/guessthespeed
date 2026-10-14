@@ -24,6 +24,20 @@ export interface Article {
 /** Every Speed School article, newest first. New article pages must be added here. */
 export const ARTICLES: Article[] = [
   {
+    path: "/why-is-my-internet-slow-when-downloading/",
+    title: "Why Is My Internet Slow When Someone Is Downloading?",
+    excerpt:
+      "Why calls and games lag while a download runs: loaded latency and bufferbloat explained, how to test it at home and what actually fixes it.",
+    category: "Guides",
+    published: "2026-10-14",
+    tldr: [
+      "A big download or upload fills the queue, so small, time-sensitive packets wait behind it and round trip time rises even when Mbps stays the same.",
+      "Loaded latency is the round trip time while your connection is busy, and bufferbloat is the common name for latency that grows as queues fill.",
+      "Cloudflare says an idle to loaded latency gap approaching 100 ms or more on a wired connection likely points to the ISP.",
+      "Guess the Speed does not measure loaded latency or packet loss. Try SQM, scheduled transfers, Ethernet or avoiding VPNs before upgrading a plan.",
+    ],
+  },
+  {
     path: "/upload-vs-download-speed/",
     title: "Upload vs Download Speed: What Is the Difference?",
     excerpt:
