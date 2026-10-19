@@ -121,6 +121,15 @@ export const ogCards: readonly OgCard[] = [
     icon: "ph:game-controller-bold",
   },
   {
+    path: "/why-is-my-internet-slow-when-downloading/",
+    group: "Learn",
+    kicker: "Guide",
+    line1: "Why is my internet",
+    line2: "slow when downloading?",
+    subtitle: "Loaded latency and bufferbloat, explained",
+    icon: "ph:hourglass-medium-bold",
+  },
+  {
     path: "/upload-vs-download-speed/",
     group: "Learn",
     kicker: "Guide",
