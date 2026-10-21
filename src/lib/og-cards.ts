@@ -130,6 +130,15 @@ export const ogCards: readonly OgCard[] = [
     icon: "ph:hourglass-medium-bold",
   },
   {
+    path: "/internet-speed-for-4k-streaming/",
+    group: "Learn",
+    kicker: "Guide",
+    line1: "Internet speed",
+    line2: "for 4K streaming",
+    subtitle: "Netflix, YouTube and Disney+ speeds, sourced",
+    icon: "ph:television-simple-bold",
+  },
+  {
     path: "/upload-vs-download-speed/",
     group: "Learn",
     kicker: "Guide",

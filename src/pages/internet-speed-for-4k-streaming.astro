@@ -1,0 +1,327 @@
+---
+import Base from '../layouts/Base.astro';
+import ArticleTools from '../components/ArticleTools.astro';
+import '../styles/site.css';
+import { ACTIVITY_RATES, recommendSpeed, type ActivityId } from '../lib/speed-needs';
+import { DEV_USE_THRESHOLDS } from '../lib/devresult';
+import { mbpsToMBps } from '../lib/convert';
+
+const sources = {
+  netflixSpeeds: 'https://help.netflix.com/en/node/306',
+  netflixQuality: 'https://help.netflix.com/en/node/13444',
+  netflixData: 'https://help.netflix.com/en/node/87',
+  netflixPlans: 'https://help.netflix.com/en/node/24926',
+  youtube: 'https://support.google.com/youtube/answer/78358',
+  disneyData: 'https://help.disneyplus.com/article/disneyplus-data-usage',
+  disneyQuality: 'https://help.disneyplus.com/article/disneyplus-video-quality',
+  fcc: 'https://www.fcc.gov/consumers/guides/broadband-speed-guide',
+};
+
+const calculator4k = ACTIVITY_RATES.streams4k.down;
+const devMode4k = DEV_USE_THRESHOLDS.streaming4kDownMbps;
+
+const noActivities = Object.fromEntries(
+  (Object.keys(ACTIVITY_RATES) as ActivityId[]).map((id) => [id, 0]),
+) as Record<ActivityId, number>;
+const streamRows = [1, 2, 3, 4].map((streams) => {
+  const { down, tierDown } = recommendSpeed({ ...noActivities, streams4k: streams });
+  return {
+    label: streams === 1 ? '1 stream' : `${streams} streams`,
+    raw: streams * calculator4k,
+    down,
+    tierDown,
+  };
+});
+const fourStreams = streamRows[streamRows.length - 1];
+
+const averageMbps = (gbPerHour: number) => (gbPerHour * 8_000) / 3_600;
+const dataRows = [
+  { service: 'Netflix', setting: 'High, Ultra HD (4K)', gb: 7, source: sources.netflixData, note: 'up to' },
+  { service: 'Disney+', setting: 'Automatic on a TV, 4K UHD and HDR', gb: 7.7, source: sources.disneyData, note: 'about' },
+].map((row) => {
+  const mbps = averageMbps(row.gb);
+  return {
+    ...row,
+    mbps: mbps.toFixed(1),
+    mBps: (mbpsToMBps(mbps) ?? 0).toFixed(1),
+  };
+});
+
+const questions = [
+  {
+    question: 'How much internet speed do I need for 4K streaming?',
+    answer:
+      'Plan on 15 to 25 Mbps of steady download speed for each 4K stream. Netflix recommends 15 Mbps or higher for 4K, YouTube recommends a sustained 20 Mbps, and the FCC lists 25 Mbps as the minimum for Ultra HD 4K video.',
+  },
+  {
+    question: 'Is 25 Mbps enough for 4K?',
+    answer:
+      'For one 4K stream, yes. 25 Mbps meets the Netflix, YouTube and FCC figures for a single stream, but it leaves almost nothing for a second stream, a video call or a download running at the same time.',
+  },
+  {
+    question: 'How much speed do two 4K streams need?',
+    answer: `Using our calculator allowance of ${calculator4k} Mbps per 4K stream plus 25% headroom, two 4K streams need about ${streamRows[1].down} Mbps of download speed, which rounds to a ${streamRows[1].tierDown} Mbps plan.`,
+  },
+  {
+    question: 'How much speed does Disney+ need for 4K?',
+    answer:
+      'Disney+ does not publish a Mbps figure on its video quality or data usage help pages. It says 4K UHD on a TV uses about 7.7 GB of data per hour, which works out to an average of about 17 Mbps, and that 4K is not available in computer browsers.',
+  },
+  {
+    question: 'How much data does an hour of 4K streaming use?',
+    answer:
+      'Netflix says 4K at its High data setting uses up to 7 GB per hour per device, and Disney+ says its Automatic setting on a TV uses about 7.7 GB per hour at 4K UHD and HDR.',
+  },
+  {
+    question: 'Why is my 4K stream not in 4K on a fast connection?',
+    answer:
+      'Speed is only one requirement. Netflix needs the Premium plan for 4K, and the TV, streaming stick, receiver and HDMI cables all have to support 4K. Disney+ limits computer browsers to 720p, so check the plan and devices before blaming the internet.',
+  },
+  {
+    question: 'Does the Guess the Speed test prove I can stream 4K?',
+    answer: `No. It measures your home line and Wi-Fi to a nearby Cloudflare server, and Dev mode marks 4K streaming as fine at ${devMode4k} Mbps or more down. That is a good sign, but only the streaming app's own test shows the speed to that service.`,
+  },
+];
+
+const faqSchema = {
+  '@type': 'FAQPage',
+  mainEntity: questions.map(({ question, answer }) => ({
+    '@type': 'Question',
+    name: question,
+    acceptedAnswer: { '@type': 'Answer', text: answer },
+  })),
+};
+
+const articleSchema = {
+  '@type': 'Article',
+  headline: 'How Much Internet Speed Do You Need for 4K Streaming?',
+  description:
+    'Sourced 4K streaming speeds for Netflix, YouTube and Disney+, how much two to four 4K streams need, data per hour, and why a fast plan can still look blurry.',
+  author: {
+    '@type': 'Person',
+    '@id': 'https://guessthespeed.com/#author',
+    name: 'NaveenKumar Namachivayam',
+    url: 'https://qainsights.com',
+  },
+  publisher: {
+    '@type': 'Organization',
+    name: 'Guess the Speed',
+    url: 'https://guessthespeed.com',
+  },
+  datePublished: '2026-10-21',
+  mainEntityOfPage: 'https://guessthespeed.com/internet-speed-for-4k-streaming/',
+};
+---
+
+<Base
+  title="Internet Speed for 4K Streaming: Netflix, YouTube, Disney+"
+  description="How much internet speed you need for 4K streaming in 2026: sourced Netflix, YouTube and Disney+ figures, Mbps for 2 to 4 streams, and data used per hour."
+  breadcrumb="4K streaming speed"
+  schema={[articleSchema, faqSchema]}
+>
+  <main class="wrap content-page">
+    <a class="round-banner" href="/speed-school/">Speed School</a>
+    <h1>How Much Internet Speed Do You Need for 4K Streaming?</h1>
+    <p class="lede">
+      Short answer: plan on <strong>15 to 25 Mbps</strong> of steady download speed for every 4K stream. Netflix recommends
+      <strong>15 Mbps</strong> or higher, YouTube a sustained <strong>20 Mbps</strong> and the FCC lists <strong>25 Mbps</strong> for Ultra HD,
+      so a home with four 4K TVs going at once should look at about <strong>{fourStreams.tierDown} Mbps</strong>.
+    </p>
+    <ArticleTools path="/internet-speed-for-4k-streaming/" />
+    <article class="content-card stk">
+      <p>
+        Friday night at our house goes like this. The kids put a movie on the living-room TV in 4K, someone else is watching YouTube upstairs, and
+        within ten minutes I hear "Appa, it is buffering!" The question that always follows is a fair one: is our plan fast enough for 4K, or is
+        something else going on?
+      </p>
+      <p>
+        In this article, let us look at how much speed a 4K stream really needs, why Netflix, YouTube and the FCC give different numbers, how to
+        work it out for a busy household, and the non-speed reasons a 4K title still looks soft. Every figure comes from the service's own help page,
+        linked right next to it.
+      </p>
+
+      <h2>How much internet speed do you need for 4K streaming?</h2>
+      <p>
+        Each service publishes its own number. Here is what the official pages said when I opened them in October 2026. Notice that one popular
+        service, Disney+, does not publish a Mbps figure at all on its video quality and data usage pages, so I have not guessed one.
+      </p>
+      <div class="guide-table-wrap" role="region" aria-label="Published download speeds for one 4K stream" tabindex="0">
+        <table class="guide-table">
+          <caption>Published download speed for one 4K stream</caption>
+          <thead>
+            <tr><th scope="col">Source</th><th scope="col">4K figure</th><th scope="col">How it is worded</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row"><a href={sources.netflixSpeeds} rel="noopener nofollow">Netflix</a></th><td>15 Mbps</td><td>Recommended, "or higher", for Ultra HD 4K</td></tr>
+            <tr><th scope="row"><a href={sources.youtube} rel="noopener nofollow">YouTube</a></th><td>20 Mbps</td><td>Recommended sustained speed for 4K UHD</td></tr>
+            <tr><th scope="row"><a href={sources.fcc} rel="noopener nofollow">FCC</a></th><td>25 Mbps</td><td>Minimum download for streaming Ultra HD 4K video</td></tr>
+            <tr><th scope="row"><a href={sources.disneyQuality} rel="noopener nofollow">Disney+</a></th><td>Not published</td><td>Streams the best quality your device and connection allow</td></tr>
+            <tr><th scope="row"><a href="/how-much-internet-speed-do-i-need/">Our calculator</a></th><td>{calculator4k} Mbps</td><td>Planning allowance per 4K stream, before headroom</td></tr>
+            <tr><th scope="row"><a href="/?dev=1">Guess the Speed Dev mode</a></th><td>{devMode4k} Mbps</td><td>Download needed for the 4K streaming check to pass</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        If you want one number to remember, 25 Mbps per 4K stream is the safe one. It is the FCC figure, it is the line our own
+        <a href="/?dev=1">Dev mode</a> uses, and it covers both Netflix and YouTube with a little room to spare.
+      </p>
+
+      <h2>Why do Netflix, YouTube and the FCC give different numbers?</h2>
+      <p>
+        They are answering slightly different questions. Netflix and YouTube describe what their own players need. YouTube's page says the table shows
+        the approximate speeds recommended for each video format, and the word that matters is <em>sustained</em>: the speed has to hold for the
+        whole film, not just the first minute. Netflix says it adapts to the speed of your connection and may stream at a lower quality on slow or
+        unstable connections, which is why a dip shows up as a blurry picture rather than an error.
+      </p>
+      <p>
+        The FCC table is a general guide across all services. The FCC itself says its numbers are rough guidelines, not based on surveys or
+        experiments it ran, and that speeds assume one activity at a time. So it is a sensible minimum, not a guarantee.
+      </p>
+      <p>
+        In my performance testing days, we never sized a system on the average. We looked at what the system could sustain at the busy hour, and
+        we left headroom for the spikes. A 4K stream is the same: it is not one big download, it is a steady flow that has to keep up for two hours
+        while everyone else at home is online too. That is why I plan on the higher figure.
+      </p>
+
+      <h2>How much speed do two, three or four 4K streams need?</h2>
+      <p>
+        Streams add up. Two TVs in 4K need twice the speed of one. The table below uses the same figures as our
+        <a href="/how-much-internet-speed-do-i-need/">household speed calculator</a>: {calculator4k} Mbps per 4K stream, based on YouTube's sustained
+        figure, plus 25% headroom, rounded up to a common plan tier. It is worked out when this page is built, so it always matches the calculator.
+      </p>
+      <div class="guide-table-wrap" role="region" aria-label="Download speed for several 4K streams at once" tabindex="0">
+        <table class="guide-table">
+          <caption>Download speed for 4K streams running at the same time</caption>
+          <thead>
+            <tr><th scope="col">4K streams at once</th><th scope="col">Streams alone</th><th scope="col">With 25% headroom</th><th scope="col">Plan tier to look at</th></tr>
+          </thead>
+          <tbody>
+            {streamRows.map((row) => (
+              <tr><th scope="row">{row.label}</th><td>{row.raw} Mbps</td><td>{row.down} Mbps</td><td>{row.tierDown} Mbps</td></tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p>
+        Real homes rarely stream and do nothing else. Add video calls, game downloads and phones on top in the
+        <a href="/how-much-internet-speed-do-i-need/">calculator</a> to see the full picture before you change plans. Netflix's
+        <a href={sources.netflixPlans} rel="noopener nofollow">Premium plan</a> allows 4 supported devices at a time, so four 4K streams from one
+        account is a real scenario, not a stretch.
+      </p>
+
+      <h2>How much data does an hour of 4K streaming use?</h2>
+      <p>
+        If your plan has a data cap, this matters as much as speed. Netflix and Disney+ both publish data per hour. I converted those into an
+        average Mbps (GB per hour multiplied by 8,000 and divided by 3,600 seconds) so you can compare them with the speed table above.
+      </p>
+      <div class="guide-table-wrap" role="region" aria-label="Data used per hour of 4K streaming" tabindex="0">
+        <table class="guide-table">
+          <caption>Data used by one hour of 4K, and the average speed it implies</caption>
+          <thead>
+            <tr><th scope="col">Service</th><th scope="col">Setting</th><th scope="col">Data per hour</th><th scope="col">Average speed</th></tr>
+          </thead>
+          <tbody>
+            {dataRows.map((row) => (
+              <tr>
+                <th scope="row"><a href={row.source} rel="noopener nofollow">{row.service}</a></th>
+                <td>{row.setting}</td>
+                <td>{row.note} {row.gb} GB</td>
+                <td>{row.mbps} Mbps ({row.mBps} MB/s)</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p>
+        The average lands below the recommended speeds, and that is expected. Video is not a flat line: busy, detailed scenes need more data than a
+        quiet one, and the player buffers ahead in bursts. The recommendation covers the peaks, the average tells you about your data cap. If the
+        MB/s column looks unfamiliar, the <a href="/mbps-to-mbs/">Mbps to MB/s converter</a> explains the 8 bits per byte step.
+      </p>
+      <p>
+        For a family that watches three hours of 4K a night, that is roughly 21 GB a day on Netflix's figure, or more than 600 GB over a month.
+        Both services let you lower the data setting if that is too much: Netflix offers Low, Medium, High and Auto, and Disney+ offers Automatic,
+        Moderate and Save data on TVs.
+      </p>
+
+      <h2>Why does my 4K stream still look blurry on a fast plan?</h2>
+      <p>Speed is only one link in the chain. Before you call your provider, check these, all taken from the services' own help pages:</p>
+      <ol>
+        <li>
+          <strong>Your subscription tier.</strong> Netflix lists 4K (Ultra HD) and HDR on the Premium plan. Its Standard and Standard with ads plans
+          are listed at 1080p (Full HD).
+        </li>
+        <li>
+          <strong>Every device in the chain.</strong> Netflix's <a href={sources.netflixQuality} rel="noopener nofollow">video quality guide</a> says
+          that if you watch on a TV with a streaming stick and an audio receiver, all three have to support 4K or HDR. It also says Premium needs
+          Premium High Speed HDMI or Ultra High Speed HDMI cables, plugged into ports that support 4K.
+        </li>
+        <li>
+          <strong>The app, not the browser.</strong> Disney+ says 4K streaming is not available in computer browsers, which are limited to 720p HD.
+          Use the TV app or a streaming device instead.
+        </li>
+        <li>
+          <strong>The title itself.</strong> Not everything is filmed or released in 4K. Netflix shows a 4K label on the title's details page, and
+          Disney+ has a 4K Ultra HD HDR collection and an Ultra HD filter.
+        </li>
+        <li>
+          <strong>A slow start.</strong> Netflix notes that playback sometimes starts at a lower resolution and switches to a higher one after a short
+          time. Give it a minute before you decide something is wrong.
+        </li>
+      </ol>
+
+      <h2>Does Wi-Fi matter for 4K streaming?</h2>
+      <p>
+        Yes, often more than the plan. Your provider can deliver 500 Mbps to the router, but the TV only gets what the Wi-Fi can carry to that room.
+        YouTube's playback page suggests that it may help to hardwire your internet connection instead of using a wireless one, and Netflix
+        recommends streaming on a wired or Wi-Fi network when available.
+      </p>
+      <p>
+        My rule at home: the TV that does the most 4K gets a cable if at all possible. If a cable is not practical, run your test from the sofa
+        where you actually watch, not next to the router. A plan that looks fine in the hallway can be a very
+        different story two walls away. If the numbers are consistently far below what you pay for, the
+        <a href="/am-i-getting-the-speed-i-pay-for/">plan speed check</a> helps you decide whether it is the line or the house.
+      </p>
+
+      <h2>How do I check if my connection is ready for 4K?</h2>
+      <p>Two quick tests tell you most of what you need to know.</p>
+      <ol>
+        <li>
+          <strong>The streaming app's own test.</strong> On a TV, Netflix has a Check your Network option under Get Help, and on a phone there is an
+          Internet Speed Test under App Settings. In a browser, Netflix points you to fast.com. These measure the path to that service, which is what
+          matters for that service.
+        </li>
+        <li>
+          <strong>A Guess the Speed round on the TV.</strong> Open <a href="/">guessthespeed.com</a> in the TV browser or on a laptop next to it.
+          Everyone guesses the speed first, then the real test runs. Turn on <a href="/?dev=1">Dev mode</a> and you also get a quick 4K streaming
+          check that passes at {devMode4k} Mbps or more down.
+        </li>
+      </ol>
+      <p>
+        Let me be precise about what our test does. It measures download, upload, ping and jitter between your device and a nearby Cloudflare server.
+        That tells you how healthy your home line and Wi-Fi are in that room. It does not measure the route to Netflix, YouTube or Disney+, so a pass
+        is a strong hint, not proof. If our test shows 80 Mbps and the movie still buffers, the app's own test is the next step. For what counts as a
+        healthy result overall, see <a href="/what-is-a-good-internet-speed/">what is a good internet speed</a>.
+      </p>
+      <p>
+        Better still, make it a family game. Play a round from the sofa, then one from the bedroom where the second TV lives. The kids will tell you
+        which room is the slow one before the needle even stops, mine always do.
+      </p>
+
+      <h2>Frequently asked questions</h2>
+      <div class="faq">
+        {questions.map(({ question, answer }) => (
+          <section>
+            <h3>{question}</h3>
+            <p>{answer}</p>
+          </section>
+        ))}
+      </div>
+      <p>
+        Streaming games rather than films? Read <a href="/internet-speed-for-gaming/">how much internet speed you need for gaming</a>.
+      </p>
+      <div class="story-cta">
+        <a class="go" href="/">Start a game</a>
+      </div>
+    </article>
+  </main>
+</Base>
