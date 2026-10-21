@@ -24,6 +24,20 @@ export interface Article {
 /** Every Speed School article, newest first. New article pages must be added here. */
 export const ARTICLES: Article[] = [
   {
+    path: "/internet-speed-for-4k-streaming/",
+    title: "How Much Internet Speed Do You Need for 4K Streaming?",
+    excerpt:
+      "Sourced 4K streaming speeds for Netflix, YouTube and Disney+, how much two to four 4K streams need, data per hour, and why a fast plan can still look blurry.",
+    category: "Guides",
+    published: "2026-10-21",
+    tldr: [
+      "Plan on 15 to 25 Mbps of steady download per 4K stream: Netflix recommends 15 Mbps or higher, YouTube a sustained 20 Mbps and the FCC lists 25 Mbps.",
+      "Streams add up: with 25% headroom, two 4K streams need about 50 Mbps and four need about 100 Mbps.",
+      "An hour of 4K uses up to 7 GB on Netflix and about 7.7 GB on Disney+ on a TV, which Disney+ publishes instead of a Mbps figure.",
+      "Plan tier, devices, HDMI cables and Wi-Fi decide 4K as much as speed. Guess the Speed tests to a nearby Cloudflare server, not to the streaming service.",
+    ],
+  },
+  {
     path: "/why-is-my-internet-slow-when-downloading/",
     title: "Why Is My Internet Slow When Someone Is Downloading?",
     excerpt:

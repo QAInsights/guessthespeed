@@ -32,6 +32,7 @@
 - [What is a good internet speed?](https://guessthespeed.com/what-is-a-good-internet-speed/)
 - [Speed School](https://guessthespeed.com/speed-school/): searchable index of every guide, tool and game night article
 - [Why Is My Internet Slow When Someone Is Downloading?](https://guessthespeed.com/why-is-my-internet-slow-when-downloading/): loaded latency and bufferbloat explained, with home tests (Cloudflare, Apple networkQuality, ping) and fixes.
+- [How Much Internet Speed Do You Need for 4K Streaming?](https://guessthespeed.com/internet-speed-for-4k-streaming/): sourced Netflix, YouTube, FCC and Disney+ 4K figures, speed for 2 to 4 streams, and data used per hour.
 - [How much internet speed do you need for gaming?](https://guessthespeed.com/internet-speed-for-gaming/)
 - [Upload vs Download Speed](https://guessthespeed.com/upload-vs-download-speed/): What upload and download speed mean, which home activities use each, and how much upload video calls, live streams and Remote Play need.
 - [Am I getting the internet speed I pay for?](https://guessthespeed.com/am-i-getting-the-speed-i-pay-for/)
