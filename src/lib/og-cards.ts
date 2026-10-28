@@ -121,6 +121,15 @@ export const ogCards: readonly OgCard[] = [
     icon: "ph:game-controller-bold",
   },
   {
+    path: "/internet-speed-for-4k-streaming/",
+    group: "Learn",
+    kicker: "Guide",
+    line1: "Internet speed",
+    line2: "for 4K streaming",
+    subtitle: "How many Mbps each 4K TV needs, and why 4K drops to HD",
+    icon: "ph:television-bold",
+  },
+  {
     path: "/why-is-my-internet-slow-when-downloading/",
     group: "Learn",
     kicker: "Guide",
