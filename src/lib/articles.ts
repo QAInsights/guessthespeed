@@ -24,6 +24,20 @@ export interface Article {
 /** Every Speed School article, newest first. New article pages must be added here. */
 export const ARTICLES: Article[] = [
   {
+    path: "/2-4-ghz-vs-5-ghz-wifi/",
+    title: "2.4 GHz vs 5 GHz Wi-Fi: Which Band Should You Use?",
+    excerpt:
+      "Which Wi-Fi band is faster, which reaches further, where 6 GHz and Wi-Fi 7 fit, which devices belong on each band and how to test them at home.",
+    category: "Guides",
+    published: "2026-11-04",
+    tldr: [
+      "Use 5 GHz for streaming, gaming and video calls; keep 2.4 GHz for far rooms and devices that only support it.",
+      "Microsoft says 5 GHz generally gives faster throughput but does not go through walls as well as 2.4 GHz, which is more congested by Bluetooth, microwaves and cordless phones.",
+      "6 GHz (Wi-Fi 6E and Wi-Fi 7) gives the best performance close to the router, but both router and device must support it.",
+      "Test each band in a few rooms with Dev mode. Guess the Speed tests to a nearby Cloudflare server, so it compares your Wi-Fi, not a game or streaming service.",
+    ],
+  },
+  {
     path: "/internet-speed-for-4k-streaming/",
     title: "Internet Speed for 4K Streaming: How Many Mbps Do You Need?",
     excerpt:

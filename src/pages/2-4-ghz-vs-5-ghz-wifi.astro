@@ -1,0 +1,541 @@
+---
+import Base from "../layouts/Base.astro";
+import ArticleTools from "../components/ArticleTools.astro";
+import "../styles/site.css";
+import { DEV_USE_THRESHOLDS } from "../lib/devresult";
+import { ACTIVITY_RATES } from "../lib/speed-needs";
+
+const bandFor = {
+  streams4k: "5 GHz (or 6 GHz)",
+  streamsHd: "5 GHz, 2.4 GHz if far away",
+  callsHd: "5 GHz",
+  onlineGamers: "5 GHz or a cable",
+  largeDownloads: "5 GHz (or 6 GHz)",
+  smartHomeDevices: "2.4 GHz is fine",
+} as const;
+const activityRows = (Object.keys(bandFor) as (keyof typeof bandFor)[]).map(
+  (id) => ({
+    label: ACTIVITY_RATES[id].label,
+    down: ACTIVITY_RATES[id].down,
+    up: ACTIVITY_RATES[id].up,
+    band: bandFor[id],
+  }),
+);
+const remotePlay = ACTIVITY_RATES.onlineGamers;
+const smartHome = ACTIVITY_RATES.smartHomeDevices;
+
+const sources = {
+  msLayout:
+    "https://support.microsoft.com/en-us/windows/wi-fi-and-your-home-layout-e1ed42e7-a3c5-d1be-2abb-e8fad00ad32a",
+  msFix:
+    "https://support.microsoft.com/en-us/windows/fix-wi-fi-connection-issues-in-windows-9424a1f7-6a3b-65a6-4d78-7f07eee84d2c",
+  appleRouter: "https://support.apple.com/en-us/102766",
+  appleInterference: "https://support.apple.com/en-us/102319",
+  apple6e: "https://support.apple.com/en-us/102285",
+  wfaGenerations: "https://www.wi-fi.org/wi-fi-macphy",
+  wfaCertified7:
+    "https://www.wi-fi.org/beacon/jeff-platon/buying-wi-fi-7-router-here-what-matters",
+  fcc6ghz:
+    "https://www.fcc.gov/document/fcc-opens-6-ghz-band-wi-fi-and-other-unlicensed-uses",
+  remotePlay:
+    "https://www.playstation.com/en-us/support/games/ps4-remote-play-connection-troubleshooting/",
+  xboxCloud: "https://www.xbox.com/en-US/cloud-gaming",
+  geforceNow: "https://www.nvidia.com/en-us/geforce-now/system-reqs/",
+};
+
+const questions = [
+  {
+    question: "Is 5 GHz Wi-Fi faster than 2.4 GHz?",
+    answer:
+      "Usually, yes, when you are reasonably close to the router. Microsoft says faster throughput is generally available on 5 GHz, but 5 GHz does not go through walls and other obstacles as well as 2.4 GHz, so a weak 5 GHz signal far away can lose to a strong 2.4 GHz one.",
+  },
+  {
+    question: "Should I use 2.4 GHz or 5 GHz for gaming?",
+    answer:
+      "Use 5 GHz or, better, a cable. Sony recommends 5 GHz Wi-Fi for PlayStation Remote Play, Microsoft recommends a 5 GHz connection for Xbox Cloud Gaming and NVIDIA lists a router with 5 GHz Wi-Fi for GeForce NOW.",
+  },
+  {
+    question: "Which devices should stay on 2.4 GHz?",
+    answer:
+      "Devices that only support 2.4 GHz, low-traffic gadgets such as smart plugs, and devices at the far end of the house where 5 GHz is weak. Microsoft notes that more wireless devices support 2.4 GHz than 5 or 6 GHz, and it works fine for basic tasks such as web and email.",
+  },
+  {
+    question: "Should my 2.4 GHz and 5 GHz networks have the same name?",
+    answer:
+      "Apple recommends one network name for every band so devices can move between them reliably. Microsoft suggests separate names if you want to know which band you are on. For most families one name is simpler; split them only while you test.",
+  },
+  {
+    question: "What is 6 GHz Wi-Fi and do I need it?",
+    answer:
+      "The 6 GHz band arrived with Wi-Fi 6E and is also used by Wi-Fi 7. It is less crowded and Microsoft says a strong 6 GHz connection gives the best performance close to the router, but both the router and the device must support Wi-Fi 6E or later.",
+  },
+  {
+    question: "Why does my phone show full bars but slow speed?",
+    answer:
+      "Bars show signal strength, not how busy the band is. On 2.4 GHz, Bluetooth, microwaves, cordless phones and neighbouring networks all share the same airwaves, so a strong but crowded signal can still be slow. Test the same spot on 5 GHz to compare.",
+  },
+];
+
+const faqSchema = {
+  "@type": "FAQPage",
+  mainEntity: questions.map(({ question, answer }) => ({
+    "@type": "Question",
+    name: question,
+    acceptedAnswer: { "@type": "Answer", text: answer },
+  })),
+};
+
+const articleSchema = {
+  "@type": "Article",
+  headline: "2.4 GHz vs 5 GHz Wi-Fi: Which Band Should You Use?",
+  description:
+    "Sourced guide to the difference between 2.4 GHz, 5 GHz and 6 GHz Wi-Fi: range, speed, interference, which devices belong on which band and how to test each band at home.",
+  author: {
+    "@type": "Person",
+    "@id": "https://guessthespeed.com/#author",
+    name: "NaveenKumar Namachivayam",
+    url: "https://qainsights.com",
+  },
+  publisher: {
+    "@type": "Organization",
+    name: "Guess the Speed",
+    url: "https://guessthespeed.com",
+  },
+  datePublished: "2026-11-04",
+  mainEntityOfPage: "https://guessthespeed.com/2-4-ghz-vs-5-ghz-wifi/",
+};
+---
+
+<Base
+  title="2.4 GHz vs 5 GHz Wi-Fi: Which Band Is Faster? (2026)"
+  description="2.4 GHz vs 5 GHz Wi-Fi in 2026: which band is faster, which reaches further, where 6 GHz fits, which devices belong on each band and how to test them."
+  breadcrumb="2.4 GHz vs 5 GHz Wi-Fi"
+  schema={[articleSchema, faqSchema]}
+>
+  <main class="wrap content-page">
+    <a class="round-banner" href="/speed-school/">
+      Speed School
+    </a>
+    <h1>2.4 GHz vs 5 GHz Wi-Fi: Which Band Should You Use?</h1>
+    <p class="lede">
+      Short answer: use <strong>5 GHz</strong> for anything that needs speed,
+      such as streaming, gaming and video calls, and keep
+      <strong>2.4 GHz</strong> for devices that are far from the router or only
+      support it. 2.4 GHz reaches further through walls but is more crowded, 5
+      GHz is faster at short to medium range, and <strong>6 GHz</strong> (Wi-Fi
+      6E and Wi-Fi 7) is the fastest when you are close to a router and device
+      that both support it.
+    </p>
+    <ArticleTools path="/2-4-ghz-vs-5-ghz-wifi/" />
+    <article class="content-card stk">
+      <p>
+        Here is a pattern I see at home all the time. Someone runs a round of
+        Guess the Speed from the bedroom at the end of the hall and gets a
+        number so low that everyone else guesses far too high. Same plan, same
+        router, same evening. Usually the only difference is that the tablet has
+        quietly dropped onto the 2.4 GHz band because the 5 GHz signal cannot
+        make it through two walls and a bathroom. In this article, let us look
+        at what 2.4 GHz and 5 GHz actually mean, which one is faster, where the
+        newer 6 GHz band fits, which devices belong on which band, and how to
+        test it in your own home.
+      </p>
+
+      <h2>What is the difference between 2.4 GHz and 5 GHz Wi-Fi?</h2>
+      <p>
+        Most home routers broadcast on more than one radio band at the same
+        time. Microsoft's guide to
+        <a href={sources.msLayout} rel="noopener nofollow">
+          Wi-Fi and your home layout
+        </a>{" "}
+        puts it simply: consumer Wi-Fi has three frequency bands, 2.4 GHz, 5 GHz
+        and 6 GHz. Apple's{" "}
+        <a href={sources.appleRouter} rel="noopener nofollow">
+          recommended router settings
+        </a>{" "}
+        describe a band as a street that data flows over, and the channels
+        inside each band as lanes on that street. Here is how the vendors
+        describe each band.
+      </p>
+      <div
+        class="guide-table-wrap"
+        role="region"
+        aria-label="2.4 GHz, 5 GHz and 6 GHz Wi-Fi compared"
+        tabindex="0"
+      >
+        <table class="guide-table">
+          <caption>2.4 GHz, 5 GHz and 6 GHz Wi-Fi compared</caption>
+          <thead>
+            <tr>
+              <th scope="col">Band</th>
+              <th scope="col">Strengths</th>
+              <th scope="col">Weaknesses</th>
+              <th scope="col">Good for</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">2.4 GHz</th>
+              <td>Goes through walls better; more devices support it</td>
+              <td>
+                More congested: microwaves, cordless phones and Bluetooth share
+                it
+              </td>
+              <td>Web, email, smart-home gadgets, far rooms</td>
+            </tr>
+            <tr>
+              <th scope="row">5 GHz</th>
+              <td>Faster throughput is generally available; less crowded</td>
+              <td>
+                Does not go through walls and obstacles as well as 2.4 GHz
+              </td>
+              <td>Streaming, gaming, video calls, big downloads</td>
+            </tr>
+            <tr>
+              <th scope="row">6 GHz</th>
+              <td>
+                Best performance close to the router; not widely used by other
+                devices
+              </td>
+              <td>
+                Needs a Wi-Fi 6E or newer router and device; not available in
+                every region
+              </td>
+              <td>
+                Newer phones, laptops and consoles in the same room as the
+                router
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        The rows summarise{" "}
+        <a href={sources.msLayout} rel="noopener nofollow">
+          Microsoft's band comparison
+        </a>
+        , Apple's
+        <a href={sources.appleInterference} rel="noopener nofollow">
+          wireless interference guide
+        </a>{" "}
+        and Apple's
+        <a href={sources.apple6e} rel="noopener nofollow">
+          Wi-Fi 6E and Wi-Fi 7 page
+        </a>
+        . The Wi-Fi Alliance says the same thing in its
+        <a href={sources.wfaGenerations} rel="noopener nofollow">
+          overview of Wi-Fi generations
+        </a>
+        : dual-band networks let devices use the less crowded 5 GHz band for
+        high performance applications and the 2.4 GHz band for basic needs such
+        as web surfing and IoT (smart-home) devices.
+      </p>
+
+      <h2>Is 5 GHz always faster than 2.4 GHz?</h2>
+      <p>
+        No, and this is the part that catches most families out. Microsoft says
+        faster throughput is <em>generally</em> available on 5 GHz, and in the
+        same room that is almost always true. But 5 GHz does not get through
+        walls and other obstacles as well as 2.4 GHz, so the further you go, the
+        more the advantage shrinks, and at some point a strong 2.4 GHz signal
+        beats a weak 5 GHz one.
+      </p>
+      <p>
+        I spent years in performance testing before moving into a developer
+        role, and this is the classic throughput versus reach trade-off. Think
+        of 5 GHz as a wide motorway that ends at the edge of town, and 2.4 GHz
+        as a narrower road that goes everywhere but is shared with delivery
+        vans. If you live near the motorway, take it. If you live at the far end
+        of the house, the narrow road may get you there faster.
+      </p>
+      <p>
+        What sits in the way matters too. Apple's{" "}
+        <a href={sources.appleInterference} rel="noopener nofollow">
+          interference guide
+        </a>{" "}
+        ranks materials by how much they get in the way of a wireless signal:
+        wood, glass and many synthetic materials are low; water, bricks and
+        marble are medium; plaster, concrete and bulletproof glass are high; and
+        metal is very high. A metal-reinforced concrete floor between router and
+        device, Apple notes, can cause poor Wi-Fi performance on its own.
+      </p>
+      <p>
+        You will notice I have not quoted a maximum Mbps for each band. That is
+        on purpose. The vendors above do not publish one figure per band,
+        because the real number depends on the Wi-Fi generation, the channel
+        width, the distance, the walls and every other device in the house. The
+        only honest way to know your number is to measure it, which I cover
+        below.
+      </p>
+
+      <h2>Why is 2.4 GHz so crowded?</h2>
+      <p>
+        Because almost everything uses it. Apple points out that Bluetooth and
+        Wi-Fi devices both use the 2.4 GHz band, and lists power cables,
+        microwave ovens, fluorescent lights, wireless video cameras and cordless
+        phones as common sources of interference. Microsoft adds that 2.4 GHz is
+        more congested than 5 GHz for the same reasons. Add your neighbours'
+        routers and the 2.4 GHz band in a block of flats can feel like rush
+        hour.
+      </p>
+      <p>
+        Apple's advice is to reduce the number of active devices on the same
+        band: if your router supports both, it might help to connect more of
+        your Wi-Fi devices to 5 GHz, and some dual-band routers manage this for
+        you automatically. That is the main reason I move the TV, the console
+        and the work laptop to 5 GHz first. It speeds them up and gives the 2.4
+        GHz band back to the gadgets that need it.
+      </p>
+
+      <h2>Which devices should use 2.4 GHz, and which 5 GHz?</h2>
+      <p>
+        The rule of thumb is simple: anything that streams, plays or calls goes
+        on 5 GHz when it can, and low-traffic gadgets stay on 2.4 GHz. The
+        gaming services are clear about it. Sony recommends{" "}
+        <a href={sources.remotePlay} rel="noopener nofollow">
+          5 GHz Wi-Fi for Remote Play
+        </a>
+        , Microsoft recommends a{" "}
+        <a href={sources.xboxCloud} rel="noopener nofollow">
+          5 GHz Wi-Fi connection for Xbox Cloud Gaming
+        </a>
+        , and NVIDIA lists a{" "}
+        <a href={sources.geforceNow} rel="noopener nofollow">
+          router with a 5 GHz Wi-Fi connection
+        </a>{" "}
+        for GeForce NOW.
+      </p>
+      <p>
+        This table uses the per-activity rates from our{" "}
+        <a href="/how-much-internet-speed-do-i-need/">
+          household speed calculator
+        </a>
+        , so it agrees with the tool. The band column is my own recommendation,
+        based on the vendor guidance above.
+      </p>
+      <div
+        class="guide-table-wrap"
+        role="region"
+        aria-label="Which Wi-Fi band to use for each activity"
+        tabindex="0"
+      >
+        <table class="guide-table">
+          <caption>
+            Calculator rates per activity and the band I would use
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">Activity</th>
+              <th scope="col">Download</th>
+              <th scope="col">Upload</th>
+              <th scope="col">Band to use</th>
+            </tr>
+          </thead>
+          <tbody>
+            {activityRows.map((row) => (
+              <tr>
+                <th scope="row">{row.label}</th>
+                <td>{row.down} Mbps</td>
+                <td>{row.up} Mbps</td>
+                <td>{row.band}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p>
+        Look at the gap between the rows. A smart plug or doorbell at{" "}
+        {smartHome.down} Mbps each way barely notices which band it is on, while
+        a Remote Play session at {remotePlay.down} Mbps in both directions will
+        feel every dropped packet. Microsoft notes that more wireless devices
+        support 2.4 GHz than 5 or 6 GHz, and its Windows help even lists an
+        adapter that only supports 2.4 GHz as one reason a laptop cannot see a 5
+        GHz network in its
+        <a href={sources.msFix} rel="noopener nofollow">
+          Wi-Fi troubleshooting guide
+        </a>
+        .
+      </p>
+
+      <h2>Where do 6 GHz, Wi-Fi 6E and Wi-Fi 7 fit in?</h2>
+      <p>
+        The 6 GHz band is the new street in town. In the US, the FCC
+        <a href={sources.fcc6ghz} rel="noopener nofollow">
+          opened the 6 GHz band to Wi-Fi in April 2020
+        </a>
+        , making 1,200 megahertz of spectrum available for unlicensed use. The
+        Wi-Fi Alliance's{" "}
+        <a href={sources.wfaGenerations} rel="noopener nofollow">
+          generations page
+        </a>{" "}
+        says Wi-Fi 6 introduced Wi-Fi in the 6 GHz band (sold as Wi-Fi 6E), and
+        that Wi-Fi 7 adds 320 MHz channels in the 6 GHz band that provide twice
+        the throughput of Wi-Fi 6.
+      </p>
+      <p>
+        Microsoft describes a strong 6 GHz connection as the best for gaming,
+        streaming and video calls, with the catch that you need both a newer
+        router and a device that support Wi-Fi 6E. On the Apple side, the{" "}
+        <a href={sources.apple6e} rel="noopener nofollow">
+          Wi-Fi 6E and Wi-Fi 7 page
+        </a>{" "}
+        lists which iPhone, iPad and Mac models can join the 6 GHz band, and
+        notes that 6 GHz features are not available in all regions.
+      </p>
+      <p>
+        If you are shopping for a new router this year, the Wi-Fi Alliance has a{" "}
+        <a href={sources.wfaCertified7} rel="noopener nofollow">
+          short buyer's note on Wi-Fi 7
+        </a>
+        : a box that says "Wi-Fi 7" only means the product supports Wi-Fi 7
+        features, while the Wi-Fi CERTIFIED 7 seal means it passed the
+        Alliance's interoperability, WPA3 security and backward compatibility
+        testing. The Alliance also lets buyers confirm a product's certification
+        on its website before they buy. And remember that a faster router only
+        helps up to the speed of your plan. Wi-Fi is the road inside your house;
+        your provider sets the speed limit at the front door.
+      </p>
+
+      <h2>Should 2.4 GHz and 5 GHz have the same network name?</h2>
+      <p>
+        Here the two big vendors give different advice, and I think both are
+        right for different people.
+      </p>
+      <ul>
+        <li>
+          <strong>Apple</strong> recommends a single, unique network name (SSID)
+          for all bands. Its
+          <a href={sources.appleRouter} rel="noopener nofollow">
+            router settings page
+          </a>{" "}
+          warns that giving the 2.4 GHz, 5 GHz or 6 GHz bands different names
+          can stop devices connecting reliably to all of them, and an Apple
+          device on a Wi-Fi 6E network with split names reports "limited
+          compatibility".
+        </li>
+        <li>
+          <strong>Microsoft</strong> suggests using different names for each
+          band so you know which one you are connected to, and notes that when a
+          network shows one name for several bands, Windows automatically
+          connects to the best band available.
+        </li>
+      </ul>
+      <p>
+        For most families I would go with one name and let the router and
+        devices pick the band. It is less to explain to grandparents and guests.
+        Split the names only while you are testing, so you can force a device
+        onto a specific band and see the difference, then put them back.
+      </p>
+
+      <h2>Which router settings help each band?</h2>
+      <p>
+        You do not need to become a network engineer. Apple's{" "}
+        <a href={sources.appleRouter} rel="noopener nofollow">
+          recommended settings
+        </a>{" "}
+        cover the few that matter for most homes:
+      </p>
+      <ol>
+        <li>
+          <strong>Bands:</strong> enable every band your router supports. More
+          bands give your network more capacity.
+        </li>
+        <li>
+          <strong>Radio mode:</strong> set to All, so every device can use the
+          fastest Wi-Fi version it supports.
+        </li>
+        <li>
+          <strong>Channel:</strong> set to Auto, and give each router a
+          different channel if you have more than one close together.
+        </li>
+        <li>
+          <strong>Channel width:</strong> 20 MHz on 2.4 GHz, and Auto or all
+          widths on 5 GHz and 6 GHz. Apple explains that wider channels are
+          faster but more prone to interference, and 2.4 GHz is where
+          interference is worst.
+        </li>
+      </ol>
+      <p>
+        After that, placement does more than any setting. Microsoft's advice is
+        to move the access point, if you can, so there are fewer walls and
+        obstacles between it and your devices.
+      </p>
+
+      <h2>How do I test 2.4 GHz vs 5 GHz at home?</h2>
+      <p>
+        Microsoft recommends running several speed tests at different places in
+        your home, recording the results, and testing again after every change.
+        That is exactly how I would do it, and it turns into a nice little
+        experiment.
+      </p>
+      <ol>
+        <li>
+          <strong>Pick three spots:</strong> next to the router, one room away
+          and the furthest room you actually use, such as the bedroom where the
+          tablet lives.
+        </li>
+        <li>
+          <strong>Test each spot on each band.</strong> If your bands share one
+          name, temporarily split them or use your router app to see which band
+          a device is on. Open <a href="/?dev=1">Dev mode</a> and note the
+          download, upload and ping.
+        </li>
+        <li>
+          <strong>Compare the pattern.</strong> 5 GHz should win near the
+          router. If 2.4 GHz wins in the far room, that room needs a better
+          router position, a mesh point or a cable, not a faster plan.
+        </li>
+        <li>
+          <strong>Check against your needs.</strong> Dev mode ticks 4K streaming
+          at {DEV_USE_THRESHOLDS.streaming4kDownMbps} Mbps download and video
+          calls at {DEV_USE_THRESHOLDS.videoCallsUpMbps} Mbps upload. For gaming
+          targets, see
+          <a href="/internet-speed-for-gaming/">
+            how much internet speed you need for gaming
+          </a>
+          .
+        </li>
+        <li>
+          <strong>Compare with your plan.</strong> If even the spot next to the
+          router on 5 GHz is far below what you pay for, the Wi-Fi is not the
+          problem. Run the{" "}
+          <a href="/am-i-getting-the-speed-i-pay-for/">plan speed check</a>{" "}
+          before you call your provider.
+        </li>
+      </ol>
+      <p>
+        One honest caveat. Our speed test and Dev mode ping go to a nearby
+        Cloudflare server. That makes them great for comparing bands and rooms
+        in your own home, because the far end stays the same and only your Wi-Fi
+        changes. They do not measure your connection to a game server or a
+        streaming service, so a good result here does not prove that a specific
+        service will perform well. For general targets, see
+        <a href="/what-is-a-good-internet-speed/">
+          what is a good internet speed
+        </a>
+        .
+      </p>
+      <p>
+        Want to make it a game? Before each test, get everyone to guess the
+        speed for that room and band, then run it. My kids learn very quickly
+        that the far bedroom on 2.4 GHz is the low card. You can{" "}
+        <a href="/">play Guess the Speed</a> on any phone or TV, no account
+        needed.
+      </p>
+
+      <h2>Frequently asked questions</h2>
+      <div class="faq">
+        {questions.map(({ question, answer }) => (
+          <section>
+            <h3>{question}</h3>
+            <p>{answer}</p>
+          </section>
+        ))}
+      </div>
+      <div class="story-cta">
+        <a class="go" href="/">
+          Start a game
+        </a>
+      </div>
+    </article>
+  </main>
+</Base>
