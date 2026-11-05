@@ -121,6 +121,15 @@ export const ogCards: readonly OgCard[] = [
     icon: "ph:game-controller-bold",
   },
   {
+    path: "/2-4-ghz-vs-5-ghz-wifi/",
+    group: "Learn",
+    kicker: "Guide",
+    line1: "2.4 GHz vs 5 GHz",
+    line2: "Wi-Fi: which band?",
+    subtitle: "Range, speed and 6 GHz, plus which devices belong on each band",
+    icon: "ph:wifi-medium-bold",
+  },
+  {
     path: "/internet-speed-for-4k-streaming/",
     group: "Learn",
     kicker: "Guide",
