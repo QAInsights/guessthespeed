@@ -1,0 +1,215 @@
+---
+import Base from '../layouts/Base.astro';
+import ArticleTools from '../components/ArticleTools.astro';
+import '../styles/site.css';
+import { ACTIVITY_RATES, recommendSpeed } from '../lib/speed-needs';
+import { DEV_USE_THRESHOLDS } from '../lib/devresult';
+
+const sources = {
+  teams: 'https://learn.microsoft.com/en-us/microsoftteams/prepare-network',
+  vpn: 'https://learn.microsoft.com/en-us/microsoft-365/enterprise/microsoft-365-vpn-split-tunnel',
+  fccSpeed: 'https://www.fcc.gov/consumers/guides/broadband-speed-guide',
+  fccHousehold: 'https://www.fcc.gov/research-reports/guides/household-broadband-guide',
+};
+const teamsRows = [
+  { activity: 'Audio, one-to-one or meeting', up: 58, down: 58 },
+  { activity: 'One-to-one video', up: 1500, down: 1500 },
+  { activity: 'Video meeting', up: 2500, down: 4000 },
+  { activity: 'One-to-one screen sharing', up: 1500, down: 1500 },
+  { activity: 'Meeting screen sharing', up: 2500, down: 2500 },
+].map((row) => ({ ...row, up: row.up / 1000, down: row.down / 1000 }));
+const emptyCounts = { streams4k: 0, streamsHd: 0, callsHd: 0, onlineGamers: 0, largeDownloads: 0, smartHomeDevices: 0 };
+const homeRows = [1, 2, 3].map((calls) => ({ calls, ...recommendSpeed({ ...emptyCounts, callsHd: calls }) }));
+const callRate = ACTIVITY_RATES.callsHd;
+const questions = [
+  { question: 'How much internet speed do I need to work from home?', answer: 'For a home with one HD call, our calculator starts at 25 Mbps download and 5 Mbps upload, including its planning floor. Microsoft recommends 4 Mbps download and 2.5 Mbps upload per endpoint for a Teams video meeting; add capacity for simultaneous household activity.' },
+  { question: 'Is 25 Mbps enough for working from home?', answer: 'Our calculator returns 25 Mbps download for one, two or three simultaneous HD calls, but the upload recommendation changes with the number of calls. This is a planning estimate, not a promise about Wi-Fi, VPN performance or call quality.' },
+  { question: 'How much upload speed do two remote workers need?', answer: `For two simultaneous HD calls, our calculator returns ${homeRows[1].up} Mbps upload after 25% headroom. It uses ${callRate.up} Mbps upload per call, so backups and other uploads need room beyond that call-only estimate.` },
+  { question: 'Does screen sharing need more internet speed?', answer: 'Microsoft lists recommended bandwidth for Teams meeting screen sharing at 2.5 Mbps upload and 2.5 Mbps download per endpoint. Its video meeting recommendation is separate, so check which media activities are active rather than treating screen sharing as free.' },
+  { question: 'Why does my call sound robotic on fast internet?', answer: 'Microsoft identifies jitter or packet loss as possible reasons Teams voices sound robotic or cut out. A high download result alone does not rule out a call-quality problem, and the route to the meeting service matters.' },
+  { question: 'Does a good speed test prove Teams will work well?', answer: 'No. Guess the Speed tests your home line and Wi-Fi against a nearby Cloudflare server, not the Teams service, your employer or a VPN gateway. Use the meeting app and IT support to investigate service-specific problems.' },
+];
+const faqSchema = {
+  '@type': 'FAQPage',
+  mainEntity: questions.map(({ question, answer }) => ({ '@type': 'Question', name: question, acceptedAnswer: { '@type': 'Answer', text: answer } })),
+};
+const articleSchema = {
+  '@type': 'Article',
+  headline: 'Internet Speed for Working from Home: Calls and More',
+  author: { '@type': 'Person', '@id': 'https://guessthespeed.com/#author', name: 'NaveenKumar Namachivayam', url: 'https://qainsights.com' },
+  publisher: { '@type': 'Organization', name: 'Guess the Speed', url: 'https://guessthespeed.com' },
+  datePublished: '2026-11-11',
+  mainEntityOfPage: 'https://guessthespeed.com/internet-speed-for-working-from-home/',
+};
+---
+
+<Base
+  title="Internet Speed for Working from Home: Calls Guide (2026)"
+  description="Find the internet speed you need for working from home: sourced Teams call requirements, upload budgets for remote workers, VPN advice and practical checks."
+  breadcrumb="Working from home"
+  schema={[articleSchema, faqSchema]}
+>
+  <main class="wrap content-page">
+    <span class="round-banner">Speed School</span>
+    <h1>Internet Speed for Working from Home: Calls and More</h1>
+    <p class="lede">
+      For one person on an HD call, our household calculator starts at <strong>25 Mbps download and 5 Mbps upload</strong>.
+      For the call itself, <a href={sources.teams} rel="noopener nofollow">Microsoft recommends</a> <strong>4 Mbps download and 2.5 Mbps upload</strong>
+      per endpoint for a Teams video meeting, so count the other people and activities sharing your connection too.
+    </p>
+    <ArticleTools path="/internet-speed-for-working-from-home/" />
+    <article class="content-card stk">
+      <p>
+        The meeting starts, your camera comes on, and someone asks you to share your screen. That is not the moment I want to discover that
+        the home connection only looks good when nobody else is using it. Before shopping for a faster plan, I would work out what must happen
+        together: your call, another person's meeting, and any files moving in the background. Let us separate the call requirement from the
+        household budget, then test the place where you actually work.
+      </p>
+
+      <h2>What internet speed does a work video call need?</h2>
+      <p>
+        Start with the application, not the biggest number on the broadband advertisement. The table below uses
+        <a href={sources.teams} rel="noopener nofollow">Microsoft's recommended Teams bandwidth</a>, converted from kilobits per second to Mbps.
+        These are per-endpoint figures, not a recommendation for the entire house. Microsoft says joining on both a computer and a phone counts
+        as two endpoints, even if there is only one person in the room.
+      </p>
+      <div class="guide-table-wrap" role="region" aria-label="Teams recommended bandwidth" tabindex="0">
+        <table class="guide-table">
+          <caption>Microsoft Teams recommended bandwidth per endpoint, in Mbps</caption>
+          <thead><tr><th scope="col">Activity</th><th scope="col">Upload</th><th scope="col">Download</th></tr></thead>
+          <tbody>{teamsRows.map((row) => <tr><th scope="row">{row.activity}</th><td>{row.up}</td><td>{row.down}</td></tr>)}</tbody>
+        </table>
+      </div>
+      <p>
+        Recommended is not the same as minimum or best performance. Microsoft publishes those separately and says actual consumption changes
+        with video layout, resolution and frame rate. It also says Teams can deliver HD video in under 1.5 Mbps and prioritizes audio when
+        bandwidth is insufficient. That explains why a meeting can continue with a softer picture. It does not turn a minimum connection into
+        a comfortable home-office plan. The recommendation is the more useful starting point when planning rather than merely getting connected.
+      </p>
+
+      <h2>What does the FCC recommend for working from home?</h2>
+      <p>
+        The <a href={sources.fccSpeed} rel="noopener nofollow">FCC Broadband Speed Guide</a> lists minimum download speeds of
+        <strong>5 to 25 Mbps for telecommuting</strong>, 6 Mbps for HD video teleconferencing, 1.5 Mbps for an HD personal video call,
+        and less than 0.5 Mbps for VoIP calls. These are general activity categories, not Teams-specific requirements or upload figures.
+        The FCC calls them rough guidelines for one activity at a time and says they are not based on FCC surveys or experiments.
+      </p>
+      <p>
+        The page's review date is July 18, 2022. I would use it as background for this 2026 planning exercise, not as a newly updated
+        requirement from your meeting provider. The separate <a href={sources.fccHousehold} rel="noopener nofollow">FCC Household Broadband Guide</a>
+        counts telecommuting and multiparty video conferencing as high-demand applications. That distinction matters: the download figure
+        for a single activity is not a budget for a household doing several things together. For that, count the simultaneous workloads below.
+      </p>
+
+      <h2>How much speed do several remote workers need?</h2>
+      <p>
+        I count simultaneous activity, not the number of laptops in the house. A laptop sitting idle is a different workload from a laptop
+        presenting a meeting. Our <a href="/how-much-internet-speed-do-i-need/">household speed calculator</a> uses
+        {callRate.down} Mbps download and {callRate.up} Mbps upload per HD group call. Those are the site's planning allowances, not a claim that
+        every meeting service has the same requirement. The calculator adds 25% headroom and applies a floor of 25 Mbps down and 5 Mbps up.
+      </p>
+      <div class="guide-table-wrap" role="region" aria-label="Home office calculator examples" tabindex="0">
+        <table class="guide-table">
+          <caption>Call-only household estimates from our calculator, including headroom and its floor</caption>
+          <thead><tr><th scope="col">Simultaneous HD calls</th><th scope="col">Download Mbps</th><th scope="col">Upload Mbps</th></tr></thead>
+          <tbody>{homeRows.map((row) => <tr><th scope="row">{row.calls}</th><td>{row.down}</td><td>{row.up}</td></tr>)}</tbody>
+        </table>
+      </div>
+      <p>
+        The repeated download figure is intentional: the calculator's floor is higher than the call-only download sum in these examples.
+        Upload grows as more callers join. Do not read the table as permission to fill the remaining connection with transfers during an
+        important presentation. Add the household's other simultaneous activities in the calculator, and check the upload allowance on the
+        plan separately. A download tier by itself does not tell you whether the upload side fits this budget.
+      </p>
+
+      <h2>Why does upload matter when I mostly work in a browser?</h2>
+      <p>
+        A video meeting is not just watching a stream. You are sending your camera, microphone and sometimes your screen while receiving
+        everyone else's contribution. Microsoft's separate up and down columns make that distinction visible. Our
+        <a href="/upload-vs-download-speed/">upload vs download speed guide</a> explains the directions in more detail. For this home-office
+        check, I would write both numbers beside the plan price before making a decision.
+      </p>
+      <p>
+        Cloud sync deserves its own line in that list. I would note whether the laptop is sending a project folder, restoring files or
+        synchronizing photos when calls become unreliable. Rather than invent a universal Mbps allowance for every backup tool, I would
+        compare the same meeting with that transfer paused, if workplace policy allows it. Schedule large personal transfers outside the
+        important call window where possible. If the problem follows a particular application, that is useful evidence for the next test,
+        not proof that your provider needs replacing.
+      </p>
+
+      <h2>Should I budget separately for screen sharing?</h2>
+      <p>
+        Yes, look at what the meeting is doing. Microsoft's table has distinct rows for video and screen sharing. A meeting where you explain
+        a static document is not necessarily the same workload as one where you demonstrate moving content with your camera active.
+        <a href={sources.teams} rel="noopener nofollow">Microsoft says</a> bandwidth consumption varies with the media being sent and its frame
+        rate. The screen-sharing row should not be treated as a complete household budget or a guarantee about all media running together.
+      </p>
+      <p>
+        For a practical rehearsal, use the laptop, display setup and meeting application you will use for the presentation. Ask a colleague
+        whether the shared content and your voice remain clear. If you normally join from both a phone and computer, include both in the
+        rehearsal. Check that you are not accidentally sending duplicate audio. I would rather catch a setup problem before the meeting than
+        try to fix it while everyone watches my frozen spreadsheet.
+      </p>
+
+      <h2>Can a company VPN make a fast connection feel slow?</h2>
+      <p>
+        Yes. <a href={sources.vpn} rel="noopener nofollow">Microsoft's VPN split-tunnel guidance</a> explains that routing remote workers'
+        Microsoft 365 traffic through a forced tunnel and the corporate network can saturate VPN infrastructure. Its recommended approach
+        lets selected, performance-sensitive Microsoft 365 endpoints connect directly instead. That is an IT architecture decision, not a
+        setting I would tell someone to change on a managed laptop without permission.
+      </p>
+      <p>
+        The <a href={sources.teams} rel="noopener nofollow">Teams network guide</a> also says hair-pinning traffic through a VPN can send it
+        to a service location farther away, adding latency and jitter. If the problem appears only on your work laptop or only while the
+        corporate VPN is active, tell IT exactly that. Share the time, application and symptoms. Ask whether Teams traffic follows the intended
+        route. Buying more home bandwidth will not by itself change the route your employer requires the laptop to take.
+      </p>
+
+      <h2>Why can calls break up when the speed number looks healthy?</h2>
+      <p>
+        My performance-testing habit is to separate bulk throughput from the experience of a time-sensitive transaction. Moving a large file
+        is like clearing a pile of work. A conversation needs each little exchange to arrive usefully, not just an impressive total at the end.
+        That is why I would not troubleshoot a broken call with the download result alone.
+      </p>
+      <p>
+        <a href={sources.teams} rel="noopener nofollow">Microsoft lists jitter or packet loss</a> as possible explanations for voices that
+        sound robotic or cut out. It also calls out Wi-Fi planning and VPN routing in its network optimization guidance. This does not let us
+        diagnose packet loss from a screenshot of a speed test. For a specific call, use the meeting application's diagnostics and your IT
+        team's investigation. Keep the distinction between a clue and a diagnosis: a good speed result is helpful, but it is not a clean bill
+        of health for every destination on the internet.
+      </p>
+
+      <h2>How should I test my home office before upgrading?</h2>
+      <p>
+        First, test from the desk on the device you use for work. Then compare with a wired connection if one is available and permitted.
+        Keep notes on the time, active household workloads and whether the VPN was connected. Change one thing at a time so you can explain
+        what improved. Microsoft's Teams guidance recommends planning Wi-Fi bands and access-point placement, so an office-specific problem
+        is worth investigating locally before changing the broadband subscription.
+      </p>
+      <p>
+        Open <a href="/?dev=1">Dev mode</a> for the site's connection measurements. Its video-call tick checks whether upload reaches
+        {DEV_USE_THRESHOLDS.videoCallsUpMbps} Mbps. That is our simple threshold, not a certification from Teams or a test of your corporate
+        systems. The speed test and Dev mode ping go to a nearby Cloudflare server. They check the home line and Wi-Fi, not latency to a
+        meeting service, game server or your employer's data center. The site does not measure packet loss or loaded latency.
+      </p>
+      <p>
+        Finally, rehearse an actual call during the household's normal working hours. If only that service struggles, take the evidence to IT.
+        If repeatable wired speed results are also low, compare them with your subscription using the
+        <a href="/am-i-getting-the-speed-i-pay-for/">plan speed check</a>. The aim is not to win the biggest-Mbps contest. It is to have enough
+        capacity for the work happening together, and a reliable path for the conversation.
+      </p>
+
+      <h2>Can we make the speed check a team icebreaker?</h2>
+      <p>
+        Once the real troubleshooting is done, try <a href="/work/">Work mode</a> before a standup or team catch-up. Start a room, share its
+        link in meeting chat, and teammates can join from their own devices without an account. Guess before the test and compare the round's
+        speed numbers. It is a game, not a ranking of who has the best home office, and it does not replace a call-quality check.
+      </p>
+
+      <h2>Frequently asked questions</h2>
+      <p>These answers use the Microsoft requirements linked above and the site's calculator, not a universal promise for every employer or meeting app.</p>
+      <div class="faq">{questions.map(({ question, answer }) => <section><h3>{question}</h3><p>{answer}</p></section>)}</div>
+      <div class="story-cta"><a class="go" href="/">Play Guess the Speed</a></div>
+    </article>
+  </main>
+</Base>

@@ -24,6 +24,20 @@ export interface Article {
 /** Every Speed School article, newest first. New article pages must be added here. */
 export const ARTICLES: Article[] = [
   {
+    path: "/internet-speed-for-working-from-home/",
+    title: "Internet Speed for Working from Home: Calls and More",
+    excerpt:
+      "Teams bandwidth requirements, household upload budgets for simultaneous calls, VPN routing and practical home-office checks.",
+    category: "Guides",
+    published: "2026-11-11",
+    tldr: [
+      "Microsoft recommends 4 Mbps download and 2.5 Mbps upload per endpoint for a Teams video meeting.",
+      "Our calculator starts at 25 Mbps down and 5 Mbps up for one HD call, with 25% headroom and a planning floor.",
+      "Count simultaneous calls and transfers, and ask IT about corporate VPN routing before changing managed settings.",
+      "Guess the Speed tests to a nearby Cloudflare server, not to your meeting service or employer.",
+    ],
+  },
+  {
     path: "/2-4-ghz-vs-5-ghz-wifi/",
     title: "2.4 GHz vs 5 GHz Wi-Fi: Which Band Should You Use?",
     excerpt:

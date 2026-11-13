@@ -158,6 +158,15 @@ export const ogCards: readonly OgCard[] = [
     icon: "ph:arrows-down-up-bold",
   },
   {
+    path: "/internet-speed-for-working-from-home/",
+    group: "Learn",
+    kicker: "Guide",
+    line1: "Working from home?",
+    line2: "Check your speed.",
+    subtitle: "Calls, upload budgets, VPNs and a practical home-office check",
+    icon: "ph:laptop-bold",
+  },
+  {
     path: "/how-much-internet-speed-do-i-need/",
     group: "Tools",
     kicker: "Free tool",
