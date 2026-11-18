@@ -1,0 +1,143 @@
+---
+import Base from '../layouts/Base.astro';
+import ArticleTools from '../components/ArticleTools.astro';
+import '../styles/site.css';
+import { recommendSpeed } from '../lib/speed-needs';
+
+const title = 'Fiber vs Cable vs 5G Home Internet: Which Is Faster? (2026)';
+const description = 'Compare fiber, cable and 5G home internet using FCC and Ofcom evidence on speed, upload and ping. Learn to read broadband labels and test your connection.';
+const sources = {
+  mba: 'https://www.fcc.gov/reports-research/reports/measuring-broadband-america/measuring-fixed-broadband-thirteenth-report',
+  codes: 'https://help.bdc.fcc.gov/hc/en-us/articles/5290793888795-Fixed-Technology-Codes',
+  ofcom: 'https://www.ofcom.org.uk/phones-and-broadband/coverage-and-speeds/home-broadband-performance-march-2023',
+  trends: 'https://www.ofcom.org.uk/phones-and-broadband/coverage-and-speeds/latest-home-broadband-performance-trends-revealed',
+  fwa: 'https://www.ofcom.org.uk/siteassets/resources/documents/research-and-data/multi-sector/infrastructure-research/connected-nations-2025/connected-nations-uk-report-2025.pdf?v=407947',
+  labels: 'https://www.fcc.gov/consumer-governmental-affairs/consumer-broadband-labels-glossary-terminology',
+  benchmark: 'https://docs.fcc.gov/public/attachments/FCC-24-27A1.txt',
+};
+const household = recommendSpeed({ streams4k: 2, streamsHd: 0, callsHd: 3, onlineGamers: 0, largeDownloads: 0, smartHomeDevices: 0 });
+const questions = [
+  { question: 'Is fiber faster than cable internet?', answer: 'Fiber generally offers a stronger combination of upload speed and low latency, but a particular cable plan can have faster downloads than a particular fiber plan. Compare the typical download, upload and latency on the available plans rather than assuming the technology name settles everything.' },
+  { question: 'Is 5G home internet faster than cable?', answer: 'It depends on the available plans, signal and shared network capacity. This guide does not assign 5G home internet a universal speed range; check the provider\'s FCC broadband label and test the service at your address during busy hours.' },
+  { question: 'Which internet technology has the lowest ping?', answer: 'Fiber had the lowest ISP-level idle latency in the FCC Thirteenth Measuring Broadband America report: 7 to 14 ms, compared with 12 to 24 ms for cable and 23 to 34 ms for DSL. These historical test-server results are not guaranteed ping times to your game server.' },
+  { question: 'Does 5G home internet mean 5 GHz Wi-Fi?', answer: 'No. 5G describes the cellular network that can connect a home gateway to its provider, while 5 GHz describes a Wi-Fi band between a router and nearby devices. A 5G home gateway can still provide a separate Wi-Fi connection inside the home.' },
+  { question: 'Do I need gigabit internet for a busy household?', answer: 'Not necessarily: count the activities happening at the same time and leave headroom. Our calculator recommends a 100 Mbps download and 25 Mbps upload tier for two 4K streams and three HD calls, but large transfers and other simultaneous activities can justify more.' },
+  { question: 'Can a speed test tell me which technology is best?', answer: 'A test helps compare the connections you can actually use, but one result cannot rank every fiber, cable or 5G plan. Guess the Speed measures your home line and Wi-Fi to a nearby Cloudflare server, not a game server, and does not measure loaded latency or packet loss.' },
+];
+const articleSchema = {
+  '@type': 'Article', headline: 'Fiber vs Cable vs 5G Home Internet: Which Is Faster?', description,
+  author: { '@type': 'Person', '@id': 'https://guessthespeed.com/#author', name: 'NaveenKumar Namachivayam', url: 'https://qainsights.com' },
+  publisher: { '@type': 'Organization', name: 'Guess the Speed', url: 'https://guessthespeed.com' },
+  datePublished: '2026-11-18', dateModified: '2026-11-18',
+  mainEntityOfPage: 'https://guessthespeed.com/fiber-vs-cable-vs-5g-home-internet/',
+};
+const faqSchema = { '@type': 'FAQPage', mainEntity: questions.map(({ question, answer }) => ({ '@type': 'Question', name: question, acceptedAnswer: { '@type': 'Answer', text: answer } })) };
+---
+
+<Base title={title} description={description} breadcrumb="Fiber, cable and 5G" schema={[articleSchema, faqSchema]}>
+  <main class="wrap content-page">
+    <span class="round-banner">Speed School</span>
+    <h1>Fiber vs Cable vs 5G Home Internet: Which Is Faster?</h1>
+    <p class="lede">
+      For fiber vs cable vs 5G home internet, I would start with fiber for its usually symmetric speeds and lowest measured idle latency: <strong>7 to 14 ms</strong> in the <a href={sources.mba} target="_blank" rel="nofollow noopener">FCC's Thirteenth broadband report</a>.
+      Cable offers fast downloads but typically less upload, while 5G home internet shares mobile network capacity, so the best choice depends on the plans and conditions at your address, not just the headline speed (<a href={sources.mba} target="_blank" rel="nofollow noopener">FCC</a>, <a href={sources.fwa} target="_blank" rel="nofollow noopener">Ofcom</a>).
+    </p>
+    <ArticleTools path="/fiber-vs-cable-vs-5g-home-internet/" />
+    <article class="content-card stk">
+      <p>
+        When I compare internet plans, I ask two questions: how much data can move, and how long does a reply take? In performance testing, those are throughput and latency. A system can move a large file quickly and still respond slowly to small requests. The same distinction explains why a fast download does not automatically mean a smooth call or responsive game.
+      </p>
+      <p>
+        This 2026 guide uses regulators' published evidence, not provider marketing speed ranges. The FCC and Ofcom performance studies below are historical snapshots, not fresh measurements of every plan on sale today. I use them to explain the trade-offs, then show you what to check before paying for a connection.
+      </p>
+
+      <h2>What is the difference between fiber, cable and 5G home internet?</h2>
+      <p>
+        The difference is the last connection into your home. Fiber to the premises brings optical fiber to the home or business. Cable uses coaxial cable or a hybrid fiber-coaxial network. The <a href={sources.codes} target="_blank" rel="nofollow noopener">FCC's technology definitions</a> distinguish both from copper-wire services such as DSL, and explicitly exclude fiber to the curb from the fiber-to-the-premises category. A network having some fiber does not make your final connection full fiber.
+      </p>
+      <p>
+        With 5G home internet, the gateway connects wirelessly to the provider. The FCC includes service over a 4G LTE or 5G network sold as a fixed solution within licensed fixed wireless. <a href={sources.fwa} target="_blank" rel="nofollow noopener">Ofcom's Connected Nations report</a> describes mobile-network fixed wireless as normally serving an indoor router, sometimes with an external antenna to improve poor indoor reception. That wireless link is separate from the Wi-Fi your devices use indoors.
+      </p>
+      <div class="guide-table-wrap" role="region" aria-label="Fiber cable and 5G home internet comparison" tabindex="0">
+        <table class="guide-table">
+          <caption>Technology trade-offs from FCC and Ofcom reporting, not guaranteed retail speeds</caption>
+          <thead><tr><th scope="col">Connection</th><th scope="col">Download and upload</th><th scope="col">Latency or capacity evidence</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">Fiber</th><td>Generally symmetric actual upload and download (<a href={sources.mba} target="_blank" rel="nofollow noopener">FCC MBA</a>)</td><td>7 to 14 ms ISP-level idle latency (<a href={sources.mba} target="_blank" rel="nofollow noopener">FCC MBA</a>)</td></tr>
+            <tr><th scope="row">Cable</th><td>Fast downloads; more capacity usually allocated to download than upload (<a href={sources.mba} target="_blank" rel="nofollow noopener">FCC MBA</a>)</td><td>12 to 24 ms ISP-level idle latency (<a href={sources.mba} target="_blank" rel="nofollow noopener">FCC MBA</a>)</td></tr>
+            <tr><th scope="row">5G home</th><td>No universal typical range cited here; compare the plan's label (<a href={sources.labels} target="_blank" rel="nofollow noopener">FCC labels</a>)</td><td>Shares mobile capacity; demand can limit availability (<a href={sources.fwa} target="_blank" rel="nofollow noopener">Ofcom</a>)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Which is fastest for downloads?</h2>
+      <p>
+        The plan matters as well as the technology. Ofcom's home-performance study recorded median downloads of <strong>270.6 Mbps for cable, 149.2 Mbps for full fibre and 55.7 Mbps for FTTC</strong> (<a href={sources.trends} target="_blank" rel="nofollow noopener">Ofcom's findings</a>). These are medians across the connections people bought, not maximum technical capabilities. Cable beating fiber in that sample does not mean any cable plan will beat any fiber plan.
+      </p>
+      <p>
+        Advertised and delivered speeds also differ. In the FCC study, approximately <strong>85% of cable subscribers and 85% of fiber subscribers</strong> had median downloads exceeding advertised speed; fewer than <strong>15% of DSL subscribers</strong> did (<a href={sources.mba} target="_blank" rel="nofollow noopener">FCC, Chart 12.3 discussion</a>). That describes the study's subscribers, not a refund threshold or a guarantee for your next plan. Most aggregate comparisons excluded gigabit tiers, which were reported separately.
+      </p>
+      <p>
+        I would not place a guessed 5G range beside those figures. We cite regulators here, not provider-specific typical speeds or DOCSIS maximums. For those offers, check the provider's FCC broadband label for typical download, upload and latency. A technology's theoretical ceiling and the speed your household will receive are different questions.
+      </p>
+
+      <h2>Why does upload speed matter?</h2>
+      <p>
+        Downloads bring the film or game update home. Uploads carry your camera, shared files and backups out. A plan can look generous on download while leaving much less room for simultaneous sending. The FCC reports that fiber tiers generally have symmetric actual speeds, while other technologies commonly allocate more capacity to downloads (<a href={sources.mba} target="_blank" rel="nofollow noopener">FCC speed findings</a>). Still, read both numbers on the specific plan rather than assuming every fiber offer is identical.
+      </p>
+      <p>
+        Our household calculator budgets 20 Mbps down per 4K stream and 3.8 Mbps down plus 3 Mbps up per HD group call. Two streams and three calls, with its 25% headroom, produce a <strong>{household.tierDown} Mbps download and {household.tierUp} Mbps upload</strong> tier recommendation. These are the site's planning rates, not a regulator's guarantee. Use the <a href="/how-much-internet-speed-do-i-need/">household speed calculator</a> for your own mix, and the <a href="/upload-vs-download-speed/">upload vs download guide</a> if the two directions still feel confusing.
+      </p>
+
+      <h2>Which has the lowest latency or ping?</h2>
+      <p>
+        Fiber was strongest in the FCC's ISP-level idle-latency comparison: <strong>7 to 14 ms</strong>, against <strong>12 to 24 ms for cable</strong> and <strong>23 to 34 ms for DSL</strong> (<a href={sources.mba} target="_blank" rel="nofollow noopener">FCC latency findings</a>). Idle means the measurement is not testing a saturated home connection. It is not a promise of that ping to every destination.
+      </p>
+      <p>
+        Ofcom also found full-fibre packages had the lowest median 24-hour latency, ranging from <strong>4.9 to 7.3 ms</strong> among the packages analysed (<a href={sources.ofcom} target="_blank" rel="nofollow noopener">Ofcom technical report, latency section</a>). Do not combine the UK and US ranges into one league table: they use different samples and testing arrangements. Neither provides a comparable measured 5G-home latency range for this guide.
+      </p>
+      <p>
+        For a player or someone taking calls, I would look for a steady result as well as a low one. The route to the actual service matters. A nearby test endpoint cannot tell you exactly how a distant game server or your employer's network will respond.
+      </p>
+
+      <h2>Is 5G home internet good enough?</h2>
+      <p>
+        It can be a practical option if the available service meets your household's needs where you use it. Ofcom explains that mobile fixed wireless shares capacity with mobile users and that high mobile demand can make reliable fixed wireless unavailable in some areas (<a href={sources.fwa} target="_blank" rel="nofollow noopener">Connected Nations, fixed wireless section</a>). The useful question is not whether 5G is always good or bad, but whether this provider has enough capacity and signal at this address.
+      </p>
+      <p>
+        Before switching, ask about gateway placement, the return window, any data allowance and whether the offer is actually available at your home. If a trial is available, try your normal evening calls, streaming and uploads together. Keep notes on problems and repeat the test instead of deciding from a single unusually good morning result. Compare the label's typical upload and latency too, not just its download headline.
+      </p>
+
+      <h2>Does 5G mean 5 GHz Wi-Fi?</h2>
+      <p>
+        No. One names a generation of cellular networking; the other names a Wi-Fi frequency band. Your home gateway may use 5G to reach the provider and Wi-Fi to reach your laptop. Conversely, a fiber or cable connection can feed a router using 5 GHz Wi-Fi. Our <a href="/2-4-ghz-vs-5-ghz-wifi/">2.4 GHz vs 5 GHz Wi-Fi guide</a> explains that separate indoor choice. Changing the Wi-Fi band does not turn cable into a 5G connection.
+      </p>
+
+      <h2>How should I choose and read the FCC broadband label?</h2>
+      <p>
+        Start with the plans actually sold at your address, then put their labels side by side. The <a href={sources.labels} target="_blank" rel="nofollow noopener">FCC glossary</a> says labels list typical download and upload speeds, which are not always the advertised speeds, plus typical latency. Check price after any introductory period, equipment charges and data allowance alongside performance. A lower monthly price is less useful if the upload cannot support your normal routine.
+      </p>
+      <p>
+        The FCC's Section 706 report raised its fixed broadband benchmark to <strong>100 Mbps download and 20 Mbps upload</strong> (<a href={sources.benchmark} target="_blank" rel="nofollow noopener">FCC report, paragraph 22</a>). That is a deployment benchmark, not proof every household needs exactly that plan, and not a latency guarantee. I would choose enough capacity for simultaneous activities before paying for a bigger headline. For repeated gaps between a plan and your measurements, use our <a href="/am-i-getting-the-speed-i-pay-for/">paid-speed comparison tool</a>.
+      </p>
+
+      <h2>How can I test what I actually get?</h2>
+      <p>
+        Test close to the router first, preferably over Ethernet if your device supports it. Pause optional transfers, note whether a VPN is active and repeat at different times. Then test in the rooms where you work or watch TV. A strong wired result and weak bedroom result suggest a different next step from poor results beside the router on every attempt.
+      </p>
+      <p>
+        Guess the Speed measures download, upload, unloaded ping and jitter to a nearby Cloudflare server. It checks the path through your home line and Wi-Fi when you use Wi-Fi, not latency to a game server or streaming service. It does not measure loaded latency or packet loss. Use Dev mode to inspect the results, and compare like with like before blaming the access technology. Keep the device, room and connection method consistent when comparing plans.
+      </p>
+
+      <h2>Frequently asked questions</h2>
+      <p>These answers draw on the <a href={sources.mba} target="_blank" rel="nofollow noopener">FCC's historical performance report</a>, <a href={sources.fwa} target="_blank" rel="nofollow noopener">Ofcom's fixed wireless explanation</a> and the site's household calculator described above.</p>
+      <div class="faq">
+        {questions.map(({ question, answer }) => (<section><h3>{question}</h3><p>{answer}</p></section>))}
+      </div>
+      <div class="story-cta">
+        <p>Want to make the check more fun? Guess the download and upload together, then play the game and compare the real result.</p>
+        <a class="go" href="/">Play Guess the Speed</a>
+      </div>
+    </article>
+  </main>
+</Base>
