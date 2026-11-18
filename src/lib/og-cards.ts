@@ -167,6 +167,15 @@ export const ogCards: readonly OgCard[] = [
     icon: "ph:laptop-bold",
   },
   {
+    path: "/fiber-vs-cable-vs-5g-home-internet/",
+    group: "Learn",
+    kicker: "Guide",
+    line1: "Fiber, cable or 5G?",
+    line2: "Compare what matters.",
+    subtitle: "Speed, upload and ping, using FCC and Ofcom evidence",
+    icon: "ph:network-bold",
+  },
+  {
     path: "/how-much-internet-speed-do-i-need/",
     group: "Tools",
     kicker: "Free tool",

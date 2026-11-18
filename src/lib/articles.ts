@@ -24,6 +24,20 @@ export interface Article {
 /** Every Speed School article, newest first. New article pages must be added here. */
 export const ARTICLES: Article[] = [
   {
+    path: "/fiber-vs-cable-vs-5g-home-internet/",
+    title: "Fiber vs Cable vs 5G Home Internet: Which Is Faster?",
+    excerpt:
+      "Compare regulator evidence on fiber, cable and 5G home internet, including upload, idle latency, broadband labels and fair home testing.",
+    category: "Guides",
+    published: "2026-11-18",
+    tldr: [
+      "Fiber generally has symmetric speeds and had the lowest ISP-level idle latency in the FCC Thirteenth broadband report: 7 to 14 ms.",
+      "Cable can deliver fast downloads, while 5G home internet shares capacity with mobile users; compare the plans available at your address.",
+      "Read the provider's FCC broadband label for typical download, upload and latency instead of comparing only headline speeds.",
+      "Guess the Speed measures to a nearby Cloudflare server, not a game server, and does not measure loaded latency or packet loss.",
+    ],
+  },
+  {
     path: "/internet-speed-for-working-from-home/",
     title: "Internet Speed for Working from Home: Calls and More",
     excerpt:
