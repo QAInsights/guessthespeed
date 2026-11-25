@@ -1,0 +1,233 @@
+---
+import Base from '../layouts/Base.astro';
+import ArticleTools from '../components/ArticleTools.astro';
+import { ARTICLES } from '../lib/articles';
+import { downloadSeconds, formatDuration, mbpsToMBps } from '../lib/convert';
+import { DEV_USE_THRESHOLDS } from '../lib/devresult';
+import { ACTIVITY_RATES, recommendSpeed } from '../lib/speed-needs';
+import '../styles/site.css';
+
+const path = '/fiber-vs-cable-vs-5g-home-internet/';
+const article = ARTICLES.find((entry) => entry.path === path);
+if (!article) throw new Error(`Missing article metadata for ${path}`);
+const description =
+  'Compare fiber vs cable vs 5G home internet for download speed, upload speed and latency. Learn what to check on your plan and how to test at home.';
+
+const sources = {
+  types: 'https://www.fcc.gov/consumers/guides/getting-broadband-qa',
+  labels: 'https://www.fcc.gov/broadbandlabels',
+  wireless: 'https://www.ofcom.org.uk/siteassets/resources/documents/research-and-data/multi-sector/infrastructure-research/connected-nations-2025/connected-nations-uk-report-2025.pdf?v=407947#page=16',
+  measurements: 'https://www.ofcom.org.uk/siteassets/resources/documents/research-and-data/broadband-research/broadband-speeds/home-broadband-performance-september-2023/march-23-home-broadband-performance.pdf?v=330131#page=18',
+  wired: 'https://www.ofcom.org.uk/phones-and-broadband/coverage-and-speeds/broadband-speeds',
+  wifi: 'https://support.microsoft.com/en-us/windows/experience/connectivity-networking/wi-fi-and-your-home-layout',
+  cloudflare: 'https://blog.cloudflare.com/how-does-cloudflares-speed-test-really-work/',
+};
+
+const comparisons = [
+  { name: 'Fiber', text: 'Light through glass fiber to the premises. Check whether the plan offers equal download and upload.', source: sources.types, sourceName: 'FCC' },
+  { name: 'Cable', text: 'Coaxial cable at the home. Check the upload rate separately from the download rate.', source: sources.types, sourceName: 'FCC' },
+  { name: '5G home', text: 'A cellular radio link to a home gateway. Check availability and indoor signal at your address.', source: sources.wireless, sourceName: 'Ofcom' },
+];
+
+const fileBytes = 1_000_000_000;
+const exampleUp = [20, 100];
+const transferRows = exampleUp.map((mbps) => ({
+  mbps,
+  megabytesPerSecond: mbpsToMBps(mbps),
+  time: formatDuration(downloadSeconds(fileBytes, mbps) ?? 0),
+}));
+const household = recommendSpeed({
+  streams4k: 1,
+  callsHd: 1,
+  streamsHd: 0,
+  onlineGamers: 0,
+  largeDownloads: 0,
+  smartHomeDevices: 0,
+});
+const stream = ACTIVITY_RATES.streams4k;
+const cloudPing = DEV_USE_THRESHOLDS.gamingMaxPingMs;
+
+const questions = [
+  {
+    question: 'Is fiber better than cable or 5G home internet?',
+    answer: 'I would start with full fiber if the price is close and the plan gives you better upload or latency. Cable can be the better buy if it meets your needs for less, and 5G home internet is worth trying if wired options are limited.',
+  },
+  {
+    question: 'Is cable internet fast enough for a household?',
+    answer: 'Cable can deliver fast downloads: the fastest download in Ofcom’s fixed-line study came from a cable package. Check the typical upload separately, especially if your household sends large files or uses video calls at the same time.',
+    citation: { url: sources.measurements, label: 'Ofcom measurements' },
+  },
+  {
+    question: 'Is 5G home internet the same as 5 GHz Wi-Fi?',
+    answer: 'No. 5G home internet uses a cellular network to reach your home gateway; 5 GHz is a Wi-Fi frequency that a router can use to reach devices inside your home.',
+    citation: { url: sources.wifi, label: 'Microsoft Wi-Fi guide' },
+  },
+  {
+    question: 'Why can 5G home internet be slower at night?',
+    answer: '5G home internet can share cellular network capacity with mobile users, and the gateway also needs a good signal where it sits. If you are trying a plan, check it during your normal busy hours rather than relying on a morning test.',
+    citation: { url: sources.wireless, label: 'Ofcom on fixed wireless' },
+  },
+  {
+    question: 'Does fiber always have the same upload and download speed?',
+    answer: 'No. Symmetrical means the advertised download and upload rates are equal. Ofcom measured a symmetrical fiber package, but the two rates on the specific plan you can buy are what count.',
+    citation: { url: sources.measurements, label: 'Ofcom measurements' },
+  },
+  {
+    question: 'Does a low speed-test ping guarantee low ping in games?',
+    answer: 'No. Guess the Speed measures idle ping to a nearby Cloudflare server, not to the game server. Use the game’s own connection display to check latency to the server you actually play on.',
+    citation: { url: sources.cloudflare, label: 'Cloudflare on test destinations' },
+  },
+];
+
+const faqSchema = {
+  '@type': 'FAQPage',
+  mainEntity: questions.map(({ question, answer }) => ({
+    '@type': 'Question',
+    name: question,
+    acceptedAnswer: { '@type': 'Answer', text: answer },
+  })),
+};
+
+const articleSchema = {
+  '@type': 'Article',
+  headline: article.title,
+  description,
+  author: {
+    '@type': 'Person',
+    '@id': 'https://guessthespeed.com/#author',
+    name: 'NaveenKumar Namachivayam',
+    url: 'https://qainsights.com',
+  },
+  publisher: {
+    '@type': 'Organization',
+    name: 'Guess the Speed',
+    url: 'https://guessthespeed.com',
+  },
+  datePublished: article.published,
+  mainEntityOfPage: `https://guessthespeed.com${path}`,
+};
+---
+
+<Base title="Fiber vs Cable vs 5G Home Internet: Which Is Better?" description={description} breadcrumb="Fiber vs cable vs 5G" schema={[articleSchema, faqSchema]}>
+  <main class="wrap content-page">
+    <span class="round-banner">Speed School</span>
+    <h1>{article.title}</h1>
+    <p class="lede">
+      For fiber vs cable vs 5G home internet, I would pick full fiber at similar prices for faster uploads and lower delay, cable if its upload meets your needs for less, and 5G if wired choices are poor and the signal is good at your home. In one
+      <a href={sources.measurements} rel="nofollow">Ofcom fixed-line study</a>, tested fiber plans had median average latency of <strong>4.9 to 7.3 ms</strong>, versus <strong>12.5 ms</strong> for the best-performing cable plan on that measure; the study did not test 5G home plans.
+    </p>
+    <ArticleTools {path} />
+    <article class="content-card stk">
+      <p>
+        If I were shopping for internet this weekend, I would put the offers side by side before clicking Buy. The biggest download number is easy to spot. The harder question is what I would notice on an ordinary evening, when one person is on a call, someone else is watching TV, and a backup has quietly started. I want the plan that handles that evening, not the one that wins a test nobody in the house normally runs.
+      </p>
+      <p>
+        When I worked in performance testing, I learned to keep throughput and response time apart. Imagine moving groceries through a checkout: you care how many bags you can get through per minute, but you also care how long you wait for the first bag. The same distinction makes these offers easier to compare. I look at download and upload for the bags per minute, then at latency for the waiting. <a href={sources.cloudflare} rel="nofollow">Cloudflare’s speed test explainer</a> shows why those measurements tell different stories.
+      </p>
+
+      <h2>How do fiber, cable and 5G get internet into your home?</h2>
+      <div class="guide-table-wrap" role="region" aria-label="Home internet connection types" tabindex="0">
+        <table class="guide-table">
+          <caption>How each connection reaches your home</caption>
+          <thead><tr><th scope="col">Connection</th><th scope="col">What reaches your home</th></tr></thead>
+          <tbody>
+            {comparisons.map(({ name, text, source, sourceName }) => (
+              <tr><th scope="row">{name}</th><td>{text}{' '}<a href={source} rel="nofollow">{sourceName}</a></td></tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p>
+        <strong>Full fiber</strong> means the fiber reaches the premises. The <a href={sources.types} rel="nofollow">FCC’s broadband guide</a> explains that fiber carries data as light and that the experience depends in part on how far the provider brings that fiber. If a listing says “fiber-powered,” I would ask whether fiber reaches my home or stops elsewhere. I would also ask where the installer needs to put the equipment, especially if I rent.
+      </p>
+      <p>
+        <strong>Cable internet</strong> uses coaxial cable at your home, the same type used for cable TV. According to the <a href={sources.types} rel="nofollow">FCC</a>, cable speeds depend on the modem, the network and the traffic on it. I would not dismiss it because of the old TV socket. I would ask what the plan delivers both ways and what equipment I need to use it.
+      </p>
+      <p>
+        <strong>5G home internet</strong> is one kind of fixed wireless access. Instead of bringing a wire from the street into the home, the provider sends data over its cellular network to a home gateway. <a href={sources.wireless} rel="nofollow">Ofcom’s Connected Nations report</a> explains that mobile operators usually supply an indoor router and may use an external antenna where the indoor signal is weak. That cellular link is separate from your <a href={sources.wifi} rel="nofollow">5 GHz Wi-Fi</a>, which connects devices to the router inside the home.
+      </p>
+
+      <h2>Which connection is faster for downloads, uploads and games?</h2>
+      <p>
+        <strong>For downloads, compare the plan rather than the technology name.</strong> The fastest package for median average download in <a href={sources.measurements} rel="nofollow">Ofcom’s fixed-line sample</a> was actually cable, at <strong>1,137.1 Mbps</strong>. That is a measurement for a particular UK package in that sample, not an average for all cable, not a current offer and not a number I would use to predict your line.
+      </p>
+      <p>
+        <strong>For uploads, look at the other half of the label.</strong> In the same <a href={sources.measurements} rel="nofollow">Ofcom study</a>, a full-fiber plan advertised as <strong>300 Mbps</strong> in both directions had the highest median average upload of the packages measured, <strong>336.5 Mbps</strong>. Equal advertised rates are called symmetrical. I would look for that if I regularly send large files, but I would not assume every fiber plan offers it or every cable plan has the same upload.
+      </p>
+      <p>
+        <strong>For games, look beyond download Mbps.</strong> Ofcom found the lowest round-trip delays among the fiber packages it measured. The <a href={sources.measurements} rel="nofollow">report</a> defines latency here as the time to reach a third-party server and come back. Its tests were of fixed lines, not 5G home plans. For 5G, <a href={sources.wireless} rel="nofollow">Ofcom separately explains</a> how home gateways can share capacity with phones on the same network. There is no single download, upload or ping number I would quote for a 5G plan at an address I have not tested. Plans vary by provider and address.
+      </p>
+      <p>
+        I would use the measured results as clues, not as a league table. <a href={sources.measurements} rel="nofollow">Ofcom combined measurements</a> from router-connected boxes and measurements supplied by providers. None of those readings tells me what a particular game server will do or what a laptop across the house will see. The practical question is whether the offer fixes the thing I actually notice: waiting for a file, trouble on a call, or inconsistent response in a game.
+      </p>
+
+      <h2>How much upload speed would you actually notice?</h2>
+      <p>
+        Imagine that two offers have the same download rate but different upload rates. Here is what that difference means for a <strong>1 GB</strong> file going out, using the same transfer math as our <a href="/mbps-to-mbs/">Mbps to MB/s converter</a>. These are example rates, not packages or technology averages. The estimates assume your transfer sustains the listed rate throughout, so I use them to compare the two offers, not to time a real cloud backup.
+      </p>
+      <div class="guide-table-wrap" role="region" aria-label="Example upload times" tabindex="0">
+        <table class="guide-table">
+          <caption>Estimated upload time for a 1 GB file</caption>
+          <thead><tr><th scope="col">Example upload</th><th scope="col">Ideal transfer</th></tr></thead>
+          <tbody>
+            {transferRows.map(({ mbps, megabytesPerSecond, time }) => (
+              <tr><th scope="row">{mbps} Mbps</th><td>{time} at {megabytesPerSecond} MB/s</td></tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p>
+        If all I upload is the occasional photo, I would not upgrade for that table. If I send a large folder at the end of every shift, or someone else needs the connection while my backups run, I would pay more attention. Conversely, if the waiting happens only while a game downloads, paying for more upload is not the obvious fix. Start with what is being transferred and in which direction.
+      </p>
+      <p>
+        For a quieter evening with one HD call and one 4K stream, our <a href="/how-much-internet-speed-do-i-need/">household speed calculator</a> suggests <strong>{household.down} Mbps down and {household.up} Mbps up</strong> with its planning floor and headroom. The calculator uses <a href={stream.source} rel="nofollow">YouTube’s recommended sustained {stream.down} Mbps for 4K</a> as the per-stream input. I would count things that happen together, not every screen we own. A connection type does not change what those activities need.
+      </p>
+
+      <h2>What should you check before switching providers?</h2>
+      <ol>
+        <li><strong>Start with your exact address.</strong> Ask which plans and equipment the provider can actually supply to your home. In an apartment, ask about your unit and where the gateway or cable would go before you order.</li>
+        <li><strong>Compare what you will pay and what you will get.</strong> In the US, the <a href={sources.labels} rel="nofollow">FCC’s Broadband Consumer Labels</a> make it easier to compare prices, introductory rates, data allowances and speeds. Copy the download and upload figures into separate columns. Note the price when the promotion ends, and ask about any equipment, installation or cancellation charges you cannot find.</li>
+        <li><strong>Check the 5G return terms before committing.</strong> If you can try a gateway, place it where the provider recommends, then try a spot with better signal if needed. Test it when your household actually gets busy. If you are replacing a working line, I would keep the old connection until I knew the new one did the job, if the cost and terms allow it.</li>
+        <li><strong>Decide what would make the switch worthwhile.</strong> If the cheaper cable offer delivers the upload you need and your current connection already feels responsive, I would not pay more just to have fiber. If the plan is for working from home, I would try an actual call from my desk as well as running a speed test.</li>
+      </ol>
+
+      <h2>How can you tell whether the slow part is the line or Wi-Fi?</h2>
+      <p>
+        First take a baseline with a computer wired to the router if you can. <a href={sources.wired} rel="nofollow">Ofcom recommends a wired connection</a> when troubleshooting broadband speed. Pause big transfers for this first run and compare it against the offer with the <a href="/am-i-getting-the-speed-i-pay-for/">plan speed check</a>. Next, test on Wi-Fi where you actually work or watch TV. Use the same computer and test when possible. If the wired result is fine and the spare room is slow, I would investigate the home Wi-Fi before paying for a different line.
+      </p>
+      <p>
+        Repeat during your busy hours and write down the time, device, connection type and result. With 5G, if you move the gateway, change that one thing first and repeat the baseline. Otherwise you might move the gateway and switch devices at once, then have no idea which change helped. If results keep varying, share the notes with the provider rather than sending only the worst reading.
+      </p>
+      <p>
+        The Guess the Speed test measures your home line and, when you are on it, your Wi-Fi, along the route to a nearby <a href={sources.cloudflare} rel="nofollow">Cloudflare server</a>. Our <a href="/?dev=1">Dev mode</a> uses idle ping under <strong>{cloudPing} ms</strong> for its gaming check. That is our own rule of thumb against Cloudflare, not a game requirement or proof of latency to a game server, video service or data center. If only one app misbehaves, check it separately on the same connection.
+      </p>
+
+      <h2>Frequently asked questions</h2>
+      <div class="faq">
+        {questions.map(({ question, answer, citation }) => (
+          <section>
+            <h3>{question}</h3>
+            <p>{answer}{citation && <> <a href={citation.url} rel="nofollow">{citation.label}</a></>}</p>
+          </section>
+        ))}
+      </div>
+
+      <p>
+        Want to give everyone a turn? Play the game and take guesses before testing from the sofa. Then repeat by the router and see whether the guesses change. You will learn more about your own home than the biggest number on a flyer can tell you.
+      </p>
+      <div class="story-cta">
+        <a class="go" href="/">Play Guess the Speed</a>
+      </div>
+    </article>
+  </main>
+</Base>
+
+<style>
+  .guide-table {
+    min-width: 0;
+  }
+
+  .guide-table th {
+    white-space: normal;
+  }
+</style>

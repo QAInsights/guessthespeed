@@ -24,6 +24,19 @@ export interface Article {
 /** Every Speed School article, newest first. New article pages must be added here. */
 export const ARTICLES: Article[] = [
   {
+    path: "/fiber-vs-cable-vs-5g-home-internet/",
+    title: "Fiber vs Cable vs 5G Home Internet: Which Should You Choose?",
+    excerpt:
+      "Compare download, upload and latency across fiber, cable and 5G home internet, then test the plan that is available at your address.",
+    category: "Guides",
+    published: "2026-11-25",
+    tldr: [
+      "Start with full fiber if the price is close and the plan gives you better uploads or latency; cable can be better value if it meets your needs for less.",
+      "For 5G home internet, check reception at the gateway and test during your household’s busy hours.",
+      "Compare actual plan terms and download and upload rates, not just the connection technology.",
+    ],
+  },
+  {
     path: "/internet-speed-for-working-from-home/",
     title: "Internet Speed for Working from Home: Calls and More",
     excerpt:
