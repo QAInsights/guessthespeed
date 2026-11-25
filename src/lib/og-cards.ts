@@ -121,6 +121,15 @@ export const ogCards: readonly OgCard[] = [
     icon: "ph:game-controller-bold",
   },
   {
+    path: "/fiber-vs-cable-vs-5g-home-internet/",
+    group: "Learn",
+    kicker: "Guide",
+    line1: "Fiber vs cable",
+    line2: "vs 5G home internet",
+    subtitle: "Compare download, upload and latency before you switch.",
+    icon: "ph:plugs-connected-bold",
+  },
+  {
     path: "/2-4-ghz-vs-5-ghz-wifi/",
     group: "Learn",
     kicker: "Guide",
